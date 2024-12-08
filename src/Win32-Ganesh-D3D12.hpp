@@ -7,6 +7,7 @@
 #include <core/SkCanvas.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
+#include <skia/core/SkFont.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <wil/com.h>
 #include <wil/resource.h>
@@ -56,6 +57,7 @@ class HelloSkiaWindow final {
   uint64_t mFenceValue = 0;
 
   sk_sp<GrDirectContext> mSkContext;
+  SkFont mSkFont;
 
   struct FrameContext {
     wil::com_ptr<ID3D12CommandAllocator> mCommandAllocator;

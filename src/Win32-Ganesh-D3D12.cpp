@@ -3,15 +3,19 @@
 
 #include "Win32-Ganesh-D3D12.hpp"
 
+#include <shlobj_core.h>
 #include <skia/core/SkCanvas.h>
 #include <skia/core/SkColorSpace.h>
+#include <skia/core/SkFontMgr.h>
 #include <skia/core/SkImageInfo.h>
 #include <skia/gpu/GrBackendSemaphore.h>
 #include <skia/gpu/GrBackendSurface.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
+#include <skia/ports/SkFontMgr_empty.h>
 
+#include <filesystem>
 #include <format>
 #include <source_location>
 
@@ -36,14 +40,18 @@ static inline void CheckHResult(
   throw std::system_error(ec);
 }
 
-void HelloSkiaWindow::InitializeSkia() {
-  GrD3DBackendContext skiaD3DContext {};
-  skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
-  skiaD3DContext.fDevice.retain(mD3DDevice.get());
-  skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
-  // skiaD3DContext.fMemoryAllocator can be left as nullptr
-  mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+template <const GUID& TFolderID>
+std::filesystem::path GetKnownFolderPath() {
+  wil::unique_cotaskmem_string buf;
+  CheckHResult(
+    SHGetKnownFolderPath(TFolderID, KF_FLAG_DEFAULT, nullptr, buf.put()));
+  std::filesystem::path path {std::wstring_view {buf.get()}};
+  if (std::filesystem::exists(path)) {
+    return std::filesystem::canonical(path);
+  }
+  return {};
 }
+
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   gInstance = this;
 
@@ -162,6 +170,24 @@ void HelloSkiaWindow::InitializeD3D() {
   mWindowSize = {swapChainDesc.Width, swapChainDesc.Height};
 }
 
+void HelloSkiaWindow::InitializeSkia() {
+  GrD3DBackendContext skiaD3DContext {};
+  skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
+  skiaD3DContext.fDevice.retain(mD3DDevice.get());
+  skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
+  // skiaD3DContext.fMemoryAllocator can be left as nullptr
+  mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+
+  auto fontPath = GetKnownFolderPath<FOLDERID_Fonts>();
+  if (fontPath.empty()) {
+    return;
+  }
+
+  auto typeface =
+  SkFontMgr_New_Custom_Empty()->makeFromFile((fontPath / "segoeui.ttf").string().c_str());
+  mSkFont = SkFont { typeface };
+}
+
 void HelloSkiaWindow::CreateCommandListAndAllocators() {
   for (auto& frame: mFrames) {
     CheckHResult(mD3DDevice->CreateCommandAllocator(
@@ -272,8 +298,7 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
-void HelloSkiaWindow::RenderNonSkiaContent(
-  FrameContext& frame) {
+void HelloSkiaWindow::RenderNonSkiaContent(FrameContext& frame) {
   auto commandList = mD3DCommandList.get();
 
   D3D12_RESOURCE_BARRIER barrier {
@@ -303,10 +328,26 @@ void HelloSkiaWindow::RenderNonSkiaContent(
 }
 
 void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
+  static constexpr auto strokeWidth = 2;
   SkPaint paint;
-  paint.setColor(SkColorSetARGB(0x80, 0xff, 0xff, 0xff));
-  paint.setStyle(SkPaint::kStrokeAndFill_Style);
-  canvas->drawCircle(SkPoint {20.0f, 20.0f}, 20.0f, paint);
+  paint.setColor(SkColorSetRGB(0x66, 0x66, 0xcc));
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(strokeWidth);
+  canvas->drawRoundRect(
+    SkRect::MakeIWH(mWindowSize.mWidth, mWindowSize.mHeight - strokeWidth)
+      .makeInset(10.0, 10.0),
+    10,
+    10,
+    paint);
+
+  paint.setStyle(SkPaint::kFill_Style);
+  canvas->drawString(
+    std::format("Hello Skia: Win32+Ganesh+D3D12 frame {}", mFrameCounter)
+      .c_str(),
+    40,
+    40,
+    mSkFont,
+    paint);
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {

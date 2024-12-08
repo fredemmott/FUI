@@ -5,7 +5,8 @@
     {
       "name":"skia",
       "features": [
-        "direct3d"
+        "direct3d",
+        "freetype"
       ]
     }
   ]
