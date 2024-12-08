@@ -246,11 +246,6 @@ void HelloSkiaWindow::ConfigureD3DDebugLayer() {
 }
 
 HelloSkiaWindow::~HelloSkiaWindow() {
-  if (mFenceValue) {
-    CheckHResult(
-      mD3DFence->SetEventOnCompletion(mFenceValue, mFenceEvent.get()));
-    WaitForSingleObject(mFenceEvent.get(), INFINITE);
-  }
   this->CleanupFrameContexts();
 
   gInstance = nullptr;
@@ -264,6 +259,7 @@ void HelloSkiaWindow::CreateRenderTargets() {
     auto& frame = mFrames[i];
     CheckHResult(
       mSwapChain->GetBuffer(i, IID_PPV_ARGS(frame.mRenderTarget.put())));
+    frame.mRenderTarget->SetName(L"HelloSkia RenderTarget");
     frame.mRenderTargetView = rtvStart;
     frame.mRenderTargetView.ptr += i * rtvStep;
     mD3DDevice->CreateRenderTargetView(
@@ -390,9 +386,6 @@ void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
       .fSignalSemaphores = &flushSemaphore,
     });
   mSkContext->submit(GrSyncCpu::kNo);
-
-  frame.mFenceValue = ++mFenceValue;
-  CheckHResult(mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
 }
 
 void HelloSkiaWindow::RenderFrame() {
@@ -410,8 +403,9 @@ void HelloSkiaWindow::RenderFrame() {
     mPendingResize = std::nullopt;
   }
 
-  const auto frameNumber = mFrameCounter++;
-  auto& frame = mFrames.at(frameNumber % SwapChainLength);
+  ++mFrameCounter;
+  auto& frame = mFrames.at(mFrameIndex);
+  mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
 
   auto commandList = mD3DCommandList.get();
   if (frame.mFenceValue) {
@@ -445,12 +439,13 @@ int HelloSkiaWindow::Run() noexcept {
 
     this->RenderFrame();
 
-    const auto frameDuration
-      = std::chrono::steady_clock::now() - frameStart;
+    const auto frameDuration = std::chrono::steady_clock::now() - frameStart;
     if (frameDuration > frameInterval) {
       continue;
     }
-    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(frameInterval - frameDuration).count();
+    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          frameInterval - frameDuration)
+                          .count();
     MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
   }
 
@@ -476,13 +471,21 @@ HelloSkiaWindow::WindowProc(
 }
 
 void HelloSkiaWindow::CleanupFrameContexts() {
-  CheckHResult(mD3DFence->SetEventOnCompletion(mFenceValue, mFenceEvent.get()));
+  mSkContext->flushAndSubmit(GrSyncCpu::kYes);
+
+  const auto fenceValue = ++mFenceValue;
+  CheckHResult(mD3DCommandQueue->Signal(mD3DFence.get(), fenceValue));
+  CheckHResult(mD3DFence->SetEventOnCompletion(fenceValue, mFenceEvent.get()));
   WaitForSingleObject(mFenceEvent.get(), INFINITE);
+
   for (auto& frame: mFrames) {
     frame.mSkSurface = {};
     frame.mRenderTarget = nullptr;
     frame.mRenderTargetView = {};
+    frame.mFenceValue = {};
   }
+
+  mFrameIndex = 0;
 }
 
 HelloSkiaWindow* HelloSkiaWindow::gInstance {nullptr};

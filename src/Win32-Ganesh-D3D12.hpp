@@ -70,6 +70,7 @@ class HelloSkiaWindow final {
   };
   uint64_t mFrameCounter {};
   std::array<FrameContext, SwapChainLength> mFrames;
+  uint8_t mFrameIndex {}; // Used to index into mFrames; reset when buffer reset
 
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
