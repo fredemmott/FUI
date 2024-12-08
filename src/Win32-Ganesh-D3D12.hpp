@@ -54,7 +54,7 @@ class HelloSkiaWindow final {
   wil::unique_handle mFenceEvent {CreateEventW(nullptr, FALSE, FALSE, nullptr)};
   uint64_t mFenceValue = 0;
 
-  sk_sp<GrDirectContext> mSkiaContext;
+  sk_sp<GrDirectContext> mSkContext;
 
   struct FrameContext {
     wil::com_ptr<ID3D12CommandAllocator> mCommandAllocator;

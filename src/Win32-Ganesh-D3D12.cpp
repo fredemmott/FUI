@@ -41,7 +41,8 @@ void HelloSkiaWindow::InitializeSkia() {
   skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
   skiaD3DContext.fDevice.retain(mD3DDevice.get());
   skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
-  mSkiaContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+  // skiaD3DContext.fMemoryAllocator can be left as nullptr
+  mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
 }
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   gInstance = this;
@@ -257,7 +258,7 @@ void HelloSkiaWindow::CreateRenderTargets() {
       static_cast<int>(desc.Height),
       backBufferInfo);
     frame.mSkSurface = SkSurfaces::WrapBackendRenderTarget(
-      mSkiaContext.get(),
+      mSkContext.get(),
       backBufferRT,
       {},
       kRGBA_8888_SkColorType,
@@ -343,7 +344,7 @@ int HelloSkiaWindow::Run() noexcept {
       fenceInfo.fValue = frame.mFenceValue;
       GrBackendSemaphore imguiFence;
       imguiFence.initDirect3D(fenceInfo);
-      mSkiaContext->wait(1, &imguiFence, false);
+      mSkContext->wait(1, &imguiFence, false);
       auto brt = SkSurfaces::GetBackendRenderTarget(
         frame.mSkSurface.get(), SkSurfaces::BackendHandleAccess::kFlushWrite);
       brt.setD3DResourceState(D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -355,11 +356,11 @@ int HelloSkiaWindow::Run() noexcept {
       paint.setStyle(SkPaint::kStrokeAndFill_Style);
 
       canvas->drawCircle(SkPoint {20.0f, 20.0f}, 20.0f, paint);
-      mSkiaContext->flush(
+      mSkContext->flush(
         frame.mSkSurface.get(),
         SkSurfaces::BackendSurfaceAccess::kPresent,
         GrFlushInfo {});
-      mSkiaContext->submit(GrSyncCpu::kNo);
+      mSkContext->submit(GrSyncCpu::kNo);
       frame.mFenceValue = ++mFenceValue;
       CheckHResult(
         mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
