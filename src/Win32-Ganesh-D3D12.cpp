@@ -224,6 +224,8 @@ HelloSkiaWindow::~HelloSkiaWindow() {
       mD3DFence->SetEventOnCompletion(mFenceValue, mFenceEvent.get()));
     WaitForSingleObject(mFenceEvent.get(), INFINITE);
   }
+  this->CleanupFrameContexts();
+
   gInstance = nullptr;
 }
 
@@ -399,10 +401,6 @@ int HelloSkiaWindow::Run() noexcept {
 
     WaitMessage();
   }
-
-  mD3DFence->SetEventOnCompletion(mFenceValue, mFenceEvent.get());
-  WaitForSingleObject(mFenceEvent.get(), INFINITE);
-  this->CleanupFrameContexts();
 
   return *mExitCode;
 }
