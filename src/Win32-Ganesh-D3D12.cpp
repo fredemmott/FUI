@@ -178,7 +178,6 @@ void HelloSkiaWindow::CreateCommandListAndAllocators() {
   CheckHResult(mD3DCommandList->Close());
 }
 
-
 void HelloSkiaWindow::ConfigureD3DDebugLayer() {
 #ifndef NDEBUG
   auto infoQueue = mD3DDevice.try_query<ID3D12InfoQueue1>();
@@ -271,6 +270,120 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
+void HelloSkiaWindow::RenderNonSkiaContent(
+  FrameContext& frame) {
+  auto commandList = mD3DCommandList.get();
+
+  D3D12_RESOURCE_BARRIER barrier {
+        .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+        .Transition = D3D12_RESOURCE_TRANSITION_BARRIER {
+          .pResource = frame.mRenderTarget.get(),
+          .Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+          .StateBefore = D3D12_RESOURCE_STATE_PRESENT,
+          .StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET,
+        },
+      };
+  commandList->ResourceBarrier(1, &barrier);
+
+  FLOAT clearColor[4] {0.0f, 0.0f, 0.0f, 1.0f};
+  commandList->ClearRenderTargetView(
+    frame.mRenderTargetView, clearColor, 0, nullptr);
+  commandList->OMSetRenderTargets(1, &frame.mRenderTargetView, FALSE, nullptr);
+  {
+    auto ptr = mD3DSRVHeap.get();
+    commandList->SetDescriptorHeaps(1, &ptr);
+  }
+  CheckHResult(commandList->Close());
+
+  auto upcast = static_cast<ID3D12CommandList*>(commandList);
+  mD3DCommandQueue->ExecuteCommandLists(1, &upcast);
+  CheckHResult(mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
+}
+
+void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
+  SkPaint paint;
+  paint.setColor(SkColorSetARGB(0x80, 0xff, 0xff, 0xff));
+  paint.setStyle(SkPaint::kStrokeAndFill_Style);
+  canvas->drawCircle(SkPoint {20.0f, 20.0f}, 20.0f, paint);
+}
+
+void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
+  // We're drawing with Skia on top of other operations; wait for them to
+  // complete
+  GrD3DFenceInfo fenceInfo {};
+  fenceInfo.fFence.retain(mD3DFence.get());
+  fenceInfo.fValue = frame.mFenceValue;
+  {
+    GrBackendSemaphore nonSkiaContentFence;
+    nonSkiaContentFence.initDirect3D(fenceInfo);
+    mSkContext->wait(1, &nonSkiaContentFence, false);
+  }
+
+  /* Inform Skia that our other D3D12 code transitioned the resource
+   * to the RENDER_TARGET state.
+   *
+   * This DOES NOT make Skia transition the state - it just tells it we've
+   * already done that.
+   *
+   * This is not necessary if you're not integrating Skia with other content.
+   */
+  auto brt = SkSurfaces::GetBackendRenderTarget(
+    frame.mSkSurface.get(), SkSurfaces::BackendHandleAccess::kFlushWrite);
+  brt.setD3DResourceState(D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+  this->RenderSkiaContent(frame.mSkSurface->getCanvas());
+
+  fenceInfo.fValue = ++mFenceValue;
+  frame.mFenceValue = fenceInfo.fValue;
+  GrBackendSemaphore flushSemaphore;
+  flushSemaphore.initDirect3D(fenceInfo);
+
+  mSkContext->flush(
+    frame.mSkSurface.get(),
+    SkSurfaces::BackendSurfaceAccess::kPresent,
+    GrFlushInfo {
+      .fNumSemaphores = 1,
+      .fSignalSemaphores = &flushSemaphore,
+    });
+  mSkContext->submit(GrSyncCpu::kNo);
+
+  frame.mFenceValue = ++mFenceValue;
+  CheckHResult(mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
+}
+
+void HelloSkiaWindow::RenderFrame() {
+  if (mPendingResize) {
+    this->CleanupFrameContexts();
+    CheckHResult(mSwapChain->ResizeBuffers(
+      0,
+      mPendingResize->mWidth,
+      mPendingResize->mHeight,
+      DXGI_FORMAT_UNKNOWN,
+      0));
+    this->CreateRenderTargets();
+
+    mWindowSize = *mPendingResize;
+    mPendingResize = std::nullopt;
+  }
+
+  const auto frameNumber = mFrameCounter++;
+  auto& frame = mFrames.at(frameNumber % SwapChainLength);
+
+  auto commandList = mD3DCommandList.get();
+  if (frame.mFenceValue) {
+    mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
+    WaitForSingleObject(mFenceEvent.get(), INFINITE);
+  }
+  CheckHResult(frame.mCommandAllocator->Reset());
+  frame.mFenceValue = ++mFenceValue;
+  CheckHResult(commandList->Reset(frame.mCommandAllocator.get(), nullptr));
+
+  RenderNonSkiaContent(frame);
+  RenderSkiaContent(frame);
+
+  CheckHResult(mSwapChain->Present(1, 0));
+}
+
 int HelloSkiaWindow::Run() noexcept {
   while (!mExitCode) {
     MSG msg {};
@@ -282,91 +395,7 @@ int HelloSkiaWindow::Run() noexcept {
       }
     }
 
-    if (mPendingResize) {
-      this->CleanupFrameContexts();
-      CheckHResult(mSwapChain->ResizeBuffers(
-        0,
-        mPendingResize->mWidth,
-        mPendingResize->mHeight,
-        DXGI_FORMAT_UNKNOWN,
-        0));
-      this->CreateRenderTargets();
-
-      mWindowSize = *mPendingResize;
-      mPendingResize = std::nullopt;
-    }
-
-    const auto frameNumber = mFrameCounter++;
-    auto& frame = mFrames.at(frameNumber % SwapChainLength);
-
-    auto commandList = mD3DCommandList.get();
-    if (frame.mFenceValue) {
-      mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
-      WaitForSingleObject(mFenceEvent.get(), INFINITE);
-    }
-    CheckHResult(frame.mCommandAllocator->Reset());
-    frame.mFenceValue = ++mFenceValue;
-    CheckHResult(commandList->Reset(frame.mCommandAllocator.get(), nullptr));
-
-    D3D12_RESOURCE_BARRIER barrier {
-        .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
-        .Transition = D3D12_RESOURCE_TRANSITION_BARRIER {
-          .pResource = frame.mRenderTarget.get(),
-          .Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-          .StateBefore = D3D12_RESOURCE_STATE_PRESENT,
-          .StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET,
-        },
-      };
-    commandList->ResourceBarrier(1, &barrier);
-
-    FLOAT clearColor[4] {0.0f, 0.0f, 0.0f, 1.0f};
-    commandList->ClearRenderTargetView(
-      frame.mRenderTargetView, clearColor, 0, nullptr);
-    commandList->OMSetRenderTargets(
-      1, &frame.mRenderTargetView, FALSE, nullptr);
-    {
-      auto ptr = mD3DSRVHeap.get();
-      commandList->SetDescriptorHeaps(1, &ptr);
-    }
-    CheckHResult(commandList->Close());
-
-    {
-      auto upcast = static_cast<ID3D12CommandList*>(commandList);
-      mD3DCommandQueue->ExecuteCommandLists(1, &upcast);
-      CheckHResult(
-        mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
-    }
-
-    {
-      // Skia Test
-      GrD3DFenceInfo fenceInfo;
-      fenceInfo.fFence.retain(mD3DFence.get());
-      fenceInfo.fValue = frame.mFenceValue;
-      GrBackendSemaphore imguiFence;
-      imguiFence.initDirect3D(fenceInfo);
-      mSkContext->wait(1, &imguiFence, false);
-      auto brt = SkSurfaces::GetBackendRenderTarget(
-        frame.mSkSurface.get(), SkSurfaces::BackendHandleAccess::kFlushWrite);
-      brt.setD3DResourceState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-      auto canvas = frame.mSkSurface->getCanvas();
-
-      SkPaint paint;
-      paint.setColor(SkColorSetARGB(0x80, 0xff, 0xff, 0xff));
-      paint.setStyle(SkPaint::kStrokeAndFill_Style);
-
-      canvas->drawCircle(SkPoint {20.0f, 20.0f}, 20.0f, paint);
-      mSkContext->flush(
-        frame.mSkSurface.get(),
-        SkSurfaces::BackendSurfaceAccess::kPresent,
-        GrFlushInfo {});
-      mSkContext->submit(GrSyncCpu::kNo);
-      frame.mFenceValue = ++mFenceValue;
-      CheckHResult(
-        mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
-    }
-
-    CheckHResult(mSwapChain->Present(1, 0));
+    this->RenderFrame();
 
     WaitMessage();
   }

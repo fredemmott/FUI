@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <core/SkCanvas.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <skia/gpu/GrDirectContext.h>
@@ -74,6 +75,17 @@ class HelloSkiaWindow final {
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
+
+  void RenderFrame();
+
+  /** Not necessary, but just here as an example
+   *
+   * Note that this transitions the back buffer from PRESENT to RENDER_TARGET;
+   * RenderSkiaContent() needs to be aware of this.
+   */
+  void RenderNonSkiaContent(FrameContext& frame);
+  void RenderSkiaContent(FrameContext& frame);
+  void RenderSkiaContent(SkCanvas* canvas);
 
   static LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
