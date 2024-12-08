@@ -15,6 +15,7 @@
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 #include <skia/ports/SkFontMgr_empty.h>
 
+#include <chrono>
 #include <filesystem>
 #include <format>
 #include <source_location>
@@ -183,9 +184,9 @@ void HelloSkiaWindow::InitializeSkia() {
     return;
   }
 
-  auto typeface =
-  SkFontMgr_New_Custom_Empty()->makeFromFile((fontPath / "segoeui.ttf").string().c_str());
-  mSkFont = SkFont { typeface };
+  auto typeface = SkFontMgr_New_Custom_Empty()->makeFromFile(
+    (fontPath / "segoeui.ttf").string().c_str());
+  mSkFont = SkFont {typeface};
 }
 
 void HelloSkiaWindow::CreateCommandListAndAllocators() {
@@ -428,7 +429,11 @@ void HelloSkiaWindow::RenderFrame() {
 }
 
 int HelloSkiaWindow::Run() noexcept {
+  std::chrono::milliseconds frameInterval {1000 / MinimumFrameRate};
+
   while (!mExitCode) {
+    const auto frameStart = std::chrono::steady_clock::now();
+
     MSG msg {};
     while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
       TranslateMessage(&msg);
@@ -440,7 +445,13 @@ int HelloSkiaWindow::Run() noexcept {
 
     this->RenderFrame();
 
-    WaitMessage();
+    const auto frameDuration
+      = std::chrono::steady_clock::now() - frameStart;
+    if (frameDuration > frameInterval) {
+      continue;
+    }
+    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(frameInterval - frameDuration).count();
+    MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
   }
 
   return *mExitCode;
