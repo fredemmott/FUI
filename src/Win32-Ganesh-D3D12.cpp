@@ -36,8 +36,60 @@ static inline void CheckHResult(
   throw std::system_error(ec);
 }
 
+void HelloSkiaWindow::InitializeSkia() {
+  GrD3DBackendContext skiaD3DContext {};
+  skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
+  skiaD3DContext.fDevice.retain(mD3DDevice.get());
+  skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
+  mSkiaContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+}
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   gInstance = this;
+
+  this->CreateNativeWindow(instance);
+  this->InitializeD3D();
+  this->InitializeSkia();
+  this->CreateRenderTargets();
+}
+
+void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
+  const auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
+  const auto height = screenHeight / 2;
+  const auto width = (height * 2) / 3;
+
+  const WNDCLASSW wc {
+    .lpfnWndProc = &WindowProc,
+    .hInstance = instance,
+    .lpszClassName = L"Hello Skia",
+  };
+  const auto classAtom = RegisterClassW(&wc);
+  mHwnd.reset(CreateWindowExW(
+    WS_EX_APPWINDOW | WS_EX_CLIENTEDGE,
+    MAKEINTATOM(classAtom),
+    L"Hello Skia",
+    WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX),
+    CW_USEDEFAULT,
+    CW_USEDEFAULT,
+    width,
+    height,
+    nullptr,
+    nullptr,
+    instance,
+    nullptr));
+
+  if (!mHwnd) {
+    CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
+  }
+}
+
+void HelloSkiaWindow::InitializeD3D() {
+#ifndef NDEBUG
+  wil::com_ptr<ID3D12Debug> d3d12Debug;
+  D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
+  if (d3d12Debug) {
+    d3d12Debug->EnableDebugLayer();
+  }
+#endif
 
   wil::com_ptr<IDXGIFactory4> dxgiFactory;
   {
@@ -48,82 +100,12 @@ HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
     CheckHResult(CreateDXGIFactory2(flags, IID_PPV_ARGS(dxgiFactory.put())));
   }
 
-  const WNDCLASSW wc {
-    .lpfnWndProc = &WindowProc,
-    .hInstance = instance,
-    .lpszClassName = L"HTCC Settings",
-  };
-  const auto classAtom = RegisterClassW(&wc);
-
-  {
-    const auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    const auto height = screenHeight / 2;
-    const auto width = (height * 2) / 3;
-
-    mHwnd.reset(CreateWindowExW(
-      WS_EX_APPWINDOW | WS_EX_CLIENTEDGE,
-      MAKEINTATOM(classAtom),
-      L"HTCC Settings",
-      WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX),
-      CW_USEDEFAULT,
-      CW_USEDEFAULT,
-      width,
-      height,
-      nullptr,
-      nullptr,
-      instance,
-      nullptr));
-  }
-  if (!mHwnd) {
-    throw std::runtime_error(
-      std::format("Failed to create window: {}", GetLastError()));
-  }
-
-#ifndef NDEBUG
-  wil::com_ptr<ID3D12Debug> d3d12Debug;
-  D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
-  if (d3d12Debug) {
-    d3d12Debug->EnableDebugLayer();
-  }
-#endif
-
   CheckHResult(dxgiFactory->EnumAdapters1(0, mDXGIAdapter.put()));
 
   D3D_FEATURE_LEVEL featureLevel {D3D_FEATURE_LEVEL_11_0};
   CheckHResult(D3D12CreateDevice(
     mDXGIAdapter.get(), featureLevel, IID_PPV_ARGS(mD3DDevice.put())));
-#ifndef NDEBUG
-  if (auto infoQueue = mD3DDevice.try_query<ID3D12InfoQueue1>()) {
-    infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-    infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-    infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
-
-    D3D12_MESSAGE_ID skiaIssues[] = {
-      D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
-    };
-    for (const auto id: skiaIssues) {
-      infoQueue->SetBreakOnID(id, false);
-    }
-
-    D3D12_MESSAGE_SEVERITY allowSeverities[] = {
-      D3D12_MESSAGE_SEVERITY_WARNING,
-      D3D12_MESSAGE_SEVERITY_ERROR,
-      D3D12_MESSAGE_SEVERITY_CORRUPTION,
-    };
-
-    D3D12_INFO_QUEUE_FILTER filter {
-        .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
-          .NumSeverities = std::size(allowSeverities),
-          .pSeverityList = allowSeverities,
-        },
-        .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
-          .NumIDs = std::size(skiaIssues),
-          .pIDList = skiaIssues,
-        },
-      };
-    CheckHResult(infoQueue->PushStorageFilter(&filter));
-  }
-#endif
+  this->ConfigureD3DDebugLayer();
 
   CheckHResult(mD3DDevice->CreateFence(
     0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mD3DFence.put())));
@@ -136,20 +118,6 @@ HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
     CheckHResult(mD3DDevice->CreateCommandQueue(
       &desc, IID_PPV_ARGS(mD3DCommandQueue.put())));
   }
-
-  for (auto& frame: mFrames) {
-    CheckHResult(mD3DDevice->CreateCommandAllocator(
-      D3D12_COMMAND_LIST_TYPE_DIRECT,
-      IID_PPV_ARGS(frame.mCommandAllocator.put())));
-  }
-  // We'll reset this to the appropriate command allocator each frame
-  CheckHResult(mD3DDevice->CreateCommandList(
-    0,
-    D3D12_COMMAND_LIST_TYPE_DIRECT,
-    mFrames.front().mCommandAllocator.get(),
-    nullptr,
-    IID_PPV_ARGS(mD3DCommandList.put())));
-  CheckHResult(mD3DCommandList->Close());
 
   {
     D3D12_DESCRIPTOR_HEAP_DESC desc {
@@ -171,6 +139,8 @@ HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
       mD3DDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mD3DSRVHeap.put())));
   }
 
+  this->CreateCommandListAndAllocators();
+
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
     .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
     .SampleDesc = {1, 0},
@@ -189,14 +159,63 @@ HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
     mSwapChain.put()));
   CheckHResult(mSwapChain->GetDesc1(&swapChainDesc));
   mWindowSize = {swapChainDesc.Width, swapChainDesc.Height};
+}
 
-  GrD3DBackendContext skiaD3DContext {};
-  skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
-  skiaD3DContext.fDevice.retain(mD3DDevice.get());
-  skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
-  mSkiaContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+void HelloSkiaWindow::CreateCommandListAndAllocators() {
+  for (auto& frame: mFrames) {
+    CheckHResult(mD3DDevice->CreateCommandAllocator(
+      D3D12_COMMAND_LIST_TYPE_DIRECT,
+      IID_PPV_ARGS(frame.mCommandAllocator.put())));
+  }
+  // We'll reset this to the appropriate command allocator each frame
+  CheckHResult(mD3DDevice->CreateCommandList(
+    0,
+    D3D12_COMMAND_LIST_TYPE_DIRECT,
+    mFrames.front().mCommandAllocator.get(),
+    nullptr,
+    IID_PPV_ARGS(mD3DCommandList.put())));
+  CheckHResult(mD3DCommandList->Close());
+}
 
-  this->CreateRenderTargets();
+
+void HelloSkiaWindow::ConfigureD3DDebugLayer() {
+#ifndef NDEBUG
+  auto infoQueue = mD3DDevice.try_query<ID3D12InfoQueue1>();
+  if (!infoQueue) {
+    return;
+  }
+
+  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+
+  // Skia internally triggers this; explicitly suppress it so we can
+  // keep breaking on everything WARNING or above
+  D3D12_MESSAGE_ID skiaIssues[] = {
+    D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
+  };
+  for (const auto id: skiaIssues) {
+    infoQueue->SetBreakOnID(id, false);
+  }
+
+  D3D12_MESSAGE_SEVERITY allowSeverities[] = {
+    D3D12_MESSAGE_SEVERITY_WARNING,
+    D3D12_MESSAGE_SEVERITY_ERROR,
+    D3D12_MESSAGE_SEVERITY_CORRUPTION,
+  };
+
+  D3D12_INFO_QUEUE_FILTER filter {
+        .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
+          .NumSeverities = std::size(allowSeverities),
+          .pSeverityList = allowSeverities,
+        },
+        .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
+          .NumIDs = std::size(skiaIssues),
+          .pIDList = skiaIssues,
+        },
+      };
+  CheckHResult(infoQueue->PushStorageFilter(&filter));
+#endif
 }
 
 HelloSkiaWindow::~HelloSkiaWindow() {

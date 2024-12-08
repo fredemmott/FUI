@@ -20,6 +20,7 @@ class HelloSkiaWindow final {
   HelloSkiaWindow& operator=(const HelloSkiaWindow&) = delete;
   HelloSkiaWindow& operator=(HelloSkiaWindow&&) = delete;
 
+  void InitializeSkia();
   explicit HelloSkiaWindow(HINSTANCE instance);
   ~HelloSkiaWindow();
 
@@ -65,6 +66,11 @@ class HelloSkiaWindow final {
   };
   uint64_t mFrameCounter {};
   std::array<FrameContext, SwapChainLength> mFrames;
+
+  void CreateNativeWindow(HINSTANCE);
+  void InitializeD3D();
+  void ConfigureD3DDebugLayer();
+  void CreateCommandListAndAllocators();
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
