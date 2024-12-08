@@ -25,6 +25,8 @@ This repostory currently includes examples for:
 
 ## Notes for Win32-Ganesh-D3D12
 
+![A frame counter and other text in a rounded rect](win32-ganesh-d3d12.png)
+
 - Create the Skia context from your D3D12 device/queue with `GrDirectContext::makeDirect3D()`; `.fMemoryAllocator` in the input struct can be `nullptr`
 - to import your swapchain buffers, with `SkSurfaces::WrapBackendRenderTarget()`
 - the `SkSurface`s for the swapchain buffers should have their lifetime managed like the backing `ID3D12Resource`'s - i.e. you need to wait on fences etc before freeing them. Skia does not keep them alive for you
