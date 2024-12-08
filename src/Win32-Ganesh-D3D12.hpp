@@ -31,7 +31,7 @@ class HelloSkiaWindow final {
 
  private:
   static constexpr UINT SwapChainLength = 3;
-  static constexpr UINT MinimumFrameRate = 2;
+  static constexpr UINT MinimumFrameRate = 5;
 
   static HelloSkiaWindow* gInstance;
 
@@ -68,9 +68,10 @@ class HelloSkiaWindow final {
 
     uint64_t mFenceValue {};
   };
-  uint64_t mFrameCounter {};
   std::array<FrameContext, SwapChainLength> mFrames;
   uint8_t mFrameIndex {}; // Used to index into mFrames; reset when buffer reset
+
+  uint64_t mFrameCounter {}; // Displayed to the user, not used for correctness
 
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
