@@ -20,17 +20,24 @@ public:
     return (self->getSize() * USER_DEFAULT_SCREEN_DPI) / 72;
   }
 
-  constexpr operator const SkFont&() const noexcept {
+  operator SkFont() const noexcept {
     return this->Get();
   }
 
-  constexpr auto operator->() const noexcept {
-    return &this->Get();
+  auto operator->() const noexcept {
+    struct wrapper_t {
+      SkFont mFont;
+      auto operator->() const noexcept {
+        return &mFont;
+      }
+    };
+    return wrapper_t { this->Get() };
   }
+
 private:
   std::variant<SystemFont::Usage, SkFont> mVariant;
 
-  constexpr const SkFont& Get() const noexcept {
+  SkFont Get() const noexcept {
     if (std::holds_alternative<SkFont>(mVariant)) {
       return std::get<SkFont>(mVariant);
     }

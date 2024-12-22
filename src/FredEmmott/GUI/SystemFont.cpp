@@ -9,7 +9,32 @@
 
 #include <filesystem>
 
+#include "font.hpp"
+
+#define FUI_SYSTEM_FONT_USAGES(X) \
+  X(Caption) \
+  X(Body) \
+  X(BodyStrong) \
+  X(BodyLarge) \
+  X(Subtitle) \
+  X(Title) \
+  X(TitleLarge) \
+  X(Display)
+
 namespace {
+// Values from
+// https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
+enum class Height : uint16_t {
+  Caption = 16,
+  Body = 20,
+  BodyStrong = 20,
+  BodyLarge = 24,
+  Subtitle = 28,
+  Title = 36,
+  TitleLarge = 52,
+  Display = 92,
+};
+
 std::filesystem::path GetFontsPath() {
   wil::unique_hlocal_string ret;
   SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, std::out_ptr(ret));
@@ -25,15 +50,12 @@ auto LoadTypeface(auto name) {
 const auto gRegularTypeface = LoadTypeface("segoeui.ttf");
 const auto gSemiboldTypeface = LoadTypeface("seguisb.ttf");
 
-template <FredEmmott::GUI::SystemFont::Height THeight>
+template <Height THeight>
 consteval auto PixelsToPoints() {
   return (static_cast<SkScalar>(THeight) * 72) / USER_DEFAULT_SCREEN_DPI;
 }
 
-constexpr auto x
-  = PixelsToPoints<::FredEmmott::GUI::SystemFont::Height::Body>();
-
-template <FredEmmott::GUI::SystemFont::Height THeight>
+template <Height THeight>
 SkFont RegularFont() {
   return {
     gRegularTypeface,
@@ -41,7 +63,7 @@ SkFont RegularFont() {
   };
 }
 
-template <FredEmmott::GUI::SystemFont::Height THeight>
+template <Height THeight>
 SkFont SemiboldFont() {
   return {
     gSemiboldTypeface,
@@ -52,34 +74,31 @@ SkFont SemiboldFont() {
 
 namespace FredEmmott::GUI::SystemFont {
 
-const SkFont Caption = RegularFont<Height::Caption>();
-const SkFont Body = RegularFont<Height::Body>();
-const SkFont BodyStrong = SemiboldFont<Height::BodyStrong>();
-const SkFont BodyLarge = RegularFont<Height::BodyLarge>();
-const SkFont Subtitle = SemiboldFont<Height::Subtitle>();
-const SkFont Title = SemiboldFont<Height::Title>();
-const SkFont TitleLarge = SemiboldFont<Height::TitleLarge>();
-const SkFont Display = SemiboldFont<Height::Display>();
+const SkFont gCaption = RegularFont<Height::Caption>();
+const SkFont gBody = RegularFont<Height::Body>();
+const SkFont gBodyStrong = SemiboldFont<Height::BodyStrong>();
+const SkFont gBodyLarge = RegularFont<Height::BodyLarge>();
+const SkFont gSubtitle = SemiboldFont<Height::Subtitle>();
+const SkFont gTitle = SemiboldFont<Height::Title>();
+const SkFont gTitleLarge = SemiboldFont<Height::TitleLarge>();
+const SkFont gDisplay = SemiboldFont<Height::Display>();
 
-const SkFont& Get(const Usage usage) noexcept {
+Font Get(const Usage usage) noexcept {
   switch (usage) {
-    case Usage::Caption:
-      return Caption;
-    case Usage::Body:
-      return Body;
-    case Usage::BodyStrong:
-      return BodyStrong;
-    case Usage::BodyLarge:
-      return BodyLarge;
-    case Usage::Subtitle:
-      return Subtitle;
-    case Usage::Title:
-      return Title;
-    case Usage::TitleLarge:
-      return TitleLarge;
-    case Usage::Display:
-      return Display;
+#define USAGE_CASE(X) \
+  case Usage::X: \
+    return g##X;
+    FUI_SYSTEM_FONT_USAGES(USAGE_CASE)
+#undef USAGE_CASE
   }
   std::unreachable();
 }
+
+#define DEFINE_FONT_GETTER(X) \
+  Font X() noexcept { \
+    return g##X; \
+  }
+FUI_SYSTEM_FONT_USAGES(DEFINE_FONT_GETTER)
+#undef DEFINE_FONT_GETTER
+
 }// namespace FredEmmott::GUI::SystemFont
