@@ -5,7 +5,7 @@
 
 #include <skia/core/SkRRect.h>
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 Button::Button(std::size_t id, const Options& options, Widget* label)
   : Widget(id), mOptions(options), mLabel(label) {

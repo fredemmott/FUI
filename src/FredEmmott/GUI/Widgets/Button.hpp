@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "Color.hpp"
+#include "../Color.hpp"
 #include "Widget.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 class Button final : public Widget {
  public:
@@ -25,4 +25,4 @@ class Button final : public Widget {
   void SetLayoutConstraints();
 };
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

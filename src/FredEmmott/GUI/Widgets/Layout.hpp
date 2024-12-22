@@ -7,7 +7,7 @@
 
 #include "Widget.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 class Layout : public Widget {
  public:
@@ -20,10 +20,11 @@ class Layout : public Widget {
 
   void Paint(SkCanvas*) const override;
 
-protected:
+ protected:
   using Widget::Widget;
+
  private:
   std::vector<Widget*> mChildren;
 };
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

@@ -7,9 +7,9 @@
 #include <format>
 #include <string>
 
-#include "yoga.hpp"
+#include "../yoga.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
 
 class Widget {
@@ -34,4 +34,4 @@ class Widget {
   unique_ptr<YGNode> mYoga;
 };
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

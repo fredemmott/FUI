@@ -3,7 +3,7 @@
 
 #include "Label.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 void Label::SetLayoutConstraints() {
   const auto width = mOptions.mFont->measureText(
@@ -17,6 +17,7 @@ void Label::SetLayoutConstraints() {
 
 Label::Label(std::size_t id, const Options& options, std::string_view text)
   : Widget(id), mOptions(options), mText(text) {
+  this->SetLayoutConstraints();
 }
 
 void Label::Paint(SkCanvas* canvas) const {
@@ -26,7 +27,7 @@ void Label::Paint(SkCanvas* canvas) const {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(mOptions.mColor);
 
-  SkFontMetrics metrics;
+  SkFontMetrics metrics {};
   mOptions.mFont.GetMetricsInPixels(&metrics);
 
   const auto x = YGNodeLayoutGetLeft(l);
@@ -37,4 +38,4 @@ void Label::Paint(SkCanvas* canvas) const {
   canvas->drawString(mText.c_str(), x, y, mOptions.mFont, paint);
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

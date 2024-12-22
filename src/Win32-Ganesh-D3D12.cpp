@@ -20,12 +20,12 @@
 #include <format>
 #include <source_location>
 
-#include "FredEmmott/GUI/Button.hpp"
-#include "FredEmmott/GUI/Card.hpp"
-#include "FredEmmott/GUI/Label.hpp"
-#include "FredEmmott/GUI/StackLayout.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
-#include "FredEmmott/GUI/Widget.hpp"
+#include "FredEmmott/GUI/Widgets/Button.hpp"
+#include "FredEmmott/GUI/Widgets/Card.hpp"
+#include "FredEmmott/GUI/Widgets/Label.hpp"
+#include "FredEmmott/GUI/Widgets/StackLayout.hpp"
+#include "FredEmmott/GUI/Widgets/Widget.hpp"
 #include "FredEmmott/GUI/yoga.hpp"
 
 static inline void CheckHResult(
@@ -287,25 +287,25 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   const auto it = canvas->imageInfo();
 
   namespace fui = FredEmmott::GUI;
+  namespace fuiw = FredEmmott::GUI::Widgets;
 
   canvas->clear(fui::Color {fui::SystemColor::Background});
 
-  fui::Label framerate({}, {}, std::format("FUI frame {}", mFrameCounter));
-  fui::Label secondLine({}, {}, "Second line");
+  fuiw::Label framerate({}, {}, std::format("FUI frame {}", mFrameCounter));
+  fuiw::Label secondLine({}, {}, "Second line");
 
-  fui::Label buttonLabel(
+  fuiw::Label buttonLabel(
     {},
     {
       .mFont = fui::WidgetFont::ControlContent,
     },
     "Button label");
-  fui::Button button(123, {}, &buttonLabel);
+  fuiw::Button button(123, {}, &buttonLabel);
 
-  fui::StackLayout layout(
-    {}, {}, FredEmmott::GUI::StackLayout::Direction::Vertical);
+  fuiw::StackLayout layout({}, {}, fuiw::StackLayout::Direction::Vertical);
   layout.SetChildren({&framerate, &secondLine, &button});
 
-  fui::Card root({}, {}, &layout);
+  fuiw::Card root({}, {}, &layout);
 
   YGNodeCalculateLayout(
     root.GetLayoutNode(),

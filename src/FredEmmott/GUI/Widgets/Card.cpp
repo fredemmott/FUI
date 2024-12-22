@@ -3,7 +3,7 @@
 
 #include "Card.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 Card::Card(std::size_t id, const Options& options, Widget* child)
   : Widget(id), mOptions(options), mChild(child) {
@@ -28,4 +28,4 @@ void Card::Paint(SkCanvas* canvas) const {
   canvas->restore();
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

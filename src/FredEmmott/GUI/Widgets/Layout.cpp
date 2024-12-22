@@ -3,7 +3,7 @@
 
 #include "Layout.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 void Layout::SetChildren(std::vector<Widget*>&& children) {
   const auto layout = this->GetLayoutNode();
@@ -36,4 +36,4 @@ void Layout::Paint(SkCanvas* canvas) const {
   canvas->restore();
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

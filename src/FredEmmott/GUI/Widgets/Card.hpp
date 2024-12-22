@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "Color.hpp"
+#include "../Color.hpp"
+#include "../WidgetColor.hpp"
 #include "Widget.hpp"
-#include "WidgetColor.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 class Card final : public Widget {
  public:
@@ -22,4 +22,4 @@ class Card final : public Widget {
   Widget* mChild {nullptr};
 };
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

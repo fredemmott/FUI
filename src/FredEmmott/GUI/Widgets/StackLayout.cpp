@@ -3,7 +3,7 @@
 
 #include "StackLayout.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 StackLayout::StackLayout(std::size_t id, const Options&, Direction direction)
   : Layout(id) {
@@ -13,4 +13,4 @@ StackLayout::StackLayout(std::size_t id, const Options&, Direction direction)
                                        : YGFlexDirectionColumn);
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets
