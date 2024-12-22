@@ -7,12 +7,14 @@
 #include <FredEmmott/memory.hpp>
 
 namespace FredEmmott::Memory::extensions {
-
 template <>
 struct deleter<YGNode> {
   void operator()(YGNode* p) const {
     YGNodeFree(p);
   }
 };
-
 }// namespace FredEmmott::Memory::extensions
+
+namespace FredEmmott::GUI {
+using namespace FredEmmott::Memory;
+}

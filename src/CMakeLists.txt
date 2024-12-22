@@ -44,6 +44,8 @@ add_executable(
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/Button.cpp FredEmmott/GUI/Button.hpp
   FredEmmott/GUI/Label.cpp FredEmmott/GUI/Label.hpp
+  FredEmmott/GUI/Layout.cpp FredEmmott/GUI/Layout.hpp
+  FredEmmott/GUI/StackLayout.cpp FredEmmott/GUI/StackLayout.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/Widget.cpp FredEmmott/GUI/Widget.hpp
   FredEmmott/GUI/WidgetColor.cpp FredEmmott/GUI/WidgetColor.hpp

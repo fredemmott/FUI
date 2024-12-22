@@ -45,7 +45,8 @@ void Button::Paint(SkCanvas* canvas) const {
   const auto w = YGNodeLayoutGetWidth(l);
   const auto h = YGNodeLayoutGetHeight(l);
 
-  const auto button = SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), Spacing, Spacing);
+  const auto button
+    = SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), Spacing, Spacing);
 
   SkPaint paint;
   paint.setColor(mOptions.mFillColor);
@@ -54,11 +55,11 @@ void Button::Paint(SkCanvas* canvas) const {
 
   paint.setColor(mOptions.mBorderColor);
   paint.setStyle(SkPaint::kStroke_Style);
-  const auto borderWidth = Spacing/4;
+  const auto borderWidth = Spacing / 4;
   SkRRect border {};
   button.inset(borderWidth / 2.0, borderWidth / 2.0, &border);
   paint.setStrokeWidth(borderWidth);
-  canvas->drawRRect(border , paint);
+  canvas->drawRRect(border, paint);
 
   canvas->save();
   canvas->translate(x, y);

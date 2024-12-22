@@ -23,8 +23,8 @@
 
 #include "FredEmmott/GUI/Button.hpp"
 #include "FredEmmott/GUI/Label.hpp"
+#include "FredEmmott/GUI/StackLayout.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
-#include "FredEmmott/GUI/SystemFont.hpp"
 #include "FredEmmott/GUI/Widget.hpp"
 #include "FredEmmott/GUI/yoga.hpp"
 
@@ -293,22 +293,16 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     const auto w = mWindowSize.mWidth / scale;
     const auto h = mWindowSize.mHeight / scale;
     SkPaint paint;
-    paint.setColor(fui::Color { fui::WidgetColor::CardBackgroundFillDefault});
+    paint.setColor(fui::Color {fui::WidgetColor::CardBackgroundFillDefault});
 
-    canvas->drawRoundRect(
-      SkRect::MakeIWH(w, h),
-      8,
-      8,
-      paint);
+    canvas->drawRoundRect(SkRect::MakeIWH(w, h), 8, 8, paint);
   }
 
-  fui::unique_ptr<YGNode> root {YGNodeNew()};
-  YGNodeStyleSetFlexDirection(root.get(), YGFlexDirectionColumn);
+  fui::StackLayout root(
+    {}, {}, FredEmmott::GUI::StackLayout::Direction::Vertical);
 
   fui::Label framerate({}, "FUI frame {}##FrameCounter", mFrameCounter);
   fui::Label secondLine({}, "Second line");
-  YGNodeInsertChild(root.get(), framerate.GetLayoutNode(), 0);
-  YGNodeInsertChild(root.get(), secondLine.GetLayoutNode(), 1);
 
   fui::Label buttonLabel(
     {
@@ -316,17 +310,16 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     },
     "Button label");
   fui::Button button(123, {}, &buttonLabel);
-  YGNodeInsertChild(root.get(), button.GetLayoutNode(), 2);
+
+  root.SetChildren({&framerate, &secondLine, &button});
 
   YGNodeCalculateLayout(
-    root.get(),
+    root.GetLayoutNode(),
     mWindowSize.mWidth / scale,
     mWindowSize.mHeight / scale,
     YGDirectionLTR);
 
-  framerate.Paint(canvas);
-  secondLine.Paint(canvas);
-  button.Paint(canvas);
+  root.Paint(canvas);
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
