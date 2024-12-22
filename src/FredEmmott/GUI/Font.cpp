@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 #include "Font.hpp"
+#include "detail/font_detail.hpp"
+
+using namespace FredEmmott::GUI::font_detail;
 
 namespace FredEmmott::GUI {
 
-static SkScalar PointsToPixels(SkScalar points) {
-  return std::round((points * USER_DEFAULT_SCREEN_DPI) / 72);
-}
 
 Font::Font(const SkFont& f): mFont(f), mMetricsInPixels(f) {}
 

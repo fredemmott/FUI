@@ -11,6 +11,7 @@ class Button final : public Widget {
  public:
   struct Options {
     Color mFillColor { WidgetColor::ControlFillDefault };
+    Color mBorderColor { WidgetColor::ControlElevationBorder };
   };
 
   Button(std::size_t id, const Options&, Widget* label);

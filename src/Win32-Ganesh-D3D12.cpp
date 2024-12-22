@@ -288,7 +288,19 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
   namespace fui = FredEmmott::GUI;
 
-  canvas->clear(fui::Color { fui::WidgetColor::CardBackgroundFillDefault});
+  canvas->clear(fui::Color {fui::SystemColor::Background});
+  {
+    const auto w = mWindowSize.mWidth / scale;
+    const auto h = mWindowSize.mHeight / scale;
+    SkPaint paint;
+    paint.setColor(fui::Color { fui::WidgetColor::CardBackgroundFillDefault});
+
+    canvas->drawRoundRect(
+      SkRect::MakeIWH(w, h),
+      8,
+      8,
+      paint);
+  }
 
   fui::unique_ptr<YGNode> root {YGNodeNew()};
   YGNodeStyleSetFlexDirection(root.get(), YGFlexDirectionColumn);
@@ -298,7 +310,11 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   YGNodeInsertChild(root.get(), framerate.GetLayoutNode(), 0);
   YGNodeInsertChild(root.get(), secondLine.GetLayoutNode(), 1);
 
-  fui::Label buttonLabel({}, "Button label");
+  fui::Label buttonLabel(
+    {
+      .mFont = fui::WidgetFont::ControlContent,
+    },
+    "Button label");
   fui::Button button(123, {}, &buttonLabel);
   YGNodeInsertChild(root.get(), button.GetLayoutNode(), 2);
 

@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "SystemFont.hpp"
 #include <skia/core/SkFontMetrics.h>
-#include <optional>
+
+#include "SystemFont.hpp"
+#include "WidgetFont.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -13,6 +14,8 @@ class Font {
   Font() = delete;
 
   Font(SystemFont::Usage usage) : Font(Resolve(usage)) {
+  }
+  Font(WidgetFont::Usage usage) : Font(Resolve(usage)) {
   }
 
   Font(const SkFont& f);

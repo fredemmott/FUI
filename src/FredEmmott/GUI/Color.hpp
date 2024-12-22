@@ -21,6 +21,11 @@ class Color {
   constexpr Color(SystemColor::Usage u) : mVariant(u) {
   }
 
+  Color operator*(std::floating_point auto alpha) const noexcept {
+    const auto self = this->Resolve();
+    return SkColorSetA(self, alpha * SkColorGetA(self));
+  }
+
   constexpr operator SkColor() const noexcept {
     return this->Resolve();
   }

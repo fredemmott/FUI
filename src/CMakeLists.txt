@@ -47,6 +47,7 @@ add_executable(
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/Widget.cpp FredEmmott/GUI/Widget.hpp
   FredEmmott/GUI/WidgetColor.cpp FredEmmott/GUI/WidgetColor.hpp
+  FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

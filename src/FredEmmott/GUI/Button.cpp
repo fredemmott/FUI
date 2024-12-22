@@ -16,7 +16,8 @@ Button::Button(std::size_t id, const Options& options, Widget* label)
 void Button::SetLayoutConstraints() {
   const auto self = this->GetLayoutNode();
   const auto label = mLabel->GetLayoutNode();
-  YGNodeStyleSetPadding(self, YGEdgeAll, Spacing * 2);
+  YGNodeStyleSetPadding(self, YGEdgeHorizontal, Spacing * 3);
+  YGNodeStyleSetPadding(self, YGEdgeVertical, Spacing);
 
   // TODO (Yoga 3.3+ ?): use YGNodeStyle*FitContent()
   YGNodeStyleSetBoxSizing(self, YGBoxSizingContentBox);
@@ -44,10 +45,20 @@ void Button::Paint(SkCanvas* canvas) const {
   const auto w = YGNodeLayoutGetWidth(l);
   const auto h = YGNodeLayoutGetHeight(l);
 
+  const auto button = SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), Spacing, Spacing);
+
   SkPaint paint;
   paint.setColor(mOptions.mFillColor);
-  canvas->drawRoundRect(
-    SkRect::MakeXYWH(x, y, w, h), Spacing * 2, Spacing * 2, paint);
+  paint.setAntiAlias(true);
+  canvas->drawRRect(button, paint);
+
+  paint.setColor(mOptions.mBorderColor);
+  paint.setStyle(SkPaint::kStroke_Style);
+  const auto borderWidth = Spacing/4;
+  SkRRect border {};
+  button.inset(borderWidth / 2.0, borderWidth / 2.0, &border);
+  paint.setStrokeWidth(borderWidth);
+  canvas->drawRRect(border , paint);
 
   canvas->save();
   canvas->translate(x, y);

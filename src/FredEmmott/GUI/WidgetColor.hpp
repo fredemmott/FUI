@@ -9,6 +9,7 @@ class Color;
 namespace FredEmmott::GUI::WidgetColor {
 enum class Usage {
   CardBackgroundFillDefault,
+  ControlElevationBorder,
   ControlFillDefault,
 };
 using enum Usage;

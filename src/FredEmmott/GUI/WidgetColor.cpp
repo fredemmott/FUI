@@ -7,13 +7,14 @@
 
 namespace FredEmmott::GUI::WidgetColor {
 
-Color Resolve(Usage usage) noexcept {
-  constexpr auto background = Color {SystemColor::Background};
+Color Resolve(const Usage usage) noexcept {
   switch (usage) {
+    case ControlElevationBorder:
+      return Color { SystemColor::Foreground } * (0x08 / 255.0);
     case CardBackgroundFillDefault:
-      return background.MixIn(0.167, SystemColor::Foreground);
+      return Color { SystemColor::Foreground } * (0x27 / 255.0);
     case ControlFillDefault:
-      return background.MixIn(0.22, SystemColor::Foreground);
+      return Color { SystemColor::Foreground } * (0x16 / 255.0);
   }
   std::unreachable();
 }

@@ -9,7 +9,10 @@
 
 #include <filesystem>
 
+#include "detail/font_detail.hpp"
 #include "font.hpp"
+
+using namespace FredEmmott::GUI::font_detail;
 
 #define FUI_SYSTEM_FONT_USAGES(X) \
   X(Caption) \
@@ -51,15 +54,10 @@ const auto gRegularTypeface = LoadTypeface("segoeui.ttf");
 const auto gSemiboldTypeface = LoadTypeface("seguisb.ttf");
 
 template <Height THeight>
-consteval auto PixelsToPoints() {
-  return (static_cast<SkScalar>(THeight) * 72) / USER_DEFAULT_SCREEN_DPI;
-}
-
-template <Height THeight>
 SkFont RegularFont() {
   return {
     gRegularTypeface,
-    PixelsToPoints<THeight>(),
+    PixelsToPoints(THeight),
   };
 }
 
@@ -67,7 +65,7 @@ template <Height THeight>
 SkFont SemiboldFont() {
   return {
     gSemiboldTypeface,
-    PixelsToPoints<THeight>(),
+    PixelsToPoints(THeight),
   };
 }
 }// namespace

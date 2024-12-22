@@ -5,9 +5,10 @@
 
 namespace FredEmmott::GUI {
 
-Color Color::MixIn(SkScalar rhsRatio, const Color& rhs) const noexcept {
+Color Color::MixIn(SkScalar rhsRatio, const Color& other) const noexcept {
   const auto lhsRatio = 1 - rhsRatio;
   const auto lhs = this->Resolve();
+  const auto rhs = other.Resolve();
   return SkColorSetARGB(
     (SkColorGetA(lhs) * lhsRatio) + (SkColorGetA(rhs) * rhsRatio),
     (SkColorGetR(lhs) * lhsRatio) + (SkColorGetR(rhs) * rhsRatio),
