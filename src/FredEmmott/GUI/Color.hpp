@@ -8,7 +8,13 @@
 
 namespace FredEmmott::GUI {
 
-struct Color : std::variant<SystemColor::Usage, SkColor> {
+struct Color : private std::variant<SystemColor::Usage, SkColor> {
+  Color() = delete;
+  explicit Color(SystemColor::Usage u) : variant(u) {
+  }
+  explicit Color(SkColor color) : variant(color) {
+  }
+
   const SkColor& Get(this const auto& self) noexcept {
     if (std::holds_alternative<SkColor>(self)) {
       return std::get<SkColor>(self);
@@ -25,4 +31,4 @@ struct Color : std::variant<SystemColor::Usage, SkColor> {
   }
 };
 
-}
+}// namespace FredEmmott::GUI

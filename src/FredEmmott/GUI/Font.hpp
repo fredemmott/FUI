@@ -8,14 +8,19 @@
 
 namespace FredEmmott::GUI {
 
-struct Font: std::variant<SystemFont::Usage, SkFont> {
+struct Font : private std::variant<SystemFont::Usage, SkFont> {
+  Font() = delete;
+  explicit Font(SystemFont::Usage usage) : variant(usage) {
+  }
+  explicit Font(const SkFont& f) : variant(f) {
+  }
+
   const SkFont& Get(this const auto& self) noexcept {
     if (std::holds_alternative<SkFont>(self)) {
       return std::get<SkFont>(self);
     }
     return SystemFont::Get(std::get<SystemFont::Usage>(self));
   }
-
 
   SkScalar GetPixelHeight(this const auto& self) noexcept {
     return (self->getSize() * USER_DEFAULT_SCREEN_DPI) / 72;
@@ -30,4 +35,4 @@ struct Font: std::variant<SystemFont::Usage, SkFont> {
   }
 };
 
-}
+}// namespace FredEmmott::GUI
