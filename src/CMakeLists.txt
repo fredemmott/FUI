@@ -1,6 +1,5 @@
 find_package(unofficial-skia CONFIG REQUIRED)
 find_package(yoga CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
 
 # Add our own target to do some changes
 add_library(skia INTERFACE)
@@ -53,7 +52,6 @@ target_link_libraries(
   PRIVATE
   skia
   yoga::yogacore
-  magic_enum::magic_enum
 )
 target_compile_definitions(
   HelloSkia-Win32-Ganesh-D3D12

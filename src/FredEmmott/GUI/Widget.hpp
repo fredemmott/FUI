@@ -12,8 +12,6 @@
 namespace FredEmmott::GUI {
 using namespace FredEmmott::Memory;
 
-class SystemColor;
-
 class Widget {
  public:
   Widget() = delete;

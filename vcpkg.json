@@ -9,7 +9,6 @@
         "freetype"
       ]
     },
-    "yoga",
-    "magic-enum"
+    "yoga"
   ]
 }
