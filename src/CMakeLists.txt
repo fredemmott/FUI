@@ -1,4 +1,6 @@
 find_package(unofficial-skia CONFIG REQUIRED)
+find_package(yoga CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
 
 # Add our own target to do some changes
 add_library(skia INTERFACE)
@@ -34,14 +36,29 @@ add_executable(
   WIN32
   Win32-Ganesh-D3D12.cpp
   Win32-Ganesh-D3D12.hpp
+
+  FredEmmott/memory.hpp
+  FredEmmott/memory/detail.hpp
+  FredEmmott/GUI/yoga.hpp
+  FredEmmott/GUI/Colors.cpp FredEmmott/GUI/Colors.hpp
+  FredEmmott/GUI/SystemFont.cpp
+  FredEmmott/GUI/SystemFont.hpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12
   PRIVATE
   skia
+  yoga::yogacore
+  magic_enum::magic_enum
 )
 target_compile_definitions(
   HelloSkia-Win32-Ganesh-D3D12
   PRIVATE
   "UNICODE=1"
+  "_UNICODE=1"
+)
+target_include_directories(
+  HelloSkia-Win32-Ganesh-D3D12
+  PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}"
 )

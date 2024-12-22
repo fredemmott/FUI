@@ -8,6 +8,8 @@
         "direct3d",
         "freetype"
       ]
-    }
+    },
+    "yoga",
+    "magic-enum"
   ]
 }

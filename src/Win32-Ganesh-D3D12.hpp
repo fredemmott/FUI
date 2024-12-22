@@ -38,6 +38,7 @@ class HelloSkiaWindow final {
   wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;
 
+  UINT mDPI { USER_DEFAULT_SCREEN_DPI };
   struct PixelSize {
     UINT mWidth {};
     UINT mHeight {};
@@ -58,7 +59,6 @@ class HelloSkiaWindow final {
   uint64_t mFenceValue = 0;
 
   sk_sp<GrDirectContext> mSkContext;
-  SkFont mSkFont;
 
   struct FrameContext {
     wil::com_ptr<ID3D12CommandAllocator> mCommandAllocator;

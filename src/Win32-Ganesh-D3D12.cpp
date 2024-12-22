@@ -20,6 +20,10 @@
 #include <format>
 #include <source_location>
 
+#include "FredEmmott/GUI/Colors.hpp"
+#include "FredEmmott/GUI/SystemFont.hpp"
+#include "FredEmmott/GUI/yoga.hpp"
+
 static inline void CheckHResult(
   const HRESULT ret,
   const std::source_location& caller = std::source_location::current()) {
@@ -56,6 +60,8 @@ std::filesystem::path GetKnownFolderPath() {
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   gInstance = this;
 
+  FredEmmott::GUI::Colors colors;
+
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
   this->InitializeSkia();
@@ -89,7 +95,10 @@ void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
 
   if (!mHwnd) {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
+    return;
   }
+
+  mDPI = GetDpiForWindow(mHwnd.get());
 }
 
 void HelloSkiaWindow::InitializeD3D() {
@@ -178,15 +187,6 @@ void HelloSkiaWindow::InitializeSkia() {
   skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
   // skiaD3DContext.fMemoryAllocator can be left as nullptr
   mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
-
-  auto fontPath = GetKnownFolderPath<FOLDERID_Fonts>();
-  if (fontPath.empty()) {
-    return;
-  }
-
-  auto typeface = SkFontMgr_New_Custom_Empty()->makeFromFile(
-    (fontPath / "segoeui.ttf").string().c_str());
-  mSkFont = SkFont {typeface};
 }
 
 void HelloSkiaWindow::CreateCommandListAndAllocators() {
@@ -325,6 +325,12 @@ void HelloSkiaWindow::RenderNonSkiaContent(FrameContext& frame) {
 }
 
 void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
+  canvas->resetMatrix();
+
+  const auto scale = static_cast<float>(mDPI) / USER_DEFAULT_SCREEN_DPI;
+  canvas->scale(scale, scale);
+  const auto it = canvas->imageInfo();
+
   static constexpr auto strokeWidth = 2;
   SkPaint paint;
   paint.setColor(SkColorSetRGB(0x66, 0x66, 0xcc));
@@ -338,13 +344,29 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     paint);
 
   paint.setStyle(SkPaint::kFill_Style);
+
+  SkScalar x = 40;
+  SkScalar y = 40;
+
+  namespace fui = FredEmmott::GUI;
+
+  const auto height = fui::SystemFont::Body.measureText("gypq", 4, SkTextEncoding::kUTF8);
+
   canvas->drawString(
-    std::format("Hello Skia: Win32+Ganesh+D3D12 frame {}", mFrameCounter)
+    std::format("gypq {}", mFrameCounter)
       .c_str(),
-    40,
-    40,
-    mSkFont,
+    x,
+    y,
+    fui::SystemFont::Body,
     paint);
+  y += static_cast<SkScalar>(fui::SystemFont::Height::Body);
+  canvas->drawString(
+    "line 2",
+    x,
+    y,
+    fui::SystemFont::Body,
+    paint);
+
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
@@ -458,14 +480,23 @@ HelloSkiaWindow::WindowProc(
   UINT uMsg,
   WPARAM wParam,
   LPARAM lParam) noexcept {
-  if (uMsg == WM_SIZE) {
-    const UINT width = LOWORD(lParam);
-    const UINT height = HIWORD(lParam);
-    gInstance->mPendingResize = PixelSize {width, height};
-    return 0;
-  }
-  if (uMsg == WM_CLOSE) {
-    gInstance->mExitCode = 0;
+  switch (uMsg) {
+    case WM_SIZE: {
+      const UINT width = LOWORD(lParam);
+      const UINT height = HIWORD(lParam);
+      gInstance->mPendingResize = PixelSize {width, height};
+      return 0;
+    }
+    case WM_DPICHANGED: {
+      const auto newDPI = HIWORD(wParam);
+      // TODO: lParam is a RECT that we *should* use
+      OutputDebugStringA(std::format("DPI change: {} -> {}\n", gInstance->mDPI, newDPI).c_str());
+      gInstance->mDPI = newDPI;
+      break;
+    }
+    case WM_CLOSE:
+      gInstance->mExitCode = 0;
+      break;
   }
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
@@ -496,6 +527,7 @@ int WINAPI wWinMain(
   LPWSTR lpCmdLine,
   int nCmdShow) {
   CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
   HelloSkiaWindow app(hInstance);
   ShowWindow(app.GetHWND(), nCmdShow);
   return app.Run();
