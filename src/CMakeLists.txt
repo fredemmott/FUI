@@ -43,6 +43,7 @@ add_executable(
   FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp
   FredEmmott/GUI/Color.cpp FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.hpp
+  FredEmmott/GUI/Button.cpp FredEmmott/GUI/Button.hpp
   FredEmmott/GUI/Label.cpp FredEmmott/GUI/Label.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/Widget.cpp FredEmmott/GUI/Widget.hpp

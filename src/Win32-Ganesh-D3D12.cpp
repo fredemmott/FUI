@@ -21,6 +21,7 @@
 #include <format>
 #include <source_location>
 
+#include "FredEmmott/GUI/Button.hpp"
 #include "FredEmmott/GUI/Label.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
 #include "FredEmmott/GUI/SystemFont.hpp"
@@ -288,7 +289,8 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   namespace fui = FredEmmott::GUI;
   const auto colors = fui::SystemColor::Get();
 
-  const auto frameBackground = fui::Color { colors.Background() }.MixIn(0.167, colors.Foreground());
+  const auto frameBackground
+    = fui::Color {colors.Background()}.MixIn(0.167, colors.Foreground());
   canvas->clear(frameBackground);
 
   fui::unique_ptr<YGNode> root {YGNodeNew()};
@@ -299,6 +301,10 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   YGNodeInsertChild(root.get(), framerate.GetLayoutNode(), 0);
   YGNodeInsertChild(root.get(), secondLine.GetLayoutNode(), 1);
 
+  fui::Label buttonLabel({}, "Button label");
+  fui::Button button(123, {}, &buttonLabel);
+  YGNodeInsertChild(root.get(), button.GetLayoutNode(), 2);
+
   YGNodeCalculateLayout(
     root.get(),
     mWindowSize.mWidth / scale,
@@ -307,6 +313,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
   framerate.Paint(canvas);
   secondLine.Paint(canvas);
+  button.Paint(canvas);
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {

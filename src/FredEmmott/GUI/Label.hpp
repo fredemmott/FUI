@@ -18,7 +18,7 @@ class Label final : public Widget {
   };
 
   template <class... Args>
-  explicit Label(
+  Label(
     const Options& options,
     std::format_string<Args...> format,
     Args&&... args)

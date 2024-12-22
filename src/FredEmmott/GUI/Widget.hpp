@@ -26,6 +26,9 @@ class Widget {
   virtual void Paint(SkCanvas*) const = 0;
 
  protected:
+  // Base spacing unit - see https://fluent2.microsoft.design/layout
+  static constexpr SkScalar Spacing = 4;
+
   explicit Widget(std::size_t id);
   explicit Widget(std::string_view id) : Widget(StringToId(id)) {
   }
