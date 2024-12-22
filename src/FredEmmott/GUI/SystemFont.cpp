@@ -83,7 +83,7 @@ const SkFont gTitle = SemiboldFont<Height::Title>();
 const SkFont gTitleLarge = SemiboldFont<Height::TitleLarge>();
 const SkFont gDisplay = SemiboldFont<Height::Display>();
 
-Font Get(const Usage usage) noexcept {
+Font Resolve(const Usage usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X) \
   case Usage::X: \

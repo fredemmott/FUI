@@ -53,7 +53,7 @@ void Store::Populate(SkColor* p, const UIColorType type) const {
 
 static Store gStore;
 
-Color Get(const Usage usage) noexcept {
+Color Resolve(const Usage usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X) \
   case Usage::X: \

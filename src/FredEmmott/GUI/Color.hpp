@@ -29,7 +29,7 @@ class Color {
     if (std::holds_alternative<SkColor>(mVariant)) {
       return std::get<SkColor>(mVariant);
     }
-    return SystemColor::Get(std::get<SystemColor::Usage>(mVariant));
+    return SystemColor::Resolve(std::get<SystemColor::Usage>(mVariant));
   }
 };
 

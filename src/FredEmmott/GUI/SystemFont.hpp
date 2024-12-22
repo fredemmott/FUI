@@ -25,7 +25,7 @@ enum class Usage {
   Display,
 };
 
-Font Get(Usage) noexcept;
+Font Resolve(Usage) noexcept;
 
 Font Caption() noexcept;
 Font Body() noexcept;

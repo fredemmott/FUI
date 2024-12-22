@@ -25,7 +25,7 @@ enum class Usage {
   AccentLight3,
 };
 
-Color Get(Usage usage) noexcept;
+Color Resolve(Usage usage) noexcept;
 
 Color Background() noexcept;
 Color Foreground() noexcept;

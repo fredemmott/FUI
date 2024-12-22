@@ -10,7 +10,7 @@ class Font {
  public:
   Font() = delete;
 
-  Font(SystemFont::Usage usage) : mFont(Get(usage)) {
+  Font(SystemFont::Usage usage) : mFont(Resolve(usage)) {
   }
 
   Font(const SkFont& f) : mFont(f) {
