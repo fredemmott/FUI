@@ -3,6 +3,8 @@
 #pragma once
 
 #include "SystemFont.hpp"
+#include <skia/core/SkFontMetrics.h>
+#include <optional>
 
 namespace FredEmmott::GUI {
 
@@ -10,15 +12,16 @@ class Font {
  public:
   Font() = delete;
 
-  Font(SystemFont::Usage usage) : mFont(Resolve(usage)) {
+  Font(SystemFont::Usage usage) : Font(Resolve(usage)) {
   }
 
-  Font(const SkFont& f) : mFont(f) {
-  }
+  Font(const SkFont& f);
 
-  SkScalar GetPixelHeight(this const auto& self) noexcept {
+  SkScalar GetHeightInPixels(this const auto& self) noexcept {
     return (self->getSize() * USER_DEFAULT_SCREEN_DPI) / 72;
   }
+
+  SkScalar GetMetricsInPixels(SkFontMetrics* metrics) const;
 
   operator SkFont() const noexcept {
     return mFont;
@@ -29,7 +32,16 @@ class Font {
   }
 
  private:
+  struct MetricsInPixels {
+    MetricsInPixels() = delete;
+    MetricsInPixels(const SkFont&);
+
+    SkScalar mLineSpacing {};
+    SkFontMetrics mMetrics {};
+  };
+
   SkFont mFont;
+  MetricsInPixels mMetricsInPixels;
 };
 
 }// namespace FredEmmott::GUI
