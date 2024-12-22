@@ -15,6 +15,10 @@ void Label::SetLayoutConstraints() {
   YGNodeStyleSetHeight(l, height);
 }
 
+Label::Label(std::size_t id, const Options& options, std::string_view text)
+  : Widget(id), mOptions(options), mText(text) {
+}
+
 void Label::Paint(SkCanvas* canvas) const {
   const auto l = this->GetLayoutNode();
 
@@ -30,11 +34,7 @@ void Label::Paint(SkCanvas* canvas) const {
   const auto height = YGNodeLayoutGetHeight(l) - metrics.fDescent;
   const auto y = top + height;
 
-  canvas->drawString(
-    mText.c_str(),
-    x, y,
-    mOptions.mFont,
-    paint);
+  canvas->drawString(mText.c_str(), x, y, mOptions.mFont, paint);
 }
 
 }// namespace FredEmmott::GUI

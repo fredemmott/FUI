@@ -290,10 +290,11 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
   canvas->clear(fui::Color {fui::SystemColor::Background});
 
-  fui::Label framerate({}, "FUI frame {}##FrameCounter", mFrameCounter);
-  fui::Label secondLine({}, "Second line");
+  fui::Label framerate({}, {}, std::format("FUI frame {}", mFrameCounter));
+  fui::Label secondLine({}, {}, "Second line");
 
   fui::Label buttonLabel(
+    {},
     {
       .mFont = fui::WidgetFont::ControlContent,
     },
