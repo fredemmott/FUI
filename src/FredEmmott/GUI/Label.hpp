@@ -13,8 +13,8 @@ namespace FredEmmott::GUI {
 class Label final : public Widget {
  public:
   struct Options {
-    Font mFont {SystemFont::Usage::Body};
-    Color mColor {SystemColor::Usage::Foreground};
+    Font mFont {SystemFont::Body};
+    Color mColor {SystemColor::Foreground};
   };
 
   template <class... Args>

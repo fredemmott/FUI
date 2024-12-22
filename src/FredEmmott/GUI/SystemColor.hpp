@@ -24,17 +24,8 @@ enum class Usage {
   AccentLight2,
   AccentLight3,
 };
+using enum Usage;
 
 Color Resolve(Usage usage) noexcept;
-
-Color Background() noexcept;
-Color Foreground() noexcept;
-Color AccentDark3() noexcept;
-Color AccentDark2() noexcept;
-Color AccentDark1() noexcept;
-Color Accent() noexcept;
-Color AccentLight1() noexcept;
-Color AccentLight2() noexcept;
-Color AccentLight3() noexcept;
 
 }// namespace FredEmmott::GUI::SystemColor

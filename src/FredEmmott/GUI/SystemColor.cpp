@@ -64,11 +64,4 @@ Color Resolve(const Usage usage) noexcept {
   std::unreachable();
 }
 
-#define DEFINE_CONVENIENCE_ACCESSOR(X) \
-  Color X() noexcept { \
-    return { Usage::X }; \
-  }
-FUI_SYSTEM_COLOR_USAGES(DEFINE_CONVENIENCE_ACCESSOR)
-#undef DEFINE_CONVENIENCE_ACCESSOR
-
 }// namespace FredEmmott::GUI::SystemColor

@@ -94,11 +94,4 @@ Font Resolve(const Usage usage) noexcept {
   std::unreachable();
 }
 
-#define DEFINE_FONT_GETTER(X) \
-  Font X() noexcept { \
-    return g##X; \
-  }
-FUI_SYSTEM_FONT_USAGES(DEFINE_FONT_GETTER)
-#undef DEFINE_FONT_GETTER
-
 }// namespace FredEmmott::GUI::SystemFont

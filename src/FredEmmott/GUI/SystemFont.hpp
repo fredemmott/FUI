@@ -13,7 +13,6 @@ class Font;
 namespace FredEmmott::GUI::SystemFont {
 
 // https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
-
 enum class Usage {
   Caption,
   Body,
@@ -24,16 +23,8 @@ enum class Usage {
   TitleLarge,
   Display,
 };
+using enum Usage;
 
 Font Resolve(Usage) noexcept;
-
-Font Caption() noexcept;
-Font Body() noexcept;
-Font BodyStrong() noexcept;
-Font BodyLarge() noexcept;
-Font Subtitle() noexcept;
-Font Title() noexcept;
-Font TitleLarge() noexcept;
-Font Display() noexcept;
 
 }// namespace FredEmmott::GUI::SystemFont
