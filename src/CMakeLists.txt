@@ -36,20 +36,21 @@ add_executable(
   Win32-Ganesh-D3D12.cpp
   Win32-Ganesh-D3D12.hpp
 
-  FredEmmott/memory.hpp
-  FredEmmott/memory/memory_detail.hpp
-  FredEmmott/GUI/yoga.hpp
-  FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp
+  FredEmmott/GUI/Button.cpp FredEmmott/GUI/Button.hpp
+  FredEmmott/GUI/Card.cpp FredEmmott/GUI/Card.hpp
   FredEmmott/GUI/Color.cpp FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
-  FredEmmott/GUI/Button.cpp FredEmmott/GUI/Button.hpp
   FredEmmott/GUI/Label.cpp FredEmmott/GUI/Label.hpp
   FredEmmott/GUI/Layout.cpp FredEmmott/GUI/Layout.hpp
   FredEmmott/GUI/StackLayout.cpp FredEmmott/GUI/StackLayout.hpp
+  FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/Widget.cpp FredEmmott/GUI/Widget.hpp
   FredEmmott/GUI/WidgetColor.cpp FredEmmott/GUI/WidgetColor.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
+  FredEmmott/GUI/yoga.hpp
+  FredEmmott/memory.hpp
+  FredEmmott/memory/memory_detail.hpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

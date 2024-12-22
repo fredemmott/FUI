@@ -7,7 +7,6 @@
 #include <skia/core/SkCanvas.h>
 #include <skia/core/SkColor.h>
 #include <skia/core/SkColorSpace.h>
-#include <skia/core/SkFontMgr.h>
 #include <skia/core/SkImageInfo.h>
 #include <skia/gpu/GrBackendSemaphore.h>
 #include <skia/gpu/GrBackendSurface.h>
@@ -22,6 +21,7 @@
 #include <source_location>
 
 #include "FredEmmott/GUI/Button.hpp"
+#include "FredEmmott/GUI/Card.hpp"
 #include "FredEmmott/GUI/Label.hpp"
 #include "FredEmmott/GUI/StackLayout.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
@@ -289,17 +289,6 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   namespace fui = FredEmmott::GUI;
 
   canvas->clear(fui::Color {fui::SystemColor::Background});
-  {
-    const auto w = mWindowSize.mWidth / scale;
-    const auto h = mWindowSize.mHeight / scale;
-    SkPaint paint;
-    paint.setColor(fui::Color {fui::WidgetColor::CardBackgroundFillDefault});
-
-    canvas->drawRoundRect(SkRect::MakeIWH(w, h), 8, 8, paint);
-  }
-
-  fui::StackLayout root(
-    {}, {}, FredEmmott::GUI::StackLayout::Direction::Vertical);
 
   fui::Label framerate({}, "FUI frame {}##FrameCounter", mFrameCounter);
   fui::Label secondLine({}, "Second line");
@@ -311,7 +300,11 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     "Button label");
   fui::Button button(123, {}, &buttonLabel);
 
-  root.SetChildren({&framerate, &secondLine, &button});
+  fui::StackLayout layout(
+    {}, {}, FredEmmott::GUI::StackLayout::Direction::Vertical);
+  layout.SetChildren({&framerate, &secondLine, &button});
+
+  fui::Card root({}, {}, &layout);
 
   YGNodeCalculateLayout(
     root.GetLayoutNode(),

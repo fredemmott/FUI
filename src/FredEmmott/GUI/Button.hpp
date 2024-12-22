@@ -10,8 +10,8 @@ namespace FredEmmott::GUI {
 class Button final : public Widget {
  public:
   struct Options {
-    Color mFillColor { WidgetColor::ControlFillDefault };
-    Color mBorderColor { WidgetColor::ControlElevationBorder };
+    Color mFillColor {WidgetColor::ControlFillDefault};
+    Color mBorderColor {WidgetColor::ControlElevationBorder};
   };
 
   Button(std::size_t id, const Options&, Widget* label);
@@ -20,7 +20,7 @@ class Button final : public Widget {
 
  private:
   Options mOptions;
-  Widget* mLabel { nullptr };
+  Widget* mLabel {nullptr};
 
   void SetLayoutConstraints();
 };
