@@ -288,9 +288,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
   namespace fui = FredEmmott::GUI;
 
-  const auto frameBackground = fui::Color {fui::SystemColor::Background}.MixIn(
-    0.167, fui::Color {fui::SystemColor::Foreground});
-  canvas->clear(frameBackground);
+  canvas->clear(fui::Color { fui::WidgetColor::CardBackgroundFillDefault});
 
   fui::unique_ptr<YGNode> root {YGNodeNew()};
   YGNodeStyleSetFlexDirection(root.get(), YGFlexDirectionColumn);

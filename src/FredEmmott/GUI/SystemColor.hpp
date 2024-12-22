@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkColor.h>
-
 namespace FredEmmott::GUI {
 class Color;
 }// namespace FredEmmott::GUI
