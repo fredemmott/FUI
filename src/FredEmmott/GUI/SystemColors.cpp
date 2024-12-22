@@ -1,25 +1,25 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include "Colors.hpp"
-
 #include <winrt/windows.ui.viewmanagement.h>
 
 #include <magic_enum.hpp>
 #include <magic_enum_utility.hpp>
 
+#include "SystemColors.hpp"
+
 using namespace winrt::Windows::UI::ViewManagement;
 
 namespace FredEmmott::GUI {
-Colors::Colors() {
+SystemColors::SystemColors() {
   this->Populate();
 }
 
-SkColor Colors::Get(const Usage usage) const noexcept {
+SkColor SystemColors::Get(const Usage usage) const noexcept {
   return mColors.at(usage);
 }
 
-void Colors::Populate() {
+void SystemColors::Populate() {
   this->mColors.clear();
   magic_enum::enum_for_each<Usage>(
     [&colors = this->mColors, store = UISettings {}](const Usage key) {

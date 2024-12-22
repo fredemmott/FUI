@@ -40,9 +40,8 @@ add_executable(
   FredEmmott/memory.hpp
   FredEmmott/memory/detail.hpp
   FredEmmott/GUI/yoga.hpp
-  FredEmmott/GUI/Colors.cpp FredEmmott/GUI/Colors.hpp
-  FredEmmott/GUI/SystemFont.cpp
-  FredEmmott/GUI/SystemFont.hpp
+  FredEmmott/GUI/SystemColors.cpp FredEmmott/GUI/SystemColors.hpp
+  FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

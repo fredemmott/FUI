@@ -5,6 +5,7 @@
 
 #include <shlobj_core.h>
 #include <skia/core/SkCanvas.h>
+#include <skia/core/SkColor.h>
 #include <skia/core/SkColorSpace.h>
 #include <skia/core/SkFontMgr.h>
 #include <skia/core/SkImageInfo.h>
@@ -20,7 +21,7 @@
 #include <format>
 #include <source_location>
 
-#include "FredEmmott/GUI/Colors.hpp"
+#include "FredEmmott/GUI/SystemColors.hpp"
 #include "FredEmmott/GUI/SystemFont.hpp"
 #include "FredEmmott/GUI/yoga.hpp"
 
@@ -60,7 +61,7 @@ std::filesystem::path GetKnownFolderPath() {
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   gInstance = this;
 
-  FredEmmott::GUI::Colors colors;
+  FredEmmott::GUI::SystemColors colors;
 
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
@@ -158,8 +159,6 @@ void HelloSkiaWindow::InitializeD3D() {
       mD3DDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mD3DSRVHeap.put())));
   }
 
-  this->CreateCommandListAndAllocators();
-
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
     .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
     .SampleDesc = {1, 0},
@@ -187,22 +186,6 @@ void HelloSkiaWindow::InitializeSkia() {
   skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
   // skiaD3DContext.fMemoryAllocator can be left as nullptr
   mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
-}
-
-void HelloSkiaWindow::CreateCommandListAndAllocators() {
-  for (auto& frame: mFrames) {
-    CheckHResult(mD3DDevice->CreateCommandAllocator(
-      D3D12_COMMAND_LIST_TYPE_DIRECT,
-      IID_PPV_ARGS(frame.mCommandAllocator.put())));
-  }
-  // We'll reset this to the appropriate command allocator each frame
-  CheckHResult(mD3DDevice->CreateCommandList(
-    0,
-    D3D12_COMMAND_LIST_TYPE_DIRECT,
-    mFrames.front().mCommandAllocator.get(),
-    nullptr,
-    IID_PPV_ARGS(mD3DCommandList.put())));
-  CheckHResult(mD3DCommandList->Close());
 }
 
 void HelloSkiaWindow::ConfigureD3DDebugLayer() {
@@ -272,7 +255,7 @@ void HelloSkiaWindow::CreateRenderTargets() {
     GrD3DTextureResourceInfo backBufferInfo(
       frame.mRenderTarget.get(),
       {},
-      D3D12_RESOURCE_STATE_RENDER_TARGET,
+      D3D12_RESOURCE_STATE_COMMON,
       DXGI_FORMAT_R8G8B8A8_UNORM,
       1,
       1,
@@ -295,33 +278,13 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
-void HelloSkiaWindow::RenderNonSkiaContent(FrameContext& frame) {
-  auto commandList = mD3DCommandList.get();
-
-  D3D12_RESOURCE_BARRIER barrier {
-        .Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
-        .Transition = D3D12_RESOURCE_TRANSITION_BARRIER {
-          .pResource = frame.mRenderTarget.get(),
-          .Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-          .StateBefore = D3D12_RESOURCE_STATE_PRESENT,
-          .StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET,
-        },
-      };
-  commandList->ResourceBarrier(1, &barrier);
-
-  FLOAT clearColor[4] {0.0f, 0.0f, 0.0f, 1.0f};
-  commandList->ClearRenderTargetView(
-    frame.mRenderTargetView, clearColor, 0, nullptr);
-  commandList->OMSetRenderTargets(1, &frame.mRenderTargetView, FALSE, nullptr);
-  {
-    auto ptr = mD3DSRVHeap.get();
-    commandList->SetDescriptorHeaps(1, &ptr);
-  }
-  CheckHResult(commandList->Close());
-
-  auto upcast = static_cast<ID3D12CommandList*>(commandList);
-  mD3DCommandQueue->ExecuteCommandLists(1, &upcast);
-  CheckHResult(mD3DCommandQueue->Signal(mD3DFence.get(), frame.mFenceValue));
+static SkColor Lerp(float lhsRatio, const SkColor& lhs, const SkColor& rhs) {
+  const auto rhsRatio = 1 - lhsRatio;
+  return SkColorSetARGB(
+    (SkColorGetA(lhs) * lhsRatio) + (SkColorGetA(rhs) * rhsRatio),
+    (SkColorGetR(lhs) * lhsRatio) + (SkColorGetR(rhs) * rhsRatio),
+    (SkColorGetG(lhs) * lhsRatio) + (SkColorGetG(rhs) * rhsRatio),
+    (SkColorGetB(lhs) * lhsRatio) + (SkColorGetB(rhs) * rhsRatio));
 }
 
 void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
@@ -331,24 +294,18 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   canvas->scale(scale, scale);
   const auto it = canvas->imageInfo();
 
-  static constexpr auto strokeWidth = 2;
-  SkPaint paint;
-  paint.setColor(SkColorSetRGB(0x66, 0x66, 0xcc));
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(strokeWidth);
-  canvas->drawRoundRect(
-    SkRect::MakeIWH(mWindowSize.mWidth, mWindowSize.mHeight - strokeWidth)
-      .makeInset(10.0, 10.0),
-    10,
-    10,
-    paint);
+  namespace fui = FredEmmott::GUI;
+  const fui::SystemColors colors;
 
+  const auto frameBackground = Lerp(0.167, colors.Foreground(), colors.Background());
+  canvas->clear(frameBackground);
+
+  SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(colors.Foreground());
 
   SkScalar x = 40;
   SkScalar y = 40;
-
-  namespace fui = FredEmmott::GUI;
 
   const auto height = fui::SystemFont::Body.measureText("gypq", 4, SkTextEncoding::kUTF8);
 
@@ -370,31 +327,10 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
-  // We're drawing with Skia on top of other operations; wait for them to
-  // complete
-  GrD3DFenceInfo fenceInfo {};
-  fenceInfo.fFence.retain(mD3DFence.get());
-  fenceInfo.fValue = frame.mFenceValue;
-  {
-    GrBackendSemaphore nonSkiaContentFence;
-    nonSkiaContentFence.initDirect3D(fenceInfo);
-    mSkContext->wait(1, &nonSkiaContentFence, false);
-  }
-
-  /* Inform Skia that our other D3D12 code transitioned the resource
-   * to the RENDER_TARGET state.
-   *
-   * This DOES NOT make Skia transition the state - it just tells it we've
-   * already done that.
-   *
-   * This is not necessary if you're not integrating Skia with other content.
-   */
-  auto brt = SkSurfaces::GetBackendRenderTarget(
-    frame.mSkSurface.get(), SkSurfaces::BackendHandleAccess::kFlushWrite);
-  brt.setD3DResourceState(D3D12_RESOURCE_STATE_RENDER_TARGET);
-
   this->RenderSkiaContent(frame.mSkSurface->getCanvas());
 
+  GrD3DFenceInfo fenceInfo {};
+  fenceInfo.fFence.retain(mD3DFence.get());
   fenceInfo.fValue = ++mFenceValue;
   frame.mFenceValue = fenceInfo.fValue;
   GrBackendSemaphore flushSemaphore;
@@ -429,16 +365,11 @@ void HelloSkiaWindow::RenderFrame() {
   auto& frame = mFrames.at(mFrameIndex);
   mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
 
-  auto commandList = mD3DCommandList.get();
   if (frame.mFenceValue) {
     mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
     WaitForSingleObject(mFenceEvent.get(), INFINITE);
   }
-  CheckHResult(frame.mCommandAllocator->Reset());
-  frame.mFenceValue = ++mFenceValue;
-  CheckHResult(commandList->Reset(frame.mCommandAllocator.get(), nullptr));
 
-  RenderNonSkiaContent(frame);
   RenderSkiaContent(frame);
 
   CheckHResult(mSwapChain->Present(1, 0));

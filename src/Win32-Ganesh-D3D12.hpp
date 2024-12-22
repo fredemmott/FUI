@@ -49,7 +49,6 @@ class HelloSkiaWindow final {
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;
   wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
-  wil::com_ptr<ID3D12GraphicsCommandList> mD3DCommandList;
   wil::com_ptr<ID3D12DescriptorHeap> mD3DRTVHeap;
   wil::com_ptr<ID3D12DescriptorHeap> mD3DSRVHeap;
   wil::com_ptr<IDXGISwapChain1> mSwapChain;
@@ -61,7 +60,6 @@ class HelloSkiaWindow final {
   sk_sp<GrDirectContext> mSkContext;
 
   struct FrameContext {
-    wil::com_ptr<ID3D12CommandAllocator> mCommandAllocator;
     wil::com_ptr<ID3D12Resource> mRenderTarget;
     D3D12_CPU_DESCRIPTOR_HANDLE mRenderTargetView {};
     sk_sp<SkSurface> mSkSurface;
@@ -76,19 +74,12 @@ class HelloSkiaWindow final {
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
   void ConfigureD3DDebugLayer();
-  void CreateCommandListAndAllocators();
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
 
   void RenderFrame();
 
-  /** Not necessary, but just here as an example
-   *
-   * Note that this transitions the back buffer from PRESENT to RENDER_TARGET;
-   * RenderSkiaContent() needs to be aware of this.
-   */
-  void RenderNonSkiaContent(FrameContext& frame);
   void RenderSkiaContent(FrameContext& frame);
   void RenderSkiaContent(SkCanvas* canvas);
 
