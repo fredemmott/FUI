@@ -8,26 +8,29 @@
 
 namespace FredEmmott::GUI {
 
-struct Color : private std::variant<SystemColor::Usage, SkColor> {
+class Color {
+ public:
   Color() = delete;
-  explicit Color(SystemColor::Usage u) : variant(u) {
+  explicit constexpr Color(SystemColor::Usage u) : mVariant(u) {
   }
-  explicit Color(SkColor color) : variant(color) {
-  }
-
-  const SkColor& Get(this const auto& self) noexcept {
-    if (std::holds_alternative<SkColor>(self)) {
-      return std::get<SkColor>(self);
-    }
-    return SystemColor::Get(std::get<SystemColor::Usage>(self));
+  explicit constexpr Color(SkColor color) : mVariant(color) {
   }
 
-  operator const SkColor&() const noexcept {
+  constexpr operator const SkColor&() const noexcept {
     return this->Get();
   }
 
-  auto operator->() const noexcept {
+  constexpr auto operator->() const noexcept {
     return &this->Get();
+  }
+ private:
+  std::variant<SystemColor::Usage, SkColor> mVariant;
+
+  constexpr const SkColor& Get() const noexcept {
+    if (std::holds_alternative<SkColor>(mVariant)) {
+      return std::get<SkColor>(mVariant);
+    }
+    return SystemColor::Get(std::get<SystemColor::Usage>(mVariant));
   }
 };
 

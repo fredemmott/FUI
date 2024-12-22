@@ -30,7 +30,7 @@ void Label::Paint(SkCanvas* canvas) const {
   canvas->drawString(
     mText.c_str(),
     x, y,
-    mOptions.mFont.Get(),
+    mOptions.mFont,
     paint);
 }
 
