@@ -17,7 +17,7 @@ class Color {
   }
 
   constexpr operator SkColor() const noexcept {
-    return this->Get();
+    return this->Resolve();
   }
 
   Color MixIn(SkScalar ratio, const Color&) const noexcept;
@@ -25,7 +25,7 @@ class Color {
  private:
   std::variant<SystemColor::Usage, SkColor> mVariant;
 
-  constexpr SkColor Get() const noexcept {
+  constexpr SkColor Resolve() const noexcept {
     if (std::holds_alternative<SkColor>(mVariant)) {
       return std::get<SkColor>(mVariant);
     }
