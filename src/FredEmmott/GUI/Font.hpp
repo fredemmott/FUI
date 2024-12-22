@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <variant>
-
 #include "SystemFont.hpp"
 
 namespace FredEmmott::GUI {
 
 class Font {
-public:
+ public:
   Font() = delete;
-  constexpr Font(SystemFont::Usage usage) : mVariant(usage) {
+
+  Font(SystemFont::Usage usage) : mFont(Get(usage)) {
   }
-  constexpr Font(const SkFont& f) : mVariant(f) {
+
+  Font(const SkFont& f) : mFont(f) {
   }
 
   SkScalar GetPixelHeight(this const auto& self) noexcept {
@@ -21,28 +21,15 @@ public:
   }
 
   operator SkFont() const noexcept {
-    return this->Get();
+    return mFont;
   }
 
   auto operator->() const noexcept {
-    struct wrapper_t {
-      SkFont mFont;
-      auto operator->() const noexcept {
-        return &mFont;
-      }
-    };
-    return wrapper_t { this->Get() };
+    return &mFont;
   }
 
-private:
-  std::variant<SystemFont::Usage, SkFont> mVariant;
-
-  SkFont Get() const noexcept {
-    if (std::holds_alternative<SkFont>(mVariant)) {
-      return std::get<SkFont>(mVariant);
-    }
-    return SystemFont::Get(std::get<SystemFont::Usage>(mVariant));
-  }
+ private:
+  SkFont mFont;
 };
 
 }// namespace FredEmmott::GUI
