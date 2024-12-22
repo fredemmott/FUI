@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/memory.hpp>
-
 #include <yoga/Yoga.h>
 
-namespace FredEmmott::GUI {
+#include <FredEmmott/memory.hpp>
 
-using unique_ygnode = ::FredEmmott::Memory::unique_ptr<YGNode, &YGNodeFree>;
-using shared_ygnode = ::FredEmmott::Memory::shared_ptr<YGNode, &YGNodeFree>;
+namespace FredEmmott::Memory::extensions {
 
-}
+template <>
+struct deleter<YGNode> {
+  void operator()(YGNode* p) const {
+    YGNodeFree(p);
+  }
+};
+
+}// namespace FredEmmott::Memory::extensions

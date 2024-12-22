@@ -6,12 +6,10 @@
 #include <Shlobj.h>
 #include <ports/SkFontMgr_empty.h>
 #include <skia/core/SkFontMgr.h>
-#include <wil/resource.h>
 
 #include <filesystem>
 
 namespace {
-
 std::filesystem::path GetFontsPath() {
   wil::unique_hlocal_string ret;
   SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, std::out_ptr(ret));
@@ -32,7 +30,8 @@ consteval auto PixelsToPoints() {
   return (static_cast<SkScalar>(THeight) * 72) / USER_DEFAULT_SCREEN_DPI;
 }
 
-constexpr auto x = PixelsToPoints<::FredEmmott::GUI::SystemFont::Height::Body>();
+constexpr auto x
+  = PixelsToPoints<::FredEmmott::GUI::SystemFont::Height::Body>();
 
 template <FredEmmott::GUI::SystemFont::Height THeight>
 SkFont RegularFont() {
@@ -49,18 +48,38 @@ SkFont SemiboldFont() {
     PixelsToPoints<THeight>(),
   };
 }
-
 }// namespace
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::SystemFont {
 
-const SkFont SystemFont::Caption = RegularFont<Height::Caption>();
-const SkFont SystemFont::Body = RegularFont<Height::Body>();
-const SkFont SystemFont::BodyStrong = SemiboldFont<Height::BodyStrong>();
-const SkFont SystemFont::BodyLarge = RegularFont<Height::BodyLarge>();
-const SkFont SystemFont::Subtitle = SemiboldFont<Height::Subtitle>();
-const SkFont SystemFont::Title = SemiboldFont<Height::Title>();
-const SkFont SystemFont::TitleLarge = SemiboldFont<Height::TitleLarge>();
-const SkFont SystemFont::Display = SemiboldFont<Height::Display>();
+const SkFont Caption = RegularFont<Height::Caption>();
+const SkFont Body = RegularFont<Height::Body>();
+const SkFont BodyStrong = SemiboldFont<Height::BodyStrong>();
+const SkFont BodyLarge = RegularFont<Height::BodyLarge>();
+const SkFont Subtitle = SemiboldFont<Height::Subtitle>();
+const SkFont Title = SemiboldFont<Height::Title>();
+const SkFont TitleLarge = SemiboldFont<Height::TitleLarge>();
+const SkFont Display = SemiboldFont<Height::Display>();
 
-}// namespace FredEmmott::GUI
+const SkFont& Get(const Usage usage) noexcept {
+  switch (usage) {
+    case Usage::Caption:
+      return Caption;
+    case Usage::Body:
+      return Body;
+    case Usage::BodyStrong:
+      return BodyStrong;
+    case Usage::BodyLarge:
+      return BodyLarge;
+    case Usage::Subtitle:
+      return Subtitle;
+    case Usage::Title:
+      return Title;
+    case Usage::TitleLarge:
+      return TitleLarge;
+    case Usage::Display:
+      return Display;
+  }
+  std::unreachable();
+}
+}// namespace FredEmmott::GUI::SystemFont

@@ -18,7 +18,7 @@ enum class Weight {
   Bold = 700,
 };
 
-enum class Height {
+enum class Height : uint16_t {
   Caption = 16,
   Body = 20,
   BodyStrong = 20,
@@ -29,6 +29,17 @@ enum class Height {
   Display = 92,
 };
 
+enum class Usage {
+  Caption,
+  Body,
+  BodyStrong,
+  BodyLarge,
+  Subtitle,
+  Title,
+  TitleLarge,
+  Display,
+};
+
 extern const SkFont Caption;
 extern const SkFont Body;
 extern const SkFont BodyStrong;
@@ -37,5 +48,7 @@ extern const SkFont Subtitle;
 extern const SkFont Title;
 extern const SkFont TitleLarge;
 extern const SkFont Display;
+
+[[nodiscard]] const SkFont& Get(Usage) noexcept;
 
 }// namespace FredEmmott::GUI::SystemFont

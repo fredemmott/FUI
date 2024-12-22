@@ -14,15 +14,17 @@
 #include <skia/gpu/GrDirectContext.h>
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
-#include <skia/ports/SkFontMgr_empty.h>
+#include <yoga/YGNode.h>
 
 #include <chrono>
 #include <filesystem>
 #include <format>
 #include <source_location>
 
-#include "FredEmmott/GUI/SystemColors.hpp"
+#include "FredEmmott/GUI/Label.hpp"
+#include "FredEmmott/GUI/SystemColor.hpp"
 #include "FredEmmott/GUI/SystemFont.hpp"
+#include "FredEmmott/GUI/Widget.hpp"
 #include "FredEmmott/GUI/yoga.hpp"
 
 static inline void CheckHResult(
@@ -60,8 +62,6 @@ std::filesystem::path GetKnownFolderPath() {
 
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   gInstance = this;
-
-  FredEmmott::GUI::SystemColors colors;
 
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
@@ -295,35 +295,28 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   const auto it = canvas->imageInfo();
 
   namespace fui = FredEmmott::GUI;
-  const fui::SystemColors colors;
+  const auto colors = fui::SystemColor::Get();
 
-  const auto frameBackground = Lerp(0.167, colors.Foreground(), colors.Background());
+  const auto frameBackground
+    = Lerp(0.167, colors.Foreground(), colors.Background());
   canvas->clear(frameBackground);
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(colors.Foreground());
+  fui::unique_ptr<YGNode> root {YGNodeNew()};
+  YGNodeStyleSetFlexDirection(root.get(), YGFlexDirectionColumn);
 
-  SkScalar x = 40;
-  SkScalar y = 40;
+  fui::Label framerate({}, "FUI frame {}##FrameCounter", mFrameCounter);
+  fui::Label secondLine({}, "Second line");
+  YGNodeInsertChild(root.get(), framerate.GetLayoutNode(), 0);
+  YGNodeInsertChild(root.get(), secondLine.GetLayoutNode(), 1);
 
-  const auto height = fui::SystemFont::Body.measureText("gypq", 4, SkTextEncoding::kUTF8);
+  YGNodeCalculateLayout(
+    root.get(),
+    mWindowSize.mWidth / scale,
+    mWindowSize.mHeight / scale,
+    YGDirectionLTR);
 
-  canvas->drawString(
-    std::format("gypq {}", mFrameCounter)
-      .c_str(),
-    x,
-    y,
-    fui::SystemFont::Body,
-    paint);
-  y += static_cast<SkScalar>(fui::SystemFont::Height::Body);
-  canvas->drawString(
-    "line 2",
-    x,
-    y,
-    fui::SystemFont::Body,
-    paint);
-
+  framerate.Paint(canvas);
+  secondLine.Paint(canvas);
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
@@ -421,7 +414,8 @@ HelloSkiaWindow::WindowProc(
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);
       // TODO: lParam is a RECT that we *should* use
-      OutputDebugStringA(std::format("DPI change: {} -> {}\n", gInstance->mDPI, newDPI).c_str());
+      OutputDebugStringA(
+        std::format("DPI change: {} -> {}\n", gInstance->mDPI, newDPI).c_str());
       gInstance->mDPI = newDPI;
       break;
     }

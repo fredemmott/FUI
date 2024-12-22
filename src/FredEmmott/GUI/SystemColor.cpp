@@ -6,20 +6,21 @@
 #include <magic_enum.hpp>
 #include <magic_enum_utility.hpp>
 
-#include "SystemColors.hpp"
+#include "SystemColor.hpp"
 
 using namespace winrt::Windows::UI::ViewManagement;
 
 namespace FredEmmott::GUI {
-SystemColors::SystemColors() {
+SystemColor::SystemColor() {
   this->Populate();
 }
 
-SkColor SystemColors::Get(const Usage usage) const noexcept {
-  return mColors.at(usage);
+const SystemColor& SystemColor::Get() {
+  static SystemColor sInstance;
+  return sInstance;
 }
 
-void SystemColors::Populate() {
+void SystemColor::Populate() {
   this->mColors.clear();
   magic_enum::enum_for_each<Usage>(
     [&colors = this->mColors, store = UISettings {}](const Usage key) {
