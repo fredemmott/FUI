@@ -66,7 +66,7 @@ Color Get(const Usage usage) noexcept {
 
 #define DEFINE_CONVENIENCE_ACCESSOR(X) \
   Color X() noexcept { \
-    return gStore.m##X; \
+    return { Usage::X }; \
   }
 FUI_SYSTEM_COLOR_USAGES(DEFINE_CONVENIENCE_ACCESSOR)
 #undef DEFINE_CONVENIENCE_ACCESSOR
