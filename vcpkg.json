@@ -10,5 +10,10 @@
       ]
     },
     "yoga"
-  ]
+  ],
+  "vcpkg-configuration": {
+    "overlay-ports": [
+      "third-party/vcpkg-overlay"
+    ]
+  }
 }
