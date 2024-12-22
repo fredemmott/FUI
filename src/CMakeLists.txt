@@ -44,6 +44,7 @@ add_executable(
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
+  FredEmmott/GUI/Widgets/IHasSingleChild.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/Layout.cpp FredEmmott/GUI/Widgets/Layout.hpp
   FredEmmott/GUI/Widgets/StackLayout.cpp FredEmmott/GUI/Widgets/StackLayout.hpp

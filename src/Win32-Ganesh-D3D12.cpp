@@ -300,12 +300,14 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
       .mFont = fui::WidgetFont::ControlContent,
     },
     "Button label");
-  fuiw::Button button(123, {}, &buttonLabel);
+  fuiw::Button button(123, {});
+  button.SetChild(&buttonLabel);
 
   fuiw::StackLayout layout({}, {}, fuiw::StackLayout::Direction::Vertical);
   layout.SetChildren({&framerate, &secondLine, &button});
 
-  fuiw::Card root({}, {}, &layout);
+  fuiw::Card root({}, {});
+  root.SetChild(&layout);
 
   YGNodeCalculateLayout(
     root.GetLayoutNode(),

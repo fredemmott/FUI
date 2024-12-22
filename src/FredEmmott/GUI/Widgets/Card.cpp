@@ -5,9 +5,20 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-Card::Card(std::size_t id, const Options& options, Widget* child)
-  : Widget(id), mOptions(options), mChild(child) {
+Card::Card(std::size_t id, const Options& options)
+  : Widget(id), mOptions(options) {
+}
+
+void Card::SetChild(Widget* child) {
+  if (mChild) {
+    YGNodeRemoveChild(this->GetLayoutNode(), mChild->GetLayoutNode());
+  }
+  mChild = child;
   YGNodeInsertChild(this->GetLayoutNode(), child->GetLayoutNode(), 0);
+}
+
+Widget* Card::GetChild() const noexcept {
+  return mChild;
 }
 
 void Card::Paint(SkCanvas* canvas) const {

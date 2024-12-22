@@ -21,6 +21,10 @@ class Widget {
     return mYoga.get();
   }
 
+  std::size_t GetID() const noexcept {
+    return mID;
+  }
+
   virtual void Paint(SkCanvas*) const = 0;
 
  protected:

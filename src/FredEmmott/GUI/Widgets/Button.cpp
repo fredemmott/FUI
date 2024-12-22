@@ -7,9 +7,21 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-Button::Button(std::size_t id, const Options& options, Widget* label)
-  : Widget(id), mOptions(options), mLabel(label) {
-  YGNodeInsertChild(this->GetLayoutNode(), label->GetLayoutNode(), 0);
+Button::Button(std::size_t id, const Options& options)
+  : Widget(id), mOptions(options) {
+}
+
+Widget* Button::GetChild() const noexcept {
+  return mLabel;
+}
+
+void Button::SetChild(Widget* child) {
+  const auto layout = this->GetLayoutNode();
+  if (mLabel) {
+    YGNodeRemoveChild(layout, mLabel->GetLayoutNode());
+  }
+  mLabel = child;
+  YGNodeInsertChild(this->GetLayoutNode(), child->GetLayoutNode(), 0);
   this->SetLayoutConstraints();
 }
 
@@ -67,4 +79,4 @@ void Button::Paint(SkCanvas* canvas) const {
   canvas->restore();
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets
