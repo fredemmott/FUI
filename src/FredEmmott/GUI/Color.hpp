@@ -11,9 +11,9 @@ namespace FredEmmott::GUI {
 class Color {
  public:
   Color() = delete;
-  explicit constexpr Color(SystemColor::Usage u) : mVariant(u) {
+  constexpr Color(SystemColor::Usage u) : mVariant(u) {
   }
-  explicit constexpr Color(SkColor color) : mVariant(color) {
+  constexpr Color(SkColor color) : mVariant(color) {
   }
 
   constexpr operator const SkColor&() const noexcept {
@@ -23,6 +23,9 @@ class Color {
   constexpr auto operator->() const noexcept {
     return &this->Get();
   }
+
+  Color MixIn(SkScalar ratio, const Color&) const noexcept;
+
  private:
   std::variant<SystemColor::Usage, SkColor> mVariant;
 

@@ -11,9 +11,9 @@ namespace FredEmmott::GUI {
 class Font {
 public:
   Font() = delete;
-  constexpr explicit Font(SystemFont::Usage usage) : mVariant(usage) {
+  constexpr Font(SystemFont::Usage usage) : mVariant(usage) {
   }
-  constexpr explicit Font(const SkFont& f) : mVariant(f) {
+  constexpr Font(const SkFont& f) : mVariant(f) {
   }
 
   SkScalar GetPixelHeight(this const auto& self) noexcept {

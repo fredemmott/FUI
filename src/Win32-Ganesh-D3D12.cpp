@@ -278,15 +278,6 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
-static SkColor Lerp(float lhsRatio, const SkColor& lhs, const SkColor& rhs) {
-  const auto rhsRatio = 1 - lhsRatio;
-  return SkColorSetARGB(
-    (SkColorGetA(lhs) * lhsRatio) + (SkColorGetA(rhs) * rhsRatio),
-    (SkColorGetR(lhs) * lhsRatio) + (SkColorGetR(rhs) * rhsRatio),
-    (SkColorGetG(lhs) * lhsRatio) + (SkColorGetG(rhs) * rhsRatio),
-    (SkColorGetB(lhs) * lhsRatio) + (SkColorGetB(rhs) * rhsRatio));
-}
-
 void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   canvas->resetMatrix();
 
@@ -297,8 +288,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   namespace fui = FredEmmott::GUI;
   const auto colors = fui::SystemColor::Get();
 
-  const auto frameBackground
-    = Lerp(0.167, colors.Foreground(), colors.Background());
+  const auto frameBackground = fui::Color { colors.Background() }.MixIn(0.167, colors.Foreground());
   canvas->clear(frameBackground);
 
   fui::unique_ptr<YGNode> root {YGNodeNew()};
