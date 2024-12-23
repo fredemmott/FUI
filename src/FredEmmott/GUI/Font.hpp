@@ -14,7 +14,8 @@ namespace FredEmmott::GUI {
 
 class Font {
  public:
-  Font() = delete;
+  Font() : Font(SkFont {}) {
+  }
 
   Font(SystemFont::Usage usage) : Font(Resolve(usage)) {
   }

@@ -24,6 +24,14 @@ class Label final : public Widget {
 
  private:
   std::string mText;
+  Font mFont;
+
+  static YGSize Measure(
+    YGNodeConstRef node,
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode);
 };
 
 }// namespace FredEmmott::GUI::Widgets

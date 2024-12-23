@@ -10,6 +10,7 @@ using namespace FredEmmott::utility;
 namespace FredEmmott::GUI::Widgets {
 
 Label::Label(std::size_t id) : Widget(id) {
+  YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
 }
 
 void Label::SetText(std::string_view text) {
@@ -17,6 +18,7 @@ void Label::SetText(std::string_view text) {
     return;
   }
   mText = std::string {text};
+  YGNodeMarkDirty(this->GetLayoutNode());
 }
 
 void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
@@ -49,12 +51,23 @@ WidgetStyles Label::GetDefaultStyles() const {
 }
 
 std::optional<Style> Label::GetInstanceStyles(const Style& style) const {
-  const auto& font = style.mFont.value();
+  const_cast<Label*>(this)->mFont = style.mFont.value();
+  return {};
+}
+YGSize Label::Measure(
+  YGNodeConstRef node,
+  float width,
+  YGMeasureMode widthMode,
+  float height,
+  YGMeasureMode heightMode) {
+  const auto self = static_cast<Label*>(YGNodeGetContext(node));
 
-  return Style {
-    .mHeight = font.GetHeightInPixels(),
-    .mWidth
-    = font->measureText(mText.data(), mText.size(), SkTextEncoding::kUTF8),
+  const auto& font = self->mFont;
+  const auto& text = self->mText;
+
+  return {
+    font->measureText(text.data(), text.size(), SkTextEncoding::kUTF8),
+    font.GetHeightInPixels(),
   };
 }
 
