@@ -68,33 +68,6 @@ void Button::SetLayoutConstraints() {
   }
 }
 
-void Button::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
-  const auto l = this->GetLayoutNode();
-  const auto x = YGNodeLayoutGetLeft(l);
-  const auto y = YGNodeLayoutGetTop(l);
-  const auto w = YGNodeLayoutGetWidth(l);
-  const auto h = YGNodeLayoutGetHeight(l);
-
-  const auto button
-    = SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), Spacing, Spacing);
-
-  const auto fillColor = *style.mBackgroundColor;
-  const auto borderColor = *style.mBorderColor;
-
-  SkPaint paint;
-  paint.setColor(fillColor);
-  paint.setAntiAlias(true);
-  canvas->drawRRect(button, paint);
-
-  paint.setColor(borderColor);
-  paint.setStyle(SkPaint::kStroke_Style);
-  const auto borderWidth = Spacing / 4;
-  SkRRect border {};
-  button.inset(borderWidth / 2.0, borderWidth / 2.0, &border);
-  paint.setStrokeWidth(borderWidth);
-  canvas->drawRRect(border, paint);
-}
-
 WidgetStyles Button::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mDefault = {

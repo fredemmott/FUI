@@ -2,9 +2,60 @@
 // SPDX-License-Identifier: MIT
 #include "Widget.hpp"
 
+#include <core/SkRRect.h>
+
 #include <format>
 
 namespace FredEmmott::GUI::Widgets {
+
+namespace {
+
+void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
+  if (!style.mBackgroundColor) {
+    return;
+  }
+
+  SkPaint paint;
+  paint.setColor(style.mBackgroundColor.value());
+
+  if (!style.mBorderRadius) {
+    canvas->drawRect(rect, paint);
+    return;
+  }
+
+  const auto radius = style.mBorderRadius.value();
+
+  paint.setAntiAlias(true);
+  canvas->drawRoundRect(rect, radius, radius, paint);
+}
+
+void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
+  if (!(style.mBorderColor && style.mBorderWidth)) {
+    return;
+  }
+
+  // TODO: YGNodeStyleSetBorder
+  const auto bw = style.mBorderWidth.value();
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setColor(style.mBorderColor.value());
+  paint.setStrokeWidth(bw);
+
+  SkRect border = rect;
+  border.inset(bw / 2, bw / 2);
+
+  if (!style.mBorderRadius) {
+    canvas->drawRect(border, paint);
+    return;
+  }
+
+  const auto radius = style.mBorderRadius.value();
+
+  paint.setAntiAlias(true);
+  canvas->drawRoundRect(border, radius, radius, paint);
+}
+
+}// namespace
 
 Widget::Widget(std::size_t id) : mID(id), mYoga(YGNodeNew()) {
 }
@@ -22,6 +73,16 @@ void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
   if (this->IsHovered()) {
     style += ownStyles.mHover;
   }
+
+  const auto yoga = this->GetLayoutNode();
+  const auto rect = SkRect::MakeXYWH(
+    YGNodeLayoutGetLeft(yoga),
+    YGNodeLayoutGetTop(yoga),
+    YGNodeLayoutGetWidth(yoga),
+    YGNodeLayoutGetHeight(yoga));
+
+  PaintBackground(canvas, rect, style);
+  PaintBorder(canvas, rect, style);
 
   this->PaintOwnContent(canvas, style);
 
