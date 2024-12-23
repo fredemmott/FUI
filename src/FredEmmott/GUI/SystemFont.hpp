@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkFont.h>
-
-#include "Win32-Ganesh-D3D12.hpp"
-
 namespace FredEmmott::GUI {
 class Font;
 }

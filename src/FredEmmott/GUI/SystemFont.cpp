@@ -6,6 +6,7 @@
 #include <Shlobj.h>
 #include <ports/SkFontMgr_empty.h>
 #include <skia/core/SkFontMgr.h>
+#include <wil/resource.h>
 
 #include <filesystem>
 

@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <skia/core/SkFont.h>
 #include <skia/core/SkFontMetrics.h>
+
+#include <FredEmmott/GUI/detail/font_detail.hpp>
 
 #include "SystemFont.hpp"
 #include "WidgetFont.hpp"
@@ -21,7 +24,7 @@ class Font {
   Font(const SkFont& f);
 
   SkScalar GetHeightInPixels(this const auto& self) noexcept {
-    return (self->getSize() * USER_DEFAULT_SCREEN_DPI) / 72;
+    return (self->getSize() * font_detail::BaselineDPI) / 72;
   }
 
   SkScalar GetMetricsInPixels(SkFontMetrics* metrics) const;
