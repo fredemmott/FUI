@@ -18,10 +18,13 @@ struct Style {
   Value<Color> mBackgroundColor;
   Value<Color> mBorderColor;
   Value<SkScalar> mBorderRadius;
+  Value<SkScalar> mBorderWidth;
   InheritableValue<Color> mColor;
   InheritableValue<Font> mFont;
   Value<SkScalar> mMargin;
   Value<SkScalar> mPadding;
+
+  [[nodiscard]] Style InheritableValues() const noexcept;
 
   Style& operator+=(const Style& other) noexcept;
   Style operator+(const Style& other) const noexcept {

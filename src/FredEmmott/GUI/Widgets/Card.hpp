@@ -15,7 +15,7 @@ class Card final : public Widget {
   };
 
   Card(std::size_t id, const Options&);
-  void PaintOwnContent(SkCanvas* canvas, const WidgetStyles&) const override;
+  void PaintOwnContent(SkCanvas* canvas, const Style& style) const override;
 
   Widget* GetChild() const noexcept;
   void SetChild(Widget* child);

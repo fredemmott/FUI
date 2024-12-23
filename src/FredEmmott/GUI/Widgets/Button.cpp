@@ -13,26 +13,7 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
-namespace {
-const lazy_init<Style> DefaultButtonStyle = [] {
-  return Style {
-    .mBackgroundColor = WidgetColor::ControlFillDefault,
-    .mBorderColor = WidgetColor::ControlElevationBorder,
-  };
-};
-const lazy_init<Style> DefaultButtonHoverStyleOverrides = [] {
-  return Style {
-    .mBackgroundColor = SK_ColorRED,
-  };
-};
-const lazy_init<Style> DefaultButtonHoverStyle = [] {
-  return DefaultButtonStyle.Get() + DefaultButtonHoverStyleOverrides.Get();
-};
-
-}// namespace
-
-Button::Button(std::size_t id, const Options& options)
-  : Widget(id), mOptions(options) {
+Button::Button(std::size_t id, const Options&) : Widget(id) {
 }
 
 Widget* Button::GetChild() const noexcept {
@@ -87,16 +68,7 @@ void Button::SetLayoutConstraints() {
   }
 }
 
-Style Button::GetStyle() const noexcept {
-  if (IsHovered()) {
-    return DefaultButtonHoverStyle.Get() + mOptions.mStyle
-      + mOptions.mHoverStyle;
-  }
-  return DefaultButtonStyle.Get() + mOptions.mStyle;
-}
-
-void Button::PaintOwnContent(SkCanvas* canvas, const WidgetStyles& styles)
-  const {
+void Button::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
   const auto l = this->GetLayoutNode();
   const auto x = YGNodeLayoutGetLeft(l);
   const auto y = YGNodeLayoutGetTop(l);
@@ -105,8 +77,6 @@ void Button::PaintOwnContent(SkCanvas* canvas, const WidgetStyles& styles)
 
   const auto button
     = SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), Spacing, Spacing);
-
-  const auto style = this->GetStyle();
 
   const auto fillColor = *style.mBackgroundColor;
   const auto borderColor = *style.mBorderColor;
@@ -123,6 +93,21 @@ void Button::PaintOwnContent(SkCanvas* canvas, const WidgetStyles& styles)
   button.inset(borderWidth / 2.0, borderWidth / 2.0, &border);
   paint.setStrokeWidth(borderWidth);
   canvas->drawRRect(border, paint);
+}
+
+WidgetStyles Button::GetDefaultStyles() const {
+  static const WidgetStyles ret {
+    .mDefault = {
+      .mBackgroundColor = WidgetColor::ControlFillDefault,
+      .mBorderColor = WidgetColor::ControlElevationBorder,
+      .mBorderRadius = Spacing,
+      .mBorderWidth = Spacing / 4,
+    },
+    .mHover = {
+      .mBackgroundColor = SK_ColorRED,
+    },
+  };
+  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets

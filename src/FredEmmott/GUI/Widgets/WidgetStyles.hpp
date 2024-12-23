@@ -7,8 +7,17 @@
 namespace FredEmmott::GUI {
 
 struct WidgetStyles {
-  Style mStyle;
-  Style mDefaultStyle;
+  Style mDefault;
+  Style mHover;
+
+  [[nodiscard]] WidgetStyles InheritableStyles() const noexcept;
+
+  WidgetStyles& operator+=(const WidgetStyles& other);
+  WidgetStyles operator+(const WidgetStyles& other) const {
+    WidgetStyles ret = *this;
+    ret += other;
+    return ret;
+  }
 };
 
-}
+}// namespace FredEmmott::GUI

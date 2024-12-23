@@ -35,7 +35,7 @@ Widget* Card::GetChild() const noexcept {
   return mChild.get();
 }
 
-void Card::PaintOwnContent(SkCanvas* canvas, const WidgetStyles& styles) const {
+void Card::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
   const auto x = YGNodeLayoutGetLeft(this->GetLayoutNode());
   const auto y = YGNodeLayoutGetTop(this->GetLayoutNode());
   const auto w = YGNodeLayoutGetWidth(this->GetLayoutNode());

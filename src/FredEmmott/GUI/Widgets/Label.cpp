@@ -9,17 +9,9 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
-namespace {
-const lazy_init<Style> DefaultLabelStyle = [] {
-  return Style {
-    .mColor = SystemColor::Foreground,
-    .mFont = SystemFont::Body,
-  };
-};
-}// namespace
-
 void Label::SetLayoutConstraints() {
-  const auto style = this->GetStyle();
+  // FIXME: need to pass styles through
+  const auto style = this->GetDefaultStyles().mDefault;
 
   const auto width
     = (*style.mFont)
@@ -31,11 +23,6 @@ void Label::SetLayoutConstraints() {
   YGNodeStyleSetHeight(l, height);
 }
 
-Style Label::GetStyle() const noexcept {
-  return DefaultLabelStyle.Get()
-    + (IsHovered() ? mOptions.mStyle : mOptions.mHoverStyle);
-}
-
 Label::Label(std::size_t id, const Options& options)
   : Widget(id), mOptions(options) {
 }
@@ -45,9 +32,8 @@ void Label::SetText(std::string_view text) {
   this->SetLayoutConstraints();
 }
 
-void Label::PaintOwnContent(SkCanvas* canvas, const WidgetStyles&) const {
+void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
   const auto l = this->GetLayoutNode();
-  const auto style = this->GetStyle();
   const auto& font = *style.mFont;
 
   SkPaint paint;
@@ -63,6 +49,15 @@ void Label::PaintOwnContent(SkCanvas* canvas, const WidgetStyles&) const {
   const auto y = top + height;
 
   canvas->drawString(mText.c_str(), x, y, font, paint);
+}
+WidgetStyles Label::GetDefaultStyles() const {
+  static const WidgetStyles ret {
+    .mDefault = {
+    .mColor = SystemColor::Foreground,
+    .mFont = SystemFont::Body,
+      },
+  };
+  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets

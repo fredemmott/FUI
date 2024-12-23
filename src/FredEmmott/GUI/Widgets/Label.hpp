@@ -16,19 +16,21 @@ class Label final : public Widget {
   };
 
   Label(std::size_t id, const Options&);
-  void PaintOwnContent(SkCanvas*, const WidgetStyles&) const override;
 
   std::string_view GetText() const noexcept {
     return mText;
   }
   void SetText(std::string_view);
 
+ protected:
+  void PaintOwnContent(SkCanvas*, const Style& style) const override;
+  WidgetStyles GetDefaultStyles() const override;
+
  private:
   Options mOptions;
   std::string mText;
 
   void SetLayoutConstraints();
-  Style GetStyle() const noexcept;
 };
 
 }// namespace FredEmmott::GUI::Widgets

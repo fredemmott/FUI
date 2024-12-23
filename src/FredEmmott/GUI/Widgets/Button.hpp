@@ -10,27 +10,24 @@ namespace FredEmmott::GUI::Widgets {
 
 class Button final : public Widget {
  public:
-  struct Options {
-    Style mStyle;
-    Style mHoverStyle;
-  };
+  struct Options {};
 
   Button(std::size_t id, const Options&);
 
-  void PaintOwnContent(SkCanvas* canvas, const WidgetStyles&) const override;
   Widget* GetChild() const noexcept;
   void SetChild(Widget*);
   std::span<Widget* const> GetChildren() const noexcept override;
 
- private:
-  Options mOptions;
+ protected:
+  void PaintOwnContent(SkCanvas* canvas, const Style& style) const override;
+  WidgetStyles GetDefaultStyles() const override;
 
+ private:
   unique_ptr<Widget> mLabel {nullptr};
   // Lazy-initialized storage for `GetChildren()`'s span
   mutable Widget* mLabelRawPointer {nullptr};
 
   void SetLayoutConstraints();
-  Style GetStyle() const noexcept;
 };
 
 }// namespace FredEmmott::GUI::Widgets

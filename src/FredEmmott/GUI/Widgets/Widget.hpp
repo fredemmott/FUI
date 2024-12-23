@@ -43,11 +43,12 @@ class Widget {
 
   explicit Widget(std::size_t id);
 
+  [[nodiscard]]
   virtual WidgetStyles GetDefaultStyles() const {
     return {};
   }
 
-  virtual void PaintOwnContent(SkCanvas*, const WidgetStyles&) const {
+  virtual void PaintOwnContent(SkCanvas*, const Style& style) const {
   }
 
  private:

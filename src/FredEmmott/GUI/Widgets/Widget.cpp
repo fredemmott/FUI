@@ -16,12 +16,21 @@ bool Widget::IsHovered() const noexcept {
 Widget::~Widget() = default;
 
 void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
-  this->PaintOwnContent(canvas, styles);
+  const auto ownStyles = styles + this->GetDefaultStyles();
+
+  auto style = ownStyles.mDefault;
+  if (this->IsHovered()) {
+    style += ownStyles.mHover;
+  }
+
+  this->PaintOwnContent(canvas, style);
 
   const auto children = this->GetChildren();
   if (children.empty()) {
     return;
   }
+
+  const auto childStyles = ownStyles.InheritableStyles();
 
   const auto layout = this->GetLayoutNode();
   const auto x = YGNodeLayoutGetLeft(layout);
@@ -29,7 +38,7 @@ void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
 
   canvas->save();
   canvas->translate(x, y);
-  for (auto&& child: this->GetChildren()) {
+  for (auto&& child: children) {
     child->Paint(canvas, styles);
   }
   canvas->restore();
