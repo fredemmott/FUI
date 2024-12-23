@@ -5,7 +5,6 @@
 
 namespace FredEmmott::GUI::Widgets {
 Card::Card(std::size_t id) : Widget(id) {
-  YGNodeStyleSetMargin(GetLayoutNode(), YGEdgeAll, Spacing * 9);
 }
 
 void Card::SetChild(Widget* child) {
@@ -32,6 +31,7 @@ WidgetStyles Card::GetDefaultStyles() const {
     .mDefault = {
       .mBackgroundColor = WidgetColor::CardBackgroundFillDefault,
       .mBorderRadius = Spacing * 2,
+      .mMargin = Spacing * 9,
       .mPadding = Spacing * 4,
     },
   };
