@@ -16,8 +16,6 @@ class Layout : public Widget {
   }
   void SetChildren(const std::vector<Widget*>& children);
 
-  void Paint(SkCanvas*) const override;
-
  protected:
   using Widget::Widget;
 

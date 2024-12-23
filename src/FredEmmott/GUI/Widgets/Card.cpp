@@ -35,7 +35,7 @@ Widget* Card::GetChild() const noexcept {
   return mChild.get();
 }
 
-void Card::Paint(SkCanvas* canvas) const {
+void Card::PaintOwnContent(SkCanvas* canvas, const WidgetStyles& styles) const {
   const auto x = YGNodeLayoutGetLeft(this->GetLayoutNode());
   const auto y = YGNodeLayoutGetTop(this->GetLayoutNode());
   const auto w = YGNodeLayoutGetWidth(this->GetLayoutNode());
@@ -46,11 +46,6 @@ void Card::Paint(SkCanvas* canvas) const {
   paint.setAntiAlias(true);
   canvas->drawRoundRect(
     SkRect::MakeXYWH(x, y, w, h), Spacing * 2, Spacing * 2, paint);
-
-  canvas->save();
-  canvas->translate(x, y);
-  mChild->Paint(canvas);
-  canvas->restore();
 }
 
 }// namespace FredEmmott::GUI::Widgets

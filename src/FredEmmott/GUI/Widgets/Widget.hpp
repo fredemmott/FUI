@@ -4,6 +4,7 @@
 
 #include <skia/core/SkCanvas.h>
 
+#include <FredEmmott/GUI/Widgets/WidgetStyles.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
 #include <span>
@@ -26,9 +27,11 @@ class Widget {
     return mID;
   }
 
-  virtual void Paint(SkCanvas*) const = 0;
+  void Paint(SkCanvas* canvas, const WidgetStyles&) const;
 
-  virtual std::span<Widget* const> GetChildren() const noexcept;
+  virtual std::span<Widget* const> GetChildren() const noexcept {
+    return {};
+  }
 
   void DispatchEvent(const Event*);
 
@@ -39,6 +42,13 @@ class Widget {
   static constexpr SkScalar Spacing = 4;
 
   explicit Widget(std::size_t id);
+
+  virtual WidgetStyles GetDefaultStyles() const {
+    return {};
+  }
+
+  virtual void PaintOwnContent(SkCanvas*, const WidgetStyles&) const {
+  }
 
  private:
   enum class StateFlags {

@@ -16,7 +16,7 @@ class Label final : public Widget {
   };
 
   Label(std::size_t id, const Options&);
-  void Paint(SkCanvas*) const override;
+  void PaintOwnContent(SkCanvas*, const WidgetStyles&) const override;
 
   std::string_view GetText() const noexcept {
     return mText;

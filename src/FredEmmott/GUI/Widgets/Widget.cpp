@@ -15,8 +15,24 @@ bool Widget::IsHovered() const noexcept {
 
 Widget::~Widget() = default;
 
-std::span<Widget* const> Widget::GetChildren() const noexcept {
-  return {};
+void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
+  this->PaintOwnContent(canvas, styles);
+
+  const auto children = this->GetChildren();
+  if (children.empty()) {
+    return;
+  }
+
+  const auto layout = this->GetLayoutNode();
+  const auto x = YGNodeLayoutGetLeft(layout);
+  const auto y = YGNodeLayoutGetTop(layout);
+
+  canvas->save();
+  canvas->translate(x, y);
+  for (auto&& child: this->GetChildren()) {
+    child->Paint(canvas, styles);
+  }
+  canvas->restore();
 }
 
 void Widget::DispatchEvent(const Event* e) {

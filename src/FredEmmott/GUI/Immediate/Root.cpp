@@ -63,7 +63,7 @@ void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
   canvas->clear(Color {SystemColor::Background});
 
   YGNodeCalculateLayout(mWidget->GetLayoutNode(), w, h, YGDirectionLTR);
-  mWidget->Paint(canvas);
+  mWidget->Paint(canvas, {});
 
   canvas->restore();
 }

@@ -95,7 +95,8 @@ Style Button::GetStyle() const noexcept {
   return DefaultButtonStyle.Get() + mOptions.mStyle;
 }
 
-void Button::Paint(SkCanvas* canvas) const {
+void Button::PaintOwnContent(SkCanvas* canvas, const WidgetStyles& styles)
+  const {
   const auto l = this->GetLayoutNode();
   const auto x = YGNodeLayoutGetLeft(l);
   const auto y = YGNodeLayoutGetTop(l);
@@ -122,11 +123,6 @@ void Button::Paint(SkCanvas* canvas) const {
   button.inset(borderWidth / 2.0, borderWidth / 2.0, &border);
   paint.setStrokeWidth(borderWidth);
   canvas->drawRRect(border, paint);
-
-  canvas->save();
-  canvas->translate(x, y);
-  mLabel->Paint(canvas);
-  canvas->restore();
 }
 
 }// namespace FredEmmott::GUI::Widgets

@@ -25,17 +25,4 @@ void Layout::SetChildren(const std::vector<Widget*>& children) {
   YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
 }
 
-void Layout::Paint(SkCanvas* canvas) const {
-  const auto layout = this->GetLayoutNode();
-  const auto x = YGNodeLayoutGetLeft(layout);
-  const auto y = YGNodeLayoutGetTop(layout);
-
-  canvas->save();
-  canvas->translate(x, y);
-  for (auto&& child: mChildren) {
-    child->Paint(canvas);
-  }
-  canvas->restore();
-}
-
 }// namespace FredEmmott::GUI::Widgets

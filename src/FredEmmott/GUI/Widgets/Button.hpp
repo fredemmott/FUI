@@ -17,7 +17,7 @@ class Button final : public Widget {
 
   Button(std::size_t id, const Options&);
 
-  void Paint(SkCanvas* canvas) const override;
+  void PaintOwnContent(SkCanvas* canvas, const WidgetStyles&) const override;
   Widget* GetChild() const noexcept;
   void SetChild(Widget*);
   std::span<Widget* const> GetChildren() const noexcept override;

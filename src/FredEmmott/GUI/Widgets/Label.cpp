@@ -45,7 +45,7 @@ void Label::SetText(std::string_view text) {
   this->SetLayoutConstraints();
 }
 
-void Label::Paint(SkCanvas* canvas) const {
+void Label::PaintOwnContent(SkCanvas* canvas, const WidgetStyles&) const {
   const auto l = this->GetLayoutNode();
   const auto style = this->GetStyle();
   const auto& font = *style.mFont;
