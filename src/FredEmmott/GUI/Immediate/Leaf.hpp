@@ -12,7 +12,7 @@ template <string_widget T>
 struct Leaf {
   template <class... Args>
   void operator()(
-    const typename T::Options& options,
+    const WidgetStyles& styles,
     std::format_string<Args...> fmt,
     Args&&... args) const {
     using namespace immediate_detail;
@@ -24,13 +24,11 @@ struct Leaf {
     auto& frame = tStack.back();
     auto& [siblings, i] = frame;
     if (i == siblings.size()) {
-      siblings.push_back(new T(id, options));
+      siblings.push_back(new T(id));
     }
-
-    string_widget auto* child = static_cast<T*>(siblings.at(i));
-    if (child->GetText() != text) {
-      child->SetText(text);
-    }
+    auto it = GetCurrentNode<T>();
+    it->SetExplicitStyles(styles);
+    it->SetText(text);
 
     ++i;
   }

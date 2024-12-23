@@ -5,8 +5,7 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-StackLayout::StackLayout(std::size_t id, const Options&, Direction direction)
-  : Layout(id) {
+StackLayout::StackLayout(std::size_t id, Direction direction) : Layout(id) {
   const auto layout = this->GetLayoutNode();
   YGNodeStyleSetFlexDirection(
     layout,

@@ -27,6 +27,7 @@ class Widget {
     return mID;
   }
 
+  void SetExplicitStyles(const WidgetStyles& styles);
   void Paint(SkCanvas* canvas, const WidgetStyles&) const;
 
   virtual std::span<Widget* const> GetChildren() const noexcept {
@@ -51,6 +52,10 @@ class Widget {
   virtual void PaintOwnContent(SkCanvas*, const Style& style) const {
   }
 
+  [[nodiscard]] auto GetExplicitStyles() const noexcept {
+    return mExplicitStyles;
+  }
+
  private:
   enum class StateFlags {
     Default = 0,
@@ -62,6 +67,7 @@ class Widget {
   const std::size_t mID {};
   unique_ptr<YGNode> mYoga;
   StateFlags mStateFlags {};
+  WidgetStyles mExplicitStyles {};
 
   void DispatchMouseEvent(const MouseEvent*);
 };

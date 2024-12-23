@@ -11,12 +11,26 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 
 using namespace FredEmmott::GUI::Widgets;
 
+template <std::derived_from<Widget> T>
+T* widget_cast(Widget* const p) {
+  return dynamic_cast<T*>(p);
+}
+
 struct StackEntry final {
   std::vector<Widget*> mChildren;
   uint64_t mNextIndex {};
 };
 
 extern thread_local std::vector<StackEntry> tStack;
+
+template <std::derived_from<Widget> T = Widget>
+T* GetCurrentNode() {
+  const auto& [nodes, i] = tStack.back();
+  if (i == nodes.size()) {
+    return nullptr;
+  }
+  return widget_cast<T>(nodes.at(i));
+}
 
 void TruncateUnlessNextIdEquals(std::size_t id);
 

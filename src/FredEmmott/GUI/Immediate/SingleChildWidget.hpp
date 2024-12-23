@@ -10,34 +10,34 @@ namespace FredEmmott::GUI::Immediate::SingleChildWidget {
 
 template <single_child_widget T>
 struct Begin {
-  using Options = typename T::Options;
-
-  void operator()(const Options& options = {}) const {
-    return (*this)(options, immediate_detail::MakeID<T>());
+  void operator()(const WidgetStyles& styles = {}) const {
+    return (*this)(styles, immediate_detail::MakeID<T>());
   }
 
-  void operator()(const Options& options, immediate_detail::MangledID id)
+  void operator()(const WidgetStyles& styles, immediate_detail::MangledID id)
     const {
     using namespace immediate_detail;
     TruncateUnlessNextIdEquals(id);
 
     auto& [siblings, i] = tStack.back();
     if (i == siblings.size()) {
-      siblings.push_back(new T(id, options));
+      siblings.push_back(new T(id));
     }
 
-    const auto child = static_cast<T*>(siblings.at(i))->GetChild();
-    if (child) {
+    auto it = GetCurrentNode<T>();
+    it->SetExplicitStyles(styles);
+
+    if (const auto child = it->GetChild()) {
       tStack.emplace_back(std::vector {child});
     } else {
       tStack.emplace_back();
     }
   }
 
-  void operator()(const Options& options, auto id) const
+  void operator()(const WidgetStyles& styles, auto id) const
     requires(!std::convertible_to<immediate_detail::MangledID, decltype(id)>)
   {
-    return (*this)(options, immediate_detail::MakeID<T>(id));
+    return (*this)(styles, immediate_detail::MakeID<T>(id));
   }
 };
 

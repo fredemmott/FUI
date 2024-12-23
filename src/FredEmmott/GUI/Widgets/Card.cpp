@@ -4,7 +4,7 @@
 #include "Card.hpp"
 
 namespace FredEmmott::GUI::Widgets {
-Card::Card(std::size_t id, const Options& options) : Widget(id) {
+Card::Card(std::size_t id) : Widget(id) {
   YGNodeStyleSetPadding(GetLayoutNode(), YGEdgeAll, Spacing * 4);
   YGNodeStyleSetMargin(GetLayoutNode(), YGEdgeAll, Spacing * 9);
 }

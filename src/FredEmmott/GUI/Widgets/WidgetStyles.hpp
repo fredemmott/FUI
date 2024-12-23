@@ -18,6 +18,8 @@ struct WidgetStyles {
     ret += other;
     return ret;
   }
+
+  bool operator==(const WidgetStyles&) const noexcept = default;
 };
 
 }// namespace FredEmmott::GUI

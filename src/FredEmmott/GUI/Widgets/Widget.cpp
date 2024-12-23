@@ -66,6 +66,13 @@ bool Widget::IsHovered() const noexcept {
 
 Widget::~Widget() = default;
 
+void Widget::SetExplicitStyles(const WidgetStyles& styles) {
+  if (styles == mExplicitStyles) {
+    return;
+  }
+  mExplicitStyles = styles;
+}
+
 void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
   const auto ownStyles = styles + this->GetDefaultStyles();
 

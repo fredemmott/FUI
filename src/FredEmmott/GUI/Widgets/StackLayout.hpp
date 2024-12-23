@@ -8,12 +8,11 @@ namespace FredEmmott::GUI::Widgets {
 
 class StackLayout final : public Layout {
  public:
-  struct Options {};
   enum class Direction {
     Horizontal,
     Vertical,
   };
-  StackLayout(std::size_t id, const Options&, Direction);
+  StackLayout(std::size_t id, Direction);
 };
 
 }// namespace FredEmmott::GUI::Widgets

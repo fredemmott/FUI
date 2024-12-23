@@ -10,9 +10,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class Button final : public Widget {
  public:
-  struct Options {};
-
-  Button(std::size_t id, const Options&);
+  Button(std::size_t id);
 
   Widget* GetChild() const noexcept;
   void SetChild(Widget*);

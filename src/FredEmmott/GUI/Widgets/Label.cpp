@@ -23,11 +23,13 @@ void Label::SetLayoutConstraints() {
   YGNodeStyleSetHeight(l, height);
 }
 
-Label::Label(std::size_t id, const Options& options)
-  : Widget(id), mOptions(options) {
+Label::Label(std::size_t id) : Widget(id) {
 }
 
 void Label::SetText(std::string_view text) {
+  if (text == mText) {
+    return;
+  }
   mText = std::string {text};
   this->SetLayoutConstraints();
 }

@@ -8,8 +8,6 @@
 #include "SingleChildWidget.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-using CardOptions = Widgets::Card::Options;
-
 constexpr SingleChildWidget::Begin<Widgets::Card> BeginCard;
 constexpr SingleChildWidget::End<Widgets::Card> EndCard;
 

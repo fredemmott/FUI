@@ -13,7 +13,7 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
-Button::Button(std::size_t id, const Options&) : Widget(id) {
+Button::Button(std::size_t id) : Widget(id) {
 }
 
 Widget* Button::GetChild() const noexcept {

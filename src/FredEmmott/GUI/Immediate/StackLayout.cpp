@@ -16,7 +16,7 @@ void BeginStackLayout(StackLayoutDirection direction) {
 
   auto& [siblings, i] = tStack.back();
   if (i == siblings.size()) {
-    siblings.push_back(new StackLayout(id, {}, direction));
+    siblings.push_back(new StackLayout(id, direction));
   }
 
   tStack.emplace_back(

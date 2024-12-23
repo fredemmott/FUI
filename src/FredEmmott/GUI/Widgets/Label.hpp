@@ -10,12 +10,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class Label final : public Widget {
  public:
-  struct Options {
-    Style mStyle;
-    Style mHoverStyle;
-  };
-
-  Label(std::size_t id, const Options&);
+  Label(std::size_t id);
 
   std::string_view GetText() const noexcept {
     return mText;
@@ -27,7 +22,6 @@ class Label final : public Widget {
   WidgetStyles GetDefaultStyles() const override;
 
  private:
-  Options mOptions;
   std::string mText;
 
   void SetLayoutConstraints();
