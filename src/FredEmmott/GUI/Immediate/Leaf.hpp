@@ -11,19 +11,19 @@ namespace FredEmmott::GUI::Immediate {
 template <string_widget T>
 struct Leaf {
   template <class... Args>
-  void operator()(std::format_string<Args...> fmt, Args&&... args) const {
+  void operator()(
+    const typename T::Options& options,
+    std::format_string<Args...> fmt,
+    Args&&... args) const {
     using namespace immediate_detail;
 
     const auto [id, text] = ParsedID::Make<T>(fmt, std::forward<Args>(args)...);
-    auto& [siblings, i] = tStack.back();
-    if (i < siblings.size()) {
-      if (siblings.at(i)->GetID() != id) {
-        siblings.erase(siblings.begin() + i, siblings.end());
-      }
-    }
 
+    TruncateUnlessNextIdEquals(id);
+
+    auto& [siblings, i, data] = tStack.back();
     if (i >= siblings.size()) {
-      siblings.push_back(new T(id, {}));
+      siblings.push_back(new T(id, options));
     }
 
     string_widget auto* child = static_cast<T*>(siblings.back());
@@ -32,6 +32,11 @@ struct Leaf {
     }
 
     ++i;
+  }
+
+  template <class... Args>
+  void operator()(std::format_string<Args...> fmt, Args&&... args) const {
+    return (*this)({}, fmt, std::forward<Args>(args)...);
   }
 };
 

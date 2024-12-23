@@ -22,6 +22,7 @@
 
 #include "FredEmmott/GUI/Immediate/Leaf.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
+#include "FredEmmott/GUI/Immediate/StackLayout.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
 #include "FredEmmott/GUI/Widgets/Button.hpp"
 #include "FredEmmott/GUI/Widgets/Card.hpp"
@@ -290,11 +291,10 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
   namespace fui = FredEmmott::GUI;
   namespace fuiw = fui::Widgets;
-  static_assert(fui::Immediate::single_child_widget<fuiw::Button>);
-  static_assert(fui::Immediate::multi_child_widget<fuiw::StackLayout>);
 
   canvas->clear(fui::Color {fui::SystemColor::Background});
 
+#ifdef NOT_IMMEDIATE_API
   fuiw::Label framerate({}, {});
   framerate.SetText(std::format("FUI frame {}", mFrameCounter));
   fuiw::Label secondLine({}, {});
@@ -322,13 +322,17 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     YGDirectionLTR);
 
   root.Paint(canvas);
+#endif
 
   namespace fuii = fui::Immediate;
   {
     fuii::Root root;
     root.BeginFrame();
 
+    fuii::BeginVStackLayout();
     fuii::Leaf<fuiw::Label> {}("Hello, world");
+    fuii::Leaf<fuiw::Label> {}("Frame {}##Frames", mFrameCounter);
+    fuii::EndStackLayout();
 
     root.EndFrame(
       mWindowSize.mWidth / scale, mWindowSize.mWidth / scale, canvas);

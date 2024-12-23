@@ -13,9 +13,18 @@ using namespace FredEmmott::GUI::Widgets;
 struct StackEntry final {
   std::vector<Widget*> mChildren;
   uint64_t mNextIndex {};
+
+  void* mData {nullptr};
 };
 
 extern thread_local std::vector<StackEntry> tStack;
+
+void TruncateUnlessNextIdEquals(std::size_t id);
+
+template <class T>
+std::size_t MakeID(auto data) {
+  return typeid(T).hash_code() ^ std::hash<decltype(data)> {}(data);
+}
 
 struct ParsedID {
   std::size_t mID;

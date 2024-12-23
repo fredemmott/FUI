@@ -12,11 +12,9 @@ namespace FredEmmott::GUI::Widgets {
 class Layout : public Widget {
  public:
   auto GetChildren() const noexcept {
-    return std::ranges::ref_view(mChildren);
+    return std::views::transform(mChildren, &unique_ptr<Widget>::get);
   }
-
-  void SetChildren(std::vector<Widget*>&& children);
-  void AppendChild(Widget* child);
+  void SetChildren(const std::vector<Widget*>& children);
 
   void Paint(SkCanvas*) const override;
 
@@ -24,7 +22,7 @@ class Layout : public Widget {
   using Widget::Widget;
 
  private:
-  std::vector<Widget*> mChildren;
+  std::vector<unique_ptr<Widget>> mChildren;
 };
 
 }// namespace FredEmmott::GUI::Widgets
