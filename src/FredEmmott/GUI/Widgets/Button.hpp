@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/Color.hpp>
+#include <FredEmmott/GUI/Style.hpp>
 
 #include "Widget.hpp"
 
@@ -11,8 +11,8 @@ namespace FredEmmott::GUI::Widgets {
 class Button final : public Widget {
  public:
   struct Options {
-    Color mFillColor {WidgetColor::ControlFillDefault};
-    Color mBorderColor {WidgetColor::ControlElevationBorder};
+    Style mStyle;
+    Style mHoverStyle;
   };
 
   Button(std::size_t id, const Options&);
@@ -30,6 +30,7 @@ class Button final : public Widget {
   mutable Widget* mLabelRawPointer {nullptr};
 
   void SetLayoutConstraints();
+  Style GetStyle() const noexcept;
 };
 
 }// namespace FredEmmott::GUI::Widgets

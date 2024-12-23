@@ -33,7 +33,12 @@ template <class... Args>
   const auto [id, text]
     = ParsedID::Make<Widgets::Button>(format, std::forward<Args>(args)...);
   BeginButton(options, id);
-  Label(LabelOptions {.mFont = WidgetFont::ControlContent}, "{}##Label", text);
+  Label(
+    LabelOptions {.mStyle {
+      .mFont = WidgetFont::ControlContent,
+    }},
+    "{}##Label",
+    text);
   EndButton();
   return IsPreviousButtonClicked();
 }

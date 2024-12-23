@@ -7,7 +7,29 @@
 
 #include <ranges>
 
+#include "FredEmmott/utility/lazy_init.hpp"
+
+using namespace FredEmmott::utility;
+
 namespace FredEmmott::GUI::Widgets {
+
+namespace {
+const lazy_init<Style> DefaultButtonStyle = [] {
+  return Style {
+    .mBackgroundColor = WidgetColor::ControlFillDefault,
+    .mBorderColor = WidgetColor::ControlElevationBorder,
+  };
+};
+const lazy_init<Style> DefaultButtonHoverStyleOverrides = [] {
+  return Style {
+    .mBackgroundColor = SK_ColorRED,
+  };
+};
+const lazy_init<Style> DefaultButtonHoverStyle = [] {
+  return DefaultButtonStyle.Get() + DefaultButtonHoverStyleOverrides.Get();
+};
+
+}// namespace
 
 Button::Button(std::size_t id, const Options& options)
   : Widget(id), mOptions(options) {
@@ -65,6 +87,14 @@ void Button::SetLayoutConstraints() {
   }
 }
 
+Style Button::GetStyle() const noexcept {
+  if (IsHovered()) {
+    return DefaultButtonHoverStyle.Get() + mOptions.mStyle
+      + mOptions.mHoverStyle;
+  }
+  return DefaultButtonStyle.Get() + mOptions.mStyle;
+}
+
 void Button::Paint(SkCanvas* canvas) const {
   const auto l = this->GetLayoutNode();
   const auto x = YGNodeLayoutGetLeft(l);
@@ -75,15 +105,17 @@ void Button::Paint(SkCanvas* canvas) const {
   const auto button
     = SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, w, h), Spacing, Spacing);
 
+  const auto style = this->GetStyle();
+
+  const auto fillColor = *style.mBackgroundColor;
+  const auto borderColor = *style.mBorderColor;
+
   SkPaint paint;
-  paint.setColor(mOptions.mFillColor);
+  paint.setColor(fillColor);
   paint.setAntiAlias(true);
-  if (IsHovered()) {
-    paint.setColor(SK_ColorRED);
-  }
   canvas->drawRRect(button, paint);
 
-  paint.setColor(mOptions.mBorderColor);
+  paint.setColor(borderColor);
   paint.setStyle(SkPaint::kStroke_Style);
   const auto borderWidth = Spacing / 4;
   SkRRect border {};

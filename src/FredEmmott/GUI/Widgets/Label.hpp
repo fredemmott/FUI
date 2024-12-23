@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "../Color.hpp"
-#include "../Font.hpp"
+#include <FredEmmott/GUI/Style.hpp>
+
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -11,8 +11,8 @@ namespace FredEmmott::GUI::Widgets {
 class Label final : public Widget {
  public:
   struct Options {
-    Font mFont {SystemFont::Body};
-    Color mColor {SystemColor::Foreground};
+    Style mStyle;
+    Style mHoverStyle;
   };
 
   Label(std::size_t id, const Options&);
@@ -28,6 +28,7 @@ class Label final : public Widget {
   std::string mText;
 
   void SetLayoutConstraints();
+  Style GetStyle() const noexcept;
 };
 
 }// namespace FredEmmott::GUI::Widgets

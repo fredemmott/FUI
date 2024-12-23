@@ -38,6 +38,7 @@ add_executable(
 
   FredEmmott/GUI/Color.cpp FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
+  FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Label.hpp
@@ -65,6 +66,7 @@ add_executable(
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/widget_detail.cpp FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/utility/bitflag_enums.hpp
+  FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
   FredEmmott/type_traits/concepts.hpp
   FredEmmott/GUI/yoga.hpp
