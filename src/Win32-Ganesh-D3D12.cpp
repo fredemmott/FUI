@@ -287,39 +287,8 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   const auto it = canvas->imageInfo();
 
   namespace fui = FredEmmott::GUI;
-  namespace fuiw = fui::Widgets;
 
   canvas->clear(fui::Color {fui::SystemColor::Background});
-
-#ifdef NOT_IMMEDIATE_API
-  fuiw::Label framerate({}, {});
-  framerate.SetText(std::format("FUI frame {}", mFrameCounter));
-  fuiw::Label secondLine({}, {});
-  framerate.SetText("Second line");
-
-  fuiw::Label buttonLabel(
-    {},
-    {
-      .mFont = fui::WidgetFont::ControlContent,
-    });
-  buttonLabel.SetText("Button label");
-  fuiw::Button button(123, {});
-  button.SetChild(&buttonLabel);
-
-  fuiw::StackLayout layout({}, {}, fuiw::StackLayout::Direction::Vertical);
-  layout.SetChildren({&framerate, &secondLine, &button});
-
-  fuiw::Card root({}, {});
-  root.SetChild(&layout);
-
-  YGNodeCalculateLayout(
-    root.GetLayoutNode(),
-    mWindowSize.mWidth / scale,
-    mWindowSize.mHeight / scale,
-    YGDirectionLTR);
-
-  root.Paint(canvas);
-#endif
 
   namespace fuii = fui::Immediate;
   {
