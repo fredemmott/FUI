@@ -13,6 +13,10 @@
   X(Height) \
   X(Margin) \
   X(Padding) \
+  X(PaddingBottom) \
+  X(PaddingLeft) \
+  X(PaddingRight) \
+  X(PaddingTop) \
   X(Width)
 
 namespace FredEmmott::GUI {

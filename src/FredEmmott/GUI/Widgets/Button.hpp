@@ -23,8 +23,6 @@ class Button final : public Widget {
   unique_ptr<Widget> mLabel {nullptr};
   // Lazy-initialized storage for `GetChildren()`'s span
   mutable Widget* mLabelRawPointer {nullptr};
-
-  void SetLayoutConstraints();
 };
 
 }// namespace FredEmmott::GUI::Widgets

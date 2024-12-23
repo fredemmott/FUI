@@ -3,8 +3,6 @@
 
 #include "Button.hpp"
 
-#include <skia/core/SkRRect.h>
-
 #include <ranges>
 
 #include "FredEmmott/utility/lazy_init.hpp"
@@ -31,7 +29,6 @@ void Button::SetChild(Widget* child) {
   }
   mLabel.reset(child);
   YGNodeInsertChild(this->GetLayoutNode(), child->GetLayoutNode(), 0);
-  this->SetLayoutConstraints();
 }
 
 std::span<Widget* const> Button::GetChildren() const noexcept {
@@ -43,20 +40,20 @@ std::span<Widget* const> Button::GetChildren() const noexcept {
   return {&mLabelRawPointer, 1};
 }
 
-void Button::SetLayoutConstraints() {
-  const auto self = this->GetLayoutNode();
-  const auto label = mLabel->GetLayoutNode();
-  YGNodeStyleSetPadding(self, YGEdgeHorizontal, Spacing * 3);
-  YGNodeStyleSetPadding(self, YGEdgeVertical, Spacing);
-}
-
 WidgetStyles Button::GetDefaultStyles() const {
+  constexpr auto VerticalPadding = Spacing;
+  constexpr auto HorizontalPadding = Spacing * 3;
+
   static const WidgetStyles ret {
     .mDefault = {
       .mBackgroundColor = WidgetColor::ControlFillDefault,
       .mBorderColor = WidgetColor::ControlElevationBorder,
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
+      .mPaddingBottom = VerticalPadding,
+      .mPaddingLeft = HorizontalPadding,
+      .mPaddingRight = HorizontalPadding,
+      .mPaddingTop = VerticalPadding,
     },
     .mHover = {
       .mBackgroundColor = SK_ColorRED,

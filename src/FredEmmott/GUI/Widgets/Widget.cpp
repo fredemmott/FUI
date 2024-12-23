@@ -95,14 +95,20 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   mComputedStyle = style;
 
   const auto layout = this->GetLayoutNode();
-  const auto setYoga = [&](auto member, auto setter) {
-    const auto& value = mComputedStyle.*member;
-    if (value) {
-      setter(layout, *value);
-    }
-  };
+  const auto setYoga
+    = [&]<class... Front>(auto member, auto setter, Front&&... args) {
+        const auto& value = mComputedStyle.*member;
+        if (value) {
+          setter(layout, std::forward<Front>(args)..., *value);
+        }
+      };
   setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
+  setYoga(&Style::mPadding, &YGNodeStyleSetPadding, YGEdgeAll);
+  setYoga(&Style::mPaddingBottom, &YGNodeStyleSetPadding, YGEdgeBottom);
+  setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
+  setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
+  setYoga(&Style::mPaddingTop, &YGNodeStyleSetPadding, YGEdgeTop);
 
   const auto childStyles = merged.InheritableStyles();
   for (auto&& child: this->GetChildren()) {

@@ -27,6 +27,10 @@ struct Style {
   Value<SkScalar> mHeight;
   Value<SkScalar> mMargin;
   Value<SkScalar> mPadding;
+  Value<SkScalar> mPaddingBottom;
+  Value<SkScalar> mPaddingLeft;
+  Value<SkScalar> mPaddingRight;
+  Value<SkScalar> mPaddingTop;
   Value<SkScalar> mWidth;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
