@@ -19,9 +19,27 @@ extern thread_local std::vector<StackEntry> tStack;
 
 void TruncateUnlessNextIdEquals(std::size_t id);
 
+class MangledID {
+ public:
+  MangledID() = delete;
+  constexpr explicit MangledID(std::size_t id) : mID(id) {
+  }
+
+  constexpr operator std::size_t() const noexcept {
+    return mID;
+  }
+
+ private:
+  std::size_t mID;
+};
+
 template <class T>
 std::size_t MakeID(auto data) {
   return typeid(T).hash_code() ^ std::hash<decltype(data)> {}(data);
+}
+template <class T>
+auto MakeID() {
+  return MakeID<T>(tStack.back().mNextIndex);
 }
 
 struct ParsedID {
@@ -50,6 +68,10 @@ struct ParsedID {
     ret.mText = formatted.substr(0, j);
     ret.mID ^= Hash(formatted.substr(j + 2));
     return ret;
+  }
+
+  constexpr operator MangledID() const noexcept {
+    return MangledID {mID};
   }
 };
 

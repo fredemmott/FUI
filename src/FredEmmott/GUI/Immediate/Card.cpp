@@ -1,25 +1,24 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
-#include "Button.hpp"
+
+#include "Card.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
-void BeginButton(bool* clicked, const ButtonOptions& options) {
-  BeginButton(
-    clicked, options, MakeID<Widgets::Button>(tStack.back().mNextIndex));
+void BeginCard(const CardOptions& options) {
+  BeginCard(options, MakeID<Widgets::Card>());
 }
 
-void BeginButton(bool* clicked, const ButtonOptions& options, MangledID id) {
-  *clicked = false;
+void BeginCard(const CardOptions& options, MangledID id) {
   TruncateUnlessNextIdEquals(id);
 
   auto& [siblings, i] = tStack.back();
   if (i == siblings.size()) {
-    siblings.push_back(new Widgets::Button(id, options));
+    siblings.push_back(new Widgets::Card(id, options));
   }
 
-  const auto child = static_cast<Widgets::Button*>(siblings.at(i))->GetChild();
+  const auto child = static_cast<Widgets::Card*>(siblings.at(i))->GetChild();
   if (child) {
     tStack.emplace_back(std::vector {child});
   } else {
@@ -27,15 +26,15 @@ void BeginButton(bool* clicked, const ButtonOptions& options, MangledID id) {
   }
 }
 
-void EndButton() {
+void EndCard() {
   const auto back = std::move(tStack.back());
   if (back.mChildren.size() > 1) [[unlikely]] {
-    throw std::logic_error("Buttons can only have a single child");
+    throw std::logic_error("Cards can only have a single child");
   }
   tStack.pop_back();
 
   auto& [siblings, i] = tStack.back();
-  const auto button = static_cast<Widgets::Button*>(siblings.at(i));
+  const auto button = static_cast<Widgets::Card*>(siblings.at(i));
   if (back.mChildren.empty()) {
     button->SetChild(nullptr);
   } else {

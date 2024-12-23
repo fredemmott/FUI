@@ -11,8 +11,16 @@ namespace FredEmmott::GUI::Immediate {
 
 using ButtonOptions = Widgets::Button::Options;
 
-void BeginButton(bool* clicked, const ButtonOptions& options, std::size_t id);
-void BeginButton(bool* clicked, const ButtonOptions& options);
+void BeginButton(bool* clicked, const ButtonOptions& options = {});
+void BeginButton(
+  bool* clicked,
+  const ButtonOptions& options,
+  immediate_detail::MangledID id);
+void BeginButton(bool* clicked, const ButtonOptions& options, auto id) {
+  using namespace immediate_detail;
+
+  return BeginButton(clicked, options, MangledID {MakeID<Widgets::Button>(id)});
+}
 
 void EndButton();
 

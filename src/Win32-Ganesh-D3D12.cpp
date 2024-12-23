@@ -13,7 +13,6 @@
 #include <skia/gpu/GrDirectContext.h>
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
-#include <yoga/YGNode.h>
 
 #include <chrono>
 #include <filesystem>
@@ -21,6 +20,7 @@
 #include <source_location>
 
 #include "FredEmmott/GUI/Immediate/Button.hpp"
+#include "FredEmmott/GUI/Immediate/Card.hpp"
 #include "FredEmmott/GUI/Immediate/Label.hpp"
 #include "FredEmmott/GUI/Immediate/Leaf.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
@@ -326,6 +326,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     fuii::Root root;
     root.BeginFrame();
 
+    fuii::BeginCard();
     fuii::BeginVStackLayout();
     fuii::Label("Hello, world");
     fuii::Label("Frame {}##Frames", mFrameCounter);
@@ -333,9 +334,10 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
       // Click handler
     }
     fuii::EndStackLayout();
+    fuii::EndCard();
 
     root.EndFrame(
-      mWindowSize.mWidth / scale, mWindowSize.mWidth / scale, canvas);
+      mWindowSize.mWidth / scale, mWindowSize.mHeight / scale, canvas);
   }
 }
 
