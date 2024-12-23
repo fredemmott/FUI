@@ -39,7 +39,7 @@ class HelloSkiaWindow final {
   wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;
 
-  UINT mDPI {USER_DEFAULT_SCREEN_DPI};
+  float mDPIScale = {1.0f};
   struct PixelSize {
     UINT mWidth {};
     UINT mHeight {};

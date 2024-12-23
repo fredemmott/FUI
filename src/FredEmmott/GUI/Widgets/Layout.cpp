@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
 void Layout::SetChildren(const std::vector<Widget*>& children) {
-  if (std::ranges::equal(children, this->GetChildren())) {
+  if (children == mChildRawPointers) {
     return;
   }
 
@@ -17,6 +17,7 @@ void Layout::SetChildren(const std::vector<Widget*>& children) {
   YGNodeRemoveAllChildren(layout);
 
   AssignChildren(&mChildren, children);
+  mChildRawPointers = std::move(children);
 
   const auto childLayouts
     = std::views::transform(mChildren, &Widget::GetLayoutNode)

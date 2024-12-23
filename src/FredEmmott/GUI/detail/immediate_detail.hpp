@@ -3,6 +3,7 @@
 #pragma once
 
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
+#include <format>
 #include <functional>
 #include <span>
 

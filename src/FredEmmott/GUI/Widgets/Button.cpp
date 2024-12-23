@@ -5,6 +5,8 @@
 
 #include <skia/core/SkRRect.h>
 
+#include <ranges>
+
 namespace FredEmmott::GUI::Widgets {
 
 Button::Button(std::size_t id, const Options& options)
@@ -12,17 +14,30 @@ Button::Button(std::size_t id, const Options& options)
 }
 
 Widget* Button::GetChild() const noexcept {
-  return mLabel;
+  return mLabel.get();
 }
 
 void Button::SetChild(Widget* child) {
+  if (child == mLabel.get()) {
+    return;
+  }
+
   const auto layout = this->GetLayoutNode();
   if (mLabel) {
     YGNodeRemoveChild(layout, mLabel->GetLayoutNode());
   }
-  mLabel = child;
+  mLabel.reset(child);
   YGNodeInsertChild(this->GetLayoutNode(), child->GetLayoutNode(), 0);
   this->SetLayoutConstraints();
+}
+
+std::span<Widget* const> Button::GetChildren() const noexcept {
+  if (!mLabel) {
+    return {};
+  }
+
+  mLabelRawPointer = mLabel.get();
+  return {&mLabelRawPointer, 1};
 }
 
 void Button::SetLayoutConstraints() {
@@ -63,6 +78,9 @@ void Button::Paint(SkCanvas* canvas) const {
   SkPaint paint;
   paint.setColor(mOptions.mFillColor);
   paint.setAntiAlias(true);
+  if (IsHovered()) {
+    paint.setColor(SK_ColorRED);
+  }
   canvas->drawRRect(button, paint);
 
   paint.setColor(mOptions.mBorderColor);

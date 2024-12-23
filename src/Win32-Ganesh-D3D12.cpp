@@ -14,6 +14,7 @@
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 
+#include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -25,8 +26,6 @@
 #include "FredEmmott/GUI/Immediate/Leaf.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
 #include "FredEmmott/GUI/Immediate/StackLayout.hpp"
-#include "FredEmmott/GUI/SystemColor.hpp"
-#include "FredEmmott/GUI/yoga.hpp"
 
 static inline void CheckHResult(
   const HRESULT ret,
@@ -100,7 +99,8 @@ void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
     return;
   }
 
-  mDPI = GetDpiForWindow(mHwnd.get());
+  mDPIScale = static_cast<float>(GetDpiForWindow(mHwnd.get()))
+    / USER_DEFAULT_SCREEN_DPI;
 }
 
 void HelloSkiaWindow::InitializeD3D() {
@@ -282,8 +282,7 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
 void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   canvas->resetMatrix();
 
-  const auto scale = static_cast<float>(mDPI) / USER_DEFAULT_SCREEN_DPI;
-  canvas->scale(scale, scale);
+  canvas->scale(mDPIScale, mDPIScale);
   const auto it = canvas->imageInfo();
 
   namespace fui = FredEmmott::GUI;
@@ -303,7 +302,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     fuii::EndCard();
 
     mFUIRoot.EndFrame(
-      mWindowSize.mWidth / scale, mWindowSize.mHeight / scale, canvas);
+      mWindowSize.mWidth / mDPIScale, mWindowSize.mHeight / mDPIScale, canvas);
   }
 }
 
@@ -392,6 +391,8 @@ HelloSkiaWindow::WindowProc(
   UINT uMsg,
   WPARAM wParam,
   LPARAM lParam) noexcept {
+  namespace fui = FredEmmott::GUI;
+
   switch (uMsg) {
     case WM_SIZE: {
       const UINT width = LOWORD(lParam);
@@ -402,9 +403,36 @@ HelloSkiaWindow::WindowProc(
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);
       // TODO: lParam is a RECT that we *should* use
-      OutputDebugStringA(
-        std::format("DPI change: {} -> {}\n", gInstance->mDPI, newDPI).c_str());
-      gInstance->mDPI = newDPI;
+      gInstance->mDPIScale
+        = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
+      break;
+    }
+    case WM_MOUSEMOVE: {
+      fui::MouseMoveEvent event;
+
+      event.mPoint = {
+        LOWORD(lParam) / gInstance->mDPIScale,
+        HIWORD(lParam) / gInstance->mDPIScale,
+      };
+
+      using fui::MouseButton;
+      if (wParam & MK_LBUTTON) {
+        event.mButtons |= MouseButton::Left;
+      }
+      if (wParam & MK_MBUTTON) {
+        event.mButtons |= MouseButton::Middle;
+      }
+      if (wParam & MK_RBUTTON) {
+        event.mButtons |= MouseButton::Right;
+      }
+      if (wParam & MK_XBUTTON1) {
+        event.mButtons |= MouseButton::X1;
+      }
+      if (wParam & MK_XBUTTON2) {
+        event.mButtons |= MouseButton::X2;
+      }
+
+      gInstance->mFUIRoot.DispatchEvent(&event);
       break;
     }
     case WM_CLOSE:

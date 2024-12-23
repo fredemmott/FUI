@@ -47,6 +47,10 @@ add_executable(
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/StackLayout.cpp FredEmmott/GUI/Immediate/StackLayout.hpp
   FredEmmott/GUI/Immediate/concepts.hpp
+  FredEmmott/GUI/events/Event.hpp
+  FredEmmott/GUI/events/MouseButton.hpp
+  FredEmmott/GUI/events/MouseEvent.hpp
+  FredEmmott/GUI/events/MouseMoveEvent.hpp
   FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/WidgetColor.cpp FredEmmott/GUI/WidgetColor.hpp
@@ -60,6 +64,9 @@ add_executable(
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/widget_detail.cpp FredEmmott/GUI/detail/widget_detail.hpp
+  FredEmmott/utility/bitflag_enums.hpp
+  FredEmmott/utility/type_tag.hpp
+  FredEmmott/type_traits/concepts.hpp
   FredEmmott/GUI/yoga.hpp
   FredEmmott/memory.hpp
   FredEmmott/memory/memory_detail.hpp

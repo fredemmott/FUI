@@ -19,10 +19,13 @@ class Card final : public Widget {
 
   Widget* GetChild() const noexcept;
   void SetChild(Widget* child);
+  std::span<Widget* const> GetChildren() const noexcept override;
 
  private:
   Options mOptions;
-  Widget* mChild {nullptr};
+  unique_ptr<Widget> mChild;
+  // Lazy-initialized storage for `GetChildren()`'s span
+  mutable Widget* mChildRawPointer;
 };
 
 }// namespace FredEmmott::GUI::Widgets

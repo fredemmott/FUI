@@ -11,8 +11,8 @@ namespace FredEmmott::GUI::Widgets {
 
 class Layout : public Widget {
  public:
-  auto GetChildren() const noexcept {
-    return std::views::transform(mChildren, &unique_ptr<Widget>::get);
+  std::span<Widget* const> GetChildren() const noexcept override {
+    return std::span {mChildRawPointers.data(), mChildRawPointers.size()};
   }
   void SetChildren(const std::vector<Widget*>& children);
 
@@ -23,6 +23,8 @@ class Layout : public Widget {
 
  private:
   std::vector<unique_ptr<Widget>> mChildren;
+  // Storage for `GetChildren()`
+  std::vector<Widget*> mChildRawPointers;
 };
 
 }// namespace FredEmmott::GUI::Widgets

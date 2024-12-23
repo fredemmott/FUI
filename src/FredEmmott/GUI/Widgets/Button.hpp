@@ -20,10 +20,14 @@ class Button final : public Widget {
   void Paint(SkCanvas* canvas) const override;
   Widget* GetChild() const noexcept;
   void SetChild(Widget*);
+  std::span<Widget* const> GetChildren() const noexcept override;
 
  private:
   Options mOptions;
-  Widget* mLabel {nullptr};
+
+  unique_ptr<Widget> mLabel {nullptr};
+  // Lazy-initialized storage for `GetChildren()`'s span
+  mutable Widget* mLabelRawPointer {nullptr};
 
   void SetLayoutConstraints();
 };

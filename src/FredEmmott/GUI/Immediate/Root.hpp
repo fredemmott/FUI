@@ -3,6 +3,7 @@
 #pragma once
 
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <FredEmmott/GUI/events/Event.hpp>
 
 namespace FredEmmott::GUI::Immediate {
 
@@ -10,6 +11,8 @@ class Root final {
  public:
   void BeginFrame();
   void EndFrame(SkScalar w, SkScalar h, SkCanvas*);
+
+  void DispatchEvent(const Event*);
 
  private:
   unique_ptr<Widgets::Widget> mWidget;

@@ -12,15 +12,27 @@ Card::Card(std::size_t id, const Options& options)
 }
 
 void Card::SetChild(Widget* child) {
+  if (child == mChild.get()) {
+    return;
+  }
+
   if (mChild) {
     YGNodeRemoveChild(this->GetLayoutNode(), mChild->GetLayoutNode());
   }
-  mChild = child;
+  mChild.reset(child);
   YGNodeInsertChild(this->GetLayoutNode(), child->GetLayoutNode(), 0);
 }
 
+std::span<Widget* const> Card::GetChildren() const noexcept {
+  if (!mChild) {
+    return {};
+  }
+  mChildRawPointer = mChild.get();
+  return {&mChildRawPointer, 1};
+}
+
 Widget* Card::GetChild() const noexcept {
-  return mChild;
+  return mChild.get();
 }
 
 void Card::Paint(SkCanvas* canvas) const {

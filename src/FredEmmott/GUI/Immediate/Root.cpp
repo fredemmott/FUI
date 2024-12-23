@@ -48,6 +48,11 @@ void Root::EndFrame(SkScalar w, SkScalar h, SkCanvas* canvas) {
 
   this->Paint(w, h, canvas);
 }
+void Root::DispatchEvent(const Event* e) {
+  if (mWidget) {
+    mWidget->DispatchEvent(e);
+  }
+}
 
 void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
   if (!mWidget) {
