@@ -21,7 +21,7 @@ struct Leaf {
 
     TruncateUnlessNextIdEquals(id);
 
-    auto& [siblings, i, data] = tStack.back();
+    auto& [siblings, i] = tStack.back();
     if (i >= siblings.size()) {
       siblings.push_back(new T(id, options));
     }

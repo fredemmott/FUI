@@ -13,8 +13,6 @@ using namespace FredEmmott::GUI::Widgets;
 struct StackEntry final {
   std::vector<Widget*> mChildren;
   uint64_t mNextIndex {};
-
-  void* mData {nullptr};
 };
 
 extern thread_local std::vector<StackEntry> tStack;

@@ -14,7 +14,7 @@ void BeginStackLayout(StackLayoutDirection direction) {
     "{}/{}", tStack.back().mNextIndex, std::to_underlying(direction)));
   TruncateUnlessNextIdEquals(id);
 
-  auto& [siblings, i, data] = tStack.back();
+  auto& [siblings, i] = tStack.back();
   if (i >= siblings.size()) {
     siblings.push_back(new StackLayout(id, {}, direction));
   }
@@ -28,7 +28,7 @@ void EndStackLayout() {
   const auto back = tStack.back();
   tStack.pop_back();
 
-  auto& [siblings, i, data] = tStack.back();
+  auto& [siblings, i] = tStack.back();
   static_cast<StackLayout*>(siblings.at(i))->SetChildren(back.mChildren);
   ++i;
 }

@@ -7,7 +7,7 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 thread_local std::vector<StackEntry> tStack;
 
 void TruncateUnlessNextIdEquals(const std::size_t id) {
-  auto& [siblings, i, data] = tStack.back();
+  auto& [siblings, i] = tStack.back();
   if (i == siblings.size()) {
     return;
   }
