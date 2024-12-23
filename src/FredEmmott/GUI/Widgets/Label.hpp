@@ -15,8 +15,13 @@ class Label final : public Widget {
     Color mColor {SystemColor::Foreground};
   };
 
-  Label(std::size_t id, const Options&, std::string_view text);
+  Label(std::size_t id, const Options&);
   void Paint(SkCanvas*) const override;
+
+  std::string_view GetText() const noexcept {
+    return mText;
+  }
+  void SetText(std::string_view);
 
  private:
   Options mOptions;

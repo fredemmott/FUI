@@ -20,6 +20,8 @@
 #include <format>
 #include <source_location>
 
+#include "FredEmmott/GUI/Immediate/Leaf.hpp"
+#include "FredEmmott/GUI/Immediate/Root.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
 #include "FredEmmott/GUI/Widgets/Button.hpp"
 #include "FredEmmott/GUI/Widgets/Card.hpp"
@@ -287,19 +289,23 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   const auto it = canvas->imageInfo();
 
   namespace fui = FredEmmott::GUI;
-  namespace fuiw = FredEmmott::GUI::Widgets;
+  namespace fuiw = fui::Widgets;
+  static_assert(fui::Immediate::single_child_widget<fuiw::Button>);
+  static_assert(fui::Immediate::multi_child_widget<fuiw::StackLayout>);
 
   canvas->clear(fui::Color {fui::SystemColor::Background});
 
-  fuiw::Label framerate({}, {}, std::format("FUI frame {}", mFrameCounter));
-  fuiw::Label secondLine({}, {}, "Second line");
+  fuiw::Label framerate({}, {});
+  framerate.SetText(std::format("FUI frame {}", mFrameCounter));
+  fuiw::Label secondLine({}, {});
+  framerate.SetText("Second line");
 
   fuiw::Label buttonLabel(
     {},
     {
       .mFont = fui::WidgetFont::ControlContent,
-    },
-    "Button label");
+    });
+  buttonLabel.SetText("Button label");
   fuiw::Button button(123, {});
   button.SetChild(&buttonLabel);
 
@@ -316,6 +322,17 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     YGDirectionLTR);
 
   root.Paint(canvas);
+
+  namespace fuii = fui::Immediate;
+  {
+    fuii::Root root;
+    root.BeginFrame();
+
+    fuii::Leaf<fuiw::Label> {}("Hello, world");
+
+    root.EndFrame(
+      mWindowSize.mWidth / scale, mWindowSize.mWidth / scale, canvas);
+  }
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {

@@ -10,16 +10,17 @@ namespace FredEmmott::GUI::font_detail {
 // Win32: this is the same as USER_DEFAULT_SCREEN_DPI
 static constexpr auto BaselineDPI = 96;
 
-constexpr SkScalar PixelsToPoints(auto height) {
-  return (static_cast<SkScalar>(height) * 72) / BaselineDPI;
+constexpr SkScalar PixelsToPoints(const auto pixels) {
+  return (static_cast<SkScalar>(pixels) * 72) / BaselineDPI;
 }
 
-constexpr SkScalar PointsToPixels(SkScalar points) {
+constexpr SkScalar PointsToPixels(const SkScalar points) {
   const auto raw = (points * BaselineDPI) / 72;
   // std::round() *should* be constexpr in C++23, but as of
   // 2024-12-22, this is not yet implemented in MSVC
   if (std::is_constant_evaluated()) {
-    const auto diff = (0.5 + std::numeric_limits<SkScalar>::epsilon()) * ((raw > 0) ? 1 : -1);
+    const auto diff
+      = (0.5 + std::numeric_limits<SkScalar>::epsilon()) * ((raw > 0) ? 1 : -1);
     return static_cast<uint32_t>(raw + diff);
   } else {
     return std::round(raw);
