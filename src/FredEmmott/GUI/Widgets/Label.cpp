@@ -22,22 +22,26 @@ void Label::SetText(std::string_view text) {
 }
 
 void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
-  const auto l = this->GetLayoutNode();
-  const auto& font = *style.mFont;
-
+#ifndef NDEBUG
+  if (style.mFont != mFont) [[unlikely]] {
+    throw std::logic_error(
+      "Stylesheet font does not match mFont; computed style not updated");
+  }
+#endif
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(*style.mColor);
 
   SkFontMetrics metrics {};
-  font.GetMetricsInPixels(&metrics);
+  mFont.GetMetricsInPixels(&metrics);
 
+  const auto l = this->GetLayoutNode();
   const auto x = YGNodeLayoutGetLeft(l);
   const auto top = YGNodeLayoutGetTop(l);
   const auto height = YGNodeLayoutGetHeight(l) - metrics.fDescent;
   const auto y = top + height;
 
-  canvas->drawString(mText.c_str(), x, y, font, paint);
+  canvas->drawString(mText.c_str(), x, y, mFont, paint);
 }
 
 WidgetStyles Label::GetDefaultStyles() const {
