@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/Immediate/SingleChildWidget.hpp>
 #include <FredEmmott/GUI/Widgets/Button.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
@@ -11,19 +12,17 @@ namespace FredEmmott::GUI::Immediate {
 
 using ButtonOptions = Widgets::Button::Options;
 
-void BeginButton(bool* clicked, const ButtonOptions& options = {});
-void BeginButton(
-  bool* clicked,
-  const ButtonOptions& options,
-  immediate_detail::MangledID id);
-void BeginButton(bool* clicked, const ButtonOptions& options, auto id) {
-  using namespace immediate_detail;
+/** Start a button containing a child widget; for multiple widgets, use
+ * a layout.
+ *
+ * @see `Button()` if you just want text
+ */
+constexpr SingleChildWidget::Begin<Widgets::Button> BeginButton;
+constexpr SingleChildWidget::End<Widgets::Button> EndButton;
 
-  return BeginButton(clicked, options, MangledID {MakeID<Widgets::Button>(id)});
-}
+bool IsPreviousButtonClicked();
 
-void EndButton();
-
+/// Create a button with options and a text label
 template <class... Args>
 [[nodiscard]] bool Button(
   const ButtonOptions& options,
@@ -33,13 +32,13 @@ template <class... Args>
 
   const auto [id, text]
     = ParsedID::Make<Widgets::Button>(format, std::forward<Args>(args)...);
-  bool clicked {};
-  BeginButton(&clicked, options, id);
+  BeginButton(options, id);
   Label(LabelOptions {.mFont = WidgetFont::ControlContent}, "{}##Label", text);
   EndButton();
-  return clicked;
+  return IsPreviousButtonClicked();
 }
 
+/// Create a button with a text label
 template <class... Args>
 [[nodiscard]] bool Button(std::format_string<Args...> format, Args&&... args) {
   return Button(ButtonOptions {}, format, std::forward<Args>(args)...);

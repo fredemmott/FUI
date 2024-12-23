@@ -3,6 +3,9 @@
 
 #include "Root.hpp"
 
+#include <FredEmmott/GUI/Color.hpp>
+#include <FredEmmott/GUI/SystemColor.hpp>
+
 namespace FredEmmott::GUI::Immediate {
 
 using namespace immediate_detail;
@@ -50,8 +53,14 @@ void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
   if (!mWidget) {
     return;
   }
+  canvas->save();
+  canvas->clipRect(SkRect::MakeXYWH(0, 0, w, h));
+  canvas->clear(Color {SystemColor::Background});
+
   YGNodeCalculateLayout(mWidget->GetLayoutNode(), w, h, YGDirectionLTR);
   mWidget->Paint(canvas);
+
+  canvas->restore();
 }
 
 }// namespace FredEmmott::GUI::Immediate

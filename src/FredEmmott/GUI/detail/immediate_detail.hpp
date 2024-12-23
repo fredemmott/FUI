@@ -22,20 +22,19 @@ void TruncateUnlessNextIdEquals(std::size_t id);
 class MangledID {
  public:
   MangledID() = delete;
-  constexpr explicit MangledID(std::size_t id) : mID(id) {
+  constexpr explicit MangledID(std::size_t id) : mValue(id) {
   }
 
   constexpr operator std::size_t() const noexcept {
-    return mID;
+    return mValue;
   }
 
- private:
-  std::size_t mID;
+  std::size_t mValue;
 };
 
 template <class T>
-std::size_t MakeID(auto data) {
-  return typeid(T).hash_code() ^ std::hash<decltype(data)> {}(data);
+auto MakeID(auto data) {
+  return MangledID {typeid(T).hash_code() ^ std::hash<decltype(data)> {}(data)};
 }
 template <class T>
 auto MakeID() {
@@ -43,7 +42,7 @@ auto MakeID() {
 }
 
 struct ParsedID {
-  std::size_t mID;
+  MangledID mID;
   std::string mText;
 
   template <class T, class... Args>
@@ -53,25 +52,21 @@ struct ParsedID {
     const auto formatted = std::format(fmt, std::forward<Args>(args)...);
 
     ParsedID ret {
-      .mID = typeid(T).hash_code(),
+      .mID = MangledID {typeid(T).hash_code()},
     };
 
     const auto fmtView = fmt.get();
     const auto i = fmtView.rfind("##");
     if (i == std::string_view::npos) {
       ret.mText = formatted;
-      ret.mID ^= Hash(formatted);
+      ret.mID.mValue ^= Hash(formatted);
       return ret;
     }
 
     const auto j = formatted.rfind("##");
     ret.mText = formatted.substr(0, j);
-    ret.mID ^= Hash(formatted.substr(j + 2));
+    ret.mID.mValue ^= Hash(formatted.substr(j + 2));
     return ret;
-  }
-
-  constexpr operator MangledID() const noexcept {
-    return MangledID {mID};
   }
 };
 

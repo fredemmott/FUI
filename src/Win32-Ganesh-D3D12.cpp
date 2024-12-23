@@ -287,13 +287,10 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   const auto it = canvas->imageInfo();
 
   namespace fui = FredEmmott::GUI;
-
-  canvas->clear(fui::Color {fui::SystemColor::Background});
-
   namespace fuii = fui::Immediate;
+
   {
-    fuii::Root root;
-    root.BeginFrame();
+    mFUIRoot.BeginFrame();
 
     fuii::BeginCard();
     fuii::BeginVStackLayout();
@@ -305,7 +302,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     fuii::EndStackLayout();
     fuii::EndCard();
 
-    root.EndFrame(
+    mFUIRoot.EndFrame(
       mWindowSize.mWidth / scale, mWindowSize.mHeight / scale, canvas);
   }
 }

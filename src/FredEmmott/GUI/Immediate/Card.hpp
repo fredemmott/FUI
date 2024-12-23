@@ -5,15 +5,12 @@
 #include <FredEmmott/GUI/Widgets/Card.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#include "SingleChildWidget.hpp"
+
 namespace FredEmmott::GUI::Immediate {
 using CardOptions = Widgets::Card::Options;
 
-void BeginCard(const CardOptions& options = {});
-void BeginCard(const CardOptions& options, immediate_detail::MangledID id);
-void BeginCard(const CardOptions& options, auto id) {
-  using namespace immediate_detail;
-  return BeginCard(options, MangledID {MakeID<Widgets::Card>(id)});
-}
-void EndCard();
+constexpr SingleChildWidget::Begin<Widgets::Card> BeginCard;
+constexpr SingleChildWidget::End<Widgets::Card> EndCard;
 
 }// namespace FredEmmott::GUI::Immediate

@@ -39,9 +39,10 @@ add_executable(
   FredEmmott/GUI/Color.cpp FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
-  FredEmmott/GUI/Immediate/Card.cpp FredEmmott/GUI/Immediate/Card.hpp
+  FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/Leaf.hpp
+  FredEmmott/GUI/Immediate/SingleChildWidget.hpp
   FredEmmott/GUI/Immediate/Leaf.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/StackLayout.cpp FredEmmott/GUI/Immediate/StackLayout.hpp

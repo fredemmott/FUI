@@ -12,6 +12,7 @@
 #include <wil/com.h>
 #include <wil/resource.h>
 
+#include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <optional>
 
 class HelloSkiaWindow final {
@@ -38,13 +39,15 @@ class HelloSkiaWindow final {
   wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;
 
-  UINT mDPI { USER_DEFAULT_SCREEN_DPI };
+  UINT mDPI {USER_DEFAULT_SCREEN_DPI};
   struct PixelSize {
     UINT mWidth {};
     UINT mHeight {};
   };
   PixelSize mWindowSize;
   std::optional<PixelSize> mPendingResize;
+
+  FredEmmott::GUI::Immediate::Root mFUIRoot;
 
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;
@@ -67,9 +70,9 @@ class HelloSkiaWindow final {
     uint64_t mFenceValue {};
   };
   std::array<FrameContext, SwapChainLength> mFrames;
-  uint8_t mFrameIndex {}; // Used to index into mFrames; reset when buffer reset
+  uint8_t mFrameIndex {};// Used to index into mFrames; reset when buffer reset
 
-  uint64_t mFrameCounter {}; // Displayed to the user, not used for correctness
+  uint64_t mFrameCounter {};// Displayed to the user, not used for correctness
 
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
