@@ -10,6 +10,8 @@
   X(BorderWidth) \
   X(Color) \
   X(Font) \
+  X(FlexDirection) \
+  X(Gap) \
   X(Height) \
   X(Margin) \
   X(Padding) \

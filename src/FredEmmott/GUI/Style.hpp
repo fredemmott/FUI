@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <YGEnums.h>
+
 #include <optional>
 
 #include "Color.hpp"
@@ -23,7 +25,9 @@ struct Style {
   Value<SkScalar> mBorderRadius;
   Value<SkScalar> mBorderWidth;
   InheritableValue<Color> mColor;
+  Value<YGFlexDirection> mFlexDirection;
   InheritableValue<Font> mFont;
+  Value<SkScalar> mGap;
   Value<SkScalar> mHeight;
   Value<SkScalar> mMargin;
   Value<SkScalar> mPadding;

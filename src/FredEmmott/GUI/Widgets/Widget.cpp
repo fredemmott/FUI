@@ -102,7 +102,8 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
           setter(layout, std::forward<Front>(args)..., *value);
         }
       };
-  setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
+  setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
+  setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
   setYoga(&Style::mMargin, &YGNodeStyleSetMargin, YGEdgeAll);
   setYoga(&Style::mPadding, &YGNodeStyleSetPadding, YGEdgeAll);
@@ -110,6 +111,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
   setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
   setYoga(&Style::mPaddingTop, &YGNodeStyleSetPadding, YGEdgeTop);
+  setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
 
   const auto childStyles = merged.InheritableStyles();
   for (auto&& child: this->GetChildren()) {

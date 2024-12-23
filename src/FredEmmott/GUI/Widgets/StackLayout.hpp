@@ -13,6 +13,10 @@ class StackLayout final : public Layout {
     Vertical,
   };
   StackLayout(std::size_t id, Direction);
+
+ protected:
+  WidgetStyles GetDefaultStyles() const override;
+  Direction mDirection;
 };
 
 }// namespace FredEmmott::GUI::Widgets

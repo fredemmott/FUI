@@ -5,13 +5,18 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-StackLayout::StackLayout(std::size_t id, Direction direction) : Layout(id) {
-  const auto layout = this->GetLayoutNode();
-  YGNodeStyleSetFlexDirection(
-    layout,
-    direction == Direction::Horizontal ? YGFlexDirectionRow
-                                       : YGFlexDirectionColumn);
-  YGNodeStyleSetGap(layout, YGGutterAll, Spacing);
+StackLayout::StackLayout(std::size_t id, Direction direction)
+  : Layout(id), mDirection(direction) {
+}
+
+WidgetStyles StackLayout::GetDefaultStyles() const {
+  static const WidgetStyles ret {
+    .mDefault = {
+      .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
+      .mGap = Spacing,
+    },
+  };
+  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets
