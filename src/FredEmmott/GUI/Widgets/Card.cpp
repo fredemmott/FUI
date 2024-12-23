@@ -4,9 +4,7 @@
 #include "Card.hpp"
 
 namespace FredEmmott::GUI::Widgets {
-
-Card::Card(std::size_t id, const Options& options)
-  : Widget(id), mOptions(options) {
+Card::Card(std::size_t id, const Options& options) : Widget(id) {
   YGNodeStyleSetPadding(GetLayoutNode(), YGEdgeAll, Spacing * 4);
   YGNodeStyleSetMargin(GetLayoutNode(), YGEdgeAll, Spacing * 9);
 }
@@ -30,22 +28,18 @@ std::span<Widget* const> Card::GetChildren() const noexcept {
   mChildRawPointer = mChild.get();
   return {&mChildRawPointer, 1};
 }
+WidgetStyles Card::GetDefaultStyles() const {
+  static const WidgetStyles ret {
+    .mDefault = {
+      .mBackgroundColor = WidgetColor::CardBackgroundFillDefault,
+      .mBorderRadius = Spacing * 2,
+    },
+  };
+  return ret;
+}
 
 Widget* Card::GetChild() const noexcept {
   return mChild.get();
-}
-
-void Card::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
-  const auto x = YGNodeLayoutGetLeft(this->GetLayoutNode());
-  const auto y = YGNodeLayoutGetTop(this->GetLayoutNode());
-  const auto w = YGNodeLayoutGetWidth(this->GetLayoutNode());
-  const auto h = YGNodeLayoutGetHeight(this->GetLayoutNode());
-
-  SkPaint paint;
-  paint.setColor(mOptions.mBackgroundColor);
-  paint.setAntiAlias(true);
-  canvas->drawRoundRect(
-    SkRect::MakeXYWH(x, y, w, h), Spacing * 2, Spacing * 2, paint);
 }
 
 }// namespace FredEmmott::GUI::Widgets

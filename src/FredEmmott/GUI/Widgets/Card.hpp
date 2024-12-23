@@ -10,19 +10,18 @@ namespace FredEmmott::GUI::Widgets {
 
 class Card final : public Widget {
  public:
-  struct Options {
-    Color mBackgroundColor {WidgetColor::CardBackgroundFillDefault};
-  };
+  struct Options {};
 
   Card(std::size_t id, const Options&);
-  void PaintOwnContent(SkCanvas* canvas, const Style& style) const override;
 
   Widget* GetChild() const noexcept;
   void SetChild(Widget* child);
   std::span<Widget* const> GetChildren() const noexcept override;
 
+ protected:
+  WidgetStyles GetDefaultStyles() const override;
+
  private:
-  Options mOptions;
   unique_ptr<Widget> mChild;
   // Lazy-initialized storage for `GetChildren()`'s span
   mutable Widget* mChildRawPointer;
