@@ -50,10 +50,13 @@ WidgetStyles Label::GetDefaultStyles() const {
   return ret;
 }
 
-std::optional<Style> Label::GetInstanceStyles(const Style& style) const {
-  const_cast<Label*>(this)->mFont = style.mFont.value();
-  return {};
+void Label::OnComputedStyleChange(const Style& style) {
+  if (mFont != style.mFont) {
+    mFont = style.mFont.value();
+    YGNodeMarkDirty(this->GetLayoutNode());
+  }
 }
+
 YGSize Label::Measure(
   YGNodeConstRef node,
   float width,

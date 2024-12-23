@@ -20,7 +20,7 @@ class Label final : public Widget {
  protected:
   void PaintOwnContent(SkCanvas*, const Style& style) const override;
   WidgetStyles GetDefaultStyles() const override;
-  std::optional<Style> GetInstanceStyles(const Style& base) const override;
+  void OnComputedStyleChange(const Style& base) override;
 
  private:
   std::string mText;

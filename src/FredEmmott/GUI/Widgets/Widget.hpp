@@ -51,11 +51,7 @@ class Widget {
     return {};
   }
 
-  // Not user-provided, but varies on content, e.g.
-  // desired width of a label
-  [[nodiscard]]
-  virtual std::optional<Style> GetInstanceStyles(const Style& base) const {
-    return std::nullopt;
+  virtual void OnComputedStyleChange(const Style& base) {
   }
 
   virtual void PaintOwnContent(SkCanvas*, const Style& style) const {

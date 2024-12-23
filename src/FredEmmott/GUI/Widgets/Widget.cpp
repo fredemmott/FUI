@@ -88,14 +88,9 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     style += merged.mHover;
   }
 
-  if (const auto instance = this->GetInstanceStyles(style)) {
-    style += *instance;
-    style += mExplicitStyles.mDefault;
-    if (this->IsHovered()) {
-      style += mExplicitStyles.mHover;
-    }
+  if (mComputedStyle != style) {
+    this->OnComputedStyleChange(style);
   }
-
   mInheritedStyles = inherited;
   mComputedStyle = style;
 
