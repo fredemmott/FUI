@@ -24,8 +24,10 @@ struct Style {
   Value<SkScalar> mBorderWidth;
   InheritableValue<Color> mColor;
   InheritableValue<Font> mFont;
+  Value<SkScalar> mHeight;
   Value<SkScalar> mMargin;
   Value<SkScalar> mPadding;
+  Value<SkScalar> mWidth;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
 

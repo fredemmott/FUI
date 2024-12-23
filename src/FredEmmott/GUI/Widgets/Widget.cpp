@@ -10,6 +10,16 @@ namespace FredEmmott::GUI::Widgets {
 
 namespace {
 
+YGConfigRef GetYogaConfig() {
+  static unique_ptr<YGConfig> sInstance;
+  static std::once_flag sOnceFlag;
+  std::call_once(sOnceFlag, [&ret = sInstance]() {
+    ret.reset(YGConfigNew());
+    YGConfigSetUseWebDefaults(ret.get(), true);
+  });
+  return sInstance.get();
+}
+
 void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
   if (!style.mBackgroundColor) {
     return;
@@ -57,7 +67,9 @@ void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
 
 }// namespace
 
-Widget::Widget(std::size_t id) : mID(id), mYoga(YGNodeNew()) {
+Widget::Widget(std::size_t id)
+  : mID(id), mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
+  YGNodeSetContext(mYoga.get(), this);
 }
 
 bool Widget::IsHovered() const noexcept {
@@ -66,21 +78,54 @@ bool Widget::IsHovered() const noexcept {
 
 Widget::~Widget() = default;
 
+void Widget::ComputeStyles(const WidgetStyles& inherited) {
+  WidgetStyles merged = this->GetDefaultStyles();
+  merged += inherited;
+  merged += mExplicitStyles;
+
+  auto style = merged.mDefault;
+  if (this->IsHovered()) {
+    style += merged.mHover;
+  }
+
+  if (const auto instance = this->GetInstanceStyles(style)) {
+    style += *instance;
+    style += mExplicitStyles.mDefault;
+    if (this->IsHovered()) {
+      style += mExplicitStyles.mHover;
+    }
+  }
+
+  mInheritedStyles = inherited;
+  mComputedStyle = style;
+
+  const auto layout = this->GetLayoutNode();
+  const auto setYoga = [&](auto member, auto setter) {
+    const auto& value = mComputedStyle.*member;
+    if (value) {
+      setter(layout, *value);
+    }
+  };
+  setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
+  setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
+
+  const auto childStyles = merged.InheritableStyles();
+  for (auto&& child: this->GetChildren()) {
+    child->ComputeStyles(childStyles);
+  }
+}
+
 void Widget::SetExplicitStyles(const WidgetStyles& styles) {
   if (styles == mExplicitStyles) {
     return;
   }
   mExplicitStyles = styles;
+
+  this->ComputeStyles(mInheritedStyles);
 }
 
-void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
-  const auto ownStyles = styles + this->GetDefaultStyles();
-
-  auto style = ownStyles.mDefault;
-  if (this->IsHovered()) {
-    style += ownStyles.mHover;
-  }
-
+void Widget::Paint(SkCanvas* canvas) const {
+  const auto& style = mComputedStyle;
   const auto yoga = this->GetLayoutNode();
   const auto rect = SkRect::MakeXYWH(
     YGNodeLayoutGetLeft(yoga),
@@ -98,8 +143,6 @@ void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
     return;
   }
 
-  const auto childStyles = ownStyles.InheritableStyles();
-
   const auto layout = this->GetLayoutNode();
   const auto x = YGNodeLayoutGetLeft(layout);
   const auto y = YGNodeLayoutGetTop(layout);
@@ -107,7 +150,7 @@ void Widget::Paint(SkCanvas* canvas, const WidgetStyles& styles) const {
   canvas->save();
   canvas->translate(x, y);
   for (auto&& child: children) {
-    child->Paint(canvas, styles);
+    child->Paint(canvas);
   }
   canvas->restore();
 }

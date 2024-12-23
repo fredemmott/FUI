@@ -27,8 +27,10 @@ class Widget {
     return mID;
   }
 
+  void ComputeStyles(const WidgetStyles& inherited);
+
   void SetExplicitStyles(const WidgetStyles& styles);
-  void Paint(SkCanvas* canvas, const WidgetStyles&) const;
+  void Paint(SkCanvas* canvas) const;
 
   virtual std::span<Widget* const> GetChildren() const noexcept {
     return {};
@@ -47,6 +49,13 @@ class Widget {
   [[nodiscard]]
   virtual WidgetStyles GetDefaultStyles() const {
     return {};
+  }
+
+  // Not user-provided, but varies on content, e.g.
+  // desired width of a label
+  [[nodiscard]]
+  virtual std::optional<Style> GetInstanceStyles(const Style& base) const {
+    return std::nullopt;
   }
 
   virtual void PaintOwnContent(SkCanvas*, const Style& style) const {
@@ -68,6 +77,9 @@ class Widget {
   unique_ptr<YGNode> mYoga;
   StateFlags mStateFlags {};
   WidgetStyles mExplicitStyles {};
+
+  WidgetStyles mInheritedStyles;
+  Style mComputedStyle;
 
   void DispatchMouseEvent(const MouseEvent*);
 };

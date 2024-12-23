@@ -13,6 +13,13 @@ struct deleter<YGNode> {
     YGNodeFree(p);
   }
 };
+
+template <>
+struct deleter<YGConfig> {
+  void operator()(YGConfig* p) const {
+    YGConfigFree(p);
+  }
+};
 }// namespace FredEmmott::Memory::extensions
 
 namespace FredEmmott::GUI {

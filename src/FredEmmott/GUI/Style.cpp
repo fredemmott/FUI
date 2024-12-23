@@ -10,8 +10,10 @@
   X(BorderWidth) \
   X(Color) \
   X(Font) \
+  X(Height) \
   X(Margin) \
-  X(Padding)
+  X(Padding) \
+  X(Width)
 
 namespace FredEmmott::GUI {
 

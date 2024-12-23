@@ -48,24 +48,6 @@ void Button::SetLayoutConstraints() {
   const auto label = mLabel->GetLayoutNode();
   YGNodeStyleSetPadding(self, YGEdgeHorizontal, Spacing * 3);
   YGNodeStyleSetPadding(self, YGEdgeVertical, Spacing);
-
-  // TODO (Yoga 3.3+ ?): use YGNodeStyle*FitContent()
-  YGNodeStyleSetBoxSizing(self, YGBoxSizingContentBox);
-  auto childWidth = YGNodeStyleGetMaxWidth(label);
-
-  if (childWidth.unit == YGUnitUndefined) {
-    childWidth = YGNodeStyleGetWidth(label);
-  }
-  switch (childWidth.unit) {
-    case YGUnitPercent:
-      YGNodeStyleSetMaxWidthPercent(self, childWidth.value);
-      break;
-    case YGUnitPoint:
-      YGNodeStyleSetMaxWidth(self, childWidth.value);
-      break;
-    default:
-      break;
-  }
 }
 
 WidgetStyles Button::GetDefaultStyles() const {
