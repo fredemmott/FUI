@@ -11,7 +11,10 @@ namespace FredEmmott::GUI {
 
 struct Style {
   template <class T>
-  struct InheritableValue : std::optional<T> {};
+  struct InheritableValue : std::optional<T> {
+    constexpr bool operator==(const InheritableValue& other) const noexcept
+      = default;
+  };
   template <class T>
   using Value = std::optional<T>;
 
@@ -32,6 +35,8 @@ struct Style {
     ret += other;
     return ret;
   }
+
+  bool operator==(const Style& other) const noexcept = default;
 };
 
 }// namespace FredEmmott::GUI

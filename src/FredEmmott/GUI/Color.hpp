@@ -32,6 +32,8 @@ class Color {
 
   Color MixIn(SkScalar ratio, const Color&) const noexcept;
 
+  constexpr bool operator==(const Color& other) const noexcept = default;
+
  private:
   std::variant<SkColor, WidgetColor::Usage, SystemColor::Usage> mVariant;
 

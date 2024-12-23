@@ -37,6 +37,10 @@ class Font {
     return &mFont;
   }
 
+  bool operator==(const Font& other) const noexcept {
+    return mFont == other.mFont;
+  }
+
  private:
   struct MetricsInPixels {
     MetricsInPixels() = delete;
