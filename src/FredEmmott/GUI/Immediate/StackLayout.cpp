@@ -15,17 +15,17 @@ void BeginStackLayout(StackLayoutDirection direction) {
   TruncateUnlessNextIdEquals(id);
 
   auto& [siblings, i] = tStack.back();
-  if (i >= siblings.size()) {
+  if (i == siblings.size()) {
     siblings.push_back(new StackLayout(id, {}, direction));
   }
 
   tStack.emplace_back(
-    static_cast<StackLayout*>(siblings.back())->GetChildren()
+    static_cast<StackLayout*>(siblings.at(i))->GetChildren()
     | std::ranges::to<std::vector>());
 }
 
 void EndStackLayout() {
-  const auto back = tStack.back();
+  const auto back = std::move(tStack.back());
   tStack.pop_back();
 
   auto& [siblings, i] = tStack.back();

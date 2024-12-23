@@ -3,9 +3,10 @@
 
 #include "Layout.hpp"
 
-#include <unordered_set>
+#include <FredEmmott/GUI/detail/widget_detail.hpp>
 
 namespace FredEmmott::GUI::Widgets {
+using namespace widget_detail;
 
 void Layout::SetChildren(const std::vector<Widget*>& children) {
   if (std::ranges::equal(children, this->GetChildren())) {
@@ -15,16 +16,7 @@ void Layout::SetChildren(const std::vector<Widget*>& children) {
   const auto layout = this->GetLayoutNode();
   YGNodeRemoveAllChildren(layout);
 
-  std::vector<unique_ptr<Widget>> newChildren;
-  for (auto child: children) {
-    auto it = std::ranges::find(mChildren, child, &unique_ptr<Widget>::get);
-    if (it == mChildren.end()) {
-      newChildren.emplace_back(child);
-    } else {
-      newChildren.emplace_back(std::move(*it));
-    }
-  }
-  mChildren = std::move(newChildren);
+  AssignChildren(&mChildren, children);
 
   const auto childLayouts
     = std::views::transform(mChildren, &Widget::GetLayoutNode)

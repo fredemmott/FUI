@@ -4,12 +4,11 @@
 
 #include "../Color.hpp"
 #include "../WidgetColor.hpp"
-#include "IHasSingleChild.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class Card final : public Widget, public IHasSingleChild {
+class Card final : public Widget {
  public:
   struct Options {
     Color mBackgroundColor {WidgetColor::CardBackgroundFillDefault};
@@ -18,8 +17,8 @@ class Card final : public Widget, public IHasSingleChild {
   Card(std::size_t id, const Options&);
   void Paint(SkCanvas* canvas) const override;
 
-  Widget* GetChild() const noexcept override;
-  void SetChild(Widget* child) override;
+  Widget* GetChild() const noexcept;
+  void SetChild(Widget* child);
 
  private:
   Options mOptions;

@@ -38,22 +38,24 @@ add_executable(
 
   FredEmmott/GUI/Color.cpp FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
-  FredEmmott/GUI/Immediate/Leaf.hpp
   FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/WidgetColor.cpp FredEmmott/GUI/WidgetColor.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
-  FredEmmott/GUI/Widgets/IHasSingleChild.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/Layout.cpp FredEmmott/GUI/Widgets/Layout.hpp
   FredEmmott/GUI/Widgets/StackLayout.cpp FredEmmott/GUI/Widgets/StackLayout.hpp
   FredEmmott/GUI/Widgets/Widget.cpp FredEmmott/GUI/Widgets/Widget.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
+  FredEmmott/GUI/detail/widget_detail.cpp FredEmmott/GUI/detail/widget_detail.hpp
+  FredEmmott/GUI/Immediate/Label.hpp
+  FredEmmott/GUI/Immediate/Leaf.hpp
   FredEmmott/GUI/Immediate/concepts.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
+  FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/StackLayout.cpp FredEmmott/GUI/Immediate/StackLayout.hpp
   FredEmmott/GUI/Immediate/Leaf.hpp
   FredEmmott/GUI/yoga.hpp

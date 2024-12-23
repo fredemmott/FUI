@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "../Color.hpp"
-#include "IHasSingleChild.hpp"
+#include <FredEmmott/GUI/Color.hpp>
+
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class Button final : public Widget, public IHasSingleChild {
+class Button final : public Widget {
  public:
   struct Options {
     Color mFillColor {WidgetColor::ControlFillDefault};
@@ -18,8 +18,8 @@ class Button final : public Widget, public IHasSingleChild {
   Button(std::size_t id, const Options&);
 
   void Paint(SkCanvas* canvas) const override;
-  Widget* GetChild() const noexcept override;
-  void SetChild(Widget*) override;
+  Widget* GetChild() const noexcept;
+  void SetChild(Widget*);
 
  private:
   Options mOptions;

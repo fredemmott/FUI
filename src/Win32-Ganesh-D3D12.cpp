@@ -20,15 +20,12 @@
 #include <format>
 #include <source_location>
 
+#include "FredEmmott/GUI/Immediate/Button.hpp"
+#include "FredEmmott/GUI/Immediate/Label.hpp"
 #include "FredEmmott/GUI/Immediate/Leaf.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
 #include "FredEmmott/GUI/Immediate/StackLayout.hpp"
 #include "FredEmmott/GUI/SystemColor.hpp"
-#include "FredEmmott/GUI/Widgets/Button.hpp"
-#include "FredEmmott/GUI/Widgets/Card.hpp"
-#include "FredEmmott/GUI/Widgets/Label.hpp"
-#include "FredEmmott/GUI/Widgets/StackLayout.hpp"
-#include "FredEmmott/GUI/Widgets/Widget.hpp"
 #include "FredEmmott/GUI/yoga.hpp"
 
 static inline void CheckHResult(
@@ -330,8 +327,11 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     root.BeginFrame();
 
     fuii::BeginVStackLayout();
-    fuii::Leaf<fuiw::Label> {}("Hello, world");
-    fuii::Leaf<fuiw::Label> {}("Frame {}##Frames", mFrameCounter);
+    fuii::Label("Hello, world");
+    fuii::Label("Frame {}##Frames", mFrameCounter);
+    if (fuii::Button("Click Me!")) {
+      // Click handler
+    }
     fuii::EndStackLayout();
 
     root.EndFrame(

@@ -21,12 +21,13 @@ struct Leaf {
 
     TruncateUnlessNextIdEquals(id);
 
-    auto& [siblings, i] = tStack.back();
-    if (i >= siblings.size()) {
+    auto& frame = tStack.back();
+    auto& [siblings, i] = frame;
+    if (i == siblings.size()) {
       siblings.push_back(new T(id, options));
     }
 
-    string_widget auto* child = static_cast<T*>(siblings.back());
+    string_widget auto* child = static_cast<T*>(siblings.at(i));
     if (child->GetText() != text) {
       child->SetText(text);
     }
