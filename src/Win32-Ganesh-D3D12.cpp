@@ -14,6 +14,8 @@
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 
+#include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
+#include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
 #include <chrono>
 #include <filesystem>
@@ -26,6 +28,37 @@
 #include "FredEmmott/GUI/Immediate/Label.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
 #include "FredEmmott/GUI/Immediate/StackLayout.hpp"
+
+namespace fui = FredEmmott::GUI;
+namespace fuii = fui::Immediate;
+
+static void PopulateMouseEvent(
+  fui::MouseEvent* e,
+  WPARAM wParam,
+  LPARAM lParam,
+  float dpiScale) {
+  e->mPoint = {
+    LOWORD(lParam) / dpiScale,
+    HIWORD(lParam) / dpiScale,
+  };
+
+  using fui::MouseButton;
+  if (wParam & MK_LBUTTON) {
+    e->mButtons |= MouseButton::Left;
+  }
+  if (wParam & MK_MBUTTON) {
+    e->mButtons |= MouseButton::Middle;
+  }
+  if (wParam & MK_RBUTTON) {
+    e->mButtons |= MouseButton::Right;
+  }
+  if (wParam & MK_XBUTTON1) {
+    e->mButtons |= MouseButton::X1;
+  }
+  if (wParam & MK_XBUTTON2) {
+    e->mButtons |= MouseButton::X2;
+  }
+}
 
 static inline void CheckHResult(
   const HRESULT ret,
@@ -285,9 +318,6 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   canvas->scale(mDPIScale, mDPIScale);
   const auto it = canvas->imageInfo();
 
-  namespace fui = FredEmmott::GUI;
-  namespace fuii = fui::Immediate;
-
   {
     mFUIRoot.BeginFrame();
 
@@ -296,7 +326,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     fuii::Label("Hello, world; this text doesn't make the button wider aeg");
     fuii::Label("Frame {}##Frames", mFrameCounter);
     if (fuii::Button("Click Me!")) {
-      // Click handler
+      std::println(stderr, "Clicked!");
     }
     fuii::EndStackLayout();
     fuii::EndCard();
@@ -394,8 +424,7 @@ int HelloSkiaWindow::Run() noexcept {
   return *mExitCode;
 }
 
-LRESULT
-HelloSkiaWindow::WindowProc(
+LRESULT HelloSkiaWindow::WindowProc(
   HWND hwnd,
   UINT uMsg,
   WPARAM wParam,
@@ -417,31 +446,75 @@ HelloSkiaWindow::WindowProc(
       break;
     }
     case WM_MOUSEMOVE: {
-      fui::MouseMoveEvent event;
-
-      event.mPoint = {
-        LOWORD(lParam) / gInstance->mDPIScale,
-        HIWORD(lParam) / gInstance->mDPIScale,
-      };
-
-      using fui::MouseButton;
-      if (wParam & MK_LBUTTON) {
-        event.mButtons |= MouseButton::Left;
+      fui::MouseMoveEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_LBUTTONDOWN: {
+      fui::MouseButtonPressEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      e.mChangedButtons = fui::MouseButton::Left;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_LBUTTONUP: {
+      fui::MouseButtonReleaseEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      e.mChangedButtons = fui::MouseButton::Left;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_MBUTTONDOWN: {
+      fui::MouseButtonPressEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      e.mChangedButtons = fui::MouseButton::Middle;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_MBUTTONUP: {
+      fui::MouseButtonReleaseEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      e.mChangedButtons = fui::MouseButton::Middle;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_RBUTTONDOWN: {
+      fui::MouseButtonPressEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      e.mChangedButtons = fui::MouseButton::Right;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_RBUTTONUP: {
+      fui::MouseButtonReleaseEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      e.mChangedButtons = fui::MouseButton::Right;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_XBUTTONDOWN: {
+      fui::MouseButtonPressEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
+        e.mChangedButtons |= fui::MouseButton::X1;
       }
-      if (wParam & MK_MBUTTON) {
-        event.mButtons |= MouseButton::Middle;
+      if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
+        e.mChangedButtons |= fui::MouseButton::X2;
       }
-      if (wParam & MK_RBUTTON) {
-        event.mButtons |= MouseButton::Right;
+      gInstance->mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_XBUTTONUP: {
+      fui::MouseButtonReleaseEvent e;
+      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
+        e.mChangedButtons |= fui::MouseButton::X1;
       }
-      if (wParam & MK_XBUTTON1) {
-        event.mButtons |= MouseButton::X1;
+      if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
+        e.mChangedButtons |= fui::MouseButton::X2;
       }
-      if (wParam & MK_XBUTTON2) {
-        event.mButtons |= MouseButton::X2;
-      }
-
-      gInstance->mFUIRoot.DispatchEvent(&event);
+      gInstance->mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_CLOSE:

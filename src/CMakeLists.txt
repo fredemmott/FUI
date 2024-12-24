@@ -48,6 +48,8 @@ add_executable(
   FredEmmott/GUI/detail/immediate/Widget.cpp FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/events/Event.hpp
   FredEmmott/GUI/events/MouseButton.hpp
+  FredEmmott/GUI/events/MouseButtonPressEvent.hpp
+  FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
   FredEmmott/GUI/events/MouseMoveEvent.hpp
   FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp

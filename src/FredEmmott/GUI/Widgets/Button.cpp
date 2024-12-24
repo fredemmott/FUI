@@ -3,10 +3,6 @@
 
 #include "Button.hpp"
 
-#include <ranges>
-
-#include "FredEmmott/utility/lazy_init.hpp"
-
 using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
@@ -35,6 +31,10 @@ WidgetStyles Button::GetDefaultStyles() const {
     },
   };
   return ret;
+}
+Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {
+  mClicked.Set();
+  return EventHandlerResult::StopPropagation;
 }
 
 }// namespace FredEmmott::GUI::Widgets

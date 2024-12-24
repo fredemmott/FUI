@@ -4,8 +4,12 @@
 
 #include <core/SkRRect.h>
 
+#include <FredEmmott/GUI/Events/MouseButtonPressEvent.hpp>
+#include <FredEmmott/GUI/Events/MouseButtonReleaseEvent.hpp>
 #include <format>
 #include <ranges>
+
+#include "FredEmmott/GUI/detail/immediate_detail.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -194,14 +198,14 @@ void Widget::Paint(SkCanvas* canvas) const {
 
 void Widget::DispatchEvent(const Event* e) {
   if (const auto it = dynamic_cast<const MouseEvent*>(e)) {
-    this->DispatchMouseEvent(it);
+    (void)this->DispatchMouseEvent(it);
     return;
   }
   // whut?
   __debugbreak();
 }
 
-void Widget::DispatchMouseEvent(const MouseEvent* e) {
+Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   auto point = e->mPoint;
   auto& [x, y] = point;
   const auto layout = this->GetLayoutNode();
@@ -209,22 +213,6 @@ void Widget::DispatchMouseEvent(const MouseEvent* e) {
   y -= YGNodeLayoutGetTop(layout);
   const auto w = YGNodeLayoutGetWidth(layout);
   const auto h = YGNodeLayoutGetHeight(layout);
-
-  if (x < 0 || y < 0 || x > w || y > h) {
-    mStateFlags &= ~StateFlags::Hovered;
-
-    MouseMoveEvent mme;
-    static_cast<MouseEvent&>(mme) = *e;
-
-    static constexpr auto invalid = -std::numeric_limits<SkScalar>::infinity();
-    mme.mPoint = {-invalid, -invalid};
-
-    for (auto&& child: this->GetChildren()) {
-      child->DispatchEvent(&mme);
-    }
-    return;
-  }
-  mStateFlags |= StateFlags::Hovered;
 
   unique_ptr<MouseEvent> translated;
   const auto Translate
@@ -236,17 +224,64 @@ void Widget::DispatchMouseEvent(const MouseEvent* e) {
 
   if (const auto it = dynamic_cast<const MouseMoveEvent*>(e)) {
     Translate(it);
+  } else if (const auto it = dynamic_cast<const MouseButtonPressEvent*>(e)) {
+    Translate(it);
+  } else if (const auto it = dynamic_cast<const MouseButtonReleaseEvent*>(e)) {
+    Translate(it);
   }
 
   if (!translated) {
-    return;
+#ifndef NDEBUG
+    __debugbreak();
+#endif
+    return EventHandlerResult::Default;
   }
 
-  // Always propagate 1 level unconditionally, to allow children to synthesize
-  // mouse enter/leave events
-  for (auto&& child: this->GetChildren()) {
-    child->DispatchMouseEvent(translated.get());
+  if (x < 0 || y < 0 || x > w || y > h) {
+    mStateFlags &= ~StateFlags::Hovered;
+
+    static constexpr auto invalid = -std::numeric_limits<SkScalar>::infinity();
+    translated->mPoint = {-invalid, -invalid};
+  } else {
+    mStateFlags |= StateFlags::Hovered;
   }
+
+  bool isClick = false;
+
+  if (const auto it = dynamic_cast<const MouseButtonPressEvent*>(e)) {
+    if (IsHovered()) {
+      mStateFlags |= StateFlags::MouseDownTarget;
+    } else {
+      mStateFlags &= ~StateFlags::MouseDownTarget;
+    }
+  } else if (const auto it = dynamic_cast<const MouseButtonReleaseEvent*>(e)) {
+    constexpr auto clickFlags
+      = StateFlags::Hovered | StateFlags::MouseDownTarget;
+    if ((mStateFlags & clickFlags) == clickFlags) {
+      isClick = true;
+    }
+    mStateFlags &= ~StateFlags::MouseDownTarget;
+  }
+
+  auto result = EventHandlerResult::Default;
+  // Always propagate unconditionally to allow correct internal states
+  for (auto&& child: this->GetChildren()) {
+    if (
+      child->DispatchMouseEvent(translated.get())
+      == EventHandlerResult::StopPropagation) {
+      result = EventHandlerResult::StopPropagation;
+    }
+  }
+
+  if (result == EventHandlerResult::StopPropagation) {
+    return result;
+  }
+
+  if (isClick) {
+    result = this->OnClick(translated.get());
+  }
+
+  return result;
 }
 
 }// namespace FredEmmott::GUI::Widgets

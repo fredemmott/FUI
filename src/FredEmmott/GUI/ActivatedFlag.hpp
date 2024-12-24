@@ -8,16 +8,16 @@ namespace FredEmmott::GUI {
 // Like an std::atomic_flag, but not atomic :D
 class ActivatedFlag {
  public:
-  void Activate() {
-    mActivated = true;
+  void Set() {
+    mValue = true;
   }
 
   [[nodiscard]]
   bool TestAndClear() {
-    return std::exchange(mActivated, false);
+    return std::exchange(mValue, false);
   }
 
  private:
-  bool mActivated {false};
+  bool mValue {false};
 };
 }// namespace FredEmmott::GUI

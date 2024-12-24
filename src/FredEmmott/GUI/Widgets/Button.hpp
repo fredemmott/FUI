@@ -16,6 +16,7 @@ class Button final : public Widget {
 
  protected:
   WidgetStyles GetDefaultStyles() const override;
+  EventHandlerResult OnClick(MouseEvent* e) override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

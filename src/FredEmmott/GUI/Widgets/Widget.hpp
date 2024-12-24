@@ -40,6 +40,11 @@ class Widget {
   [[nodiscard]] bool IsHovered() const noexcept;
 
  protected:
+  enum class EventHandlerResult {
+    Default,
+    StopPropagation,
+  };
+
   // Base spacing unit - see https://fluent2.microsoft.design/layout
   static constexpr SkScalar Spacing = 4;
 
@@ -56,6 +61,11 @@ class Widget {
   virtual void PaintOwnContent(SkCanvas*, const Style& style) const {
   }
 
+  [[nodiscard]]
+  virtual EventHandlerResult OnClick(MouseEvent* event) {
+    return EventHandlerResult::Default;
+  }
+
   [[nodiscard]] auto GetExplicitStyles() const noexcept {
     return mExplicitStyles;
   }
@@ -65,6 +75,7 @@ class Widget {
     Default = 0,
     Disabled = 1,
     Hovered = 2,
+    MouseDownTarget = 4,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
@@ -79,7 +90,8 @@ class Widget {
   std::vector<unique_ptr<Widget>> mChildren;
   std::vector<Widget*> mStorageForGetChildren;
 
-  void DispatchMouseEvent(const MouseEvent*);
+  [[nodiscard]]
+  EventHandlerResult DispatchMouseEvent(const MouseEvent*);
 };
 
 consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {
