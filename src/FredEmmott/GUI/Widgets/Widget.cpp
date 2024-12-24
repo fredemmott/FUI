@@ -30,8 +30,7 @@ void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
     return;
   }
 
-  SkPaint paint;
-  paint.setColor(style.mBackgroundColor.value());
+  auto paint = style.mBackgroundColor->GetPaint(rect);
 
   if (!style.mBorderRadius) {
     canvas->drawRect(rect, paint);
@@ -51,9 +50,8 @@ void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
 
   // TODO: YGNodeStyleSetBorder
   const auto bw = style.mBorderWidth.value();
-  SkPaint paint;
+  auto paint = style.mBorderColor->GetPaint(rect);
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setColor(style.mBorderColor.value());
   paint.setStrokeWidth(bw);
 
   SkRect border = rect;

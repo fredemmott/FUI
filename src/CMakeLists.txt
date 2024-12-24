@@ -39,6 +39,8 @@ add_executable(
   FredEmmott/GUI/Color.cpp FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
+  FredEmmott/GUI/Brush.hpp
+  FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Label.hpp

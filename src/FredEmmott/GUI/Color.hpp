@@ -11,7 +11,7 @@
 
 namespace FredEmmott::GUI {
 
-class Color {
+class Color final {
  public:
   Color() = delete;
   constexpr Color(SkColor color) : mVariant(color) {

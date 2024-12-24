@@ -28,20 +28,23 @@ void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
       "Stylesheet font does not match mFont; computed style not updated");
   }
 #endif
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(*style.mColor);
-
   SkFontMetrics metrics {};
   mFont.GetMetricsInPixels(&metrics);
 
   const auto l = this->GetLayoutNode();
+  // TODO: pass rect into PaintOwnContent as we're calculating it anyway
   const auto x = YGNodeLayoutGetLeft(l);
-  const auto top = YGNodeLayoutGetTop(l);
-  const auto height = YGNodeLayoutGetHeight(l) - metrics.fDescent;
-  const auto y = top + height;
+  const auto y = YGNodeLayoutGetTop(l);
+  const auto h = YGNodeLayoutGetHeight(l);
+  const auto w = YGNodeLayoutGetWidth(l);
+  const auto rect = SkRect::MakeXYWH(x, y, w, h);
 
-  canvas->drawString(mText.c_str(), x, y, mFont, paint);
+  auto paint = style.mColor->GetPaint(rect);
+  paint.setStyle(SkPaint::Style::kFill_Style);
+
+  const auto textHeight = h - metrics.fDescent;
+  const auto textY = y + textHeight;
+  canvas->drawString(mText.c_str(), x, textY, mFont, paint);
 }
 
 WidgetStyles Label::GetDefaultStyles() const {

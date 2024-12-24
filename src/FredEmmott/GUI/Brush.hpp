@@ -1,0 +1,33 @@
+// Copyright 2024 Fred Emmott <fred@fredemmott.com>
+// SPDX-License-Identifier: MIT
+#pragma once
+
+#include <skia/core/SkPaint.h>
+#include <skia/core/SkRect.h>
+
+#include <variant>
+
+#include "SolidColorBrush.hpp"
+
+namespace FredEmmott::GUI {
+
+class Brush final {
+ public:
+  Brush() = delete;
+  constexpr Brush(const std::convertible_to<Color> auto& color)
+    : mBrush(SolidColorBrush {Color {color}}) {
+  }
+
+  [[nodiscard]] SkPaint GetPaint(const SkRect&) const {
+    SkPaint paint;
+    paint.setColor(std::get<SolidColorBrush>(mBrush));
+    return paint;
+  }
+
+  constexpr bool operator==(const Brush&) const noexcept = default;
+
+ private:
+  std::variant<SolidColorBrush> mBrush;
+};
+
+}// namespace FredEmmott::GUI

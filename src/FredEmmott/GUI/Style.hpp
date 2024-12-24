@@ -6,7 +6,7 @@
 
 #include <optional>
 
-#include "Color.hpp"
+#include "Brush.hpp"
 #include "Font.hpp"
 
 namespace FredEmmott::GUI {
@@ -22,11 +22,11 @@ struct Style {
 
   Value<YGAlign> mAlignSelf;
   Value<YGAlign> mAlignItems;
-  Value<Color> mBackgroundColor;
-  Value<Color> mBorderColor;
+  Value<Brush> mBackgroundColor;
+  Value<Brush> mBorderColor;
   Value<SkScalar> mBorderRadius;
   Value<SkScalar> mBorderWidth;
-  InheritableValue<Color> mColor;
+  InheritableValue<Brush> mColor;
   Value<YGFlexDirection> mFlexDirection;
   InheritableValue<Font> mFont;
   Value<SkScalar> mGap;
