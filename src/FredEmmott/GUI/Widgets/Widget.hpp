@@ -32,9 +32,8 @@ class Widget {
   void SetExplicitStyles(const WidgetStyles& styles);
   void Paint(SkCanvas* canvas) const;
 
-  virtual std::span<Widget* const> GetChildren() const noexcept {
-    return {};
-  }
+  std::span<Widget* const> GetChildren() const noexcept;
+  void SetChildren(const std::vector<Widget*>& children);
 
   void DispatchEvent(const Event*);
 
@@ -76,6 +75,9 @@ class Widget {
 
   WidgetStyles mInheritedStyles;
   Style mComputedStyle;
+
+  std::vector<unique_ptr<Widget>> mChildren;
+  std::vector<Widget*> mStorageForGetChildren;
 
   void DispatchMouseEvent(const MouseEvent*);
 };

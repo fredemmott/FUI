@@ -6,7 +6,7 @@
 namespace FredEmmott::GUI::Widgets {
 
 StackLayout::StackLayout(std::size_t id, Direction direction)
-  : Layout(id), mDirection(direction) {
+  : Widget(id), mDirection(direction) {
 }
 
 WidgetStyles StackLayout::GetDefaultStyles() const {

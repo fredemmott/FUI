@@ -4,7 +4,7 @@
 
 #include <FredEmmott/GUI/Style.hpp>
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 struct WidgetStyles {
   Style mDefault;
@@ -22,4 +22,4 @@ struct WidgetStyles {
   bool operator==(const WidgetStyles&) const noexcept = default;
 };
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

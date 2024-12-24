@@ -3,12 +3,14 @@
 #pragma once
 
 #include <FredEmmott/GUI/Widgets/Card.hpp>
-#include <FredEmmott/GUI/detail/immediate_detail.hpp>
-
-#include "SingleChildWidget.hpp"
+#include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
 namespace FredEmmott::GUI::Immediate {
-constexpr SingleChildWidget::Begin<Widgets::Card> BeginCard;
-constexpr SingleChildWidget::End<Widgets::Card> EndCard;
+
+constexpr immediate_detail::BeginWidget<Widgets::Card> BeginCard;
+
+inline void EndCard() {
+  immediate_detail::EndWidget();
+}
 
 }// namespace FredEmmott::GUI::Immediate

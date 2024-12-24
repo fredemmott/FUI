@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "Layout.hpp"
+#include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class StackLayout final : public Layout {
+class StackLayout final : public Widget {
  public:
   enum class Direction {
     Horizontal,

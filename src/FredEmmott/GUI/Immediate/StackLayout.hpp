@@ -3,20 +3,24 @@
 #pragma once
 
 #include <FredEmmott/GUI/Widgets/StackLayout.hpp>
+#include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
 namespace FredEmmott::GUI::Immediate {
 
-using StackLayoutDirection = Widgets::StackLayout::Direction;
-
-void BeginStackLayout(StackLayoutDirection direction);
-void EndStackLayout();
-
 inline void BeginHStackLayout() {
-  BeginStackLayout(StackLayoutDirection::Horizontal);
+  using Widgets::StackLayout;
+  immediate_detail::
+    BeginWidget<StackLayout, StackLayout::Direction::Horizontal> {}();
 }
 
 inline void BeginVStackLayout() {
-  BeginStackLayout(StackLayoutDirection::Vertical);
+  using Widgets::StackLayout;
+  immediate_detail::
+    BeginWidget<StackLayout, StackLayout::Direction::Vertical> {}();
+}
+
+inline void EndStackLayout() {
+  immediate_detail::EndWidget();
 }
 
 }// namespace FredEmmott::GUI::Immediate

@@ -5,6 +5,7 @@
 #include <core/SkRRect.h>
 
 #include <format>
+#include <ranges>
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -126,6 +127,36 @@ void Widget::SetExplicitStyles(const WidgetStyles& styles) {
   mExplicitStyles = styles;
 
   this->ComputeStyles(mInheritedStyles);
+}
+
+std::span<Widget* const> Widget::GetChildren() const noexcept {
+  return mStorageForGetChildren;
+}
+
+void Widget::SetChildren(const std::vector<Widget*>& children) {
+  if (children == mStorageForGetChildren) {
+    return;
+  }
+
+  const auto layout = this->GetLayoutNode();
+  YGNodeRemoveAllChildren(layout);
+
+  std::vector<unique_ptr<Widget>> newChildren;
+  for (auto child: children) {
+    auto it = std::ranges::find(mChildren, child, &unique_ptr<Widget>::get);
+    if (it == mChildren.end()) {
+      newChildren.emplace_back(child);
+    } else {
+      newChildren.emplace_back(std::move(*it));
+    }
+  }
+  mChildren = std::move(newChildren);
+  mStorageForGetChildren = children;
+
+  const auto childLayouts
+    = std::views::transform(mChildren, &Widget::GetLayoutNode)
+    | std::ranges::to<std::vector>();
+  YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
 }
 
 void Widget::Paint(SkCanvas* canvas) const {

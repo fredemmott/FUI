@@ -23,7 +23,6 @@
 #include "FredEmmott/GUI/Immediate/Button.hpp"
 #include "FredEmmott/GUI/Immediate/Card.hpp"
 #include "FredEmmott/GUI/Immediate/Label.hpp"
-#include "FredEmmott/GUI/Immediate/Leaf.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
 #include "FredEmmott/GUI/Immediate/StackLayout.hpp"
 

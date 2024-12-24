@@ -3,7 +3,7 @@
 
 #include "WidgetStyles.hpp"
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Widgets {
 
 WidgetStyles WidgetStyles::InheritableStyles() const noexcept {
   return {
@@ -17,4 +17,4 @@ WidgetStyles& WidgetStyles::operator+=(const WidgetStyles& rhs) {
   return *this;
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Widgets

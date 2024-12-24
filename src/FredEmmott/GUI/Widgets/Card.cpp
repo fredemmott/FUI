@@ -7,25 +7,6 @@ namespace FredEmmott::GUI::Widgets {
 Card::Card(std::size_t id) : Widget(id) {
 }
 
-void Card::SetChild(Widget* child) {
-  if (child == mChild.get()) {
-    return;
-  }
-
-  if (mChild) {
-    YGNodeRemoveChild(this->GetLayoutNode(), mChild->GetLayoutNode());
-  }
-  mChild.reset(child);
-  YGNodeInsertChild(this->GetLayoutNode(), child->GetLayoutNode(), 0);
-}
-
-std::span<Widget* const> Card::GetChildren() const noexcept {
-  if (!mChild) {
-    return {};
-  }
-  mChildRawPointer = mChild.get();
-  return {&mChildRawPointer, 1};
-}
 WidgetStyles Card::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mDefault = {
@@ -36,10 +17,6 @@ WidgetStyles Card::GetDefaultStyles() const {
     },
   };
   return ret;
-}
-
-Widget* Card::GetChild() const noexcept {
-  return mChild.get();
 }
 
 }// namespace FredEmmott::GUI::Widgets

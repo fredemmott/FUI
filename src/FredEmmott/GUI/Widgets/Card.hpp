@@ -12,17 +12,8 @@ class Card final : public Widget {
  public:
   Card(std::size_t id);
 
-  Widget* GetChild() const noexcept;
-  void SetChild(Widget* child);
-  std::span<Widget* const> GetChildren() const noexcept override;
-
  protected:
   WidgetStyles GetDefaultStyles() const override;
-
- private:
-  unique_ptr<Widget> mChild;
-  // Lazy-initialized storage for `GetChildren()`'s span
-  mutable Widget* mChildRawPointer;
 };
 
 }// namespace FredEmmott::GUI::Widgets

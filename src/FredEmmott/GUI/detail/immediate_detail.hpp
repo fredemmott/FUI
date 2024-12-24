@@ -32,6 +32,18 @@ T* GetCurrentNode() {
   return widget_cast<T>(nodes.at(i));
 }
 
+template <std::derived_from<Widget> T = Widget>
+T* GetCurrentParentNode() {
+  if (tStack.size() < 1) {
+    return nullptr;
+  }
+  const auto& [nodes, i] = tStack.at(tStack.size() - 2);
+  if (i == nodes.size()) {
+    return nullptr;
+  }
+  return widget_cast<T>(nodes.at(i));
+}
+
 void TruncateUnlessNextIdEquals(std::size_t id);
 
 class MangledID {
