@@ -7,12 +7,12 @@ namespace FredEmmott::GUI::Widgets {
 
 WidgetStyles WidgetStyles::InheritableStyles() const noexcept {
   return {
-    .mDefault = mDefault.InheritableValues(),
+    .mBase = mBase.InheritableValues(),
     .mHover = mHover.InheritableValues(),
   };
 }
 WidgetStyles& WidgetStyles::operator+=(const WidgetStyles& rhs) {
-  mDefault += rhs.mDefault;
+  mBase += rhs.mBase;
   mHover += rhs.mHover;
   return *this;
 }

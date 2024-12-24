@@ -40,7 +40,7 @@ template <class... Args>
   BeginButton(&clicked, styles, id);
   Label(
     WidgetStyles {
-      .mDefault = {
+      .mBase = {
         .mFont = WidgetFont::ControlContent,
       },
       } + styles.InheritableStyles(),

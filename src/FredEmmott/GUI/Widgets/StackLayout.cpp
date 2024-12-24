@@ -11,7 +11,7 @@ StackLayout::StackLayout(std::size_t id, Direction direction)
 
 WidgetStyles StackLayout::GetDefaultStyles() const {
   static const WidgetStyles ret {
-    .mDefault = {
+    .mBase = {
       .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
       .mGap = Spacing,
     },

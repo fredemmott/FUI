@@ -9,7 +9,7 @@ Card::Card(std::size_t id) : Widget(id) {
 
 WidgetStyles Card::GetDefaultStyles() const {
   static const WidgetStyles ret {
-    .mDefault = {
+    .mBase = {
       .mBackgroundColor = WidgetColor::CardBackgroundFillDefault,
       .mBorderRadius = Spacing * 2,
       .mMargin = Spacing * 9,

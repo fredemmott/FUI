@@ -19,7 +19,7 @@ WidgetStyles Button::GetDefaultStyles() const {
   constexpr auto HorizontalPadding = Spacing * 3;
 
   static const WidgetStyles ret {
-    .mDefault = {
+    .mBase = {
       .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = WidgetColor::ControlFillDefault,
       .mBorderColor = WidgetColor::ControlElevationBorder,
