@@ -18,6 +18,7 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include <print>
 #include <source_location>
 
 #include "FredEmmott/GUI/Immediate/Button.hpp"
@@ -306,7 +307,16 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 }
 
 void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
-  this->RenderSkiaContent(frame.mSkSurface->getCanvas());
+  try {
+    this->RenderSkiaContent(frame.mSkSurface->getCanvas());
+  } catch (const std::exception& e) {
+    std::println(
+      stderr, "Rendering Skia content threw an exception: {}", e.what());
+    if (IsDebuggerPresent()) {
+      __debugbreak();
+    }
+    throw;
+  }
 
   GrD3DFenceInfo fenceInfo {};
   fenceInfo.fFence.retain(mD3DFence.get());

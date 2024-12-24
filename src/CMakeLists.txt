@@ -63,6 +63,7 @@ add_executable(
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/utility/bitflag_enums.hpp
+  FredEmmott/GUI/ActivatedFlag.hpp
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
   FredEmmott/type_traits/concepts.hpp

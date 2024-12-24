@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/Style.hpp>
+#include <FredEmmott/GUI/ActivatedFlag.hpp>
 
 #include "Widget.hpp"
 
@@ -11,6 +11,8 @@ namespace FredEmmott::GUI::Widgets {
 class Button final : public Widget {
  public:
   Button(std::size_t id);
+
+  ActivatedFlag mClicked;
 
  protected:
   WidgetStyles GetDefaultStyles() const override;

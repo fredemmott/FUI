@@ -21,7 +21,8 @@ inline void EndButton() {
   immediate_detail::EndWidget();
 }
 
-bool IsPreviousButtonClicked();
+[[nodiscard]]
+bool IsButtonClicked();
 
 /// Create a button with options and a text label
 template <class... Args>
@@ -42,8 +43,9 @@ template <class... Args>
       } + styles.InheritableStyles(),
     "{}##Label",
     text);
+  const bool clicked = IsButtonClicked();
   EndButton();
-  return IsPreviousButtonClicked();
+  return clicked;
 }
 
 /// Create a button with a text label

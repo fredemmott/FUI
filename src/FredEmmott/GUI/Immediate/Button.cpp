@@ -4,10 +4,13 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-bool IsPreviousButtonClicked() {
-  // TODO: when we track clicks in the button, we can pull this out of
-  // `tStack`, and dynamic-cast the current sibling
-  return false;
+bool IsButtonClicked() {
+  auto button = immediate_detail::GetCurrentParentNode<Widgets::Button>();
+  if (!button) [[unlikely]] {
+    throw std::logic_error(
+      "IsButtonClick() called, but current node is not a button");
+  }
+  return button->mClicked.TestAndClear();
 }
 
 }// namespace FredEmmott::GUI::Immediate
