@@ -12,7 +12,7 @@ Color Resolve(const Usage usage) noexcept {
   switch (usage) {
 #define DEFINE_CASE(X) \
   case Usage::X: \
-    return DefaultTheme::X;
+    return DefaultThemeColors.m##X;
     FUI_WINUI_THEME_COLORS(DEFINE_CASE)
 #undef DEFINE_CASE
   }
