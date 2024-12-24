@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/ActivatedFlag.hpp>
 #include <FredEmmott/GUI/Immediate/concepts.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
@@ -9,11 +10,32 @@
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-template <widget T, auto... TFixedArgs>
+template <widget T, ActivatedFlag T::* P = nullptr, auto... TFixedArgs>
 struct BeginWidget {
+  static constexpr bool HasActivation = (P != nullptr);
+
   void operator()(
     const Widgets::WidgetStyles& styles = {},
-    MangledID id = MakeID<T>(tStack.back().mNextIndex)) const {
+    MangledID id = MakeID<T>(tStack.back().mNextIndex)) const
+    requires(!HasActivation)
+  {
+    Begin(styles, id);
+  }
+
+  void operator()(
+    bool* activated,
+    const Widgets::WidgetStyles& styles = {},
+    MangledID id = MakeID<T>(tStack.back().mNextIndex)) const
+    requires(HasActivation)
+  {
+    Begin(styles, id);
+    if (activated) {
+      *activated = (GetCurrentParentNode<T>()->*P).TestAndClear();
+    }
+  }
+
+ private:
+  void Begin(const Widgets::WidgetStyles& styles, MangledID id) const {
     TruncateUnlessNextIdEquals(id);
 
     auto& [siblings, i] = tStack.back();

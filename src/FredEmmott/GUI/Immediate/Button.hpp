@@ -16,13 +16,12 @@ namespace FredEmmott::GUI::Immediate {
  * @see `Button()` if you just want text
  */
 
-constexpr immediate_detail::BeginWidget<Widgets::Button> BeginButton;
+constexpr immediate_detail::
+  BeginWidget<Widgets::Button, &Widgets::Button::mClicked>
+    BeginButton;
 inline void EndButton() {
   immediate_detail::EndWidget();
 }
-
-[[nodiscard]]
-bool IsButtonClicked();
 
 /// Create a button with options and a text label
 template <class... Args>
@@ -34,7 +33,8 @@ template <class... Args>
 
   const auto [id, text]
     = ParsedID::Make<Widgets::Button>(format, std::forward<Args>(args)...);
-  BeginButton(styles, id);
+  bool clicked {};
+  BeginButton(&clicked, styles, id);
   Label(
     WidgetStyles {
       .mDefault = {
@@ -43,7 +43,6 @@ template <class... Args>
       } + styles.InheritableStyles(),
     "{}##Label",
     text);
-  const bool clicked = IsButtonClicked();
   EndButton();
   return clicked;
 }

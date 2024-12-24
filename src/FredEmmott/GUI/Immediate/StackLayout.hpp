@@ -10,13 +10,13 @@ namespace FredEmmott::GUI::Immediate {
 inline void BeginHStackLayout() {
   using Widgets::StackLayout;
   immediate_detail::
-    BeginWidget<StackLayout, StackLayout::Direction::Horizontal> {}();
+    BeginWidget<StackLayout, nullptr, StackLayout::Direction::Horizontal> {}();
 }
 
 inline void BeginVStackLayout() {
   using Widgets::StackLayout;
   immediate_detail::
-    BeginWidget<StackLayout, StackLayout::Direction::Vertical> {}();
+    BeginWidget<StackLayout, nullptr, StackLayout::Direction::Vertical> {}();
 }
 
 inline void EndStackLayout() {
