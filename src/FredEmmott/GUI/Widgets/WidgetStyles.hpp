@@ -9,6 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 struct WidgetStyles {
   Style mBase;
   Style mHover;
+  Style mActive;
 
   [[nodiscard]] WidgetStyles InheritableStyles() const noexcept;
 

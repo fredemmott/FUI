@@ -37,8 +37,6 @@ class Widget {
 
   void DispatchEvent(const Event*);
 
-  [[nodiscard]] bool IsHovered() const noexcept;
-
  protected:
   enum class EventHandlerResult {
     Default,
@@ -76,6 +74,7 @@ class Widget {
     Disabled = 1,
     Hovered = 2,
     MouseDownTarget = 4,
+    Active = 8,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 

@@ -77,10 +77,6 @@ Widget::Widget(std::size_t id)
   YGNodeSetContext(mYoga.get(), this);
 }
 
-bool Widget::IsHovered() const noexcept {
-  return (mStateFlags & StateFlags::Hovered) == StateFlags::Hovered;
-}
-
 Widget::~Widget() = default;
 
 void Widget::ComputeStyles(const WidgetStyles& inherited) {
@@ -89,8 +85,11 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   merged += mExplicitStyles;
 
   auto style = merged.mBase;
-  if (this->IsHovered()) {
+  if ((mStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
     style += merged.mHover;
+  }
+  if ((mStateFlags & StateFlags::Active) == StateFlags::Active) {
+    style += merged.mActive;
   }
 
   if (mComputedStyle != style) {
@@ -222,11 +221,22 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
         return static_cast<const T&>(*translated);
       };
 
+  enum class EventKind {
+    Unknown,
+    Move,
+    ButtonPress,
+    ButtonRelease,
+  };
+  auto kind = EventKind::Unknown;
+
   if (const auto it = dynamic_cast<const MouseMoveEvent*>(e)) {
+    kind = EventKind::Move;
     Translate(it);
   } else if (const auto it = dynamic_cast<const MouseButtonPressEvent*>(e)) {
+    kind = EventKind::ButtonPress;
     Translate(it);
   } else if (const auto it = dynamic_cast<const MouseButtonReleaseEvent*>(e)) {
+    kind = EventKind::ButtonRelease;
     Translate(it);
   }
 
@@ -248,19 +258,31 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
 
   bool isClick = false;
 
-  if (const auto it = dynamic_cast<const MouseButtonPressEvent*>(e)) {
-    if (IsHovered()) {
-      mStateFlags |= StateFlags::MouseDownTarget;
-    } else {
-      mStateFlags &= ~StateFlags::MouseDownTarget;
+  switch (kind) {
+    case EventKind::Unknown:
+#ifndef NDEBUG
+      __debugbreak();
+#endif
+      break;
+    case EventKind::Move:
+      break;
+    case EventKind::ButtonPress: {
+      constexpr auto flags = StateFlags::MouseDownTarget | StateFlags::Active;
+      if ((mStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
+        mStateFlags |= flags;
+      } else {
+        mStateFlags &= ~flags;
+      }
+      break;
     }
-  } else if (const auto it = dynamic_cast<const MouseButtonReleaseEvent*>(e)) {
-    constexpr auto clickFlags
-      = StateFlags::Hovered | StateFlags::MouseDownTarget;
-    if ((mStateFlags & clickFlags) == clickFlags) {
-      isClick = true;
+    case EventKind::ButtonRelease: {
+      constexpr auto flags = StateFlags::Hovered | StateFlags::MouseDownTarget;
+      if ((mStateFlags & flags) == flags) {
+        isClick = true;
+      }
+      mStateFlags &= ~(StateFlags::MouseDownTarget | StateFlags::Active);
+      break;
     }
-    mStateFlags &= ~StateFlags::MouseDownTarget;
   }
 
   auto result = EventHandlerResult::Default;
