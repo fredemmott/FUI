@@ -20,6 +20,7 @@ WidgetStyles Button::GetDefaultStyles() const {
 
   static const WidgetStyles ret {
     .mDefault = {
+      .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = WidgetColor::ControlFillDefault,
       .mBorderColor = WidgetColor::ControlElevationBorder,
       .mBorderRadius = Spacing,

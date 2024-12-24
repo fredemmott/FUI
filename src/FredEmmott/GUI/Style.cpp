@@ -4,6 +4,8 @@
 #include "Style.hpp"
 
 #define FUI_STYLE_PROPERTIES(X) \
+  X(AlignItems) \
+  X(AlignSelf) \
   X(BackgroundColor) \
   X(BorderColor) \
   X(BorderRadius) \

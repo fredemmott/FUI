@@ -20,6 +20,8 @@ struct Style {
   template <class T>
   using Value = std::optional<T>;
 
+  Value<YGAlign> mAlignSelf;
+  Value<YGAlign> mAlignItems;
   Value<Color> mBackgroundColor;
   Value<Color> mBorderColor;
   Value<SkScalar> mBorderRadius;

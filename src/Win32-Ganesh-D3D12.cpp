@@ -292,7 +292,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
     fuii::BeginCard();
     fuii::BeginVStackLayout();
-    fuii::Label("Hello, world");
+    fuii::Label("Hello, world; this text doesn't make the button wider aeg");
     fuii::Label("Frame {}##Frames", mFrameCounter);
     if (fuii::Button("Click Me!")) {
       // Click handler

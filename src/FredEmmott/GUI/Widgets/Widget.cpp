@@ -103,6 +103,8 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
           setter(layout, std::forward<Front>(args)..., *value);
         }
       };
+  setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
+  setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
