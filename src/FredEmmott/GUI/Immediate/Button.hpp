@@ -13,9 +13,12 @@ namespace FredEmmott::GUI::Immediate {
 /** Start a button containing a child widget; for multiple widgets, use
  * a layout.
  *
+ * Usage:
+ *
+ *   BeginButton(&clicked, [style[, id]]);
+ *
  * @see `Button()` if you just want text
  */
-
 constexpr immediate_detail::
   BeginWidget<Widgets::Button, &Widgets::Button::mClicked>
     BeginButton;
