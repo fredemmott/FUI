@@ -8,13 +8,13 @@
 namespace FredEmmott::GUI::WidgetColor {
 
 Color Resolve(const Usage usage) noexcept {
+  using namespace gui_detail::WinUI3Themes;
   switch (usage) {
-    case ControlElevationBorder:
-      return Color { SystemColor::Foreground } * (0x08 / 255.0);
-    case CardBackgroundFillDefault:
-      return Color { SystemColor::Foreground } * (0x27 / 255.0);
-    case ControlFillDefault:
-      return Color { SystemColor::Foreground } * (0x16 / 255.0);
+#define DEFINE_CASE(X) \
+  case Usage::X: \
+    return DefaultTheme::X;
+    FUI_WINUI_THEME_COLORS(DEFINE_CASE)
+#undef DEFINE_CASE
   }
   std::unreachable();
 }

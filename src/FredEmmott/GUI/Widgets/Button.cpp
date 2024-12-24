@@ -18,9 +18,11 @@ WidgetStyles Button::GetDefaultStyles() const {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = WidgetColor::ControlFillDefault,
-      .mBorderColor = WidgetColor::ControlElevationBorder,
+      // TODO: should be 'ControlElevationBorderBrush' linear gradient
+      .mBorderColor = WidgetColor::ControlStrokeDefault,
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
+      .mColor = WidgetColor::TextFillPrimary,
       .mFont = WidgetFont::ControlContent,
       .mPaddingBottom = VerticalPadding,
       .mPaddingLeft = HorizontalPadding,
@@ -28,7 +30,12 @@ WidgetStyles Button::GetDefaultStyles() const {
       .mPaddingTop = VerticalPadding,
     },
     .mHover = {
-      .mBackgroundColor = SK_ColorRED,
+      .mBackgroundColor = WidgetColor::ControlFillSecondary,
+    },
+    .mActive = {
+      .mBackgroundColor = WidgetColor::ControlFillTertiary,
+      .mBorderColor = WidgetColor::ControlStrokeDefault,
+      .mColor = WidgetColor::TextFillSecondary,
     },
   };
   return ret;

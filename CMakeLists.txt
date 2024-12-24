@@ -19,4 +19,5 @@ set(
 
 project(HelloSkia VERSION 0.0.1 LANGUAGES CXX)
 
-add_subdirectory("src")
+add_subdirectory(third-party)
+add_subdirectory(src)
