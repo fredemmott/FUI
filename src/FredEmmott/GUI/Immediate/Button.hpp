@@ -38,14 +38,7 @@ template <class... Args>
     = ParsedID::Make<Widgets::Button>(format, std::forward<Args>(args)...);
   bool clicked {};
   BeginButton(&clicked, styles, id);
-  Label(
-    WidgetStyles {
-      .mBase = {
-        .mFont = WidgetFont::ControlContent,
-      },
-      } + styles.InheritableStyles(),
-    "{}##Label",
-    text);
+  Label("{}##Label", text);
   EndButton();
   return clicked;
 }

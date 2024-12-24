@@ -21,6 +21,7 @@ WidgetStyles Button::GetDefaultStyles() const {
       .mBorderColor = WidgetColor::ControlElevationBorder,
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
+      .mFont = WidgetFont::ControlContent,
       .mPaddingBottom = VerticalPadding,
       .mPaddingLeft = HorizontalPadding,
       .mPaddingRight = HorizontalPadding,
