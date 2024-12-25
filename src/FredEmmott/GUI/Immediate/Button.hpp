@@ -23,7 +23,7 @@ constexpr immediate_detail::
   BeginWidget<Widgets::Button, &Widgets::Button::mClicked>
     BeginButton;
 inline void EndButton() {
-  immediate_detail::EndWidget();
+  immediate_detail::EndWidget<Widgets::Button>();
 }
 
 /// Create a button with options and a text label

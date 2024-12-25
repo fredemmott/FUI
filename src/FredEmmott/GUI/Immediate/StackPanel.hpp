@@ -20,7 +20,7 @@ inline void BeginVStackPanel() {
 }
 
 inline void EndStackPanel() {
-  immediate_detail::EndWidget();
+  immediate_detail::EndWidget<Widgets::StackPanel>();
 }
 
 }// namespace FredEmmott::GUI::Immediate

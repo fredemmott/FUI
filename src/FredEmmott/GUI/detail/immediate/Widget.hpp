@@ -50,6 +50,18 @@ struct BeginWidget {
   }
 };
 
-void EndWidget();
+template <class T>
+void EndWidget() {
+#ifndef NDEBUG
+  if (!GetCurrentParentNode<T>()) [[unlikely]] {
+    throw std::logic_error("EndWidget type does not match BeginWidget");
+  }
+#endif
+  const auto back = std::move(tStack.back());
+  tStack.pop_back();
+
+  GetCurrentNode()->SetChildren(back.mChildren);
+  ++tStack.back().mNextIndex;
+}
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

@@ -10,7 +10,7 @@ namespace FredEmmott::GUI::Immediate {
 constexpr immediate_detail::BeginWidget<Widgets::Card> BeginCard;
 
 inline void EndCard() {
-  immediate_detail::EndWidget();
+  immediate_detail::EndWidget<Widgets::Card>();
 }
 
 }// namespace FredEmmott::GUI::Immediate
