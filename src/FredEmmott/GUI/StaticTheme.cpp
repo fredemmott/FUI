@@ -48,10 +48,11 @@ Color Resolve(const ColorType color) noexcept {
 
 Brush Resolve(const BrushType brush) noexcept {
   using namespace gui_detail::WinUI3Themes;
+  const auto& theme = GetCurrentTheme();
   switch (brush) {
 #define DEFINE_CASE(X) \
   case X: \
-    return DefaultTheme.m##X;
+    return theme.m##X;
     FUI_WINUI_THEME_BRUSHES(DEFINE_CASE)
 #undef DEFINE_CASE
   }

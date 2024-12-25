@@ -20,6 +20,12 @@ class LinearGradientBrush final {
     SkScalar mOffset;
     SkColor mColor;
   };
+  struct ScaleTransform {
+    SkPoint mOrigin {0, 0};
+    SkScalar mScaleX {1};
+    SkScalar mScaleY {1};
+    bool operator==(const ScaleTransform&) const noexcept = default;
+  };
 
   LinearGradientBrush() = delete;
 
@@ -27,7 +33,8 @@ class LinearGradientBrush final {
     MappingMode mode,
     SkPoint start,
     SkPoint end,
-    const std::vector<Stop>& stops);
+    const std::vector<Stop>& stops,
+    ScaleTransform scaleTransform = {});
 
   [[nodiscard]] SkPaint GetPaint(const SkRect&) const;
 
@@ -36,6 +43,7 @@ class LinearGradientBrush final {
  private:
   sk_sp<SkShader> mShader;
   MappingMode mMappingMode;
+  ScaleTransform mScaleTransform;
 };
 
 }// namespace FredEmmott::GUI

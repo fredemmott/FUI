@@ -54,6 +54,7 @@ function Resolve-Color($Value, $Colors)
     }
     default {
       Write-Host "ERROR: Can't figure out how to parse ${Value} in SolidColorBrush"
+      exit -1
     }
   }
 }
@@ -88,6 +89,25 @@ function Get-LinearGradientBrush($Colors, $Brush)
     $Stops += "{$Offset, $Color }"
   }
 
+  $RelativeScale = ''
+  $TransformQuery = Select-Xml -Xml $Brush `
+    -Namespace $XMLNS `
+    -XPath "p:LinearGradientBrush.RelativeTransform/*"
+  if ($TransformQuery)
+  {
+    $N = $TransformQuery.Node
+    if ($N.LocalName -ne 'ScaleTransform')
+    {
+      Write-Host "Unhandled LinearGradient transform: $( $N.LocalName )"
+      exit(-1)
+    }
+    $scaleX = $N.HasAttribute('ScaleX') ? $N.GetAttribute('ScaleX') : 1
+    $scaleY = $N.HasAttribute('ScaleY') ? $N.GetAttribute('ScaleY') : 1
+    $originX = $N.HasAttribute('CenterX') ? $N.GetAttribute('CenterX') : 0
+    $originY = $N.HasAttribute('CenterY') ? $N.GetAttribute('CenterY') : 0
+    $RelativeScale = "`n  { .mOrigin = { $originX, $originY }, .mScaleX = $scaleX, .mScaleY = $scaleY }"
+  }
+
   return @{
     Key = $Key;
     Value = @"
@@ -95,7 +115,7 @@ LinearGradientBrush {
   LinearGradientBrush::MappingMode::$Mode,
   SkPoint { $Start },
   SkPoint { $End },
-  { $( $Stops -join ', ' ) },
+  { $( $Stops -join ', ' ) },$RelativeScale
 }
 "@
   }
