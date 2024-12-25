@@ -43,7 +43,6 @@ class LinearGradientBrush final {
  private:
   sk_sp<SkShader> mShader;
   MappingMode mMappingMode;
-  ScaleTransform mScaleTransform;
 };
 
 }// namespace FredEmmott::GUI

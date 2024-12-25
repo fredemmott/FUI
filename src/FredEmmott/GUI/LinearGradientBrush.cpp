@@ -16,7 +16,7 @@ LinearGradientBrush::LinearGradientBrush(
   SkPoint end,
   const std::vector<Stop>& stops,
   ScaleTransform scaleTransform)
-  : mMappingMode(mode), mScaleTransform(scaleTransform) {
+  : mMappingMode(mode) {
   if (stops.size() < 2) [[unlikely]] {
     throw std::invalid_argument(
       "linear gradients must have at least two stops");
@@ -27,27 +27,34 @@ LinearGradientBrush::LinearGradientBrush(
     positions.push_back(pos);
     colors.push_back(color);
   }
-  constexpr bool TestGradients = true;
-  if constexpr (false) {
+  constexpr bool TestGradients = false;
+  if constexpr (TestGradients) {
     colors.front() = SK_ColorRED;
     colors.back() = SK_ColorGREEN;
   }
 
+  auto m = SkMatrix::I();
+  const auto xRange = (end.x() - start.x());
+  const auto yRange = (end.y() - start.y());
+  m.postScale(
+    scaleTransform.mScaleX,
+    scaleTransform.mScaleY,
+    scaleTransform.mOrigin.x() * xRange,
+    scaleTransform.mOrigin.y() * yRange);
+
   const SkPoint ends[] = {start, end};
-  mShader = SkGradientShader::MakeLinear(
-    ends, colors.data(), positions.data(), stops.size(), SkTileMode::kClamp);
+  mShader
+    = SkGradientShader::MakeLinear(
+        ends, colors.data(), positions.data(), stops.size(), SkTileMode::kClamp)
+        ->makeWithLocalMatrix(m);
 }
 
 SkPaint LinearGradientBrush::GetPaint(const SkRect& rect) const {
-  const auto& s = mScaleTransform;
-  auto m = SkMatrix::Translate(-s.mOrigin.x(), -s.mOrigin.y())
-             .postScale(s.mScaleX, s.mScaleY)
-             .postTranslate(s.mOrigin.x(), s.mOrigin.y());
+  auto m = SkMatrix::I();
   if (mMappingMode == MappingMode::RelativeToBoundingBox) {
     m.postScale(rect.width(), rect.height());
   }
-
-  m.postTranslate(rect.left(), rect.top());
+  m.postTranslate(rect.x(), rect.y());
 
   SkPaint paint;
   paint.setShader(mShader->makeWithLocalMatrix(m));
