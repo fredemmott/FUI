@@ -33,6 +33,7 @@ WidgetStyles Button::GetDefaultStyles() const {
     },
     .mHover = {
       .mBackgroundColor = ControlFillColorSecondaryBrush,
+      .mBorderColor = ControlElevationBorderBrush,
     },
     .mActive = {
       .mBackgroundColor = ControlFillColorTertiaryBrush,
@@ -42,6 +43,7 @@ WidgetStyles Button::GetDefaultStyles() const {
   };
   return ret;
 }
+
 Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {
   mClicked.Set();
   return EventHandlerResult::StopPropagation;
