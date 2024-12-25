@@ -4,8 +4,8 @@
 
 #include <core/SkRRect.h>
 
-#include <FredEmmott/GUI/Events/MouseButtonPressEvent.hpp>
-#include <FredEmmott/GUI/Events/MouseButtonReleaseEvent.hpp>
+#include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
+#include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <format>
 #include <ranges>
 

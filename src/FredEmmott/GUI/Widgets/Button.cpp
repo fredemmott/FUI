@@ -21,7 +21,7 @@ WidgetStyles Button::GetDefaultStyles() const {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = ControlFillColorDefaultBrush,
-      .mBorderColor = Brush { ControlElevationBorderBrush },
+      .mBorderColor = ControlElevationBorderBrush,
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
       .mColor = TextFillColorPrimaryBrush,

@@ -6,9 +6,15 @@
 #include <skia/core/SkRect.h>
 #include <skia/core/SkShader.h>
 
-#include <Vector>
+#include <vector>
 
 namespace FredEmmott::GUI {
+struct ScaleTransform {
+  SkPoint mOrigin {0, 0};
+  SkScalar mScaleX {1};
+  SkScalar mScaleY {1};
+  bool operator==(const ScaleTransform&) const noexcept = default;
+};
 
 class LinearGradientBrush final {
  public:
@@ -20,12 +26,7 @@ class LinearGradientBrush final {
     SkScalar mOffset;
     SkColor mColor;
   };
-  struct ScaleTransform {
-    SkPoint mOrigin {0, 0};
-    SkScalar mScaleX {1};
-    SkScalar mScaleY {1};
-    bool operator==(const ScaleTransform&) const noexcept = default;
-  };
+  using ScaleTransform = ScaleTransform;
 
   LinearGradientBrush() = delete;
 

@@ -57,7 +57,7 @@ static Store gStore;
 Color Resolve(const ColorType usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X, IMPL) \
-  case ColorType::##X: \
+  case ColorType::X: \
     return gStore.m##X;
     FUI_SYSTEM_COLOR_USAGES(USAGE_CASE);
 #undef USAGE_CASE
