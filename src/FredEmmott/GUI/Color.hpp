@@ -30,8 +30,6 @@ class Color final {
     return this->Resolve();
   }
 
-  Color MixIn(SkScalar ratio, const Color&) const noexcept;
-
   constexpr bool operator==(const Color& other) const noexcept = default;
 
  private:
