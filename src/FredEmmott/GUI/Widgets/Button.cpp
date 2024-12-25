@@ -20,11 +20,11 @@ WidgetStyles Button::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
-      .mBackgroundColor = WidgetColor::ControlFillColorDefault,
+      .mBackgroundColor = ControlFillColorDefaultBrush,
       .mBorderColor = Brush { ControlElevationBorderBrush },
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
-      .mColor = WidgetColor::TextFillColorPrimary,
+      .mColor = TextFillColorPrimaryBrush,
       .mFont = WidgetFont::ControlContent,
       .mPaddingBottom = VerticalPadding,
       .mPaddingLeft = HorizontalPadding,
@@ -32,12 +32,12 @@ WidgetStyles Button::GetDefaultStyles() const {
       .mPaddingTop = VerticalPadding,
     },
     .mHover = {
-      .mBackgroundColor = WidgetColor::ControlFillColorSecondary,
+      .mBackgroundColor = ControlFillColorSecondaryBrush,
     },
     .mActive = {
-      .mBackgroundColor = WidgetColor::ControlFillColorTertiary,
-      .mBorderColor = WidgetColor::ControlStrokeColorDefault,
-      .mColor = WidgetColor::TextFillColorSecondary,
+      .mBackgroundColor = ControlFillColorTertiaryBrush,
+      .mBorderColor = ControlStrokeColorDefaultBrush,
+      .mColor = TextFillColorSecondaryBrush,
     },
   };
   return ret;

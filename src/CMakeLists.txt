@@ -56,7 +56,6 @@ add_executable(
   FredEmmott/GUI/events/MouseMoveEvent.hpp
   FredEmmott/GUI/SystemColor.cpp FredEmmott/GUI/SystemColor.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
-  FredEmmott/GUI/WidgetColor.cpp FredEmmott/GUI/WidgetColor.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp

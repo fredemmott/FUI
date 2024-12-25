@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "../Color.hpp"
-#include "../WidgetColor.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
