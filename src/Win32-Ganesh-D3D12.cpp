@@ -432,11 +432,14 @@ LRESULT HelloSkiaWindow::WindowProc(
   namespace fui = FredEmmott::GUI;
 
   switch (uMsg) {
+    case WM_SETTINGCHANGE:
+      fui::StaticTheme::Refresh();
+      break;
     case WM_SIZE: {
       const UINT width = LOWORD(lParam);
       const UINT height = HIWORD(lParam);
       gInstance->mPendingResize = PixelSize {width, height};
-      return 0;
+      break;
     }
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);

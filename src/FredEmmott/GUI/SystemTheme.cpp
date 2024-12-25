@@ -65,4 +65,9 @@ Color Resolve(const ColorType usage) noexcept {
   std::unreachable();
 }
 
+void Refresh() {
+  gStore = {};
+  gStore.Populate();
+}
+
 }// namespace FredEmmott::GUI::SystemTheme

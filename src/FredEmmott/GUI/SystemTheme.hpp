@@ -53,4 +53,11 @@ using enum ColorType;
 
 Color Resolve(ColorType usage) noexcept;
 
+/** Purge caches and update to the current Windows theme.
+ *
+ * You probably want to call `StaticTheme::Refresh()` instead, which will call
+ * this for you.
+ */
+void Refresh();
+
 }// namespace FredEmmott::GUI::SystemTheme
