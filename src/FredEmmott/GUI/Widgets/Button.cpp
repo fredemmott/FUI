@@ -17,12 +17,12 @@ WidgetStyles Button::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
-      .mBackgroundColor = WidgetColor::ControlFillDefault,
+      .mBackgroundColor = WidgetColor::ControlFillColorDefault,
       // TODO: should be 'ControlElevationBorderBrush' linear gradient
-      .mBorderColor = WidgetColor::ControlStrokeDefault,
+      .mBorderColor = WidgetColor::ControlStrokeColorDefault,
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
-      .mColor = WidgetColor::TextFillPrimary,
+      .mColor = WidgetColor::TextFillColorPrimary,
       .mFont = WidgetFont::ControlContent,
       .mPaddingBottom = VerticalPadding,
       .mPaddingLeft = HorizontalPadding,
@@ -30,12 +30,12 @@ WidgetStyles Button::GetDefaultStyles() const {
       .mPaddingTop = VerticalPadding,
     },
     .mHover = {
-      .mBackgroundColor = WidgetColor::ControlFillSecondary,
+      .mBackgroundColor = WidgetColor::ControlFillColorSecondary,
     },
     .mActive = {
-      .mBackgroundColor = WidgetColor::ControlFillTertiary,
-      .mBorderColor = WidgetColor::ControlStrokeDefault,
-      .mColor = WidgetColor::TextFillSecondary,
+      .mBackgroundColor = WidgetColor::ControlFillColorTertiary,
+      .mBorderColor = WidgetColor::ControlStrokeColorDefault,
+      .mColor = WidgetColor::TextFillColorSecondary,
     },
   };
   return ret;

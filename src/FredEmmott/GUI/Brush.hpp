@@ -7,6 +7,7 @@
 
 #include <variant>
 
+#include "LinearGradientBrush.hpp"
 #include "SolidColorBrush.hpp"
 
 namespace FredEmmott::GUI {
@@ -27,7 +28,10 @@ class Brush final {
   constexpr bool operator==(const Brush&) const noexcept = default;
 
  private:
-  std::variant<SolidColorBrush> mBrush;
+  // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
+  // wanting more than just LinearGradientBrush, but it's worth special-casing
+  // SolidColorBrush
+  std::variant<SolidColorBrush, LinearGradientBrush> mBrush;
 };
 
 }// namespace FredEmmott::GUI

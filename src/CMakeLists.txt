@@ -81,6 +81,7 @@ target_link_libraries(
   skia
   yoga::yogacore
   winui3-themes
+  User32
 )
 target_compile_definitions(
   HelloSkia-Win32-Ganesh-D3D12

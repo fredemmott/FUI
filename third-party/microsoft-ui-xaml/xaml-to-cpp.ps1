@@ -15,7 +15,7 @@ $Themes = Select-Xml `
 
 function Get-Key($Color)
 {
-  return $Color.Attributes.ItemOf("Key", $XMLNS.x).Value -Replace 'Color', ''
+  return $Color.GetAttribute("Key", $XMLNS.x)
 }
 
 function Get-Color($Node)
@@ -35,9 +35,28 @@ function Get-Color($Node)
   }
 }
 
+function Get-SolidColorBrush($Brush)
+{
+  $Key = (Get-Key $Brush)
+  $Lookup = $Brush.GetAttribute('Color')
+  switch -wildcard ($Lookup)
+  {
+    'Transparent' {
+      $Value = 'SK_ColorTRANSPARENT'
+    }
+    '#FF00FF' {
+      # Other hex values are possible, but not actually used. This seems to be a test color
+      $Value = 'SK_ColorMAGENTA'
+    }
+  }
+  Write-Host $Lookup
+  Write-Host $Value
+}
+
 function Get-Theme($Theme)
 {
   $Colors = $Theme.Color | Sort-Object -Property { Get-Key($_) } | ForEach-Object { Get-Color($_) }
+  $SolidColorBrushes = $Theme.SolidColorBrush | Sort-Object -Property { Get-Key($_) } | ForEach-Object { Get-SolidColorBrush($_) }
   return @{
     Name = $Theme.Key;
     Colors = $Colors;
@@ -75,7 +94,7 @@ constexpr ThemeColors $( $Theme.Name )ThemeColors {$(
 } )
 
 enum class Colors {$(
-$Keys.foreach({ "`n  $PSItem," }) )
+$Keys.foreach({ "`n  $( $PSItem )," }) )
 };
 
 }
