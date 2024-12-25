@@ -33,6 +33,12 @@ namespace FredEmmott::GUI {
 class Color;
 }// namespace FredEmmott::GUI
 
+/** The 'System Theme' is the currently selected Windows theme.
+ *
+ * This can be customized by the user, and can change at runtime.
+ *
+ * Changing the System Theme may also cause the current Static Theme to change.
+ */
 namespace FredEmmott::GUI::SystemTheme {
 
 // This library is a visual clone of WinUI3, so even if we're ported to
