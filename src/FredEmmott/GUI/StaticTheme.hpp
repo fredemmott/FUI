@@ -13,8 +13,10 @@ namespace FredEmmott::GUI::StaticTheme {
 
 using BrushType = gui_detail::WinUI3Themes::Brushes;
 using ColorType = gui_detail::WinUI3Themes::Colors;
+
 using enum BrushType;
-using enum ColorType;
+// not using the `ColorType` enum as brushes are generally preferable
+
 Brush Resolve(BrushType brush) noexcept;
 Color Resolve(ColorType color) noexcept;
 };// namespace FredEmmott::GUI::StaticTheme

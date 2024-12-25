@@ -15,7 +15,7 @@ Color Resolve(const ColorType color) noexcept {
   using namespace gui_detail::WinUI3Themes;
   switch (color) {
 #define DEFINE_CASE(X) \
-  case X: \
+  case ColorType::X: \
     return DefaultTheme.m##X;
     FUI_WINUI_THEME_COLORS(DEFINE_CASE)
 #undef DEFINE_CASE
