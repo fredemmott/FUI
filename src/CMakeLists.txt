@@ -35,6 +35,7 @@ add_executable(
   WIN32
   Win32-Ganesh-D3D12.cpp
   Win32-Ganesh-D3D12.hpp
+  app.exe.manifest
 
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
