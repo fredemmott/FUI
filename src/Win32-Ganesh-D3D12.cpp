@@ -391,7 +391,7 @@ void HelloSkiaWindow::RenderFrame() {
 
   RenderSkiaContent(frame);
 
-  CheckHResult(mSwapChain->Present(1, 0));
+  CheckHResult(mSwapChain->Present(0, 0));
 }
 
 int HelloSkiaWindow::Run() noexcept {

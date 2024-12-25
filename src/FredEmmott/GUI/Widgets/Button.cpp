@@ -3,7 +3,10 @@
 
 #include "Button.hpp"
 
+#include <FredEmmott/GUI/StaticTheme.hpp>
+
 using namespace FredEmmott::utility;
+using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -18,8 +21,7 @@ WidgetStyles Button::GetDefaultStyles() const {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = WidgetColor::ControlFillColorDefault,
-      // TODO: should be 'ControlElevationBorderBrush' linear gradient
-      .mBorderColor = WidgetColor::ControlStrokeColorDefault,
+      .mBorderColor = Brush { ControlElevationBorderBrush },
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
       .mColor = WidgetColor::TextFillColorPrimary,

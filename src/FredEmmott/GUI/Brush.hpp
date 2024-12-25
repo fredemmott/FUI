@@ -10,6 +10,7 @@
 #include "Color.hpp"
 #include "LinearGradientBrush.hpp"
 #include "SolidColorBrush.hpp"
+#include "StaticTheme.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -23,10 +24,19 @@ class Brush final {
   constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {
   }
 
-  [[nodiscard]] SkPaint GetPaint(const SkRect&) const {
-    SkPaint paint;
-    paint.setColor(std::get<SolidColorBrush>(mBrush));
-    return paint;
+  Brush(StaticTheme::Brushes key) : mBrush(StaticTheme::Resolve(key).mBrush) {
+  }
+
+  [[nodiscard]] SkPaint GetPaint(const SkRect& rect) const {
+    if (std::holds_alternative<SolidColorBrush>(mBrush)) {
+      SkPaint paint;
+      paint.setColor(std::get<SolidColorBrush>(mBrush));
+      return paint;
+    }
+    if (std::holds_alternative<LinearGradientBrush>(mBrush)) {
+      return std::get<LinearGradientBrush>(mBrush).GetPaint(rect);
+    }
+    std::unreachable();
   }
 
   constexpr bool operator==(const Brush&) const noexcept = default;

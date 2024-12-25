@@ -1,6 +1,6 @@
 # Copyright 2024 Fred Emmott <fred@fredemmott.com>
 # SPDX-License-Identifier: MIT
-param($InputFile, $OutputFile, [switch]$Macros, [switch]$Enums, [switch]$Themes)
+param($InputFile, $OutputFile, [switch]$Macros, [switch]$Enums, [switch]$Themes, [switch]$Types)
 
 $XMLNS = @{
   p = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
@@ -104,6 +104,10 @@ enum class Colors {$(
   $ColorKeys.foreach({ "`n  $( $PSItem )," }) )
 };
 
+enum class Brushes {$(
+  $BrushKeys.foreach({ "`n  $( $PSItem )," }) )
+};
+
 }
 "@
 }
@@ -113,13 +117,15 @@ function Get-Macros-Cpp()
   return @"
 #define FUI_WINUI_THEME_COLORS(X) $(
   $ColorKeys.foreach({ "\`n  X($PSItem)" }) )
+#define FUI_WINUI_THEME_BRUSHES(X) $(
+  $BrushKeys.foreach({ "\`n  X($PSItem)" }) )
 "@
 }
 
 function Get-Theme-Cpp($Theme)
 {
   return @"
-constexpr Theme $( $Theme.Name )Theme {$(
+const Theme $( $Theme.Name )Theme {$(
   $Theme.Colors.foreach({
     "`n  .m$( $PSItem.Key ) = $( $PSItem.Value ),"
   })
@@ -131,8 +137,9 @@ constexpr Theme $( $Theme.Name )Theme {$(
 "@
 }
 
-function Get-Themes-Cpp()
+function Get-Types-Cpp()
 {
+
   return @"
 namespace $CppNs {
 
@@ -141,6 +148,15 @@ struct Theme {$(
   $BrushKeys.foreach({ "`n  Brush m$PSItem;" })
   )
 };
+
+}
+"@
+}
+
+function Get-Themes-Cpp()
+{
+  @"
+namespace $CppNs {
 
 $( ($ThemeData | ForEach-Object { Get-Theme-Cpp $_ }) -join "`n" )
 }
@@ -157,6 +173,7 @@ $( if ($Themes)
 #include <skia/Core/SkColor.h>
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/SystemColor.hpp>
+#include "Types.hpp"
 "@
 } )
 
@@ -168,6 +185,11 @@ $( if ($Macros)
 $( if ($Enums)
 {
   Get-Enums-Cpp
+} )
+
+$( if ($Types)
+{
+  Get-Types-Cpp
 } )
 
 $( if ($Themes)
