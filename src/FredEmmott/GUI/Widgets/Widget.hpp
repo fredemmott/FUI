@@ -42,6 +42,13 @@ class Widget {
     Default,
     StopPropagation,
   };
+  enum class ComputedStyleFlags {
+    Default = 0,
+    InheritableHoverState = 1,
+    InheritableActiveState = 2,
+  };
+  friend consteval bool is_bitflag_enum(
+    utility::type_tag_t<ComputedStyleFlags>);
 
   // Base spacing unit - see https://fluent2.microsoft.design/layout
   static constexpr SkScalar Spacing = 4;
@@ -53,7 +60,9 @@ class Widget {
     return {};
   }
 
-  virtual void OnComputedStyleChange(const Style& base) {
+  [[nodiscard]]
+  virtual ComputedStyleFlags OnComputedStyleChange(const Style& base) {
+    return ComputedStyleFlags::Default;
   }
 
   virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
@@ -73,9 +82,11 @@ class Widget {
   enum class StateFlags {
     Default = 0,
     Disabled = 1,
-    Hovered = 2,
-    MouseDownTarget = 4,
-    Active = 8,
+    MouseDownTarget = 1 << 1,
+    Hovered = 1 << 2,
+    HoveredInherited = 1 << 3,
+    Active = 1 << 4,
+    ActiveInherited = 1 << 5,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
@@ -95,6 +106,11 @@ class Widget {
 };
 
 consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {
+  return true;
+}
+
+consteval bool is_bitflag_enum(
+  utility::type_tag_t<Widget::ComputedStyleFlags>) {
   return true;
 }
 

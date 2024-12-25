@@ -52,11 +52,13 @@ WidgetStyles Label::GetDefaultStyles() const {
   return ret;
 }
 
-void Label::OnComputedStyleChange(const Style& style) {
+Widget::ComputedStyleFlags Label::OnComputedStyleChange(const Style& style) {
   if (mFont != style.mFont) {
     mFont = style.mFont.value();
     YGNodeMarkDirty(this->GetLayoutNode());
   }
+
+  return ComputedStyleFlags::Default;
 }
 
 YGSize Label::Measure(

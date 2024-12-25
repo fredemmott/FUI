@@ -82,16 +82,45 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   merged += inherited;
   merged += mExplicitStyles;
 
+  constexpr auto HoverFlags
+    = StateFlags::Hovered | StateFlags::HoveredInherited;
+  const bool isHovered = (mStateFlags & HoverFlags) != StateFlags::Default;
+  constexpr auto ActiveFlags = StateFlags::Active | StateFlags::ActiveInherited;
+  const bool isActive = (mStateFlags & ActiveFlags) != StateFlags::Default;
+
   auto style = merged.mBase;
-  if ((mStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
+  if (isHovered) {
     style += merged.mHover;
   }
-  if ((mStateFlags & StateFlags::Active) == StateFlags::Active) {
+  if (isActive) {
     style += merged.mActive;
   }
 
   if (mComputedStyle != style) {
-    this->OnComputedStyleChange(style);
+    using enum ComputedStyleFlags;
+    if (const auto flags = this->OnComputedStyleChange(style);
+        flags != Default) {
+      auto stateFlags = StateFlags::Default;
+      auto stateFlagValues = StateFlags::Default;
+
+      if ((flags & InheritableActiveState) == InheritableActiveState) {
+        stateFlags |= StateFlags::ActiveInherited;
+        if (isActive) {
+          stateFlagValues |= StateFlags::ActiveInherited;
+        }
+      }
+      if ((flags & InheritableHoverState) == InheritableHoverState) {
+        stateFlags |= StateFlags::HoveredInherited;
+        if (isHovered) {
+          stateFlagValues |= StateFlags::HoveredInherited;
+        }
+      }
+
+      for (auto&& child: mChildren) {
+        child->mStateFlags &= ~stateFlags;
+        child->mStateFlags |= stateFlagValues;
+      }
+    }
   }
   mInheritedStyles = inherited;
   mComputedStyle = style;

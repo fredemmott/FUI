@@ -7,14 +7,12 @@
 #include <functional>
 #include <span>
 
+#include "widget_detail.hpp"
+
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-using namespace FredEmmott::GUI::Widgets;
-
-template <std::derived_from<Widget> T>
-T* widget_cast(Widget* const p) {
-  return dynamic_cast<T*>(p);
-}
+using namespace Widgets;
+using namespace widget_detail;
 
 struct StackEntry final {
   std::vector<Widget*> mChildren;
