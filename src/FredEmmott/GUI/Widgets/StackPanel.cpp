@@ -1,15 +1,15 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include "StackLayout.hpp"
+#include "StackPanel.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-StackLayout::StackLayout(std::size_t id, Direction direction)
+StackPanel::StackPanel(std::size_t id, Direction direction)
   : Widget(id), mDirection(direction) {
 }
 
-WidgetStyles StackLayout::GetDefaultStyles() const {
+WidgetStyles StackPanel::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mBase = {
       .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,

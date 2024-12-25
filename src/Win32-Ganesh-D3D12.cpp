@@ -27,7 +27,7 @@
 #include "FredEmmott/GUI/Immediate/Card.hpp"
 #include "FredEmmott/GUI/Immediate/Label.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
-#include "FredEmmott/GUI/Immediate/StackLayout.hpp"
+#include "FredEmmott/GUI/Immediate/StackPanel.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -322,13 +322,13 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     mFUIRoot.BeginFrame();
 
     fuii::BeginCard();
-    fuii::BeginVStackLayout();
+    fuii::BeginVStackPanel();
     fuii::Label("Hello, world; this text doesn't make the button wider aeg");
     fuii::Label("Frame {}##Frames", mFrameCounter);
     if (fuii::Button("Click Me!")) {
       std::println(stderr, "Clicked!");
     }
-    fuii::EndStackLayout();
+    fuii::EndStackPanel();
     fuii::EndCard();
 
     mFUIRoot.EndFrame(

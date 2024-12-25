@@ -6,13 +6,13 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-class StackLayout final : public Widget {
+class StackPanel final : public Widget {
  public:
   enum class Direction {
     Horizontal,
     Vertical,
   };
-  StackLayout(std::size_t id, Direction);
+  StackPanel(std::size_t id, Direction);
 
  protected:
   WidgetStyles GetDefaultStyles() const override;
