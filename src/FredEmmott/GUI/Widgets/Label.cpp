@@ -21,7 +21,10 @@ void Label::SetText(std::string_view text) {
   YGNodeMarkDirty(this->GetLayoutNode());
 }
 
-void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
+void Label::PaintOwnContent(
+  SkCanvas* canvas,
+  const SkRect& rect,
+  const Style& style) const {
 #ifndef NDEBUG
   if (style.mFont != mFont) [[unlikely]] {
     throw std::logic_error(
@@ -31,20 +34,12 @@ void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
   SkFontMetrics metrics {};
   mFont.GetMetricsInPixels(&metrics);
 
-  const auto l = this->GetLayoutNode();
-  // TODO: pass rect into PaintOwnContent as we're calculating it anyway
-  const auto x = YGNodeLayoutGetLeft(l);
-  const auto y = YGNodeLayoutGetTop(l);
-  const auto h = YGNodeLayoutGetHeight(l);
-  const auto w = YGNodeLayoutGetWidth(l);
-  const auto rect = SkRect::MakeXYWH(x, y, w, h);
-
   auto paint = style.mColor->GetPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
 
-  const auto textHeight = h - metrics.fDescent;
-  const auto textY = y + textHeight;
-  canvas->drawString(mText.c_str(), x, textY, mFont, paint);
+  const auto textHeight = rect.height() - metrics.fDescent;
+  const auto textY = rect.y() + textHeight;
+  canvas->drawString(mText.c_str(), rect.x(), textY, mFont, paint);
 }
 
 WidgetStyles Label::GetDefaultStyles() const {

@@ -56,7 +56,8 @@ class Widget {
   virtual void OnComputedStyleChange(const Style& base) {
   }
 
-  virtual void PaintOwnContent(SkCanvas*, const Style& style) const {
+  virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
+    const {
   }
 
   [[nodiscard]]

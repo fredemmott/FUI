@@ -174,7 +174,7 @@ void Widget::Paint(SkCanvas* canvas) const {
   PaintBackground(canvas, rect, style);
   PaintBorder(canvas, rect, style);
 
-  this->PaintOwnContent(canvas, style);
+  this->PaintOwnContent(canvas, rect, style);
 
   const auto children = this->GetChildren();
   if (children.empty()) {
