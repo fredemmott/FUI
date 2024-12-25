@@ -105,7 +105,7 @@ function Get-LinearGradientBrush($Colors, $Brush)
     $scaleY = $N.HasAttribute('ScaleY') ? $N.GetAttribute('ScaleY') : 1
     $originX = $N.HasAttribute('CenterX') ? $N.GetAttribute('CenterX') : 0
     $originY = $N.HasAttribute('CenterY') ? $N.GetAttribute('CenterY') : 0
-    $RelativeScale = "`n  { .mOrigin = { $originX, $originY }, .mScaleX = $scaleX, .mScaleY = $scaleY }"
+    $RelativeScale = "`n  /* scale = */ { .mOrigin = { $originX, $originY }, .mScaleX = $scaleX, .mScaleY = $scaleY }"
   }
 
   return @{
@@ -113,9 +113,9 @@ function Get-LinearGradientBrush($Colors, $Brush)
     Value = @"
 LinearGradientBrush {
   LinearGradientBrush::MappingMode::$Mode,
-  SkPoint { $Start },
-  SkPoint { $End },
-  { $( $Stops -join ', ' ) },$RelativeScale
+  /* start = */ SkPoint { $Start },
+  /* end = */ SkPoint { $End },
+  /* stops = */ { $( $Stops -join ', ' ) },$RelativeScale
 }
 "@
   }
