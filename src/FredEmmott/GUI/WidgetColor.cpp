@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 #include "WidgetColor.hpp"
 
+#include <FredEmmott/GUI/detail/WinUI3Themes/Macros.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/Themes.hpp>
+
 #include "Color.hpp"
 #include "SystemColor.hpp"
 
@@ -12,7 +15,7 @@ Color Resolve(const Usage usage) noexcept {
   switch (usage) {
 #define DEFINE_CASE(X) \
   case Usage::X: \
-    return DefaultThemeColors.m##X;
+    return DefaultTheme.m##X;
     FUI_WINUI_THEME_COLORS(DEFINE_CASE)
 #undef DEFINE_CASE
   }

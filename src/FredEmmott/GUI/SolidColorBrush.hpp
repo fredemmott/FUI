@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "Color.hpp"
-
 namespace FredEmmott::GUI {
+
+class Color;
 
 using SolidColorBrush = Color;
 
-};
+};// namespace FredEmmott::GUI

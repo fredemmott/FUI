@@ -7,6 +7,7 @@
 
 #include <variant>
 
+#include "Color.hpp"
 #include "LinearGradientBrush.hpp"
 #include "SolidColorBrush.hpp"
 

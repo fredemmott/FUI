@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/WinUI3Themes.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/Enums.hpp>
 
 namespace FredEmmott::GUI {
 class Color;
