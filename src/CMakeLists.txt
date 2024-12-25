@@ -67,6 +67,7 @@ add_executable(
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
+  FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/GUI/ActivatedFlag.hpp
   FredEmmott/utility/lazy_init.hpp

@@ -6,21 +6,36 @@
 #include <skia/core/SkRect.h>
 #include <skia/core/SkShader.h>
 
+#include <Vector>
+
 namespace FredEmmott::GUI {
 
 class LinearGradientBrush final {
  public:
-  LinearGradientBrush() = default;
-  [[nodiscard]] SkPaint GetPaint(const SkRect&) const {
-    SkPaint paint;
-    paint.setColor(SK_ColorRED);
-    return paint;
-  }
+  enum class MappingMode {
+    Absolute,
+    RelativeToBoundingBox,
+  };
+  struct Stop {
+    SkScalar mOffset;
+    SkColor mColor;
+  };
+
+  LinearGradientBrush() = delete;
+
+  LinearGradientBrush(
+    MappingMode mode,
+    SkPoint start,
+    SkPoint end,
+    const std::vector<Stop>& stops);
+
+  [[nodiscard]] SkPaint GetPaint(const SkRect&) const;
 
   bool operator==(const LinearGradientBrush&) const = default;
 
  private:
   sk_sp<SkShader> mShader;
+  MappingMode mMappingMode;
 };
 
 }// namespace FredEmmott::GUI

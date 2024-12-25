@@ -33,31 +33,36 @@ function Get-Color($Node)
   }
 }
 
+function Resolve-Color($Value, $Colors)
+{
+  switch -regex ($Value)
+  {
+    'Transparent' {
+      return 'SK_ColorTRANSPARENT'
+    }
+    '#FF00FF' {
+      # Other hex values are possible, but not actually used. This seems to be a test color
+      return 'SK_ColorMAGENTA'
+    }
+    '{ThemeResource System(Accent)?Color.*' {
+      return "SystemColor::$( $Value -replace '.* (System.+)}', '$1' )"
+    }
+    '{StaticResource .*Color.*}' {
+      $Name = $Value -replace '.* ([A-Z][^ ]+)}$', '$1'
+      $Color = $Colors | Where-Object -Property Key -eq $Name
+      return $Color.Value
+    }
+    default {
+      Write-Host "ERROR: Can't figure out how to parse ${Value} in SolidColorBrush"
+    }
+  }
+}
+
 function Get-SolidColorBrush($Colors, $Brush)
 {
   $Key = (Get-Key $Brush)
   $Lookup = $Brush.GetAttribute('Color')
-  switch -regex ($Lookup)
-  {
-    'Transparent' {
-      $Value = 'SK_ColorTRANSPARENT'
-    }
-    '#FF00FF' {
-      # Other hex values are possible, but not actually used. This seems to be a test color
-      $Value = 'SK_ColorMAGENTA'
-    }
-    '{ThemeResource System(Accent)?Color.*' {
-      $Value = "SystemColor::$( $Lookup -replace '.* (System.+)}', '$1' )"
-    }
-    '{StaticResource .*Color.*}' {
-      $Name = $Lookup -replace '.* ([A-Z][^ ]+)}$', '$1'
-      $Color = $Colors | Where-Object -Property Key -eq $Name
-      $Value = $Color.Value
-    }
-    default {
-      Write-Host "ERROR: Can't figure out how to parse ${Lookup} in SolidColorBrush"
-    }
-  }
+  $Value = Resolve-Color $Lookup $Colors
   return @{
     Key = $Key;
     Value = "SolidColorBrush { ${Value} }";
@@ -67,9 +72,32 @@ function Get-SolidColorBrush($Colors, $Brush)
 function Get-LinearGradientBrush($Colors, $Brush)
 {
   $Key = (Get-Key $Brush)
+  $Mode = $Brush.GetAttribute('MappingMode')
+  $Start = $Brush.GetAttribute('StartPoint')
+  $End = $Brush.GetAttribute('EndPoint')
+  $Stops = @()
+
+  $XmlStops = Select-Xml -Xml $Brush `
+    -Namespace $XMLNS `
+    -XPath "p:LinearGradientBrush.GradientStops/p:GradientStop"
+  foreach ($Stop in $XmlStops)
+  {
+    $Node = $Stop.Node;
+    $Offset = $Node.GetAttribute('Offset')
+    $Color = Resolve-Color $Node.GetAttribute('Color') $Colors
+    $Stops += "{$Offset, $Color }"
+  }
+
   return @{
     Key = $Key;
-    Value = "LinearGradientBrush {}";
+    Value = @"
+LinearGradientBrush {
+  LinearGradientBrush::MappingMode::$Mode,
+  SkPoint { $Start },
+  SkPoint { $End },
+  { $( $Stops -join ', ' ) },
+}
+"@
   }
 }
 
@@ -98,26 +126,26 @@ $CppNs = "FredEmmott::GUI::gui_detail::WinUI3Themes"
 function Get-Enums-Cpp()
 {
   return @"
-namespace ${CppNs} {
+  namespace ${CppNs} {
 
 enum class Colors {$(
   $ColorKeys.foreach({ "`n  $( $PSItem )," }) )
-};
+  };
 
 enum class Brushes {$(
   $BrushKeys.foreach({ "`n  $( $PSItem )," }) )
-};
+  };
 
-}
+  }
 "@
 }
 
 function Get-Macros-Cpp()
 {
   return @"
-#define FUI_WINUI_THEME_COLORS(X) $(
+  #define FUI_WINUI_THEME_COLORS(X) $(
   $ColorKeys.foreach({ "\`n  X($PSItem)" }) )
-#define FUI_WINUI_THEME_BRUSHES(X) $(
+  #define FUI_WINUI_THEME_BRUSHES(X) $(
   $BrushKeys.foreach({ "\`n  X($PSItem)" }) )
 "@
 }
@@ -133,7 +161,7 @@ const Theme $( $Theme.Name )Theme {$(
     "`n  .m$( $PSItem.Key ) = $( $PSItem.Value ),"
   })
   )
-};`n
+  }; `n
 "@
 }
 
@@ -141,25 +169,25 @@ function Get-Types-Cpp()
 {
 
   return @"
-namespace $CppNs {
+  namespace $CppNs {
 
 struct Theme {$(
   $ColorKeys.foreach({ "`n  SkColor m$PSItem;" })
   $BrushKeys.foreach({ "`n  Brush m$PSItem;" })
   )
-};
+  };
 
-}
+  }
 "@
 }
 
 function Get-Themes-Cpp()
 {
   @"
-namespace $CppNs {
+  namespace $CppNs {
 
 $( ($ThemeData | ForEach-Object { Get-Theme-Cpp $_ }) -join "`n" )
-}
+  }
 "@
 }
 
@@ -198,6 +226,5 @@ $( if ($Themes)
 } )
 "@
 
-Write-Host "Writing $OutputFile"
 ($content -split "`r" -join "") `
   | Set-Content -Encoding utf8 "$OutputFile" -NoNewline
