@@ -11,10 +11,10 @@ class Color;
 
 namespace FredEmmott::GUI::StaticTheme {
 
-using gui_detail::WinUI3Themes::Brushes;
-using gui_detail::WinUI3Themes::Colors;
-using enum Brushes;
-using enum Colors;
-Brush Resolve(Brushes brush) noexcept;
-Color Resolve(Colors color) noexcept;
+using BrushType = gui_detail::WinUI3Themes::Brushes;
+using ColorType = gui_detail::WinUI3Themes::Colors;
+using enum BrushType;
+using enum ColorType;
+Brush Resolve(BrushType brush) noexcept;
+Color Resolve(ColorType color) noexcept;
 };// namespace FredEmmott::GUI::StaticTheme

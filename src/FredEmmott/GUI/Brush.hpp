@@ -24,7 +24,7 @@ class Brush final {
   constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {
   }
 
-  Brush(StaticTheme::Brushes key) : mBrush(StaticTheme::Resolve(key).mBrush) {
+  Brush(StaticTheme::BrushType key) : mBrush(StaticTheme::Resolve(key).mBrush) {
   }
 
   [[nodiscard]] SkPaint GetPaint(const SkRect& rect) const {

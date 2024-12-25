@@ -16,7 +16,7 @@ class Color final {
   Color() = delete;
   constexpr Color(SkColor color) : mVariant(color) {
   }
-  constexpr Color(StaticTheme::Colors u) : mVariant(u) {
+  constexpr Color(StaticTheme::ColorType u) : mVariant(u) {
   }
   constexpr Color(SystemColor::Usage u) : mVariant(u) {
   }
@@ -35,14 +35,14 @@ class Color final {
   constexpr bool operator==(const Color& other) const noexcept = default;
 
  private:
-  std::variant<SkColor, StaticTheme::Colors, SystemColor::Usage> mVariant;
+  std::variant<SkColor, StaticTheme::ColorType, SystemColor::Usage> mVariant;
 
   constexpr SkColor Resolve() const noexcept {
     if (std::holds_alternative<SkColor>(mVariant)) {
       return std::get<SkColor>(mVariant);
     }
-    if (std::holds_alternative<StaticTheme::Colors>(mVariant)) {
-      return StaticTheme::Resolve(std::get<StaticTheme::Colors>(mVariant));
+    if (std::holds_alternative<StaticTheme::ColorType>(mVariant)) {
+      return StaticTheme::Resolve(std::get<StaticTheme::ColorType>(mVariant));
     }
     if (std::holds_alternative<SystemColor::Usage>(mVariant)) {
       return SystemColor::Resolve(std::get<SystemColor::Usage>(mVariant));

@@ -11,7 +11,7 @@
 
 namespace FredEmmott::GUI::StaticTheme {
 
-Color Resolve(const Colors color) noexcept {
+Color Resolve(const ColorType color) noexcept {
   using namespace gui_detail::WinUI3Themes;
   switch (color) {
 #define DEFINE_CASE(X) \
@@ -23,7 +23,7 @@ Color Resolve(const Colors color) noexcept {
   std::unreachable();
 }
 
-Brush Resolve(const Brushes brush) noexcept {
+Brush Resolve(const BrushType brush) noexcept {
   using namespace gui_detail::WinUI3Themes;
   switch (brush) {
 #define DEFINE_CASE(X) \
