@@ -33,7 +33,7 @@ function Get-Color($Node)
   }
 }
 
-function Get-SolidColorBrush($Brush)
+function Get-SolidColorBrush($Colors, $Brush)
 {
   $Key = (Get-Key $Brush)
   $Lookup = $Brush.GetAttribute('Color')
@@ -50,7 +50,9 @@ function Get-SolidColorBrush($Brush)
       $Value = "SystemColor::$( $Lookup -replace '.* (System.+)}', '$1' )"
     }
     '{StaticResource .*Color.*}' {
-      $Value = "Colors::$( $Lookup -replace '.* ([A-Z][^ ]+)}$', '$1' )"
+      $Name = $Lookup -replace '.* ([A-Z][^ ]+)}$', '$1'
+      $Color = $Colors | Where-Object -Property Key -eq $Name
+      $Value = $Color.Value
     }
     default {
       Write-Host "ERROR: Can't figure out how to parse ${Lookup} in SolidColorBrush"
@@ -58,18 +60,32 @@ function Get-SolidColorBrush($Brush)
   }
   return @{
     Key = $Key;
-    Value = "SingleColorBrush { ${Value} }"
+    Value = "SolidColorBrush { ${Value} }";
+  }
+}
+
+function Get-LinearGradientBrush($Colors, $Brush)
+{
+  $Key = (Get-Key $Brush)
+  return @{
+    Key = $Key;
+    Value = "LinearGradientBrush {}";
   }
 }
 
 function Get-Theme($Theme)
 {
   $Colors = $Theme.Color | Sort-Object -Property { Get-Key($_) } | ForEach-Object { Get-Color($_) }
-  $SolidColorBrushes = $Theme.SolidColorBrush | Sort-Object -Property { Get-Key($_) } | ForEach-Object { Get-SolidColorBrush($_) }
+  $SolidColorBrushes = $Theme.SolidColorBrush | ForEach-Object { Get-SolidColorBrush $Colors $_ }
+  if ($Theme.LinearGradientBrush)
+  {
+    $LinearGradientBrushes = $Theme.LinearGradientBrush | ForEach-Object { Get-LinearGradientBrush $Colors $_ }
+  }
+  $Brushes = ($SolidColorBrushes + $LinearGradientBrushes) | Sort-Object -Property Key
   return @{
     Name = $Theme.Key;
     Colors = $Colors;
-    Brushes = $SolidColorBrushes;
+    Brushes = $Brushes;
   }
 }
 
@@ -107,6 +123,9 @@ constexpr Theme $( $Theme.Name )Theme {$(
   $Theme.Colors.foreach({
     "`n  .m$( $PSItem.Key ) = $( $PSItem.Value ),"
   })
+  $Theme.Brushes.foreach({
+    "`n  .m$( $PSItem.Key ) = $( $PSItem.Value ),"
+  })
   )
 };`n
 "@
@@ -119,10 +138,11 @@ namespace $CppNs {
 
 struct Theme {$(
   $ColorKeys.foreach({ "`n  SkColor m$PSItem;" })
+  $BrushKeys.foreach({ "`n  Brush m$PSItem;" })
   )
 };
 
-$( $ThemeData | ForEach-Object { Get-Theme-Cpp $_ } )
+$( ($ThemeData | ForEach-Object { Get-Theme-Cpp $_ }) -join "`n" )
 }
 "@
 }
@@ -133,7 +153,11 @@ $Content = @"
 
 $( if ($Themes)
 {
-  "#include <skia/Core/SkColor.h>"
+  Write-Output @"
+#include <skia/Core/SkColor.h>
+#include <FredEmmott/GUI/Brush.hpp>
+#include <FredEmmott/GUI/SystemColor.hpp>
+"@
 } )
 
 $( if ($Macros)

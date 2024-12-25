@@ -9,7 +9,6 @@ namespace FredEmmott::GUI {
 
 class LinearGradientBrush final {
  public:
-  LinearGradientBrush() = delete;
   [[nodiscard]] SkPaint GetPaint(const SkRect&) const {
     SkPaint paint;
     paint.setColor(SK_ColorRED);

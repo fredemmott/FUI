@@ -20,6 +20,9 @@ class Brush final {
     : mBrush(SolidColorBrush {Color {color}}) {
   }
 
+  constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {
+  }
+
   [[nodiscard]] SkPaint GetPaint(const SkRect&) const {
     SkPaint paint;
     paint.setColor(std::get<SolidColorBrush>(mBrush));
