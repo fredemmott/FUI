@@ -7,7 +7,7 @@
 
 #include "Brush.hpp"
 #include "Color.hpp"
-#include "SystemColor.hpp"
+#include "SystemTheme.hpp"
 
 namespace FredEmmott::GUI::StaticTheme {
 

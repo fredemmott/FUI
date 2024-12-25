@@ -45,7 +45,7 @@ function Resolve-Color($Value, $Colors)
       return 'SK_ColorMAGENTA'
     }
     '{ThemeResource System(Accent)?Color.*' {
-      return "SystemColor::$( $Value -replace '.* (System.+)}', '$1' )"
+      return "SystemTheme::$( $Value -replace '.* (System.+)}', '$1' )"
     }
     '{StaticResource .*Color.*}' {
       $Name = $Value -replace '.* ([A-Z][^ ]+)}$', '$1'
@@ -200,7 +200,7 @@ $( if ($Themes)
   Write-Output @"
 #include <skia/Core/SkColor.h>
 #include <FredEmmott/GUI/Brush.hpp>
-#include <FredEmmott/GUI/SystemColor.hpp>
+#include <FredEmmott/GUI/SystemTheme.hpp>
 #include "Types.hpp"
 "@
 } )

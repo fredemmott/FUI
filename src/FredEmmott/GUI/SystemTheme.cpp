@@ -1,7 +1,7 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include "SystemColor.hpp"
+#include "SystemTheme.hpp"
 
 #include <Windows.h>
 #include <winrt/windows.ui.viewmanagement.h>
@@ -15,7 +15,7 @@
 
 using namespace winrt::Windows::UI::ViewManagement;
 
-namespace FredEmmott::GUI::SystemColor {
+namespace FredEmmott::GUI::SystemTheme {
 // TODO: automatically update when user changes theme, or light <-> dark
 struct Store {
   Store();
@@ -54,10 +54,10 @@ void Store::Populate(SkColor* p, int sysColor) const {
 
 static Store gStore;
 
-Color Resolve(const Usage usage) noexcept {
+Color Resolve(const ColorType usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X, IMPL) \
-  case Usage::##X: \
+  case ColorType::##X: \
     return gStore.m##X;
     FUI_SYSTEM_COLOR_USAGES(USAGE_CASE);
 #undef USAGE_CASE
@@ -65,4 +65,4 @@ Color Resolve(const Usage usage) noexcept {
   std::unreachable();
 }
 
-}// namespace FredEmmott::GUI::SystemColor
+}// namespace FredEmmott::GUI::SystemTheme

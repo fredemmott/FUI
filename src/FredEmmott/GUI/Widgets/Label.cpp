@@ -50,7 +50,7 @@ void Label::PaintOwnContent(SkCanvas* canvas, const Style& style) const {
 WidgetStyles Label::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mBase = {
-      .mColor = SystemColor::SystemForegroundColor,
+      .mColor = SystemTheme::SystemForegroundColor,
       .mFont = SystemFont::Body,
     },
   };

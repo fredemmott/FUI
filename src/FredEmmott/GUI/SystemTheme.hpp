@@ -33,18 +33,18 @@ namespace FredEmmott::GUI {
 class Color;
 }// namespace FredEmmott::GUI
 
-namespace FredEmmott::GUI::SystemColor {
+namespace FredEmmott::GUI::SystemTheme {
 
 // This library is a visual clone of WinUI3, so even if we're ported to
 // another platform, we're going to base the color usages off of the
 // Windows theme colors (Windows::UI::ViewManagement::UIColorType)
-enum class Usage {
+enum class ColorType {
 #define X(KEY, IMPL) KEY,
   FUI_WINAPI_SYS_COLORS(X) FUI_WINRT_UI_ACCENT_COLORS(X)
 #undef X
 };
-using enum Usage;
+using enum ColorType;
 
-Color Resolve(Usage usage) noexcept;
+Color Resolve(ColorType usage) noexcept;
 
-}// namespace FredEmmott::GUI::SystemColor
+}// namespace FredEmmott::GUI::SystemTheme
