@@ -25,9 +25,7 @@
   X(SystemAccentColor, UIColorType::Accent) \
   X(SystemAccentColorLight1, UIColorType::AccentLight1) \
   X(SystemAccentColorLight2, UIColorType::AccentLight2) \
-  X(SystemAccentColorLight3, UIColorType::AccentLight3) \
-  X(SystemForegroundColor, \
-    UIColorType::Foreground)// FIXME: not used by WinUI3 - captionText?
+  X(SystemAccentColorLight3, UIColorType::AccentLight3)
 
 namespace FredEmmott::GUI {
 class Color;

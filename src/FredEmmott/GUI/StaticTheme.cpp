@@ -77,7 +77,7 @@ ThemeKind GetCurrentThemeKind() {
 
     // Microsoft's recommend approach for detecting dark mode...
     const auto foreground
-      = SystemTheme::Resolve(SystemTheme::SystemForegroundColor);
+      = SystemTheme::Resolve(SystemTheme::SystemColorWindowTextColor);
     const bool isForegroundLight
       = (((5 * SkColorGetG(foreground)) + (2 * SkColorGetR(foreground)) + SkColorGetB(foreground)) > (8 * 128));
 
