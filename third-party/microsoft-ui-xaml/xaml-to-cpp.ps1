@@ -220,6 +220,7 @@ $( if ($Themes)
   Write-Output @"
 #include <skia/Core/SkColor.h>
 #include <FredEmmott/GUI/Brush.hpp>
+#include <FredEmmott/GUI/LinearGradientBrush.hpp>
 #include <FredEmmott/GUI/SystemTheme.hpp>
 #include "Types.hpp"
 "@

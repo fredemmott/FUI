@@ -24,17 +24,21 @@ class Brush final {
   constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {
   }
 
-  Brush(StaticTheme::BrushType key) : mBrush(StaticTheme::Resolve(key).mBrush) {
+  Brush(StaticTheme::BrushType key) : mBrush(key) {
   }
 
   [[nodiscard]] SkPaint GetPaint(const SkRect& rect) const {
-    if (std::holds_alternative<SolidColorBrush>(mBrush)) {
+    if (holds_alternative<SolidColorBrush>(mBrush)) {
       SkPaint paint;
-      paint.setColor(std::get<SolidColorBrush>(mBrush));
+      paint.setColor(get<SolidColorBrush>(mBrush));
       return paint;
     }
-    if (std::holds_alternative<LinearGradientBrush>(mBrush)) {
-      return std::get<LinearGradientBrush>(mBrush).GetPaint(rect);
+    if (holds_alternative<LinearGradientBrush>(mBrush)) {
+      return get<LinearGradientBrush>(mBrush).GetPaint(rect);
+    }
+    if (holds_alternative<StaticTheme::BrushType>(mBrush)) {
+      return StaticTheme::Resolve(get<StaticTheme::BrushType>(mBrush))
+        .GetPaint(rect);
     }
     std::unreachable();
   }
@@ -45,7 +49,8 @@ class Brush final {
   // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
   // wanting more than just LinearGradientBrush, but it's worth special-casing
   // SolidColorBrush
-  std::variant<SolidColorBrush, LinearGradientBrush> mBrush;
+  std::variant<SolidColorBrush, LinearGradientBrush, StaticTheme::BrushType>
+    mBrush;
 };
 
 }// namespace FredEmmott::GUI
