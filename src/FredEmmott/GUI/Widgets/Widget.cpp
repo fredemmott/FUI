@@ -185,7 +185,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     &Style::m##X##Bottom);
   FLATTEN_EDGES(Margin)
   FLATTEN_EDGES(Padding)
-#undef FLATTEN_EDGES(X)
+#undef FLATTEN_EDGES
 
   const auto children = this->GetDirectChildren();
   for (auto&& child: children) {
