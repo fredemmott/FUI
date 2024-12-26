@@ -184,6 +184,10 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
   setYoga(&Style::mMargin, &YGNodeStyleSetMargin, YGEdgeAll);
+  setYoga(&Style::mMarginBottom, &YGNodeStyleSetMargin, YGEdgeBottom);
+  setYoga(&Style::mMarginLeft, &YGNodeStyleSetMargin, YGEdgeLeft);
+  setYoga(&Style::mMarginRight, &YGNodeStyleSetMargin, YGEdgeRight);
+  setYoga(&Style::mMarginTop, &YGNodeStyleSetMargin, YGEdgeTop);
   setYoga(&Style::mPadding, &YGNodeStyleSetPadding, YGEdgeAll);
   setYoga(&Style::mPaddingBottom, &YGNodeStyleSetPadding, YGEdgeBottom);
   setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
