@@ -52,11 +52,11 @@ struct Transition<T> {
   }
 
   T Evaluate(SkScalar normalizedX) const {
-    if (holds_alternative<LinearStyleTransition<T>>(mValue)) {
-      return get<LinearStyleTransition>(mValue).Evaluate(normalizedX);
+    if (const auto it = get_if<LinearStyleTransition<T>>(&mValue)) {
+      return it->Evaluate(normalizedX);
     }
-    if (holds_alternative<CubicBezierStyleTransition<T>>(mValue)) {
-      return get<CubicBezierStyleTransition>(mValue).Evaluate(normalizedX);
+    if (const auto it = get_if<CubicBezierStyleTransition<T>>(&mValue)) {
+      return it->Evaluate(normalizedX);
     }
     throw std::bad_variant_access {};
   }

@@ -97,7 +97,8 @@ struct TransitionData<T> {
   T mEndValue;
   time_point mEndTime;
 
-  [[nodiscard]] T Evaluate(const time_point& now) const noexcept {
+  [[nodiscard]] T Evaluate(const auto& transition, const time_point& now)
+    const noexcept {
     if (now < mStartTime) {
       return mStartValue;
     }
@@ -107,7 +108,8 @@ struct TransitionData<T> {
     const auto duration = mEndTime - mStartTime;
     const auto elapsed = now - mStartTime;
     const auto r = static_cast<double>(elapsed.count()) / duration.count();
-    return static_cast<T>(mStartValue + ((mEndValue - mStartValue) * r));
+    return static_cast<T>(
+      mStartValue + ((mEndValue - mStartValue) * transition.Evaluate(r)));
   }
 };
 
@@ -447,14 +449,15 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
         return;
       }
       if (transitionState->mEndValue != newValue) {
-        transitionState->mStartValue = transitionState->Evaluate(now);
+        transitionState->mStartValue
+          = transitionState->Evaluate(newOpt.transition(), now);
         transitionState->mStartTime = now;
         transitionState->mEndTime = now + newOpt.transition().GetDuration(),
         transitionState->mEndValue = newValue;
         newOpt = transitionState->mStartValue;
         return;
       }
-      newOpt = transitionState->Evaluate(now);
+      newOpt = transitionState->Evaluate(newOpt.transition(), now);
       if (std::isnan(*newOpt)) {
         __debugbreak();
       }
