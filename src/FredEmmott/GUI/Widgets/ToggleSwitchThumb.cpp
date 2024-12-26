@@ -40,14 +40,12 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
       .mHeight = { height, FasterAnimation },
       .mLeft = {0, NormalAnimation},
       .mMargin = { margin, FasterAnimation },
-      .mMarginLeft = { margin, FasterAnimation },
       .mWidth = { height, FasterAnimation },
     },
     .mHover {
       .mBorderRadius = hoverHeight / 2,
       .mHeight = hoverHeight,
       .mMargin = hoverMargin,
-      .mMarginLeft = hoverMargin, // TODO: inherit from margin
       .mWidth = hoverHeight,
     },
     .mActive = {

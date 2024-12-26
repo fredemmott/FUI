@@ -87,7 +87,7 @@ class StyleValue : public std::optional<T> {
   using std::optional<T>::optional;
   StyleValue(
     const T& value,
-    const std::convertible_to<Transition<T>> auto& transition)
+    const std::convertible_to<std::optional<Transition<T>>> auto& transition)
     requires animatable<T>
     : std::optional<T>(value), mTransition(transition) {
     if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
@@ -97,7 +97,7 @@ class StyleValue : public std::optional<T> {
 
   StyleValue(
     std::nullopt_t,
-    const std::convertible_to<Transition<T>> auto& transition)
+    const std::convertible_to<std::optional<Transition<T>>> auto& transition)
     requires animatable<T>
     : StyleValue(YGUndefined, transition) {
   }

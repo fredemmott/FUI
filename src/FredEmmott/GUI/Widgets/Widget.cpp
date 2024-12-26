@@ -166,6 +166,27 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     style += merged.mActive;
   }
 
+  const auto flattenEdge = [&style]<class T>(T allEdges, T thisEdge) {
+    auto& thisEdgeOpt = style.*thisEdge;
+    const auto& allEdgesOpt = style.*allEdges;
+
+    thisEdgeOpt = allEdgesOpt + thisEdgeOpt;
+  };
+  const auto flattenEdges
+    = [&flattenEdge]<class T, std::same_as<T>... TRest>(T all, TRest... rest) {
+        (flattenEdge(all, rest), ...);
+      };
+#define FLATTEN_EDGES(X) \
+  flattenEdges( \
+    &Style::m##X, \
+    &Style::m##X##Left, \
+    &Style::m##X##Top, \
+    &Style::m##X##Right, \
+    &Style::m##X##Bottom);
+  FLATTEN_EDGES(Margin)
+  FLATTEN_EDGES(Padding)
+#undef FLATTEN_EDGES(X)
+
   const auto children = this->GetDirectChildren();
   for (auto&& child: children) {
     constexpr auto clearFlags
@@ -236,12 +257,10 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
   setYoga(&Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);
-  setYoga(&Style::mMargin, &YGNodeStyleSetMargin, YGEdgeAll);
   setYoga(&Style::mMarginBottom, &YGNodeStyleSetMargin, YGEdgeBottom);
   setYoga(&Style::mMarginLeft, &YGNodeStyleSetMargin, YGEdgeLeft);
   setYoga(&Style::mMarginRight, &YGNodeStyleSetMargin, YGEdgeRight);
   setYoga(&Style::mMarginTop, &YGNodeStyleSetMargin, YGEdgeTop);
-  setYoga(&Style::mPadding, &YGNodeStyleSetPadding, YGEdgeAll);
   setYoga(&Style::mPaddingBottom, &YGNodeStyleSetPadding, YGEdgeBottom);
   setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
   setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
@@ -446,6 +465,10 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       __debugbreak();
     }
 
+    constexpr bool DebugAnimations = false;
+    const auto duration
+      = newOpt.transition().GetDuration() * (DebugAnimations ? 10 : 1);
+
     auto& transitionState = state->*stateP;
     if (transitionState.has_value()) {
       if (transitionState->mEndTime < now) {
@@ -456,7 +479,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
         transitionState->mStartValue
           = transitionState->Evaluate(newOpt.transition(), now);
         transitionState->mStartTime = now;
-        transitionState->mEndTime = now + newOpt.transition().GetDuration(),
+        transitionState->mEndTime = now + duration,
         transitionState->mEndValue = newValue;
         newOpt = transitionState->mStartValue;
         return;
@@ -471,7 +494,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       .mStartValue = oldValue,
       .mStartTime = now,
       .mEndValue = newValue,
-      .mEndTime = now + newOpt.transition().GetDuration(),
+      .mEndTime = now + duration,
     };
     newOpt = oldValue;
     if (std::isnan(*newOpt)) {
