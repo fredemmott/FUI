@@ -6,6 +6,7 @@
 
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
+#include <cassert>
 #include <format>
 #include <ranges>
 
@@ -88,7 +89,7 @@ struct TransitionData {
   using option_type = TransitionData;
 };
 
-template <animatable T>
+template <interpolatable T>
 struct TransitionData<T> {
   using option_type = std::optional<TransitionData>;
   using time_point = std::chrono::steady_clock::time_point;
@@ -107,9 +108,13 @@ struct TransitionData<T> {
     }
     const auto duration = mEndTime - mStartTime;
     const auto elapsed = now - mStartTime;
-    const auto r = static_cast<double>(elapsed.count()) / duration.count();
-    return static_cast<T>(
-      mStartValue + ((mEndValue - mStartValue) * transition.Evaluate(r)));
+    auto r = static_cast<double>(elapsed.count()) / duration.count();
+    assert(r >= 0);
+    assert(r <= 1);
+    r = transition.Evaluate(r);
+    assert(r >= 0);
+    assert(r <= 1);
+    return interpolate(mStartValue, mEndValue, r);
   }
 };
 
@@ -463,12 +468,10 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
     using TValue = typename TValueOption::value_type;
     const TValue oldValue = oldOpt.value();
     const TValue newValue = newOpt.value();
-    if (std::isnan(oldValue) || std::isnan(newValue)) {
-      return;
-    }
-
-    if (std::isnan(newValue)) {
-      __debugbreak();
+    if constexpr (std::floating_point<TValue>) {
+      if (std::isnan(oldValue) || std::isnan(newValue)) {
+        return;
+      }
     }
 
     constexpr bool DebugAnimations = false;
@@ -481,6 +484,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
         transitionState.reset();
         return;
       }
+
       if (transitionState->mEndValue != newValue) {
         transitionState->mStartValue
           = transitionState->Evaluate(newOpt.transition(), now);
@@ -491,9 +495,6 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
         return;
       }
       newOpt = transitionState->Evaluate(newOpt.transition(), now);
-      if (std::isnan(*newOpt)) {
-        __debugbreak();
-      }
       return;
     }
     transitionState = {
@@ -503,9 +504,6 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       .mEndTime = now + duration,
     };
     newOpt = oldValue;
-    if (std::isnan(*newOpt)) {
-      __debugbreak();
-    }
   };
 
   const auto applyIfHasTransition

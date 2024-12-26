@@ -7,14 +7,10 @@
 #include <array>
 #include <chrono>
 
+#include "Color.hpp"
+
 namespace FredEmmott::GUI {
 
-template <class T>
-concept animatable = requires(T a, T b) {
-  { a + ((b - a) * 1.23) } -> std::convertible_to<T>;
-};
-
-template <animatable T = SkScalar>
 struct LinearStyleTransition {
   LinearStyleTransition() = delete;
   constexpr LinearStyleTransition(const std::chrono::milliseconds duration)
@@ -25,7 +21,7 @@ struct LinearStyleTransition {
     return mDuration;
   }
 
-  constexpr T Evaluate(const SkScalar normalizedX) const {
+  constexpr float Evaluate(const SkScalar normalizedX) const {
     return normalizedX;
   }
 
@@ -36,7 +32,6 @@ struct LinearStyleTransition {
   std::chrono::milliseconds mDuration;
 };
 
-template <animatable T = SkScalar>
 struct CubicBezierStyleTransition {
   CubicBezierStyleTransition() = delete;
   constexpr CubicBezierStyleTransition(
@@ -58,7 +53,7 @@ struct CubicBezierStyleTransition {
     return mDuration;
   }
 
-  constexpr T Evaluate(const SkScalar normalizedX) const {
+  constexpr float Evaluate(const SkScalar normalizedX) const {
     const auto t = normalizedX;
 
     // B(t) = (1 - t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃

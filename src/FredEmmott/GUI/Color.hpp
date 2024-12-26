@@ -4,10 +4,19 @@
 
 #include <skia/core/SkColor.h>
 
+#include <FredEmmott/GUI/detail/WinUI3Themes/Enums.hpp>
 #include <variant>
 
-#include "StaticTheme.hpp"
 #include "SystemTheme.hpp"
+
+namespace FredEmmott::GUI {
+class Color;
+}
+namespace FredEmmott::GUI::StaticTheme {
+
+using ColorType = gui_detail::WinUI3Themes::Colors;
+Color Resolve(ColorType) noexcept;
+}// namespace FredEmmott::GUI::StaticTheme
 
 namespace FredEmmott::GUI {
 

@@ -20,7 +20,7 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
 
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;
-  constexpr auto KeySpline = ControlFastOutSlowInKeySpline<SkScalar>;
+  constexpr auto KeySpline = ControlFastOutSlowInKeySpline;
   constexpr CubicBezierStyleTransition FasterAnimation {
     ControlFasterAnimationDuration, KeySpline};
   constexpr CubicBezierStyleTransition NormalAnimation {
@@ -36,6 +36,7 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
 
   static const WidgetStyles baseStyles {
     .mBase = {
+      .mBackgroundColor = { std::nullopt, FasterAnimation },
       .mBorderRadius = { Spacing * 2, FasterAnimation },
       .mHeight = { height, FasterAnimation },
       .mLeft = {0, NormalAnimation},

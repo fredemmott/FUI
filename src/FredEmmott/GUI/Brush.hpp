@@ -17,6 +17,7 @@ namespace FredEmmott::GUI {
 class Brush final {
  public:
   Brush() = delete;
+  constexpr Brush(const Brush&) = default;
   constexpr Brush(const std::convertible_to<Color> auto& color)
     : mBrush(SolidColorBrush {Color {color}}) {
   }
@@ -28,19 +29,30 @@ class Brush final {
   }
 
   [[nodiscard]] SkPaint GetPaint(const SkRect& rect) const {
-    if (holds_alternative<SolidColorBrush>(mBrush)) {
+    if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
       SkPaint paint;
-      paint.setColor(get<SolidColorBrush>(mBrush));
+      paint.setColor(*it);
       return paint;
     }
-    if (holds_alternative<LinearGradientBrush>(mBrush)) {
-      return get<LinearGradientBrush>(mBrush).GetPaint(rect);
+    if (const auto it = get_if<LinearGradientBrush>(&mBrush)) {
+      return it->GetPaint(rect);
     }
-    if (holds_alternative<StaticTheme::BrushType>(mBrush)) {
-      return StaticTheme::Resolve(get<StaticTheme::BrushType>(mBrush))
-        .GetPaint(rect);
+    if (const auto it = get_if<StaticTheme::BrushType>(&mBrush)) {
+      return StaticTheme::Resolve(*it).GetPaint(rect);
     }
     std::unreachable();
+  }
+
+  /** If this is a SolidColorBrush, returns the backing color.
+   */
+  [[nodiscard]] std::optional<Color> GetSolidColor() const {
+    if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
+      return *it;
+    }
+    if (const auto it = get_if<StaticTheme::BrushType>(&mBrush)) {
+      return StaticTheme::Resolve(*it).GetSolidColor();
+    }
+    return std::nullopt;
   }
 
   constexpr bool operator==(const Brush&) const noexcept = default;

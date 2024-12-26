@@ -12,6 +12,7 @@
 #include "Font.hpp"
 #include "FredEmmott/memory.hpp"
 #include "StyleTransitions.hpp"
+#include "interpolate.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -31,31 +32,31 @@ struct Transition {
   constexpr bool operator==(const Transition&) const noexcept = default;
 };
 
-template <animatable T>
+template <interpolatable T>
 struct Transition<T> {
   using optional_type = std::optional<Transition>;
 
   Transition() = delete;
-  Transition(const LinearStyleTransition<T>& value) : mValue(value) {
+  Transition(const LinearStyleTransition& value) : mValue(value) {
   }
-  Transition(const CubicBezierStyleTransition<T>& value) : mValue(value) {
+  Transition(const CubicBezierStyleTransition& value) : mValue(value) {
   }
 
   std::chrono::milliseconds GetDuration() const {
-    if (holds_alternative<LinearStyleTransition<T>>(mValue)) {
-      return get<LinearStyleTransition<T>>(mValue).GetDuration();
+    if (holds_alternative<LinearStyleTransition>(mValue)) {
+      return get<LinearStyleTransition>(mValue).GetDuration();
     }
-    if (holds_alternative<CubicBezierStyleTransition<T>>(mValue)) {
-      return get<CubicBezierStyleTransition<T>>(mValue).GetDuration();
+    if (holds_alternative<CubicBezierStyleTransition>(mValue)) {
+      return get<CubicBezierStyleTransition>(mValue).GetDuration();
     }
     throw std::bad_variant_access {};
   }
 
-  T Evaluate(SkScalar normalizedX) const {
-    if (const auto it = get_if<LinearStyleTransition<T>>(&mValue)) {
+  double Evaluate(double normalizedX) const {
+    if (const auto it = get_if<LinearStyleTransition>(&mValue)) {
       return it->Evaluate(normalizedX);
     }
-    if (const auto it = get_if<CubicBezierStyleTransition<T>>(&mValue)) {
+    if (const auto it = get_if<CubicBezierStyleTransition>(&mValue)) {
       return it->Evaluate(normalizedX);
     }
     throw std::bad_variant_access {};
@@ -64,7 +65,7 @@ struct Transition<T> {
   constexpr bool operator==(const Transition&) const noexcept = default;
 
  private:
-  std::variant<LinearStyleTransition<T>, CubicBezierStyleTransition<T>> mValue;
+  std::variant<LinearStyleTransition, CubicBezierStyleTransition> mValue;
 };
 
 class Style;
@@ -77,7 +78,7 @@ enum class StyleValueScope {
 };
 
 template <class T, StyleValueScope TDefaultScope = StyleValueScope::Self>
-class StyleValue : public std::optional<T> {
+class StyleValue : private std::optional<T> {
  public:
   static constexpr StyleValueScope DefaultScope = TDefaultScope;
 
@@ -85,10 +86,17 @@ class StyleValue : public std::optional<T> {
   friend class WidgetStyles;
 
   using std::optional<T>::optional;
+  using std::optional<T>::operator->;
+  using std::optional<T>::operator*;
+  using std::optional<T>::value;
+  using std::optional<T>::has_value;
+  using std::optional<T>::value_or;
+  using value_type = typename std::optional<T>::value_type;
+
   StyleValue(
     const T& value,
     const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires animatable<T>
+    requires interpolatable<T>
     : std::optional<T>(value), mTransition(transition) {
     if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
       static_cast<std::optional<T>&>(*this) = std::nullopt;
@@ -98,31 +106,45 @@ class StyleValue : public std::optional<T> {
   StyleValue(
     std::nullopt_t,
     const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires animatable<T>
-    : StyleValue(YGUndefined, transition) {
+    requires interpolatable<T> && std::same_as<T, SkScalar>
+    : mTransition(transition) {
+  }
+
+  StyleValue(
+    std::nullopt_t,
+    const std::convertible_to<std::optional<Transition<T>>> auto& transition)
+    requires interpolatable<T> && (!std::same_as<T, SkScalar>)
+    : mTransition(transition) {
   }
 
   [[nodiscard]]
   constexpr bool has_transition() const noexcept
-    requires animatable<T>
+    requires interpolatable<T>
   {
     return mTransition.has_value();
   }
 
   [[nodiscard]]
   constexpr decltype(auto) transition() const
-    requires animatable<T>
+    requires interpolatable<T>
   {
     return mTransition.value();
   }
   constexpr bool operator==(const StyleValue& other) const noexcept = default;
+  constexpr bool operator==(const T& other) const noexcept {
+    return static_cast<const std::optional<T>&>(*this) == other;
+  }
+
+  constexpr operator bool() const noexcept {
+    return this->has_value();
+  }
 
   constexpr StyleValue& operator+=(const StyleValue& other) noexcept {
     if (other.has_value()) {
-      static_cast<std::optional<T>&>(*this) = other;
+      static_cast<std::optional<T>&>(*this) = other.value();
       mScope = other.mScope;
     }
-    if constexpr (animatable<T>) {
+    if constexpr (interpolatable<T>) {
       if (other.has_transition()) {
         mTransition = other.transition();
       }
@@ -143,11 +165,8 @@ class StyleValue : public std::optional<T> {
 };
 
 template <class T>
-struct InheritableStyleValue
-  : StyleValue<T, StyleValueScope::SelfAndDescendants> {
-  constexpr bool operator==(const InheritableStyleValue& other) const noexcept
-    = default;
-};
+using InheritableStyleValue
+  = StyleValue<T, StyleValueScope::SelfAndDescendants>;
 
 struct Style {
   StyleValue<YGAlign> mAlignSelf;

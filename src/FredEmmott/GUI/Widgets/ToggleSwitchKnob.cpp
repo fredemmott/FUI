@@ -30,8 +30,11 @@ void ToggleSwitchKnob::SetIsOn(bool value) noexcept {
 
 WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
   using namespace StaticTheme;
+  constexpr CubicBezierStyleTransition FillAnimation {
+    ControlFasterAnimationDuration, ControlFastOutSlowInKeySpline};
   static const WidgetStyles baseStyles {
     .mBase = {
+      .mBackgroundColor = { std::nullopt, FillAnimation },
       .mBorderRadius = Spacing * 2.5f,
       .mBorderWidth = 1,
       .mFlexDirection = YGFlexDirectionColumn,
