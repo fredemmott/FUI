@@ -3,6 +3,7 @@
 #pragma once
 
 #include <YGEnums.h>
+#include <YGValue.h>
 
 #include <chrono>
 #include <optional>
@@ -51,6 +52,14 @@ class StyleValue : public std::optional<T> {
   StyleValue(const T& value, const LinearStyleTransition<T>& transition)
     requires animatable<T>
     : std::optional<T>(value), mTransition(transition) {
+    if (YGFloatIsUndefined(value)) {
+      static_cast<std::optional<T>&>(*this) = std::nullopt;
+    }
+  }
+
+  StyleValue(std::nullopt_t, const LinearStyleTransition<T>& transition)
+    requires animatable<T>
+    : StyleValue(YGUndefined, transition) {
   }
 
   [[nodiscard]]
@@ -110,6 +119,10 @@ struct Style {
   StyleValue<SkScalar> mGap;
   StyleValue<SkScalar> mHeight;
   StyleValue<SkScalar> mMargin;
+  StyleValue<SkScalar> mMarginBottom;
+  StyleValue<SkScalar> mMarginLeft;
+  StyleValue<SkScalar> mMarginRight;
+  StyleValue<SkScalar> mMarginTop;
   StyleValue<SkScalar> mPadding;
   StyleValue<SkScalar> mPaddingBottom;
   StyleValue<SkScalar> mPaddingLeft;
@@ -144,6 +157,10 @@ struct Style {
   X(Gap) \
   X(Height) \
   X(Margin) \
+  X(MarginBottom) \
+  X(MarginLeft) \
+  X(MarginRight) \
+  X(MarginTop) \
   X(Padding) \
   X(PaddingBottom) \
   X(PaddingLeft) \

@@ -3,6 +3,8 @@
 
 #include "ToggleSwitchThumb.hpp"
 
+#include <Windows.h>
+
 #include <FredEmmott/GUI/StaticTheme.hpp>
 
 using namespace FredEmmott::utility;
@@ -15,38 +17,52 @@ ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id) : Widget(id) {
 
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;
-  constexpr auto hoverHeight = Spacing * 3.5;
   constexpr LinearStyleTransition<SkScalar> animation {
     std::chrono::milliseconds(100)};
+
+  constexpr auto knobWidth = Spacing * 10;
+  constexpr auto height = Spacing * 3;
+
+  constexpr auto hoverHeight = Spacing * 3.5;
+  constexpr auto hoverMargin = Spacing * 0.75f;
+  constexpr auto activeWidth = hoverHeight + (Spacing / 2);
 
   static const WidgetStyles baseStyles {
     .mBase = {
       .mBorderRadius = { Spacing * 2, animation },
-      .mHeight = { Spacing * 3, animation },
+      .mHeight = { height, animation },
       .mMargin = { Spacing, animation },
-      .mWidth = { Spacing * 3, animation },
+      .mMarginLeft = { Spacing, animation },
+      .mWidth = { height, animation },
     },
     .mHover {
       .mBorderRadius = hoverHeight / 2,
       .mHeight = hoverHeight,
-      .mMargin = Spacing * 0.75f,
+      .mMargin = hoverMargin,
       .mWidth = hoverHeight,
     },
     .mActive = {
-      .mWidth = hoverHeight + Spacing,
+      .mWidth = activeWidth
     },
   };
   static const WidgetStyles offStyles {
     .mBase = {
-      .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = TextFillColorSecondaryBrush,
     },
   };
+  // Positioning with `mMarginLeft` instead of align-self so that we
+  // can animate it
   static const WidgetStyles onStyles {
     .mBase = {
-      .mAlignSelf = YGAlignFlexEnd,
       .mBackgroundColor = TextOnAccentFillColorPrimaryBrush,
       .mBorderColor = CircleElevationBorderBrush,
+      .mMarginLeft = knobWidth - (height + Spacing),
+    },
+    .mHover = {
+      .mMarginLeft = knobWidth - (hoverMargin + hoverHeight),
+    },
+    .mActive = {
+      .mMarginLeft = knobWidth -(activeWidth + Spacing),
     },
   };
   return baseStyles + (mIsOn ? onStyles : offStyles);

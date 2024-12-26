@@ -388,11 +388,17 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
     if (oldOpt == newOpt) {
       return;
     }
-
     using TValueOption = std::decay_t<decltype(newOpt)>;
     using TValue = TValueOption::value_type;
     const auto oldValue = oldOpt.value_or(TValue {});
     const auto newValue = newOpt.value_or(TValue {});
+    if (std::isnan(oldValue) || std::isnan(newValue)) {
+      return;
+    }
+
+    if (std::isnan(newValue)) {
+      __debugbreak();
+    }
 
     auto& transitionState = state->*stateP;
     if (transitionState.has_value()) {
@@ -409,6 +415,9 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
         return;
       }
       newOpt = transitionState->Evaluate(now);
+      if (std::isnan(*newOpt)) {
+        __debugbreak();
+      }
       return;
     }
     transitionState = {
@@ -418,6 +427,9 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       .mEndTime = now + newOpt.transition().mDuration,
     };
     newOpt = oldValue;
+    if (std::isnan(*newOpt)) {
+      __debugbreak();
+    }
   };
 
   const auto applyIfHasTransition
@@ -431,7 +443,10 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       };
 
 #define APPLY_TRANSITION(X) \
-  applyIfHasTransition(&Style::m##X, &StyleTransitionState::m##X);
+  { \
+    const auto propName = #X; \
+    applyIfHasTransition(&Style::m##X, &StyleTransitionState::m##X); \
+  }
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
 }
