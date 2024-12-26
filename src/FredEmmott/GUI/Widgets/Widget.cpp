@@ -15,7 +15,6 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-
 template <auto V>
 struct constant_t {
   static constexpr auto value {V};
@@ -27,6 +26,17 @@ template <>
 struct yoga_default_value_t<SkScalar> : constant_t<YGUndefined> {};
 template <>
 struct yoga_default_value_t<YGDisplay> : constant_t<YGDisplayFlex> {};
+
+template <class T>
+struct transition_default_value_t : constant_t<std::nullopt> {};
+template <>
+struct transition_default_value_t<SkScalar> : constant_t<0> {};
+template <>
+struct transition_default_value_t<Brush> : constant_t<SK_ColorTRANSPARENT> {};
+
+template <class T>
+constexpr auto transition_default_value_v
+  = transition_default_value_t<T>::value;
 
 YGConfigRef GetYogaConfig() {
   static unique_ptr<YGConfig> sInstance;
@@ -453,21 +463,34 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
 
   const auto apply = [now, newStyle, oldStyle = &mComputedStyle, state](
                        auto styleP, auto stateP) {
-    auto oldOpt = oldStyle->*styleP;
-    auto& newOpt = newStyle->*styleP;
+    using TValue =
+      typename std::decay_t<decltype(oldStyle->*styleP)>::value_type;
+    constexpr auto DefaultValue = transition_default_value_v<TValue>;
+
+    auto oldOpt = (oldStyle->*styleP);
+    auto& newOpt = (newStyle->*styleP);
+    auto targetOpt = newOpt;
+
+    if (!oldOpt.has_value()) {
+      oldOpt += DefaultValue;
+    }
+
+    if (!newOpt.has_value()) {
+      targetOpt += DefaultValue;
+    }
+
     if (oldOpt == newOpt) {
       return;
     }
-    using TValueOption = std::decay_t<decltype(newOpt)>;
-    if (!(oldOpt.has_value() && newOpt.has_value())) {
+
+    if (!(oldOpt.has_value() && targetOpt.has_value())) {
 #ifndef NDEBUG
       __debugbreak();
 #endif
       return;
     }
-    using TValue = typename TValueOption::value_type;
     const TValue oldValue = oldOpt.value();
-    const TValue newValue = newOpt.value();
+    const TValue newValue = targetOpt.value();
     if constexpr (std::floating_point<TValue>) {
       if (std::isnan(oldValue) || std::isnan(newValue)) {
         return;
