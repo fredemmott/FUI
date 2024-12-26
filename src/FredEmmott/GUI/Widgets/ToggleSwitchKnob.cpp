@@ -16,7 +16,16 @@ using namespace StaticTheme;
 using namespace widget_detail;
 
 ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id) : Widget(id) {
-  this->SetChildren({new ToggleSwitchThumb({})});
+  this->ChangeDirectChildren(
+    [this] { mThumb.reset(new ToggleSwitchThumb({})); });
+}
+
+bool ToggleSwitchKnob::IsOn() const noexcept {
+  return mThumb->IsOn();
+}
+
+void ToggleSwitchKnob::SetIsOn(bool value) noexcept {
+  mThumb->SetIsOn(value);
 }
 
 WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
@@ -56,25 +65,17 @@ WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
       .mBorderColor = AccentFillColorTertiaryBrush,
     },
   };
-  return baseStyles + (mIsOn ? onStyles : offStyles);
-}
-
-Widget::EventHandlerResult ToggleSwitchKnob::OnClick(MouseEvent* e) {
-  mChanged.Set();
-  mIsOn = !mIsOn;
-  const auto children = this->GetChildren();
-  if (children.size() > 0) {
-    if (auto thumb = widget_cast<ToggleSwitchThumb>(children.front())) {
-      thumb->mIsOn = mIsOn;
-    }
-  }
-  return EventHandlerResult::StopPropagation;
+  return baseStyles + (this->IsOn() ? onStyles : offStyles);
 }
 
 Widget::ComputedStyleFlags ToggleSwitchKnob::OnComputedStyleChange(
   const Style&) {
   using enum ComputedStyleFlags;
   return InheritableActiveState | InheritableHoverState;
+}
+
+WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {
+  return {mThumb.get()};
 }
 
 }// namespace FredEmmott::GUI::Widgets

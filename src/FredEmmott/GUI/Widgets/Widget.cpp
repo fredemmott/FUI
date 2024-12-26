@@ -113,6 +113,24 @@ Widget::Widget(std::size_t id)
   mStyleTransitionState.reset(new StyleTransitionState());
 }
 
+WidgetList Widget::GetDirectChildren() const noexcept {
+  return WidgetList {mManagedChildrenCacheForGetChildren};
+}
+
+void Widget::ChangeDirectChildren(const std::function<void()>& mutator) {
+  const auto layout = this->GetLayoutNode();
+  YGNodeRemoveAllChildren(layout);
+
+  if (mutator) {
+    mutator();
+  }
+
+  const auto childLayouts
+    = std::views::transform(this->GetDirectChildren(), &Widget::GetLayoutNode)
+    | std::ranges::to<std::vector>();
+  YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
+}
+
 Widget::~Widget() = default;
 
 void Widget::ComputeStyles(const WidgetStyles& inherited) {
@@ -158,7 +176,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
         }
       }
 
-      for (auto&& child: mChildren) {
+      for (auto&& child: this->GetDirectChildren()) {
         child->mStateFlags &= ~stateFlags;
         child->mStateFlags |= stateFlagValues;
       }
@@ -171,7 +189,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   const auto setYoga = [&]<class... Front>(
                          auto member, auto setter, Front&&... args) {
     const auto& value = mComputedStyle.*member;
-    using T = std::decay_t<decltype(value)>::value_type;
+    using T = typename std::decay_t<decltype(value)>::value_type;
     if constexpr (std::same_as<T, SkScalar>) {
       setter(yoga, std::forward<Front>(args)..., value.value_or(YGUndefined));
     } else if (value) {
@@ -196,7 +214,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
 
   const auto childStyles = merged.InheritableStyles();
-  for (auto&& child: this->GetChildren()) {
+  for (auto&& child: this->GetDirectChildren()) {
     child->ComputeStyles(childStyles);
   }
 }
@@ -210,34 +228,19 @@ void Widget::SetExplicitStyles(const WidgetStyles& styles) {
   this->ComputeStyles(mInheritedStyles);
 }
 
-std::span<Widget* const> Widget::GetChildren() const noexcept {
-  return mStorageForGetChildren;
-}
-
-void Widget::SetChildren(const std::vector<Widget*>& children) {
-  if (children == mStorageForGetChildren) {
-    return;
-  }
-
-  const auto layout = this->GetLayoutNode();
-  YGNodeRemoveAllChildren(layout);
-
+void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
   std::vector<unique_ptr<Widget>> newChildren;
   for (auto child: children) {
-    auto it = std::ranges::find(mChildren, child, &unique_ptr<Widget>::get);
-    if (it == mChildren.end()) {
+    auto it
+      = std::ranges::find(mManagedChildren, child, &unique_ptr<Widget>::get);
+    if (it == mManagedChildren.end()) {
       newChildren.emplace_back(child);
     } else {
       newChildren.emplace_back(std::move(*it));
     }
   }
-  mChildren = std::move(newChildren);
-  mStorageForGetChildren = children;
-
-  const auto childLayouts
-    = std::views::transform(mChildren, &Widget::GetLayoutNode)
-    | std::ranges::to<std::vector>();
-  YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
+  mManagedChildren = std::move(newChildren);
+  mManagedChildrenCacheForGetChildren = children;
 }
 
 void Widget::Paint(SkCanvas* canvas) const {
@@ -254,7 +257,7 @@ void Widget::Paint(SkCanvas* canvas) const {
 
   this->PaintOwnContent(canvas, rect, style);
 
-  const auto children = this->GetChildren();
+  const auto children = this->GetDirectChildren();
   if (children.empty()) {
     return;
   }
@@ -267,6 +270,17 @@ void Widget::Paint(SkCanvas* canvas) const {
   canvas->restore();
 }
 
+void Widget::SetChildren(const std::vector<Widget*>& children) {
+  if (children == mManagedChildrenCacheForGetChildren) {
+    return;
+  }
+
+  const auto foster = this->GetFosterParent();
+  const auto parent = foster ? foster : this;
+
+  parent->ChangeDirectChildren(
+    std::bind_front(&Widget::SetManagedChildren, parent, std::ref(children)));
+}
 void Widget::DispatchEvent(const Event* e) {
   if (const auto it = dynamic_cast<const MouseEvent*>(e)) {
     (void)this->DispatchMouseEvent(it);
@@ -359,7 +373,7 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
 
   auto result = EventHandlerResult::Default;
   // Always propagate unconditionally to allow correct internal states
-  for (auto&& child: this->GetChildren()) {
+  for (auto&& child: this->GetDirectChildren()) {
     if (
       child->DispatchMouseEvent(translated.get())
       == EventHandlerResult::StopPropagation) {

@@ -14,6 +14,9 @@ namespace FredEmmott::GUI::Widgets {
 
 ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id) : Widget(id) {
 }
+void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
+  mIsOn = value;
+}
 
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;

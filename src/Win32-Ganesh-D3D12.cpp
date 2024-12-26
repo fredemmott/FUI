@@ -28,8 +28,7 @@
 #include "FredEmmott/GUI/Immediate/Label.hpp"
 #include "FredEmmott/GUI/Immediate/Root.hpp"
 #include "FredEmmott/GUI/Immediate/StackPanel.hpp"
-#include "FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp"
-#include "FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp"
+#include "FredEmmott/GUI/Widgets/ToggleSwitch.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -331,8 +330,12 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
       std::println(stderr, "Clicked!");
     }
 
-    fuii::immediate_detail::BeginWidget<fui::Widgets::ToggleSwitchKnob> {}();
-    fuii::immediate_detail::EndWidget<fui::Widgets::ToggleSwitchKnob>();
+    fuii::immediate_detail::BeginWidget<fui::Widgets::ToggleSwitch> {}();
+
+    auto toggle = fuii::immediate_detail::GetCurrentParentNode<
+      fui::Widgets::ToggleSwitch>();
+    fuii::Label("{}##Label", toggle->IsOn() ? "On" : "Off");
+    fuii::immediate_detail::EndWidget<fui::Widgets::ToggleSwitch>();
 
     fuii::EndStackPanel();
     fuii::EndCard();

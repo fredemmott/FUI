@@ -35,7 +35,7 @@ struct BeginWidget {
   }
 
  private:
-  void Begin(const Widgets::WidgetStyles& styles, MangledID id) const {
+  static void Begin(const Widgets::WidgetStyles& styles, MangledID id) {
     TruncateUnlessNextIdEquals(id);
 
     auto& [siblings, i] = tStack.back();

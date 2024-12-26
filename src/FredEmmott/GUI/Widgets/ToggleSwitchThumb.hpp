@@ -10,9 +10,16 @@ namespace FredEmmott::GUI::Widgets {
 class ToggleSwitchThumb final : public Widget {
  public:
   ToggleSwitchThumb(std::size_t id);
-  bool mIsOn {false};
+
+  [[nodiscard]]
+  bool IsOn() const noexcept {
+    return mIsOn;
+  }
+
+  void SetIsOn(bool) noexcept;
 
  protected:
+  bool mIsOn {false};
   WidgetStyles GetDefaultStyles() const override;
 };
 

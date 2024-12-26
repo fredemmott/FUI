@@ -3,25 +3,34 @@
 
 #include <FredEmmott/GUI/ActivatedFlag.hpp>
 
-#include "ToggleSwitchThumb.hpp"
+#include "ToggleSwitchKnob.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class ToggleSwitchKnob final : public Widget {
+class ToggleSwitch final : public Widget {
  public:
-  ToggleSwitchKnob(std::size_t id);
+  ToggleSwitch(std::size_t id);
 
   [[nodiscard]]
   bool IsOn() const noexcept;
   void SetIsOn(bool) noexcept;
 
+  ActivatedFlag mChanged;
+
  protected:
   WidgetStyles GetDefaultStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& base) override;
+  Widget* GetFosterParent() const noexcept override {
+    return mFosterParent.get();
+  }
+
+  EventHandlerResult OnClick(MouseEvent* event) override;
 
  private:
-  unique_ptr<ToggleSwitchThumb> mThumb {nullptr};
+  unique_ptr<ToggleSwitchKnob> mKnob;
+  // Container for user-supplied children
+  unique_ptr<Widget> mFosterParent;
   WidgetList GetDirectChildren() const noexcept override;
 };
 

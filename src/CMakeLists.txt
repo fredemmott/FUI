@@ -37,49 +37,50 @@ add_executable(
   Win32-Ganesh-D3D12.hpp
   app.exe.manifest
 
+  FredEmmott/GUI/ActivatedFlag.hpp
+  FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
-  FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
-  FredEmmott/GUI/Brush.hpp
-  FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
-  FredEmmott/GUI/StyleTransitions.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
   FredEmmott/GUI/Immediate/concepts.hpp
+  FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
+  FredEmmott/GUI/SolidColorBrush.hpp
+  FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
+  FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
+  FredEmmott/GUI/StyleTransitions.hpp
+  FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
+  FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
+  FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
+  FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
+  FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
+  FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
+  FredEmmott/GUI/Widgets/StackPanel.cpp FredEmmott/GUI/Widgets/StackPanel.hpp
+  FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
+  FredEmmott/GUI/Widgets/ToggleSwitchKnob.cpp FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp
+  FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
+  FredEmmott/GUI/Widgets/Widget.cpp FredEmmott/GUI/Widgets/Widget.hpp
+  FredEmmott/GUI/Widgets/WidgetStyles.cpp FredEmmott/GUI/Widgets/WidgetStyles.hpp
+  FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
+  FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
+  FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/events/Event.hpp
   FredEmmott/GUI/events/MouseButton.hpp
   FredEmmott/GUI/events/MouseButtonPressEvent.hpp
   FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
   FredEmmott/GUI/events/MouseMoveEvent.hpp
-  FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
-  FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
-  FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
-  FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
-  FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
-  FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
-  FredEmmott/GUI/Widgets/StackPanel.cpp FredEmmott/GUI/Widgets/StackPanel.hpp
-  FredEmmott/GUI/Widgets/Widget.cpp FredEmmott/GUI/Widgets/Widget.hpp
-  FredEmmott/GUI/Widgets/WidgetStyles.cpp FredEmmott/GUI/Widgets/WidgetStyles.hpp
-  FredEmmott/GUI/detail/font_detail.hpp
-  FredEmmott/GUI/detail/widget_detail.hpp
-  FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
-  FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
-  FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
-  FredEmmott/GUI/Widgets/ToggleSwitchKnob.cpp FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp
-  FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
-  FredEmmott/utility/bitflag_enums.hpp
-  FredEmmott/GUI/ActivatedFlag.hpp
-  FredEmmott/utility/lazy_init.hpp
-  FredEmmott/utility/type_tag.hpp
-  FredEmmott/type_traits/concepts.hpp
   FredEmmott/GUI/yoga.hpp
   FredEmmott/memory.hpp
   FredEmmott/memory/memory_detail.hpp
+  FredEmmott/type_traits/concepts.hpp
+  FredEmmott/utility/bitflag_enums.hpp
+  FredEmmott/utility/lazy_init.hpp
+  FredEmmott/utility/type_tag.hpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

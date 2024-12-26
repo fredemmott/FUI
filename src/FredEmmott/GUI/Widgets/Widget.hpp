@@ -14,9 +14,12 @@
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
 
+struct WidgetList;
+
 class Widget {
  public:
   Widget() = delete;
+  explicit Widget(std::size_t id);
   virtual ~Widget();
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
@@ -32,7 +35,10 @@ class Widget {
   void SetExplicitStyles(const WidgetStyles& styles);
   void Paint(SkCanvas* canvas) const;
 
-  std::span<Widget* const> GetChildren() const noexcept;
+  auto GetChildren() const noexcept {
+    const auto foster = this->GetFosterParent();
+    return (foster ? foster : this)->mManagedChildrenCacheForGetChildren;
+  }
   void SetChildren(const std::vector<Widget*>& children);
 
   void DispatchEvent(const Event*);
@@ -52,8 +58,6 @@ class Widget {
 
   // Base spacing unit - see https://fluent2.microsoft.design/layout
   static constexpr SkScalar Spacing = 4;
-
-  explicit Widget(std::size_t id);
 
   [[nodiscard]]
   virtual WidgetStyles GetDefaultStyles() const {
@@ -78,6 +82,18 @@ class Widget {
     return mExplicitStyles;
   }
 
+  /** Parent node for `GetChildren()` and `SetChildren()` (public APIs).
+   *
+   * Use `GetDirectChildren()` and `ChangeDirectChildren()` for internal
+   * sub-widgets.
+   */
+  virtual Widget* GetFosterParent() const noexcept {
+    return nullptr;
+  }
+
+  virtual WidgetList GetDirectChildren() const noexcept;
+  void ChangeDirectChildren(const std::function<void()>& mutator);
+
  private:
   struct StyleTransitionState;
   unique_ptr<StyleTransitionState> mStyleTransitionState;
@@ -101,12 +117,13 @@ class Widget {
   WidgetStyles mInheritedStyles;
   Style mComputedStyle;
 
-  std::vector<unique_ptr<Widget>> mChildren;
-  std::vector<Widget*> mStorageForGetChildren;
+  std::vector<unique_ptr<Widget>> mManagedChildren;
+  std::vector<Widget*> mManagedChildrenCacheForGetChildren;
 
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent*);
   void ApplyStyleTransitions(Style* newStyle);
+  void SetManagedChildren(const std::vector<Widget*>& children);
 };
 
 consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {
@@ -117,5 +134,50 @@ consteval bool is_bitflag_enum(
   utility::type_tag_t<Widget::ComputedStyleFlags>) {
   return true;
 }
+
+struct WidgetList {
+  using TSpan = std::span<Widget* const>;
+  using TVector = std::vector<Widget*>;
+
+  WidgetList() = delete;
+  explicit WidgetList(TSpan span) : mStorage {span} {
+  }
+
+  WidgetList(TVector&& vec) : mStorage(std::move(vec)) {
+  }
+
+  WidgetList(std::initializer_list<Widget*> list) : mStorage(TVector {list}) {
+  }
+
+  [[nodiscard]]
+  auto begin() const {
+    return Get().begin();
+  }
+
+  [[nodiscard]]
+  auto end() const {
+    return Get().end();
+  }
+
+  [[nodiscard]]
+  bool empty() const noexcept {
+    return Get().empty();
+  }
+
+ private:
+  mutable std::variant<TSpan, TVector> mStorage;
+
+  [[nodiscard]]
+  std::span<Widget* const> Get() const {
+    if (const auto span = get_if<TSpan>(&mStorage)) {
+      return *span;
+    }
+    if (const auto vec = get_if<TVector>(&mStorage)) {
+      return std::span {*vec};
+    }
+    throw std::bad_variant_access {};
+  }
+};
+static_assert(std::ranges::input_range<WidgetList>);
 
 }// namespace FredEmmott::GUI::Widgets

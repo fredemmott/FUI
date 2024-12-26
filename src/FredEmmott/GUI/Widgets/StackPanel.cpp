@@ -13,7 +13,7 @@ WidgetStyles StackPanel::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mBase = {
       .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
-      .mGap = Spacing,
+      .mGap = Spacing * 4,
     },
   };
   return ret;
