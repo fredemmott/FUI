@@ -201,19 +201,16 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   const auto setYoga = [&]<class... FrontArgs>(
                          auto member, auto setter, FrontArgs&&... frontArgs) {
     const auto& optional = mComputedStyle.*member;
+    if (optional.has_value()) {
+      setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
+      return;
+    }
+
     using T = typename std::decay_t<decltype(optional)>::value_type;
     using default_t = yoga_default_value_t<T>;
     if constexpr (requires { default_t::value; }) {
-      setter(
-        yoga,
-        std::forward<FrontArgs>(frontArgs)...,
-        optional.value_or(default_t::value));
-      return;
+      setter(yoga, std::forward<FrontArgs>(frontArgs)..., default_t::value);
     }
-    if (!optional.has_value()) {
-      return;
-    }
-    setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
   };
 
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
