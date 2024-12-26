@@ -15,6 +15,18 @@ namespace FredEmmott::GUI::Widgets {
 
 namespace {
 
+template <auto V>
+struct constant_t {
+  static constexpr auto value {V};
+};
+
+template <class T>
+struct yoga_default_value_t;
+template <>
+struct yoga_default_value_t<SkScalar> : constant_t<YGUndefined> {};
+template <>
+struct yoga_default_value_t<YGDisplay> : constant_t<YGDisplayFlex> {};
+
 YGConfigRef GetYogaConfig() {
   static unique_ptr<YGConfig> sInstance;
   static std::once_flag sOnceFlag;
@@ -186,18 +198,27 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   mComputedStyle = style;
 
   const auto yoga = this->GetLayoutNode();
-  const auto setYoga = [&]<class... Front>(
-                         auto member, auto setter, Front&&... args) {
-    const auto& value = mComputedStyle.*member;
-    using T = typename std::decay_t<decltype(value)>::value_type;
-    if constexpr (std::same_as<T, SkScalar>) {
-      setter(yoga, std::forward<Front>(args)..., value.value_or(YGUndefined));
-    } else if (value) {
-      setter(yoga, std::forward<Front>(args)..., *value);
+  const auto setYoga = [&]<class... FrontArgs>(
+                         auto member, auto setter, FrontArgs&&... frontArgs) {
+    const auto& optional = mComputedStyle.*member;
+    using T = typename std::decay_t<decltype(optional)>::value_type;
+    using default_t = yoga_default_value_t<T>;
+    if constexpr (requires { default_t::value; }) {
+      setter(
+        yoga,
+        std::forward<FrontArgs>(frontArgs)...,
+        optional.value_or(default_t::value));
+      return;
     }
+    if (!optional.has_value()) {
+      return;
+    }
+    setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
   };
+
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
+  setYoga(&Style::mDisplay, &YGNodeStyleSetDisplay);
   setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);

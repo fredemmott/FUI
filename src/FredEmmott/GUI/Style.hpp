@@ -140,6 +140,7 @@ struct Style {
   StyleValue<SkScalar> mBorderRadius;
   StyleValue<SkScalar> mBorderWidth;
   InheritableStyleValue<Brush> mColor;
+  StyleValue<YGDisplay> mDisplay;
   StyleValue<YGFlexDirection> mFlexDirection;
   InheritableStyleValue<Font> mFont;
   StyleValue<SkScalar> mGap;
@@ -178,6 +179,7 @@ struct Style {
   X(BorderRadius) \
   X(BorderWidth) \
   X(Color) \
+  X(Display) \
   X(Font) \
   X(FlexDirection) \
   X(Gap) \
