@@ -21,10 +21,13 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline<SkScalar>;
-  constexpr CubicBezierStyleTransition Animation {
+  constexpr CubicBezierStyleTransition FasterAnimation {
     ControlFasterAnimationDuration, KeySpline};
+  constexpr CubicBezierStyleTransition NormalAnimation {
+    ControlNormalAnimationDuration, KeySpline};
 
-  constexpr auto knobWidth = Spacing * 10;
+  constexpr auto parentWidth = Spacing * 10;
+  constexpr auto margin = Spacing;
   constexpr auto height = Spacing * 3;
 
   constexpr auto hoverHeight = Spacing * 3.5;
@@ -33,16 +36,18 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
 
   static const WidgetStyles baseStyles {
     .mBase = {
-      .mBorderRadius = { Spacing * 2, Animation },
-      .mHeight = { height, Animation },
-      .mMargin = { Spacing, Animation },
-      .mMarginLeft = { Spacing, Animation },
-      .mWidth = { height, Animation },
+      .mBorderRadius = { Spacing * 2, FasterAnimation },
+      .mHeight = { height, FasterAnimation },
+      .mLeft = {0, NormalAnimation},
+      .mMargin = { margin, FasterAnimation },
+      .mMarginLeft = { margin, FasterAnimation },
+      .mWidth = { height, FasterAnimation },
     },
     .mHover {
       .mBorderRadius = hoverHeight / 2,
       .mHeight = hoverHeight,
       .mMargin = hoverMargin,
+      .mMarginLeft = hoverMargin, // TODO: inherit from margin
       .mWidth = hoverHeight,
     },
     .mActive = {
@@ -57,16 +62,14 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   // Positioning with `mMarginLeft` instead of align-self so that we
   // can animate it
   static const WidgetStyles onStyles {
-    .mBase = {
+    .mBase
+    = {
       .mBackgroundColor = TextOnAccentFillColorPrimaryBrush,
       .mBorderColor = CircleElevationBorderBrush,
-      .mMarginLeft = knobWidth - (height + Spacing),
-    },
-    .mHover = {
-      .mMarginLeft = knobWidth - (hoverMargin + hoverHeight),
+      .mLeft = parentWidth - (height + (2 * margin)),
     },
     .mActive = {
-      .mMarginLeft = knobWidth -(activeWidth + Spacing),
+      .mMarginLeft = hoverMargin + hoverHeight - activeWidth,
     },
   };
   return baseStyles + (IsOn() ? onStyles : offStyles);

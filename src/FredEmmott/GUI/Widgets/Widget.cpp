@@ -230,10 +230,12 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
 
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
+  setYoga(&Style::mBottom, &YGNodeStyleSetPosition, YGEdgeBottom);
   setYoga(&Style::mDisplay, &YGNodeStyleSetDisplay);
   setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
+  setYoga(&Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);
   setYoga(&Style::mMargin, &YGNodeStyleSetMargin, YGEdgeAll);
   setYoga(&Style::mMarginBottom, &YGNodeStyleSetMargin, YGEdgeBottom);
   setYoga(&Style::mMarginLeft, &YGNodeStyleSetMargin, YGEdgeLeft);
@@ -244,6 +246,8 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
   setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
   setYoga(&Style::mPaddingTop, &YGNodeStyleSetPadding, YGEdgeTop);
+  setYoga(&Style::mRight, &YGNodeStyleSetPosition, YGEdgeRight);
+  setYoga(&Style::mTop, &YGNodeStyleSetPosition, YGEdgeTop);
   setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
 }
 

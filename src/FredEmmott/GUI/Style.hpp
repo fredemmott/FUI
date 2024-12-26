@@ -156,12 +156,14 @@ struct Style {
   StyleValue<Brush> mBorderColor;
   StyleValue<SkScalar> mBorderRadius;
   StyleValue<SkScalar> mBorderWidth;
+  StyleValue<SkScalar> mBottom;
   InheritableStyleValue<Brush> mColor;
   StyleValue<YGDisplay> mDisplay;
   StyleValue<YGFlexDirection> mFlexDirection;
   InheritableStyleValue<Font> mFont;
   StyleValue<SkScalar> mGap;
   StyleValue<SkScalar> mHeight;
+  StyleValue<SkScalar> mLeft;
   StyleValue<SkScalar> mMargin;
   StyleValue<SkScalar> mMarginBottom;
   StyleValue<SkScalar> mMarginLeft;
@@ -172,6 +174,8 @@ struct Style {
   StyleValue<SkScalar> mPaddingLeft;
   StyleValue<SkScalar> mPaddingRight;
   StyleValue<SkScalar> mPaddingTop;
+  StyleValue<SkScalar> mRight;
+  StyleValue<SkScalar> mTop;
   StyleValue<SkScalar> mWidth;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
@@ -195,12 +199,14 @@ struct Style {
   X(BorderColor) \
   X(BorderRadius) \
   X(BorderWidth) \
+  X(Bottom) \
   X(Color) \
   X(Display) \
   X(Font) \
   X(FlexDirection) \
   X(Gap) \
   X(Height) \
+  X(Left) \
   X(Margin) \
   X(MarginBottom) \
   X(MarginLeft) \
@@ -211,4 +217,6 @@ struct Style {
   X(PaddingLeft) \
   X(PaddingRight) \
   X(PaddingTop) \
+  X(Right) \
+  X(Top) \
   X(Width)
