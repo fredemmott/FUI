@@ -32,6 +32,10 @@ bool ToggleSwitch::IsOn() const noexcept {
 }
 
 void ToggleSwitch::SetIsOn(bool value) noexcept {
+  if (value == IsOn()) {
+    return;
+  }
+  mChanged.Set();
   mKnob->SetIsOn(value);
 }
 
@@ -53,8 +57,7 @@ Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
 }
 
 Widget::EventHandlerResult ToggleSwitch::OnClick(MouseEvent* event) {
-  mKnob->SetIsOn(!mKnob->IsOn());
-  mChanged.Set();
+  this->SetIsOn(!this->IsOn());
   return EventHandlerResult::StopPropagation;
 }
 
