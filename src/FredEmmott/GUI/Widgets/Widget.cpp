@@ -454,9 +454,15 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       return;
     }
     using TValueOption = std::decay_t<decltype(newOpt)>;
-    using TValue = TValueOption::value_type;
-    const auto oldValue = oldOpt.value_or(TValue {});
-    const auto newValue = newOpt.value_or(TValue {});
+    if (!(oldOpt.has_value() && newOpt.has_value())) {
+#ifndef NDEBUG
+      __debugbreak();
+#endif
+      return;
+    }
+    using TValue = typename TValueOption::value_type;
+    const TValue oldValue = oldOpt.value();
+    const TValue newValue = newOpt.value();
     if (std::isnan(oldValue) || std::isnan(newValue)) {
       return;
     }
