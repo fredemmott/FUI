@@ -26,6 +26,9 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   constexpr CubicBezierStyleTransition NormalAnimation {
     ControlNormalAnimationDuration, KeySpline};
 
+  constexpr LinearStyleTransition ColorAnimation {
+    ControlFasterAnimationDuration};
+
   constexpr auto parentWidth = Spacing * 10;
   constexpr auto margin = Spacing;
   constexpr auto height = Spacing * 3;
@@ -36,7 +39,8 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
 
   static const WidgetStyles baseStyles {
     .mBase = {
-      .mBackgroundColor = { std::nullopt, FasterAnimation },
+      .mBackgroundColor = { std::nullopt, ColorAnimation},
+      .mBorderColor = { std::nullopt, ColorAnimation},
       .mBorderRadius = { Spacing * 2, FasterAnimation },
       .mHeight = { height, FasterAnimation },
       .mLeft = {0, NormalAnimation},
