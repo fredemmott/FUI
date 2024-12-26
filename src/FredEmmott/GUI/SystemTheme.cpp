@@ -16,7 +16,6 @@
 using namespace winrt::Windows::UI::ViewManagement;
 
 namespace FredEmmott::GUI::SystemTheme {
-// TODO: automatically update when user changes theme, or light <-> dark
 struct Store {
   Store();
   void Populate();
