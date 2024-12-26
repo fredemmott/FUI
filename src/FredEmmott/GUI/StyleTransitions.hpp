@@ -14,7 +14,7 @@ concept animatable = requires(T a, T b) {
   { a + ((b - a) * 1.23) } -> std::convertible_to<T>;
 };
 
-template <animatable T>
+template <animatable T = SkScalar>
 struct LinearStyleTransition {
   LinearStyleTransition() = delete;
   constexpr LinearStyleTransition(const std::chrono::milliseconds duration)
