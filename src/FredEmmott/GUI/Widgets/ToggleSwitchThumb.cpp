@@ -17,8 +17,9 @@ ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id) : Widget(id) {
 
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;
-  constexpr LinearStyleTransition<SkScalar> animation {
-    std::chrono::milliseconds(100)};
+  constexpr auto KeySpline = ControlFastOutSlowInKeySpline<SkScalar>;
+  constexpr CubicBezierStyleTransition Animation {
+    ControlFasterAnimationDuration, KeySpline};
 
   constexpr auto knobWidth = Spacing * 10;
   constexpr auto height = Spacing * 3;
@@ -29,11 +30,11 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
 
   static const WidgetStyles baseStyles {
     .mBase = {
-      .mBorderRadius = { Spacing * 2, animation },
-      .mHeight = { height, animation },
-      .mMargin = { Spacing, animation },
-      .mMarginLeft = { Spacing, animation },
-      .mWidth = { height, animation },
+      .mBorderRadius = { Spacing * 2, Animation },
+      .mHeight = { height, Animation },
+      .mMargin = { Spacing, Animation },
+      .mMarginLeft = { Spacing, Animation },
+      .mWidth = { height, Animation },
     },
     .mHover {
       .mBorderRadius = hoverHeight / 2,

@@ -11,17 +11,13 @@
 #include "Brush.hpp"
 #include "Font.hpp"
 #include "FredEmmott/memory.hpp"
+#include "StyleTransitions.hpp"
 
 namespace FredEmmott::GUI {
 
 template <class T>
-concept animatable = requires(T a, T b) {
-  { a + ((b - a) * 1.23) } -> std::convertible_to<T>;
-};
-
-template <class T>
-struct LinearStyleTransition {
-  using optional_type = LinearStyleTransition;
+struct Transition {
+  using optional_type = Transition;
 
   constexpr bool has_value() const noexcept {
     return false;
@@ -32,24 +28,52 @@ struct LinearStyleTransition {
     throw std::bad_optional_access {};
   }
 
-  constexpr bool operator==(const LinearStyleTransition&) const noexcept
-    = default;
+  constexpr bool operator==(const Transition&) const noexcept = default;
 };
 
 template <animatable T>
-struct LinearStyleTransition<T> {
-  using optional_type = std::optional<LinearStyleTransition>;
+struct Transition<T> {
+  using optional_type = std::optional<Transition>;
 
-  std::chrono::milliseconds mDuration;
-  constexpr bool operator==(const LinearStyleTransition&) const noexcept
-    = default;
+  Transition() = delete;
+  Transition(const LinearStyleTransition<T>& value) : mValue(value) {
+  }
+  Transition(const CubicBezierStyleTransition<T>& value) : mValue(value) {
+  }
+
+  std::chrono::milliseconds GetDuration() const {
+    if (holds_alternative<LinearStyleTransition<T>>(mValue)) {
+      return get<LinearStyleTransition<T>>(mValue).GetDuration();
+    }
+    if (holds_alternative<CubicBezierStyleTransition<T>>(mValue)) {
+      return get<CubicBezierStyleTransition<T>>(mValue).GetDuration();
+    }
+    throw std::bad_variant_access {};
+  }
+
+  T Evaluate(SkScalar normalizedX) const {
+    if (holds_alternative<LinearStyleTransition<T>>(mValue)) {
+      return get<LinearStyleTransition>(mValue).Evaluate(normalizedX);
+    }
+    if (holds_alternative<CubicBezierStyleTransition<T>>(mValue)) {
+      return get<CubicBezierStyleTransition>(mValue).Evaluate(normalizedX);
+    }
+    throw std::bad_variant_access {};
+  }
+
+  constexpr bool operator==(const Transition&) const noexcept = default;
+
+ private:
+  std::variant<LinearStyleTransition<T>, CubicBezierStyleTransition<T>> mValue;
 };
 
 template <class T>
 class StyleValue : public std::optional<T> {
  public:
   using std::optional<T>::optional;
-  StyleValue(const T& value, const LinearStyleTransition<T>& transition)
+  StyleValue(
+    const T& value,
+    const std::convertible_to<Transition<T>> auto& transition)
     requires animatable<T>
     : std::optional<T>(value), mTransition(transition) {
     if (YGFloatIsUndefined(value)) {
@@ -57,7 +81,9 @@ class StyleValue : public std::optional<T> {
     }
   }
 
-  StyleValue(std::nullopt_t, const LinearStyleTransition<T>& transition)
+  StyleValue(
+    std::nullopt_t,
+    const std::convertible_to<Transition<T>> auto& transition)
     requires animatable<T>
     : StyleValue(YGUndefined, transition) {
   }
@@ -97,7 +123,7 @@ class StyleValue : public std::optional<T> {
 
  private:
   FUI_NO_UNIQUE_ADDRESS
-  LinearStyleTransition<T>::optional_type mTransition;
+  Transition<T>::optional_type mTransition;
 };
 
 template <class T>

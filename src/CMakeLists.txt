@@ -46,6 +46,7 @@ add_executable(
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
+  FredEmmott/GUI/StyleTransitions.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
   FredEmmott/GUI/Immediate/concepts.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp

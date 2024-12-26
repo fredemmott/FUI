@@ -409,7 +409,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       if (transitionState->mEndValue != newValue) {
         transitionState->mStartValue = transitionState->Evaluate(now);
         transitionState->mStartTime = now;
-        transitionState->mEndTime = now + newOpt.transition().mDuration;
+        transitionState->mEndTime = now + newOpt.transition().GetDuration(),
         transitionState->mEndValue = newValue;
         newOpt = transitionState->mStartValue;
         return;
@@ -424,7 +424,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       .mStartValue = oldValue,
       .mStartTime = now,
       .mEndValue = newValue,
-      .mEndTime = now + newOpt.transition().mDuration,
+      .mEndTime = now + newOpt.transition().GetDuration(),
     };
     newOpt = oldValue;
     if (std::isnan(*newOpt)) {
