@@ -67,16 +67,30 @@ struct Transition<T> {
   std::variant<LinearStyleTransition<T>, CubicBezierStyleTransition<T>> mValue;
 };
 
-template <class T>
+class Style;
+class WidgetStyles;
+
+enum class StyleValueScope {
+  Self,
+  SelfAndChildren,
+  SelfAndDescendants,
+};
+
+template <class T, StyleValueScope TDefaultScope = StyleValueScope::Self>
 class StyleValue : public std::optional<T> {
  public:
+  static constexpr StyleValueScope DefaultScope = TDefaultScope;
+
+  friend class Style;
+  friend class WidgetStyles;
+
   using std::optional<T>::optional;
   StyleValue(
     const T& value,
     const std::convertible_to<Transition<T>> auto& transition)
     requires animatable<T>
     : std::optional<T>(value), mTransition(transition) {
-    if (YGFloatIsUndefined(value)) {
+    if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
       static_cast<std::optional<T>&>(*this) = std::nullopt;
     }
   }
@@ -106,6 +120,7 @@ class StyleValue : public std::optional<T> {
   constexpr StyleValue& operator+=(const StyleValue& other) noexcept {
     if (other.has_value()) {
       static_cast<std::optional<T>&>(*this) = other;
+      mScope = other.mScope;
     }
     if constexpr (animatable<T>) {
       if (other.has_transition()) {
@@ -122,12 +137,14 @@ class StyleValue : public std::optional<T> {
   }
 
  private:
+  StyleValueScope mScope {TDefaultScope};
   FUI_NO_UNIQUE_ADDRESS
-  Transition<T>::optional_type mTransition;
+  typename Transition<T>::optional_type mTransition;
 };
 
 template <class T>
-struct InheritableStyleValue : StyleValue<T> {
+struct InheritableStyleValue
+  : StyleValue<T, StyleValueScope::SelfAndDescendants> {
   constexpr bool operator==(const InheritableStyleValue& other) const noexcept
     = default;
 };

@@ -45,11 +45,23 @@ Style& Style::operator+=(const Style& other) noexcept {
 Style Style::InheritableValues() const noexcept {
   Style ret;
   const auto copyIfInheritable = [this, &ret](auto member) {
-    const auto& value = this->*member;
-    using T = std::decay_t<decltype(value)>;
-    if constexpr (std::
-                    same_as<T, InheritableStyleValue<typename T::value_type>>) {
-      ret.*member = value;
+    const auto& rhs = this->*member;
+    if (!rhs.has_value()) {
+      return;
+    }
+    auto& lhs = ret.*member;
+
+    using enum StyleValueScope;
+    switch (rhs.mScope) {
+      case Self:
+        return;
+      case SelfAndChildren:
+        lhs = rhs;
+        lhs.mScope = Self;
+        break;
+      case SelfAndDescendants:
+        lhs = rhs;
+        break;
     }
   };
 #define COPY_IF_INHERITABLE(X) copyIfInheritable(&Style::m##X);
