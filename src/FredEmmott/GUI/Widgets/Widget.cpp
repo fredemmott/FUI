@@ -21,6 +21,7 @@ YGConfigRef GetYogaConfig() {
   std::call_once(sOnceFlag, [&ret = sInstance]() {
     ret.reset(YGConfigNew());
     YGConfigSetUseWebDefaults(ret.get(), true);
+    YGConfigSetPointScaleFactor(ret.get(), 0.0f);
   });
   return sInstance.get();
 }
@@ -70,9 +71,46 @@ void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
 
 }// namespace
 
+template <class T>
+struct TransitionData {
+  using option_type = TransitionData;
+};
+
+template <animatable T>
+struct TransitionData<T> {
+  using option_type = std::optional<TransitionData>;
+  using time_point = std::chrono::steady_clock::time_point;
+  T mStartValue;
+  time_point mStartTime;
+  T mEndValue;
+  time_point mEndTime;
+
+  [[nodiscard]] T Evaluate(const time_point& now) const noexcept {
+    if (now < mStartTime) {
+      return mStartValue;
+    }
+    if (now > mEndTime) {
+      return mEndValue;
+    }
+    const auto duration = mEndTime - mStartTime;
+    const auto elapsed = now - mStartTime;
+    const auto r = static_cast<double>(elapsed.count()) / duration.count();
+    return static_cast<T>(mStartValue + ((mEndValue - mStartValue) * r));
+  }
+};
+
+struct Widget::StyleTransitionState {
+#define DECLARE_TRANSITION_DATA(X) \
+  FUI_NO_UNIQUE_ADDRESS \
+  TransitionData<decltype(Style::m##X)::value_type>::option_type m##X;
+  FUI_STYLE_PROPERTIES(DECLARE_TRANSITION_DATA)
+#undef TRANSITION_DATA
+};
+
 Widget::Widget(std::size_t id)
   : mID(id), mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   YGNodeSetContext(mYoga.get(), this);
+  mStyleTransitionState.reset(new StyleTransitionState());
 }
 
 Widget::~Widget() = default;
@@ -94,6 +132,10 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   }
   if (isActive) {
     style += merged.mActive;
+  }
+
+  if (mComputedStyle != Style {}) {
+    this->ApplyStyleTransitions(&style);
   }
 
   if (mComputedStyle != style) {
@@ -210,12 +252,8 @@ void Widget::Paint(SkCanvas* canvas) const {
     return;
   }
 
-  const auto layout = this->GetLayoutNode();
-  const auto x = YGNodeLayoutGetLeft(layout);
-  const auto y = YGNodeLayoutGetTop(layout);
-
   canvas->save();
-  canvas->translate(x, y);
+  canvas->translate(rect.x(), rect.y());
   for (auto&& child: children) {
     child->Paint(canvas);
   }
@@ -331,6 +369,64 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   }
 
   return result;
+}
+void Widget::ApplyStyleTransitions(Style* newStyle) {
+  auto state = mStyleTransitionState.get();
+  const auto now = std::chrono::steady_clock::now();
+
+  const auto apply = [now, newStyle, oldStyle = &mComputedStyle, state](
+                       auto styleP, auto stateP) {
+    auto oldOpt = oldStyle->*styleP;
+    auto& newOpt = newStyle->*styleP;
+    if (oldOpt == newOpt) {
+      return;
+    }
+
+    using TValueOption = std::decay_t<decltype(newOpt)>;
+    using TValue = TValueOption::value_type;
+    const auto oldValue = oldOpt.value_or(TValue {});
+    const auto newValue = newOpt.value_or(TValue {});
+
+    auto& transitionState = state->*stateP;
+    if (transitionState.has_value()) {
+      if (transitionState->mEndTime < now) {
+        transitionState.reset();
+        return;
+      }
+      if (transitionState->mEndValue != newValue) {
+        transitionState->mStartValue = transitionState->Evaluate(now);
+        transitionState->mStartTime = now;
+        transitionState->mEndTime = now + newOpt.transition().mDuration;
+        transitionState->mEndValue = newValue;
+        newOpt = transitionState->mStartValue;
+        return;
+      }
+      newOpt = transitionState->Evaluate(now);
+      return;
+    }
+    transitionState = {
+      .mStartValue = oldValue,
+      .mStartTime = now,
+      .mEndValue = newValue,
+      .mEndTime = now + newOpt.transition().mDuration,
+    };
+    newOpt = oldValue;
+  };
+
+  const auto applyIfHasTransition
+    = [newStyle, apply](auto styleP, auto stateP) {
+        auto& prop = newStyle->*styleP;
+        if constexpr (requires { prop.has_transition(); }) {
+          if (prop.has_transition()) {
+            apply(styleP, stateP);
+          }
+        }
+      };
+
+#define APPLY_TRANSITION(X) \
+  applyIfHasTransition(&Style::m##X, &StyleTransitionState::m##X);
+  FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
+#undef APPLY_TRANSITION
 }
 
 }// namespace FredEmmott::GUI::Widgets

@@ -4,40 +4,118 @@
 
 #include <YGEnums.h>
 
+#include <chrono>
 #include <optional>
 
 #include "Brush.hpp"
 #include "Font.hpp"
+#include "FredEmmott/memory.hpp"
 
 namespace FredEmmott::GUI {
 
-struct Style {
-  template <class T>
-  struct InheritableValue : std::optional<T> {
-    constexpr bool operator==(const InheritableValue& other) const noexcept
-      = default;
-  };
-  template <class T>
-  using Value = std::optional<T>;
+template <class T>
+concept animatable = requires(T a, T b) {
+  { a + ((b - a) * 1.23) } -> std::convertible_to<T>;
+};
 
-  Value<YGAlign> mAlignSelf;
-  Value<YGAlign> mAlignItems;
-  Value<Brush> mBackgroundColor;
-  Value<Brush> mBorderColor;
-  Value<SkScalar> mBorderRadius;
-  Value<SkScalar> mBorderWidth;
-  InheritableValue<Brush> mColor;
-  Value<YGFlexDirection> mFlexDirection;
-  InheritableValue<Font> mFont;
-  Value<SkScalar> mGap;
-  Value<SkScalar> mHeight;
-  Value<SkScalar> mMargin;
-  Value<SkScalar> mPadding;
-  Value<SkScalar> mPaddingBottom;
-  Value<SkScalar> mPaddingLeft;
-  Value<SkScalar> mPaddingRight;
-  Value<SkScalar> mPaddingTop;
-  Value<SkScalar> mWidth;
+template <class T>
+struct LinearStyleTransition {
+  using optional_type = LinearStyleTransition;
+
+  constexpr bool has_value() const noexcept {
+    return false;
+  }
+
+  [[noreturn]]
+  constexpr T value() const {
+    throw std::bad_optional_access {};
+  }
+
+  constexpr bool operator==(const LinearStyleTransition&) const noexcept
+    = default;
+};
+
+template <animatable T>
+struct LinearStyleTransition<T> {
+  using optional_type = std::optional<LinearStyleTransition>;
+
+  std::chrono::milliseconds mDuration;
+  constexpr bool operator==(const LinearStyleTransition&) const noexcept
+    = default;
+};
+
+template <class T>
+class StyleValue : public std::optional<T> {
+ public:
+  using std::optional<T>::optional;
+  StyleValue(const T& value, const LinearStyleTransition<T>& transition)
+    requires animatable<T>
+    : std::optional<T>(value), mTransition(transition) {
+  }
+
+  [[nodiscard]]
+  constexpr bool has_transition() const noexcept
+    requires animatable<T>
+  {
+    return mTransition.has_value();
+  }
+
+  [[nodiscard]]
+  constexpr decltype(auto) transition() const
+    requires animatable<T>
+  {
+    return mTransition.value();
+  }
+  constexpr bool operator==(const StyleValue& other) const noexcept = default;
+
+  constexpr StyleValue& operator+=(const StyleValue& other) noexcept {
+    if (other.has_value()) {
+      static_cast<std::optional<T>&>(*this) = other;
+    }
+    if constexpr (animatable<T>) {
+      if (other.has_transition()) {
+        mTransition = other.transition();
+      }
+    }
+    return *this;
+  }
+
+  constexpr StyleValue operator+(const StyleValue& other) const noexcept {
+    StyleValue ret {*this};
+    ret += other;
+    return ret;
+  }
+
+ private:
+  FUI_NO_UNIQUE_ADDRESS
+  LinearStyleTransition<T>::optional_type mTransition;
+};
+
+template <class T>
+struct InheritableStyleValue : StyleValue<T> {
+  constexpr bool operator==(const InheritableStyleValue& other) const noexcept
+    = default;
+};
+
+struct Style {
+  StyleValue<YGAlign> mAlignSelf;
+  StyleValue<YGAlign> mAlignItems;
+  StyleValue<Brush> mBackgroundColor;
+  StyleValue<Brush> mBorderColor;
+  StyleValue<SkScalar> mBorderRadius;
+  StyleValue<SkScalar> mBorderWidth;
+  InheritableStyleValue<Brush> mColor;
+  StyleValue<YGFlexDirection> mFlexDirection;
+  InheritableStyleValue<Font> mFont;
+  StyleValue<SkScalar> mGap;
+  StyleValue<SkScalar> mHeight;
+  StyleValue<SkScalar> mMargin;
+  StyleValue<SkScalar> mPadding;
+  StyleValue<SkScalar> mPaddingBottom;
+  StyleValue<SkScalar> mPaddingLeft;
+  StyleValue<SkScalar> mPaddingRight;
+  StyleValue<SkScalar> mPaddingTop;
+  StyleValue<SkScalar> mWidth;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
 
@@ -52,3 +130,23 @@ struct Style {
 };
 
 }// namespace FredEmmott::GUI
+
+#define FUI_STYLE_PROPERTIES(X) \
+  X(AlignItems) \
+  X(AlignSelf) \
+  X(BackgroundColor) \
+  X(BorderColor) \
+  X(BorderRadius) \
+  X(BorderWidth) \
+  X(Color) \
+  X(Font) \
+  X(FlexDirection) \
+  X(Gap) \
+  X(Height) \
+  X(Margin) \
+  X(Padding) \
+  X(PaddingBottom) \
+  X(PaddingLeft) \
+  X(PaddingRight) \
+  X(PaddingTop) \
+  X(Width)

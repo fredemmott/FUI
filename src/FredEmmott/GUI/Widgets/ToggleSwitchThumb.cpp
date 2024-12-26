@@ -15,13 +15,16 @@ ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id) : Widget(id) {
 
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;
-  const auto hoverHeight = Spacing * 3.5;
+  constexpr auto hoverHeight = Spacing * 3.5;
+  constexpr LinearStyleTransition<SkScalar> animation {
+    std::chrono::milliseconds(100)};
+
   static const WidgetStyles baseStyles {
     .mBase = {
-      .mBorderRadius = Spacing * 2,
-      .mHeight = Spacing * 3,
-      .mMargin = Spacing,
-      .mWidth = Spacing * 3,
+      .mBorderRadius = { Spacing * 2, animation },
+      .mHeight = { Spacing * 3, animation },
+      .mMargin = { Spacing, animation },
+      .mWidth = { Spacing * 3, animation },
     },
     .mHover {
       .mBorderRadius = hoverHeight / 2,

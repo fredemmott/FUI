@@ -79,6 +79,9 @@ class Widget {
   }
 
  private:
+  struct StyleTransitionState;
+  unique_ptr<StyleTransitionState> mStyleTransitionState;
+
   enum class StateFlags {
     Default = 0,
     Disabled = 1,
@@ -103,6 +106,7 @@ class Widget {
 
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent*);
+  void ApplyStyleTransitions(Style* newStyle);
 };
 
 consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {

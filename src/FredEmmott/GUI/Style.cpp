@@ -3,26 +3,6 @@
 
 #include "Style.hpp"
 
-#define FUI_STYLE_PROPERTIES(X) \
-  X(AlignItems) \
-  X(AlignSelf) \
-  X(BackgroundColor) \
-  X(BorderColor) \
-  X(BorderRadius) \
-  X(BorderWidth) \
-  X(Color) \
-  X(Font) \
-  X(FlexDirection) \
-  X(Gap) \
-  X(Height) \
-  X(Margin) \
-  X(Padding) \
-  X(PaddingBottom) \
-  X(PaddingLeft) \
-  X(PaddingRight) \
-  X(PaddingTop) \
-  X(Width)
-
 namespace FredEmmott::GUI {
 
 Style& Style::operator+=(const Style& other) noexcept {
@@ -52,9 +32,7 @@ Style& Style::operator+=(const Style& other) noexcept {
     auto& lhs = this->*member;
     const auto& rhs = other.*member;
 
-    if (rhs.has_value()) {
-      lhs = rhs;
-    }
+    lhs += rhs;
   };
 
 #define MERGE_PROPERTY(X) merge(&Style::m##X);
@@ -69,7 +47,8 @@ Style Style::InheritableValues() const noexcept {
   const auto copyIfInheritable = [this, &ret](auto member) {
     const auto& value = this->*member;
     using T = std::decay_t<decltype(value)>;
-    if constexpr (std::same_as<T, InheritableValue<typename T::value_type>>) {
+    if constexpr (std::
+                    same_as<T, InheritableStyleValue<typename T::value_type>>) {
       ret.*member = value;
     }
   };

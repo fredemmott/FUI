@@ -32,7 +32,7 @@ class HelloSkiaWindow final {
 
  private:
   static constexpr UINT SwapChainLength = 3;
-  static constexpr UINT MinimumFrameRate = 5;
+  static constexpr UINT MinimumFrameRate = 60;
 
   static HelloSkiaWindow* gInstance;
 
