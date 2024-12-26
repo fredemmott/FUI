@@ -18,7 +18,6 @@ class ToggleSwitchKnob final : public Widget {
 
  protected:
   WidgetStyles GetDefaultStyles() const override;
-  ComputedStyleFlags OnComputedStyleChange(const Style& base) override;
 
  private:
   unique_ptr<ToggleSwitchThumb> mThumb {nullptr};

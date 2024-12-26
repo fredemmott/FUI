@@ -164,11 +164,14 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     style += merged.mActive;
   }
 
-  if (mComputedStyle != Style {}) {
-    this->ApplyStyleTransitions(&style);
+  const auto children = this->GetDirectChildren();
+  for (auto&& child: children) {
+    constexpr auto clearFlags
+      = StateFlags::ActiveInherited | StateFlags::HoveredInherited;
+    child->mStateFlags &= ~clearFlags;
   }
 
-  if (mComputedStyle != style) {
+  {
     using enum ComputedStyleFlags;
     if (const auto flags = this->OnComputedStyleChange(style);
         flags != Default) {
@@ -194,8 +197,18 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
       }
     }
   }
+
+  if (mComputedStyle != Style {}) {
+    this->ApplyStyleTransitions(&style);
+  }
+
   mInheritedStyles = inherited;
   mComputedStyle = style;
+
+  const auto childStyles = merged.InheritableStyles();
+  for (auto&& child: this->GetDirectChildren()) {
+    child->ComputeStyles(childStyles);
+  }
 
   const auto yoga = this->GetLayoutNode();
   const auto setYoga = [&]<class... FrontArgs>(
@@ -230,11 +243,6 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
   setYoga(&Style::mPaddingTop, &YGNodeStyleSetPadding, YGEdgeTop);
   setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
-
-  const auto childStyles = merged.InheritableStyles();
-  for (auto&& child: this->GetDirectChildren()) {
-    child->ComputeStyles(childStyles);
-  }
 }
 
 void Widget::SetExplicitStyles(const WidgetStyles& styles) {
@@ -481,6 +489,17 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
   }
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
+}
+
+Widget::ComputedStyleFlags Widget::OnComputedStyleChange(const Style&) {
+  auto ret = ComputedStyleFlags::Default;
+  if ((mStateFlags & StateFlags::HoveredInherited) != StateFlags::Default) {
+    ret |= ComputedStyleFlags::InheritableHoverState;
+  }
+  if ((mStateFlags & StateFlags::ActiveInherited) != StateFlags::Default) {
+    ret |= ComputedStyleFlags::InheritableActiveState;
+  }
+  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets

@@ -68,12 +68,6 @@ WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
   return baseStyles + (this->IsOn() ? onStyles : offStyles);
 }
 
-Widget::ComputedStyleFlags ToggleSwitchKnob::OnComputedStyleChange(
-  const Style&) {
-  using enum ComputedStyleFlags;
-  return InheritableActiveState | InheritableHoverState;
-}
-
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {
   return {mThumb.get()};
 }

@@ -65,9 +65,7 @@ class Widget {
   }
 
   [[nodiscard]]
-  virtual ComputedStyleFlags OnComputedStyleChange(const Style& base) {
-    return ComputedStyleFlags::Default;
-  }
+  virtual ComputedStyleFlags OnComputedStyleChange(const Style& style);
 
   virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
     const {

@@ -69,7 +69,7 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
       .mMarginLeft = knobWidth -(activeWidth + Spacing),
     },
   };
-  return baseStyles + (mIsOn ? onStyles : offStyles);
+  return baseStyles + (IsOn() ? onStyles : offStyles);
 }
 
 }// namespace FredEmmott::GUI::Widgets
