@@ -38,6 +38,7 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
 WidgetStyles ToggleSwitch::GetDefaultStyles() const {
   static const WidgetStyles ret {
     .mBase = {
+      .mAlignSelf = YGAlignFlexStart,
       .mFlexDirection = YGFlexDirectionRow,
       .mGap = Spacing * 2,
     },
