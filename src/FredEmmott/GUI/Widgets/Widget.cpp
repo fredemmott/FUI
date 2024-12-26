@@ -167,14 +167,17 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   mInheritedStyles = inherited;
   mComputedStyle = style;
 
-  const auto layout = this->GetLayoutNode();
-  const auto setYoga
-    = [&]<class... Front>(auto member, auto setter, Front&&... args) {
-        const auto& value = mComputedStyle.*member;
-        if (value) {
-          setter(layout, std::forward<Front>(args)..., *value);
-        }
-      };
+  const auto yoga = this->GetLayoutNode();
+  const auto setYoga = [&]<class... Front>(
+                         auto member, auto setter, Front&&... args) {
+    const auto& value = mComputedStyle.*member;
+    using T = std::decay_t<decltype(value)>::value_type;
+    if constexpr (std::same_as<T, SkScalar>) {
+      setter(yoga, std::forward<Front>(args)..., value.value_or(YGUndefined));
+    } else if (value) {
+      setter(yoga, std::forward<Front>(args)..., *value);
+    }
+  };
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
