@@ -181,7 +181,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   }
 
   if (mComputedStyle != Style {}) {
-    this->ApplyStyleTransitions(&style);
+    mStyleTransitions->Apply(mComputedStyle, &style);
   }
 
   mInheritedStyles = inherited;

@@ -104,10 +104,6 @@ void Widget::StyleTransitions::Apply(
   };
 }
 
-void Widget::ApplyStyleTransitions(Style* newStyle) {
-  mStyleTransitions->Apply(mComputedStyle, newStyle);
-}
-
 void Widget::StyleTransitions::Apply(const Style& oldStyle, Style* newStyle) {
   const auto now = std::chrono::steady_clock::now();
 

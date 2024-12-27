@@ -120,7 +120,6 @@ class Widget {
 
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent*);
-  void ApplyStyleTransitions(Style* newStyle);
   void SetManagedChildren(const std::vector<Widget*>& children);
 };
 
