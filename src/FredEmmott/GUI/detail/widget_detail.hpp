@@ -12,4 +12,10 @@ template <std::derived_from<Widget> T>
 T* widget_cast(Widget* const p) {
   return dynamic_cast<T*>(p);
 }
+
+template <auto V>
+struct constant_t {
+  static constexpr auto value {V};
+};
+
 }// namespace FredEmmott::GUI::Widgets::widget_detail

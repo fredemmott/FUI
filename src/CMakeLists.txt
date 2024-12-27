@@ -66,7 +66,9 @@ add_executable(
   FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchKnob.cpp FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
-  FredEmmott/GUI/Widgets/Widget.cpp FredEmmott/GUI/Widgets/Widget.hpp
+  FredEmmott/GUI/Widgets/Widget.hpp
+  FredEmmott/GUI/Widgets/Widget.cpp
+  FredEmmott/GUI/Widgets/Widget_transitions.cpp
   FredEmmott/GUI/Widgets/WidgetStyles.cpp FredEmmott/GUI/Widgets/WidgetStyles.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp

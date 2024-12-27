@@ -10,15 +10,13 @@
 #include <format>
 #include <ranges>
 
+#include "FredEmmott/GUI/detail/Widget/transitions.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 
 namespace FredEmmott::GUI::Widgets {
+using namespace widget_detail;
 
 namespace {
-template <auto V>
-struct constant_t {
-  static constexpr auto value {V};
-};
 
 template <class T>
 struct yoga_default_value_t;
@@ -26,17 +24,6 @@ template <>
 struct yoga_default_value_t<SkScalar> : constant_t<YGUndefined> {};
 template <>
 struct yoga_default_value_t<YGDisplay> : constant_t<YGDisplayFlex> {};
-
-template <class T>
-struct transition_default_value_t : constant_t<std::nullopt> {};
-template <>
-struct transition_default_value_t<SkScalar> : constant_t<0> {};
-template <>
-struct transition_default_value_t<Brush> : constant_t<SK_ColorTRANSPARENT> {};
-
-template <class T>
-constexpr auto transition_default_value_v
-  = transition_default_value_t<T>::value;
 
 YGConfigRef GetYogaConfig() {
   static unique_ptr<YGConfig> sInstance;
@@ -91,47 +78,7 @@ void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
   paint.setAntiAlias(true);
   canvas->drawRoundRect(border, radius, radius, paint);
 }
-
-template <class T>
-struct TransitionState {
-  using option_type = TransitionState;
-};
-
-template <class T>
-  requires StyleProperty<T>::SupportsTransitions
-struct TransitionState<T> {
-  using option_type = std::optional<TransitionState>;
-  using time_point = std::chrono::steady_clock::time_point;
-
-  T mStartValue;
-  time_point mStartTime;
-  T mEndValue;
-  time_point mEndTime;
-
-  [[nodiscard]] T Evaluate(const auto& transition, const time_point& now)
-    const noexcept {
-    if (now < mStartTime) {
-      return mStartValue;
-    }
-    if (now > mEndTime) {
-      return mEndValue;
-    }
-    const auto duration = mEndTime - mStartTime;
-    const auto elapsed = now - mStartTime;
-    const auto t = static_cast<double>(elapsed.count()) / duration.count();
-    const auto eased = transition.mEasingFunction(t);
-    return Interpolation::Linear(mStartValue, mEndValue, eased);
-  }
-};
 }// namespace
-
-struct Widget::StyleTransitionState {
-#define DECLARE_TRANSITION_DATA(X) \
-  FUI_NO_UNIQUE_ADDRESS \
-  TransitionState<decltype(Style::m##X)::value_type>::option_type m##X;
-  FUI_STYLE_PROPERTIES(DECLARE_TRANSITION_DATA)
-#undef TRANSITION_DATA
-};
 
 Widget::Widget(std::size_t id)
   : mID(id), mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
@@ -453,96 +400,6 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   }
 
   return result;
-}
-void Widget::ApplyStyleTransitions(Style* newStyle) {
-  auto state = mStyleTransitionState.get();
-  const auto now = std::chrono::steady_clock::now();
-
-  const auto apply = [now, newStyle, oldStyle = &mComputedStyle, state](
-                       auto styleP, auto stateP) {
-    using TValue =
-      typename std::decay_t<decltype(oldStyle->*styleP)>::value_type;
-    constexpr auto DefaultValue = transition_default_value_v<TValue>;
-
-    auto oldOpt = (oldStyle->*styleP);
-    auto& newOpt = (newStyle->*styleP);
-    auto targetOpt = newOpt;
-
-    if (!oldOpt.has_value()) {
-      oldOpt += DefaultValue;
-    }
-
-    if (!newOpt.has_value()) {
-      targetOpt += DefaultValue;
-    }
-
-    if (oldOpt == newOpt) {
-      return;
-    }
-
-    if (!(oldOpt.has_value() && targetOpt.has_value())) {
-#ifndef NDEBUG
-      __debugbreak();
-#endif
-      return;
-    }
-    const TValue oldValue = oldOpt.value();
-    const TValue newValue = targetOpt.value();
-    if constexpr (std::floating_point<TValue>) {
-      if (std::isnan(oldValue) || std::isnan(newValue)) {
-        return;
-      }
-    }
-
-    constexpr bool DebugAnimations = false;
-    const auto duration
-      = newOpt.transition().mDuration * (DebugAnimations ? 10 : 1);
-
-    auto& transitionState = state->*stateP;
-    if (transitionState.has_value()) {
-      if (transitionState->mEndTime < now) {
-        transitionState.reset();
-        return;
-      }
-
-      if (transitionState->mEndValue != newValue) {
-        transitionState->mStartValue
-          = transitionState->Evaluate(newOpt.transition(), now);
-        transitionState->mStartTime = now;
-        transitionState->mEndTime = now + duration,
-        transitionState->mEndValue = newValue;
-        newOpt = transitionState->mStartValue;
-        return;
-      }
-      newOpt = transitionState->Evaluate(newOpt.transition(), now);
-      return;
-    }
-    transitionState = {
-      .mStartValue = oldValue,
-      .mStartTime = now,
-      .mEndValue = newValue,
-      .mEndTime = now + duration,
-    };
-    newOpt = oldValue;
-  };
-
-  const auto applyIfHasTransition
-    = [newStyle, apply](auto styleP, auto stateP) {
-        auto& prop = newStyle->*styleP;
-        if constexpr (requires { prop.has_transition(); }) {
-          if (prop.has_transition()) {
-            apply(styleP, stateP);
-          }
-        }
-      };
-
-#define APPLY_TRANSITION(X) \
-  { \
-    const auto propName = #X; \
-    applyIfHasTransition(&Style::m##X, &StyleTransitionState::m##X); \
-  }
-  FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
-#undef APPLY_TRANSITION
 }
 
 Widget::ComputedStyleFlags Widget::OnComputedStyleChange(const Style&) {
