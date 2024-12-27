@@ -11,8 +11,8 @@
 #include "Brush.hpp"
 #include "Font.hpp"
 #include "FredEmmott/memory.hpp"
+#include "Lerp.hpp"
 #include "StyleTransitions.hpp"
-#include "interpolate.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -32,7 +32,7 @@ struct Transition {
   constexpr bool operator==(const Transition&) const noexcept = default;
 };
 
-template <interpolatable T>
+template <lerpable T>
 struct Transition<T> {
   using optional_type = std::optional<Transition>;
 
@@ -96,7 +96,7 @@ class StyleValue : private std::optional<T> {
   StyleValue(
     const T& value,
     const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires interpolatable<T>
+    requires lerpable<T>
     : std::optional<T>(value), mTransition(transition) {
     if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
       static_cast<std::optional<T>&>(*this) = std::nullopt;
@@ -106,27 +106,27 @@ class StyleValue : private std::optional<T> {
   StyleValue(
     std::nullopt_t,
     const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires interpolatable<T> && std::same_as<T, SkScalar>
+    requires lerpable<T> && std::same_as<T, SkScalar>
     : mTransition(transition) {
   }
 
   StyleValue(
     std::nullopt_t,
     const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires interpolatable<T> && (!std::same_as<T, SkScalar>)
+    requires lerpable<T> && (!std::same_as<T, SkScalar>)
     : mTransition(transition) {
   }
 
   [[nodiscard]]
   constexpr bool has_transition() const noexcept
-    requires interpolatable<T>
+    requires lerpable<T>
   {
     return mTransition.has_value();
   }
 
   [[nodiscard]]
   constexpr decltype(auto) transition() const
-    requires interpolatable<T>
+    requires lerpable<T>
   {
     return mTransition.value();
   }
@@ -144,7 +144,7 @@ class StyleValue : private std::optional<T> {
       static_cast<std::optional<T>&>(*this) = other.value();
       mScope = other.mScope;
     }
-    if constexpr (interpolatable<T>) {
+    if constexpr (lerpable<T>) {
       if (other.has_transition()) {
         mTransition = other.transition();
       }

@@ -99,7 +99,7 @@ struct TransitionData {
   using option_type = TransitionData;
 };
 
-template <interpolatable T>
+template <lerpable T>
 struct TransitionData<T> {
   using option_type = std::optional<TransitionData>;
   using time_point = std::chrono::steady_clock::time_point;
@@ -124,7 +124,7 @@ struct TransitionData<T> {
     r = transition.Evaluate(r);
     assert(r >= 0);
     assert(r <= 1);
-    return interpolate(mStartValue, mEndValue, r);
+    return Lerp(mStartValue, mEndValue, r);
   }
 };
 
