@@ -51,7 +51,7 @@ Style Style::InheritableValues() const noexcept {
     }
     auto& lhs = ret.*member;
 
-    using enum StyleValueScope;
+    using enum StylePropertyScope;
     switch (rhs.mScope) {
       case Self:
         return;
