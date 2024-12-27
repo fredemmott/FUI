@@ -3,6 +3,7 @@
 #include "StaticTheme.hpp"
 
 #include <Windows.h>
+#include <winrt/windows.ui.viewmanagement.h>
 
 #include <FredEmmott/GUI/detail/WinUI3Themes/Macros.hpp>
 #include <FredEmmott/GUI/detail/WinUI3Themes/Themes.hpp>
@@ -10,6 +11,8 @@
 #include "Brush.hpp"
 #include "Color.hpp"
 #include "SystemTheme.hpp"
+
+using namespace winrt::Windows::UI::ViewManagement;
 
 namespace FredEmmott::GUI::StaticTheme {
 using namespace gui_detail::WinUI3Themes;
@@ -76,10 +79,9 @@ ThemeKind GetCurrentThemeKind() {
     }
 
     // Microsoft's recommend approach for detecting dark mode...
-    const auto foreground
-      = SystemTheme::Resolve(SystemTheme::SystemColorWindowTextColor);
-    const bool isForegroundLight
-      = (((5 * SkColorGetG(foreground)) + (2 * SkColorGetR(foreground)) + SkColorGetB(foreground)) > (8 * 128));
+    UISettings settings;
+    auto [a, r, g, b] = settings.GetColorValue(UIColorType::Foreground);
+    const bool isForegroundLight = ((5 * r) + (2 * g) + b) > (8 * 128);
 
     return isForegroundLight ? Dark : Light;
   }();
