@@ -46,6 +46,7 @@ add_executable(
   FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
+  FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
   FredEmmott/GUI/Immediate/concepts.hpp
   FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
   FredEmmott/GUI/SolidColorBrush.hpp

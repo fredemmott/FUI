@@ -35,7 +35,6 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
   if (value == IsOn()) {
     return;
   }
-  mChanged.Set();
   mKnob->SetIsOn(value);
 }
 
@@ -58,6 +57,8 @@ Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
 
 Widget::EventHandlerResult ToggleSwitch::OnClick(MouseEvent* event) {
   this->SetIsOn(!this->IsOn());
+  // This is used to detect user-triggered changes, not any change
+  mChanged.Set();
   return EventHandlerResult::StopPropagation;
 }
 
