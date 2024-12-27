@@ -93,8 +93,8 @@ class Widget {
   void ChangeDirectChildren(const std::function<void()>& mutator);
 
  private:
-  struct StyleTransitionState;
-  unique_ptr<StyleTransitionState> mStyleTransitionState;
+  struct StyleTransitions;
+  unique_ptr<StyleTransitions> mStyleTransitions;
 
   enum class StateFlags {
     Default = 0,

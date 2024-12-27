@@ -43,7 +43,7 @@ struct TransitionState<T> {
 
 namespace FredEmmott::GUI::Widgets {
 
-struct Widget::StyleTransitionState {
+struct Widget::StyleTransitions {
 #define DECLARE_TRANSITION_DATA(X) \
   FUI_NO_UNIQUE_ADDRESS \
   widget_detail::TransitionState< \

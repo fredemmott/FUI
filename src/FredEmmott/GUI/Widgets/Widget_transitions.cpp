@@ -23,7 +23,7 @@ constexpr auto transition_default_value_v
 }// namespace
 
 void Widget::ApplyStyleTransitions(Style* newStyle) {
-  const auto state = mStyleTransitionState.get();
+  const auto state = mStyleTransitions.get();
   const auto now = std::chrono::steady_clock::now();
 
   auto apply = [now, newStyle, oldStyle = &mComputedStyle, state](
@@ -107,7 +107,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
 #define APPLY_TRANSITION(X) \
   { \
     const auto propName = #X; \
-    applyIfHasTransition(&Style::m##X, &StyleTransitionState::m##X); \
+    applyIfHasTransition(&Style::m##X, &StyleTransitions::m##X); \
   }
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION

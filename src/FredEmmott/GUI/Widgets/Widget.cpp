@@ -83,7 +83,7 @@ void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
 Widget::Widget(std::size_t id)
   : mID(id), mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   YGNodeSetContext(mYoga.get(), this);
-  mStyleTransitionState.reset(new StyleTransitionState());
+  mStyleTransitions.reset(new StyleTransitions());
 }
 
 WidgetList Widget::GetDirectChildren() const noexcept {
