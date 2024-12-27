@@ -25,7 +25,8 @@ constexpr T Linear(T start, T end, float ratio) noexcept {
   return start + ((end - start) * ratio);
 }
 
-constexpr Color
+// Not constexpr becuse SkColor4f From/To SkColor aren't constexpr
+inline Color
 Linear(const Color& startRef, const Color& endRef, float ratio) noexcept {
   constexpr auto& f = Linear<float>;
   const auto start = SkColor4f::FromColor(startRef);
