@@ -6,6 +6,7 @@
 #include "FredEmmott/GUI/detail/Widget/transitions.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "Widget.hpp"
+#include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;

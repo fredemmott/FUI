@@ -4,14 +4,15 @@
 
 #include <core/SkRRect.h>
 
+#include <FredEmmott/GUI/detail/Widget/transitions.hpp>
+#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <cassert>
 #include <format>
 #include <ranges>
 
-#include "FredEmmott/GUI/detail/Widget/transitions.hpp"
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
+#include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;

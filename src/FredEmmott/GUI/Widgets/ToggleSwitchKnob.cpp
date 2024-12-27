@@ -7,6 +7,7 @@
 
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 #include "ToggleSwitchThumb.hpp"
+#include "WidgetList.hpp"
 
 using namespace FredEmmott::utility;
 

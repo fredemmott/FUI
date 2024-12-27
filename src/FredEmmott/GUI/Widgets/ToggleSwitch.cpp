@@ -3,10 +3,9 @@
 
 #include "ToggleSwitch.hpp"
 
-#include <FredEmmott/GUI/StaticTheme.hpp>
-
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 #include "ToggleSwitchKnob.hpp"
+#include "WidgetList.hpp"
 
 using namespace FredEmmott::utility;
 
