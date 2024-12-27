@@ -8,17 +8,6 @@
 namespace FredEmmott::GUI::Widgets::widget_detail {
 
 template <class T>
-struct transition_default_value_t : constant_t<std::nullopt> {};
-template <>
-struct transition_default_value_t<SkScalar> : constant_t<0> {};
-template <>
-struct transition_default_value_t<Brush> : constant_t<SK_ColorTRANSPARENT> {};
-
-template <class T>
-constexpr auto transition_default_value_v
-  = transition_default_value_t<T>::value;
-
-template <class T>
 struct TransitionState {
   using option_type = TransitionState;
 };

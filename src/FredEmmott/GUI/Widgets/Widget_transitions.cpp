@@ -1,21 +1,33 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include "Widget.hpp"
-
-#include <FredEmmott/GUI/detail/widget_detail.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
+#include <FredEmmott/GUI/detail/widget_detail.hpp>
+
+#include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
+namespace {
+template <class T>
+struct transition_default_value_t : constant_t<std::nullopt> {};
+template <>
+struct transition_default_value_t<SkScalar> : constant_t<0> {};
+template <>
+struct transition_default_value_t<Brush> : constant_t<SK_ColorTRANSPARENT> {};
+
+template <class T>
+constexpr auto transition_default_value_v
+  = transition_default_value_t<T>::value;
+}// namespace
 
 void Widget::ApplyStyleTransitions(Style* newStyle) {
   const auto state = mStyleTransitionState.get();
   const auto now = std::chrono::steady_clock::now();
 
   auto apply = [now, newStyle, oldStyle = &mComputedStyle, state](
-                       auto styleP, auto stateP) {
+                 auto styleP, auto stateP) {
     using TValue =
       typename std::decay_t<decltype(oldStyle->*styleP)>::value_type;
     constexpr auto DefaultValue = transition_default_value_v<TValue>;
@@ -101,5 +113,4 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
 #undef APPLY_TRANSITION
 }
 
-
-}
+}// namespace FredEmmott::GUI::Widgets
