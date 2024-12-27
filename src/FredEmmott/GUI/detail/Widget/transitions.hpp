@@ -46,6 +46,7 @@ namespace FredEmmott::GUI::Widgets {
 struct Widget::StyleTransitions {
   void Apply(const Style& oldStyle, Style* newStyle);
 
+ private:
   void Apply(
     std::chrono::steady_clock::time_point now,
     const Style& oldStyle,
@@ -60,7 +61,6 @@ struct Widget::StyleTransitions {
     auto Style::* styleProperty,
     auto StyleTransitions::* stateProperty);
 
- private:
 #define DECLARE_TRANSITION_DATA(X) \
   FUI_NO_UNIQUE_ADDRESS \
   widget_detail::TransitionState< \
