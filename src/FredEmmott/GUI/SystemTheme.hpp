@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+// These are only kept here because the WinUI themes reference them - however,
+// they're almost all fixed values on Windows 10 and above.
+//
+// Use accent colors or the StaticTheme colors instead.
 #define FUI_WINAPI_SYS_COLORS(X) \
   X(SystemColorActiveCaptionColor, COLOR_ACTIVECAPTION) \
   X(SystemColorBackgroundColor, COLOR_BACKGROUND) \
