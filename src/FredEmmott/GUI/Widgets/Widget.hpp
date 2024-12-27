@@ -98,18 +98,17 @@ class Widget {
 
   enum class StateFlags {
     Default = 0,
-    Disabled = 1,
-    MouseDownTarget = 1 << 1,
-    Hovered = 1 << 2,
-    HoveredInherited = 1 << 3,
+    MouseDownTarget = 1,
+    Disabled = 1 << 2,
+    Hovered = 1 << 3,
     Active = 1 << 4,
-    ActiveInherited = 1 << 5,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
   const std::size_t mID {};
   unique_ptr<YGNode> mYoga;
-  StateFlags mStateFlags {};
+  StateFlags mDirectStateFlags {};
+  StateFlags mInheritedStateFlags {};
   WidgetStyles mExplicitStyles {};
 
   WidgetStyles mInheritedStyles;

@@ -215,12 +215,12 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   }
 
   if (x < 0 || y < 0 || x > w || y > h) {
-    mStateFlags &= ~StateFlags::Hovered;
+    mDirectStateFlags &= ~StateFlags::Hovered;
 
     static constexpr auto invalid = -std::numeric_limits<SkScalar>::infinity();
     translated->mPoint = {-invalid, -invalid};
   } else {
-    mStateFlags |= StateFlags::Hovered;
+    mDirectStateFlags |= StateFlags::Hovered;
   }
 
   bool isClick = false;
@@ -235,19 +235,19 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
       break;
     case EventKind::ButtonPress: {
       constexpr auto flags = StateFlags::MouseDownTarget | StateFlags::Active;
-      if ((mStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
-        mStateFlags |= flags;
+      if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
+        mDirectStateFlags |= flags;
       } else {
-        mStateFlags &= ~flags;
+        mDirectStateFlags &= ~flags;
       }
       break;
     }
     case EventKind::ButtonRelease: {
       constexpr auto flags = StateFlags::Hovered | StateFlags::MouseDownTarget;
-      if ((mStateFlags & flags) == flags) {
+      if ((mDirectStateFlags & flags) == flags) {
         isClick = true;
       }
-      mStateFlags &= ~(StateFlags::MouseDownTarget | StateFlags::Active);
+      mDirectStateFlags &= ~(StateFlags::MouseDownTarget | StateFlags::Active);
       break;
     }
   }
