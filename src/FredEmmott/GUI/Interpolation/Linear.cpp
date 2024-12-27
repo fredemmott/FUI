@@ -1,20 +1,17 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include "Lerp.hpp"
+#include "Linear.hpp"
 
-#include "Brush.hpp"
-#include "StyleTransitions.hpp"
+namespace FredEmmott::GUI::Interpolation {
 
-namespace FredEmmott::GUI {
-
-Brush Lerp(const Brush& startRef, const Brush& endRef, double ratio) {
+Brush Linear(const Brush& startRef, const Brush& endRef, float ratio) {
   const auto start = startRef.GetSolidColor();
   const auto end = endRef.GetSolidColor();
   if (!(start && end)) {
     return ratio < 0.5 ? startRef : endRef;
   }
-  return Lerp(*start, *end, ratio);
+  return Linear(*start, *end, ratio);
 }
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Interpolation

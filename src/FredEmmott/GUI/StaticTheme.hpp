@@ -3,8 +3,8 @@
 #pragma once
 
 #include <FredEmmott/GUI/detail/WinUI3Themes/Enums.hpp>
-
-#include "StyleTransitions.hpp"
+#include <array>
+#include <chrono>
 
 namespace FredEmmott::GUI {
 class Brush;

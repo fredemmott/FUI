@@ -92,17 +92,17 @@ void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
   canvas->drawRoundRect(border, radius, radius, paint);
 }
 
-}// namespace
-
 template <class T>
-struct TransitionData {
-  using option_type = TransitionData;
+struct TransitionState {
+  using option_type = TransitionState;
 };
 
-template <lerpable T>
-struct TransitionData<T> {
-  using option_type = std::optional<TransitionData>;
+template <class T>
+  requires StyleValue<T>::SupportsTransitions
+struct TransitionState<T> {
+  using option_type = std::optional<TransitionState>;
   using time_point = std::chrono::steady_clock::time_point;
+
   T mStartValue;
   time_point mStartTime;
   T mEndValue;
@@ -118,20 +118,17 @@ struct TransitionData<T> {
     }
     const auto duration = mEndTime - mStartTime;
     const auto elapsed = now - mStartTime;
-    auto r = static_cast<double>(elapsed.count()) / duration.count();
-    assert(r >= 0);
-    assert(r <= 1);
-    r = transition.Evaluate(r);
-    assert(r >= 0);
-    assert(r <= 1);
-    return Lerp(mStartValue, mEndValue, r);
+    const auto t = static_cast<double>(elapsed.count()) / duration.count();
+    const auto eased = transition.mEasingFunction(t);
+    return Interpolation::Linear(mStartValue, mEndValue, eased);
   }
 };
+}// namespace
 
 struct Widget::StyleTransitionState {
 #define DECLARE_TRANSITION_DATA(X) \
   FUI_NO_UNIQUE_ADDRESS \
-  TransitionData<decltype(Style::m##X)::value_type>::option_type m##X;
+  TransitionState<decltype(Style::m##X)::value_type>::option_type m##X;
   FUI_STYLE_PROPERTIES(DECLARE_TRANSITION_DATA)
 #undef TRANSITION_DATA
 };
@@ -499,7 +496,7 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
 
     constexpr bool DebugAnimations = false;
     const auto duration
-      = newOpt.transition().GetDuration() * (DebugAnimations ? 10 : 1);
+      = newOpt.transition().mDuration * (DebugAnimations ? 10 : 1);
 
     auto& transitionState = state->*stateP;
     if (transitionState.has_value()) {

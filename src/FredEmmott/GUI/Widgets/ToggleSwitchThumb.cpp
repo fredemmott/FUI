@@ -21,13 +21,13 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   using namespace StaticTheme;
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;
-  constexpr CubicBezierStyleTransition FasterAnimation {
-    ControlFasterAnimationDuration, KeySpline};
-  constexpr CubicBezierStyleTransition NormalAnimation {
-    ControlNormalAnimationDuration, KeySpline};
+  constexpr auto FasterAnimation
+    = CubicBezierStyleTransition(ControlFasterAnimationDuration, KeySpline);
+  constexpr auto NormalAnimation
+    = CubicBezierStyleTransition(ControlNormalAnimationDuration, KeySpline);
 
-  constexpr LinearStyleTransition ColorAnimation {
-    ControlFasterAnimationDuration};
+  constexpr auto ColorAnimation
+    = LinearStyleTransition(ControlFasterAnimationDuration);
 
   constexpr auto parentWidth = Spacing * 10;
   constexpr auto margin = Spacing;

@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "Brush.hpp"
-#include "SolidColorBrush.hpp"
+#include <FredEmmott/GUI/Brush.hpp>
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Interpolation {
 
 template <class T>
-concept trivially_interpolatable = requires(T a, T b) {
+concept trivially_lerpable = requires(T a, T b) {
   { a + ((b - a) * 1.23) } -> std::convertible_to<T>;
 };
 
@@ -21,14 +20,14 @@ concept trivially_interpolatable = requires(T a, T b) {
  * @return The interpolated value between start and end, based on the given
  * ratio.
  */
-template <trivially_interpolatable T>
-constexpr T Lerp(T start, T end, double ratio) noexcept {
+template <trivially_lerpable T>
+constexpr T Linear(T start, T end, float ratio) noexcept {
   return start + ((end - start) * ratio);
 }
 
 constexpr Color
-Lerp(const Color& startRef, const Color& endRef, double ratio) noexcept {
-  constexpr auto& f = Lerp<float>;
+Linear(const Color& startRef, const Color& endRef, float ratio) noexcept {
+  constexpr auto& f = Linear<float>;
   const auto start = SkColor4f::FromColor(startRef);
   const auto end = SkColor4f::FromColor(endRef);
   return SkColor4f {
@@ -45,16 +44,16 @@ Lerp(const Color& startRef, const Color& endRef, double ratio) noexcept {
  * The brushes must both be `SolidColor` brushes; otherwise, it will return
  * the start brush if ratio is < 0.5, and the end brush otherwise
  */
-Brush Lerp(const Brush& startRef, const Brush& endRef, double ratio);
+Brush Linear(const Brush& startRef, const Brush& endRef, float ratio);
 
 /// A type where we are able to linearly interpolate between two values.
 template <class T>
 concept lerpable = requires(const T& a, const T& b) {
-  { Lerp(a, b, 0.5) } -> std::convertible_to<T>;
+  { Linear(a, b, 0.5) } -> std::convertible_to<T>;
 };
 
 static_assert(lerpable<SkScalar>);
 static_assert(lerpable<Color>);
 static_assert(lerpable<Brush>);
 
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Interpolation

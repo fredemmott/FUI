@@ -51,8 +51,9 @@ add_executable(
   FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
-  FredEmmott/GUI/lerp.cpp FredEmmott/GUI/lerp.hpp
-  FredEmmott/GUI/StyleTransitions.hpp
+  FredEmmott/GUI/EasingFunctions.hpp
+  FredEmmott/GUI/Interpolation/CubicBezier.hpp
+  FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp

@@ -30,8 +30,8 @@ void ToggleSwitchKnob::SetIsOn(bool value) noexcept {
 
 WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
   using namespace StaticTheme;
-  constexpr LinearStyleTransition ColorAnimation {
-    ControlFasterAnimationDuration};
+  constexpr auto ColorAnimation
+    = LinearStyleTransition(ControlFasterAnimationDuration);
   static const WidgetStyles baseStyles {
     .mBase = {
       .mBackgroundColor = { std::nullopt, ColorAnimation },

@@ -3,7 +3,6 @@
 #pragma once
 
 #include <skia/core/SkPaint.h>
-#include <skia/core/SkRect.h>
 
 #include <variant>
 

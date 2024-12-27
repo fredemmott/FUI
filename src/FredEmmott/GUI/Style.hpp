@@ -9,63 +9,40 @@
 #include <optional>
 
 #include "Brush.hpp"
+#include "EasingFunctions.hpp"
 #include "Font.hpp"
 #include "FredEmmott/memory.hpp"
-#include "Lerp.hpp"
-#include "StyleTransitions.hpp"
+#include "Interpolation/Linear.hpp"
 
 namespace FredEmmott::GUI {
 
-template <class T>
-struct Transition {
-  using optional_type = Transition;
+struct StyleTransition {
+  using Duration = std::chrono::steady_clock::duration;
+  Duration mDuration;
+  EasingFunction mEasingFunction;
 
-  constexpr bool has_value() const noexcept {
-    return false;
-  }
-
-  [[noreturn]]
-  constexpr T value() const {
-    throw std::bad_optional_access {};
-  }
-
-  constexpr bool operator==(const Transition&) const noexcept = default;
+  constexpr bool operator==(const StyleTransition&) const noexcept = default;
 };
 
-template <lerpable T>
-struct Transition<T> {
-  using optional_type = std::optional<Transition>;
+constexpr StyleTransition LinearStyleTransition(
+  const StyleTransition::Duration duration) {
+  return {duration, EasingFunctions::Linear {}};
+};
 
-  Transition() = delete;
-  Transition(const LinearStyleTransition& value) : mValue(value) {
-  }
-  Transition(const CubicBezierStyleTransition& value) : mValue(value) {
-  }
+constexpr StyleTransition CubicBezierStyleTransition(
+  const StyleTransition::Duration duration,
+  float p0,
+  float p1,
+  float p2,
+  float p3) {
+  return {duration, EasingFunctions::CubicBezier {p0, p1, p2, p3}};
+};
 
-  std::chrono::milliseconds GetDuration() const {
-    if (holds_alternative<LinearStyleTransition>(mValue)) {
-      return get<LinearStyleTransition>(mValue).GetDuration();
-    }
-    if (holds_alternative<CubicBezierStyleTransition>(mValue)) {
-      return get<CubicBezierStyleTransition>(mValue).GetDuration();
-    }
-    throw std::bad_variant_access {};
-  }
-
-  double Evaluate(double normalizedX) const {
-    if (const auto it = get_if<LinearStyleTransition>(&mValue)) {
-      return it->Evaluate(normalizedX);
-    }
-    if (const auto it = get_if<CubicBezierStyleTransition>(&mValue)) {
-      return it->Evaluate(normalizedX);
-    }
-    throw std::bad_variant_access {};
-  }
-
-  constexpr bool operator==(const Transition&) const noexcept = default;
-
- private:
-  std::variant<LinearStyleTransition, CubicBezierStyleTransition> mValue;
+constexpr StyleTransition CubicBezierStyleTransition(
+  const StyleTransition::Duration duration,
+  const auto& fourPoints) {
+  const auto [p0, p1, p2, p3] = fourPoints;
+  return CubicBezierStyleTransition(duration, p0, p1, p2, p3);
 };
 
 class Style;
@@ -81,6 +58,7 @@ template <class T, StyleValueScope TDefaultScope = StyleValueScope::Self>
 class StyleValue : private std::optional<T> {
  public:
   static constexpr StyleValueScope DefaultScope = TDefaultScope;
+  static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
 
   friend class Style;
   friend class WidgetStyles;
@@ -95,8 +73,8 @@ class StyleValue : private std::optional<T> {
 
   StyleValue(
     const T& value,
-    const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires lerpable<T>
+    const std::convertible_to<std::optional<StyleTransition>> auto& transition)
+    requires SupportsTransitions
     : std::optional<T>(value), mTransition(transition) {
     if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
       static_cast<std::optional<T>&>(*this) = std::nullopt;
@@ -105,28 +83,28 @@ class StyleValue : private std::optional<T> {
 
   StyleValue(
     std::nullopt_t,
-    const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires lerpable<T> && std::same_as<T, SkScalar>
+    const std::convertible_to<std::optional<StyleTransition>> auto& transition)
+    requires SupportsTransitions && std::same_as<T, SkScalar>
     : mTransition(transition) {
   }
 
   StyleValue(
     std::nullopt_t,
-    const std::convertible_to<std::optional<Transition<T>>> auto& transition)
-    requires lerpable<T> && (!std::same_as<T, SkScalar>)
+    const std::convertible_to<std::optional<StyleTransition>> auto& transition)
+    requires SupportsTransitions && (!std::same_as<T, SkScalar>)
     : mTransition(transition) {
   }
 
   [[nodiscard]]
   constexpr bool has_transition() const noexcept
-    requires lerpable<T>
+    requires SupportsTransitions
   {
     return mTransition.has_value();
   }
 
   [[nodiscard]]
   constexpr decltype(auto) transition() const
-    requires lerpable<T>
+    requires SupportsTransitions
   {
     return mTransition.value();
   }
@@ -144,7 +122,7 @@ class StyleValue : private std::optional<T> {
       static_cast<std::optional<T>&>(*this) = other.value();
       mScope = other.mScope;
     }
-    if constexpr (lerpable<T>) {
+    if constexpr (SupportsTransitions) {
       if (other.has_transition()) {
         mTransition = other.transition();
       }
@@ -159,9 +137,13 @@ class StyleValue : private std::optional<T> {
   }
 
  private:
+  using optional_transition_t = std::conditional_t<
+    SupportsTransitions,
+    std::optional<StyleTransition>,
+    std::monostate>;
+
   StyleValueScope mScope {TDefaultScope};
-  FUI_NO_UNIQUE_ADDRESS
-  typename Transition<T>::optional_type mTransition;
+  FUI_NO_UNIQUE_ADDRESS optional_transition_t mTransition;
 };
 
 template <class T>
