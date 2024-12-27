@@ -55,7 +55,7 @@ add_executable(
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/StyleProperty.hpp>
-  FredEmmott/GUI/StyleTransition.hpp>
+  FredEmmott/GUI/StyleTransition.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
@@ -68,7 +68,8 @@ add_executable(
   FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
   FredEmmott/GUI/Widgets/Widget.hpp
   FredEmmott/GUI/Widgets/Widget.cpp
-  FredEmmott/GUI/Widgets/Widget_transitions.cpp
+  FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
+  FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
   FredEmmott/GUI/Widgets/WidgetStyles.cpp FredEmmott/GUI/Widgets/WidgetStyles.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
