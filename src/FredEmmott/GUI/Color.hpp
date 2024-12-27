@@ -46,14 +46,14 @@ class Color final {
     mVariant;
 
   constexpr SkColor Resolve() const noexcept {
-    if (std::holds_alternative<SkColor>(mVariant)) {
-      return std::get<SkColor>(mVariant);
+    if (const auto it = get_if<SkColor>(&mVariant)) {
+      return *it;
     }
-    if (std::holds_alternative<StaticTheme::ColorType>(mVariant)) {
-      return StaticTheme::Resolve(std::get<StaticTheme::ColorType>(mVariant));
+    if (const auto it = get_if<StaticTheme::ColorType>(&mVariant)) {
+      return StaticTheme::Resolve(*it);
     }
-    if (std::holds_alternative<SystemTheme::ColorType>(mVariant)) {
-      return SystemTheme::Resolve(std::get<SystemTheme::ColorType>(mVariant));
+    if (const auto it = get_if<SystemTheme::ColorType>(&mVariant)) {
+      return SystemTheme::Resolve(*it);
     }
     std::unreachable();
   }
