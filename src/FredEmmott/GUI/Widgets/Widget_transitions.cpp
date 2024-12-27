@@ -104,21 +104,27 @@ void Widget::StyleTransitions::Apply(
 }
 
 void Widget::ApplyStyleTransitions(Style* newStyle) {
+  mStyleTransitions->Apply(mComputedStyle, newStyle);
+}
+
+void Widget::StyleTransitions::ApplyIfSupportsTransitions(
+  std::chrono::steady_clock::time_point now,
+  const Style& oldStyle,
+  Style* newStyle,
+  auto Style::* styleProperty,
+  auto StyleTransitions::* stateProperty) {
+  using prop_t = std::decay_t<decltype(newStyle->*styleProperty)>;
+  if constexpr (requires(prop_t prop) { prop.transition(); }) {
+    this->Apply(now, oldStyle, newStyle, styleProperty, stateProperty);
+  }
+}
+
+void Widget::StyleTransitions::Apply(const Style& oldStyle, Style* newStyle) {
   const auto now = std::chrono::steady_clock::now();
 
-  const auto applyIfHasTransition = [this, now, newStyle](
-                                      auto styleP, auto stateP) {
-    using T = std::decay_t<decltype(newStyle->*styleP)>;
-    if constexpr (requires(T prop) { prop.transition(); }) {
-      mStyleTransitions->Apply(now, mComputedStyle, newStyle, styleP, stateP);
-    }
-  };
-
 #define APPLY_TRANSITION(X) \
-  { \
-    const auto propName = #X; \
-    applyIfHasTransition(&Style::m##X, &StyleTransitions::m##X); \
-  }
+  ApplyIfSupportsTransitions( \
+    now, oldStyle, newStyle, &Style::m##X, &StyleTransitions::m##X);
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
 }
