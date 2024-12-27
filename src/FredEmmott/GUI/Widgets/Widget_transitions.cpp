@@ -32,32 +32,35 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       typename std::decay_t<decltype(oldStyle->*styleP)>::value_type;
     constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-    auto oldOpt = (oldStyle->*styleP);
+    const auto oldOpt = (oldStyle->*styleP);
     auto& newOpt = (newStyle->*styleP);
-    auto targetOpt = newOpt;
 
-    if (!oldOpt.has_value()) {
-      oldOpt += DefaultValue;
+    auto startOpt = oldOpt;
+    auto endOpt = newOpt;
+
+    if (!startOpt.has_value()) {
+      startOpt += DefaultValue;
     }
 
-    if (!newOpt.has_value()) {
-      targetOpt += DefaultValue;
+    if (!endOpt.has_value()) {
+      endOpt += DefaultValue;
     }
 
-    if (oldOpt == newOpt) {
+    if (startOpt == endOpt) {
       return;
     }
 
-    if (!(oldOpt.has_value() && targetOpt.has_value())) {
+    if (!(startOpt.has_value() && endOpt.has_value())) {
 #ifndef NDEBUG
       __debugbreak();
 #endif
       return;
     }
-    const TValue oldValue = oldOpt.value();
-    const TValue newValue = targetOpt.value();
+
+    const TValue startValue = startOpt.value();
+    const TValue endValue = endOpt.value();
     if constexpr (std::floating_point<TValue>) {
-      if (std::isnan(oldValue) || std::isnan(newValue)) {
+      if (std::isnan(startValue) || std::isnan(endValue)) {
         return;
       }
     }
@@ -67,31 +70,33 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
       = newOpt.transition().mDuration * (DebugAnimations ? 10 : 1);
 
     auto& transitionState = state->*stateP;
-    if (transitionState.has_value()) {
-      if (transitionState->mEndTime < now) {
-        transitionState.reset();
-        return;
-      }
+    if (!transitionState.has_value()) {
+      transitionState = {
+        .mStartValue = startValue,
+        .mStartTime = now,
+        .mEndValue = endValue,
+        .mEndTime = now + duration,
+      };
+      newOpt = startValue;
+      return;
+    }
 
-      if (transitionState->mEndValue != newValue) {
-        transitionState->mStartValue
-          = transitionState->Evaluate(newOpt.transition(), now);
-        transitionState->mStartTime = now;
-        transitionState->mEndTime = now + duration,
-        transitionState->mEndValue = newValue;
-        newOpt = transitionState->mStartValue;
-        return;
-      }
-      newOpt = transitionState->Evaluate(newOpt.transition(), now);
+    if (transitionState->mEndTime < now) {
+      transitionState.reset();
+      return;
+    }
+
+    newOpt = transitionState->Evaluate(newOpt.transition(), now);
+
+    if (transitionState->mEndValue == endValue) {
       return;
     }
     transitionState = {
-      .mStartValue = oldValue,
+      .mStartValue = newOpt.value(),
       .mStartTime = now,
-      .mEndValue = newValue,
+      .mEndValue = endValue,
       .mEndTime = now + duration,
     };
-    newOpt = oldValue;
   };
 
   const auto applyIfHasTransition
