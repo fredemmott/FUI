@@ -47,19 +47,25 @@ struct Widget::StyleTransitions {
   void Apply(const Style& oldStyle, Style* newStyle);
 
  private:
+  template <auto TStyleProperty>
+  static constexpr bool supports_transitions_v = std::decay_t<
+    decltype(std::declval<Style>().*TStyleProperty)>::SupportsTransitions;
+
+  template <auto TStyleProperty, auto TStateProperty>
   void Apply(
     std::chrono::steady_clock::time_point now,
     const Style& oldStyle,
-    Style* newStyle,
-    auto Style::* styleProperty,
-    auto StyleTransitions::* stateProperty);
+    Style* newStyle)
+    requires(supports_transitions_v<TStyleProperty>);
 
-  void ApplyIfSupportsTransitions(
+  template <auto TStyleProperty, auto TStateProperty>
+  void Apply(
     std::chrono::steady_clock::time_point now,
-    const Style& oldStyle,
-    Style* newStyle,
-    auto Style::* styleProperty,
-    auto StyleTransitions::* stateProperty);
+    const Style& old,
+    Style* newStyle)
+    requires(!supports_transitions_v<TStyleProperty>)
+  {
+  }
 
 #define DECLARE_TRANSITION_DATA(X) \
   FUI_NO_UNIQUE_ADDRESS \

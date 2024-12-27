@@ -22,18 +22,19 @@ constexpr auto transition_default_value_v
   = transition_default_value_t<T>::value;
 }// namespace
 
+template <auto TStyleProperty, auto TStateProperty>
 void Widget::StyleTransitions::Apply(
   std::chrono::steady_clock::time_point now,
   const Style& oldStyle,
-  Style* newStyle,
-  auto Style::* styleProperty,
-  auto StyleTransitions::* stateProperty) {
+  Style* newStyle)
+  requires(supports_transitions_v<TStyleProperty>)
+{
   using TValue =
-    typename std::decay_t<decltype(oldStyle.*styleProperty)>::value_type;
+    typename std::decay_t<decltype(oldStyle.*TStyleProperty)>::value_type;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  const auto oldOpt = (oldStyle.*styleProperty);
-  auto& newOpt = (newStyle->*styleProperty);
+  const auto oldOpt = (oldStyle.*TStyleProperty);
+  auto& newOpt = (newStyle->*TStyleProperty);
 
   if (!newOpt.has_transition()) {
     return;
@@ -73,7 +74,7 @@ void Widget::StyleTransitions::Apply(
   const auto duration
     = newOpt.transition().mDuration * (DebugAnimations ? 10 : 1);
 
-  auto& transitionState = this->*stateProperty;
+  auto& transitionState = this->*TStateProperty;
   if (!transitionState.has_value()) {
     transitionState = {
       .mStartValue = startValue,
@@ -107,24 +108,11 @@ void Widget::ApplyStyleTransitions(Style* newStyle) {
   mStyleTransitions->Apply(mComputedStyle, newStyle);
 }
 
-void Widget::StyleTransitions::ApplyIfSupportsTransitions(
-  std::chrono::steady_clock::time_point now,
-  const Style& oldStyle,
-  Style* newStyle,
-  auto Style::* styleProperty,
-  auto StyleTransitions::* stateProperty) {
-  using prop_t = std::decay_t<decltype(newStyle->*styleProperty)>;
-  if constexpr (requires(prop_t prop) { prop.transition(); }) {
-    this->Apply(now, oldStyle, newStyle, styleProperty, stateProperty);
-  }
-}
-
 void Widget::StyleTransitions::Apply(const Style& oldStyle, Style* newStyle) {
   const auto now = std::chrono::steady_clock::now();
 
 #define APPLY_TRANSITION(X) \
-  ApplyIfSupportsTransitions( \
-    now, oldStyle, newStyle, &Style::m##X, &StyleTransitions::m##X);
+  Apply<&Style::m##X, &StyleTransitions::m##X>(now, oldStyle, newStyle);
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
 }
