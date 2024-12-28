@@ -5,7 +5,7 @@ find_program(PWSH pwsh DOC "Modern Powershell" REQUIRED)
 set(OUTPUT_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 add_library(winui3-themes INTERFACE)
-function(add_winui3_theme_file COMPONENT SOURCE MODE EXTENSION)
+function(add_winui3_theme_file COMPONENT SOURCE EXTENSION)
   set(options)
   set(oneValueArgs DESTINATION)
   set(multiValueArgs)
@@ -14,17 +14,15 @@ function(add_winui3_theme_file COMPONENT SOURCE MODE EXTENSION)
   if (arg_DESTINATION)
     set(OUTPUT_FILE_PATH "${arg_DESTINATION}")
   else ()
-    string(TOLOWER "${MODE}.${EXTENSION}" OUTPUT_FILE_NAME)
-    set(OUTPUT_FILE_PATH "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${COMPONENT}/detail/${OUTPUT_FILE_NAME}")
+    message(FATAL_ERROR "DESTINATION must be specified")
   endif ()
   cmake_path(GET OUTPUT_FILE_PATH PARENT_PATH OUTPUT_DIRECTORY)
   file(MAKE_DIRECTORY "${OUTPUT_DIRECTORY}")
 
-  set(CPP_TARGET "winui3-themes-${COMPONENT}-${MODE}-Cpp")
-  set(HPP_TARGET "winui3-themes-${COMPONENT}-${MODE}-Hpp")
-  set(TARGET "winui3-themes-${COMPONENT}-${MODE}-${EXTENSION}")
+  set(CPP_TARGET "winui3-themes-${COMPONENT}-Cpp")
+  set(HPP_TARGET "winui3-themes-${COMPONENT}-Hpp")
+  set(TARGET "winui3-themes-${COMPONENT}-${EXTENSION}")
 
-  set(MODE_SWITCH "-${MODE}${EXTENSION}")
   add_custom_command(
     OUTPUT "${OUTPUT_FILE_PATH}"
     COMMAND
@@ -34,7 +32,7 @@ function(add_winui3_theme_file COMPONENT SOURCE MODE EXTENSION)
     "${COMPONENT}"
     "${CMAKE_CURRENT_SOURCE_DIR}/Common_themeresources_any.xaml"
     "${OUTPUT_FILE_PATH}"
-    "${MODE_SWITCH}"
+    -Mode ${EXTENSION}
     MAIN_DEPENDENCY
     Common_themeresources_any.xaml
     DEPENDS
@@ -67,7 +65,7 @@ function(add_winui3_component_theme NAME SOURCE)
   set(PUBLIC_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.hpp")
   set(PUBLIC_CPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.cpp")
 
-  add_winui3_theme_file(${NAME} "${SOURCE}" Themes Hpp DESTINATION "${PUBLIC_HPP}")
-  add_winui3_theme_file(${NAME} "${SOURCE}" Themes Cpp DESTINATION "${PUBLIC_CPP}")
+  add_winui3_theme_file(${NAME} "${SOURCE}" Hpp DESTINATION "${PUBLIC_HPP}")
+  add_winui3_theme_file(${NAME} "${SOURCE}" Cpp DESTINATION "${PUBLIC_CPP}")
 endfunction()
 add_winui3_component_theme(Common "Common_themeresources_any.xaml")
