@@ -6,6 +6,7 @@
 #include <skia/core/SkRect.h>
 #include <skia/core/SkShader.h>
 
+#include <concepts>
 #include <vector>
 
 namespace FredEmmott::GUI {
@@ -23,8 +24,12 @@ class LinearGradientBrush final {
     RelativeToBoundingBox,
   };
   struct Stop {
-    SkScalar mOffset;
-    SkColor mColor;
+    SkScalar mOffset {};
+    SkColor mColor {};
+
+    Stop(SkScalar offset, const std::convertible_to<SkColor> auto& color)
+      : mOffset(offset), mColor(color) {
+    }
   };
   using ScaleTransform = ScaleTransform;
 

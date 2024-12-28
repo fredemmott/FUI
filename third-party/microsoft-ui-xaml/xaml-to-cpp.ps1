@@ -59,8 +59,7 @@ function Resolve-Color($Value, $Colors)
     }
     '{StaticResource .*Color.*}' {
       $Name = $Value -replace '.* ([A-Z][^ ]+)}$', '$1'
-      $Color = $Colors | Where-Object -Property Key -eq $Name
-      return $Color.Value
+      return $Name;
     }
     default {
       Write-Host "ERROR: Can't figure out how to parse ${Value} in SolidColorBrush"
@@ -121,7 +120,7 @@ function Get-LinearGradientBrush($Colors, $Brush)
   return @{
     Key = $Key;
     Value = @"
-LinearGradientBrush {
+StaticThemedLinearGradientBrush {
   LinearGradientBrush::MappingMode::$Mode,
   /* start = */ SkPoint { $Start },
   /* end = */ SkPoint { $End },
@@ -133,25 +132,44 @@ LinearGradientBrush {
 
 function Get-Theme($Theme)
 {
-  $Colors = $Theme.Color | Sort-Object -Property { Get-Key($_) } | ForEach-Object { Get-Color($_) }
+  $colors = @{ }
+  foreach ($xml in $Theme.Color | Sort-Object -Property { Get-Key($_) })
+  {
+    $Color = Get-Color($xml)
+    $colors[$Color.Key] = $Color
+  }
+
   $SolidColorBrushes = $Theme.SolidColorBrush | ForEach-Object { Get-SolidColorBrush $Colors $_ }
   if ($Theme.LinearGradientBrush)
   {
     $LinearGradientBrushes = $Theme.LinearGradientBrush | ForEach-Object { Get-LinearGradientBrush $Colors $_ }
   }
-  $Brushes = ($SolidColorBrushes + $LinearGradientBrushes) | Sort-Object -Property Key
+  $brushes = @{ }
+  foreach ($Brush in ($SolidColorBrushes + $LinearGradientBrushes) | Sort-Object -Property Key)
+  {
+    $brushes[$Brush.Key] = $Brush;
+  }
   return @{
     Name = $Theme.Key;
-    Colors = $Colors;
-    Brushes = $Brushes;
+    Colors = $colors;
+    Brushes = $brushes;
   }
 }
 
 $ThemeData = $ThemesXML | ForEach-Object { Get-Theme $_.Node }
-$ColorKeys = $ThemeData[0].Colors | ForEach-Object { $_.Key } | Sort-Object | Get-Unique
-$BrushKeys = $ThemeData[0].Brushes | ForEach-Object { $_.Key } | Sort-Object | Get-Unique
+$ColorKeys = $ThemeData[0].Colors.Keys
+$BrushKeys = $ThemeData[0].Brushes.Keys
+$ThemesByName = @{ }
+foreach ($theme in $ThemeData)
+{
+  $ThemesByName[$theme.Name] = $Theme
+}
+$DefaultTheme = $ThemesByName.Default
+$LightTheme = $ThemesByName.Light
+$HighContrastTheme = $ThemesByName.HighContrast
 
-$CppNs = "FredEmmott::GUI::gui_detail::WinUI3Themes"
+
+$CppNs = "FredEmmott::GUI::StaticTheme::inline $Component"
 
 function Get-Enums-Hpp()
 {
@@ -180,26 +198,6 @@ function Get-Macros-Hpp()
 "@
 }
 
-function Get-Theme-Cpp($Theme)
-{
-  return @"
-
-const Theme* $( $Theme.Name )Theme() {
-  static const Theme sTheme {
-$(
-  $Theme.Colors.foreach({
-    "`n    .m$( $PSItem.Key ) = $( $PSItem.Value ),"
-  })
-  $Theme.Brushes.foreach({
-    "`n    .m$( $PSItem.Key ) = $( $PSItem.Value ),"
-  })
-  )
-  };
-  return &sTheme;
-}`n
-"@
-}
-
 function Get-Types-Hpp()
 {
 
@@ -222,27 +220,62 @@ struct Theme {$(
 function Get-Themes-Hpp()
 {
   @"
-#include "Common/detail/types.hpp"
+#include <FredEmmott/GUI/Brush.hpp>
+#include <FredEmmott/GUI/Color.hpp>
+#include <FredEmmott/GUI/StaticTheme/Resource.hpp>
 
 namespace $CppNs {
 
-$( ($ThemeData | ForEach-Object { "const Theme* $( $_.Name )Theme();" }) -join "`n" )
+$( ($ColorKeys | ForEach-Object { "extern const Resource<Color>* $_;" }) -join "`n" )
+
+  $( ($BrushKeys | ForEach-Object { "extern const Resource<Brush>* $_;" }) -join "`n" )
 
 }
+"@
+}
+
+function Get-Color-Cpp($Key)
+{
+  @"
+const Resource<Color> g$Key {
+  .mDefault = SkColor { $( $DefaultTheme.Colors[$Key].Value ) },
+  .mLight = SkColor { $( $LightTheme.Colors[$Key].Value ) },
+  .mHighContrast = SkColor { $( $HighContrastTheme.Colors[$Key].Value ) },
+};
+const Resource<Color>* $Key = &g$Key;
+"@
+}
+
+function Get-Brush-Cpp($Key)
+{
+  @"
+const Resource<Brush> g$Key {
+  .mDefault = ResolveBrush<Theme::Dark>($( $DefaultTheme.Brushes[$Key].Value )),
+  .mLight = ResolveBrush<Theme::Light>($( $LightTheme.Brushes[$Key].Value )),
+  .mHighContrast = ResolveBrush<Theme::HighContrast>($( $HighContrastTheme.Brushes[$Key].Value )),
+};
+const Resource<Brush>* $Key = &g$Key;
 "@
 }
 
 function Get-Themes-Cpp()
 {
   @"
-#include <skia/core/SkColor.h>
-#include <FredEmmott/GUI/Brush.hpp>
-#include <FredEmmott/GUI/LinearGradientBrush.hpp>
-#include <FredEmmott/GUI/SystemTheme.hpp>
 #include "$Component.hpp"
 
+#include <skia/core/SkColor.h>
+#include <FredEmmott/GUI/Brush.hpp>
+#include <FredEmmott/GUI/SystemTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp>
+#include <FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp>
+
+#include <vector>
+
 namespace $CppNs {
-$( ($ThemeData | ForEach-Object { Get-Theme-Cpp $_ }) -join "`n" )
+
+$( ($ColorKeys | ForEach-Object { Get-Color-Cpp $_ }) -join "`n" )
+  $( ($BrushKeys | ForEach-Object { Get-Brush-Cpp $_ }) -join "`n" )
+
 }
 "@
 }

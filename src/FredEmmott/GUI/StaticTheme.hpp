@@ -3,7 +3,6 @@
 #pragma once
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
-#include <FredEmmott/GUI/StaticTheme/Common/detail/macros.hpp>
 #include <array>
 #include <chrono>
 
@@ -31,15 +30,7 @@ namespace FredEmmott::GUI::StaticTheme {
  */
 void Refresh();
 
-// Generated from the XML files in WinUI3
-#define DECLARE_FUI_STATIC_THEME_BRUSH(X) extern const Resource<Brush>* X;
-FUI_WINUI_THEME_BRUSHES(DECLARE_FUI_STATIC_THEME_BRUSH)
-#undef DECLARE_FUI_STATIC_THEME_BRUSH
-#define DECLARE_FUI_STATIC_THEME_COLOR(X) extern const Resource<Color>* X;
-FUI_WINUI_THEME_COLORS(DECLARE_FUI_STATIC_THEME_COLOR)
-#undef DECLARE_FUI_STATIC_THEME_BRUSH
-
-// Also copied from the XML, but there's so few of them it seemed better
+// Copied from the XML, but there's so few of them it seemed better
 // to hardcode them here than further complicate the XAML parser/codegen
 constexpr std::array<float, 4> ControlFastOutSlowInKeySpline {0, 0, 0, 1};
 constexpr std::chrono::milliseconds ControlNormalAnimationDuration {250};

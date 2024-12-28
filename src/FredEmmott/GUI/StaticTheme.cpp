@@ -14,8 +14,6 @@
 using namespace winrt::Windows::UI::ViewManagement;
 
 namespace FredEmmott::GUI::StaticTheme {
-using namespace gui_detail::WinUI3Themes;
-
 namespace {
 
 std::optional<Theme> gThemeKind;
@@ -56,25 +54,5 @@ void Refresh() {
   // Re-populate gThemeKind
   (void)GetCurrent();
 }
-
-#define DEFINE_FUI_STATIC_THEME_BRUSH(X) \
-  const Resource<Brush> g##X { \
-    .mDefault = gui_detail::WinUI3Themes::DefaultTheme()->m##X, \
-    .mLight = gui_detail::WinUI3Themes::LightTheme()->m##X, \
-    .mHighContrast = gui_detail::WinUI3Themes::HighContrastTheme()->m##X, \
-  }; \
-  const Resource<Brush>* X = &g##X;
-FUI_WINUI_THEME_BRUSHES(DEFINE_FUI_STATIC_THEME_BRUSH)
-#undef DEFINE_FUI_STATIC_THEME_BRUSH
-
-#define DEFINE_FUI_STATIC_THEME_COLOR(X) \
-  const Resource<Color> g##X { \
-    .mDefault = gui_detail::WinUI3Themes::DefaultTheme()->m##X, \
-    .mLight = gui_detail::WinUI3Themes::LightTheme()->m##X, \
-    .mHighContrast = gui_detail::WinUI3Themes::HighContrastTheme()->m##X, \
-  }; \
-  const Resource<Color>* X = &g##X;
-FUI_WINUI_THEME_COLORS(DEFINE_FUI_STATIC_THEME_COLOR)
-#undef DEFINE_FUI_STATIC_THEME_COLOR
 
 }// namespace FredEmmott::GUI::StaticTheme

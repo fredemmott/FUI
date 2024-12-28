@@ -41,6 +41,17 @@ class Color final {
 
   constexpr bool operator==(const Color& other) const noexcept = default;
 
+  template <StaticTheme::Theme TTheme>
+  constexpr SkColor ResolveForStaticTheme() const {
+    if (const auto it = get_if<SkColor>(&mVariant)) {
+      return *it;
+    }
+    if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
+      return (*it)->Resolve(TTheme);
+    }
+    throw std::bad_variant_access {};
+  }
+
  private:
   std::variant<SkColor, StaticThemeColor, SystemTheme::ColorType> mVariant;
 
