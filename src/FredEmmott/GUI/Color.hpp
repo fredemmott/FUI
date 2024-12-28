@@ -4,6 +4,7 @@
 
 #include <skia/core/SkColor.h>
 
+#include <source_location>
 #include <variant>
 
 #include "StaticTheme/Resource.hpp"
@@ -22,8 +23,12 @@ class Color final {
   Color() = delete;
   constexpr Color(SkColor color) : mVariant(color) {
   }
-  constexpr Color(StaticThemeColor color) : mVariant(color) {
+  constexpr Color(
+    StaticThemeColor color,
+    const std::source_location& loc = std::source_location::current())
+    : mVariant(color) {
     if (!color) [[unlikely]] {
+      const auto dbg = loc;
       throw std::logic_error("Static resource colors must be a valid pointer");
     }
   }

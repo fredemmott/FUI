@@ -3,15 +3,8 @@
 #pragma once
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
-#include <array>
-#include <chrono>
 
-#include "StaticTheme/Resource.hpp"
-
-namespace FredEmmott::GUI {
-class Brush;
-class Color;
-}// namespace FredEmmott::GUI
+#include "StaticTheme/detail/Common/handwritten.hpp"
 
 /** A 'Static Theme' is compiled-in, based on the XAML files taken from
  * WinUI3.
@@ -24,17 +17,11 @@ class Color;
  */
 namespace FredEmmott::GUI::StaticTheme {
 
+using namespace StaticTheme::Common;
+
 /** Match the current Windows (System) them.
  *
  * The implementation will call `SystemTheme::Refresh()` for you.
  */
 void Refresh();
-
-// Copied from the XML, but there's so few of them it seemed better
-// to hardcode them here than further complicate the XAML parser/codegen
-constexpr std::array<float, 4> ControlFastOutSlowInKeySpline {0, 0, 0, 1};
-constexpr std::chrono::milliseconds ControlNormalAnimationDuration {250};
-constexpr std::chrono::milliseconds ControlFastAnimationDuration {167};
-constexpr std::chrono::milliseconds ControlFastAnimationAfterDuration {168};
-constexpr std::chrono::milliseconds ControlFasterAnimationDuration {83};
 };// namespace FredEmmott::GUI::StaticTheme

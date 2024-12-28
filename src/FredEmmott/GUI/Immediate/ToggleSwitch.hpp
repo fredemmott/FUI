@@ -4,10 +4,7 @@
 
 #include <FredEmmott/GUI/Widgets/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
-#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <format>
-
-#include "Label.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 

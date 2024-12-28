@@ -3,6 +3,8 @@
 
 #include "ToggleSwitch.hpp"
 
+#include <FredEmmott/GUI/Immediate/Label.hpp>
+
 namespace FredEmmott::GUI::Immediate {
 
 void BeginToggleSwitch(

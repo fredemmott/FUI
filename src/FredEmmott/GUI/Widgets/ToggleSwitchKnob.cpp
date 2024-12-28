@@ -4,6 +4,7 @@
 #include "ToggleSwitchKnob.hpp"
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/ToggleSwitch.hpp>
 
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 #include "ToggleSwitchThumb.hpp"
@@ -12,8 +13,6 @@
 using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
-
-using namespace StaticTheme;
 using namespace widget_detail;
 
 ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id) : Widget(id) {
@@ -30,9 +29,11 @@ void ToggleSwitchKnob::SetIsOn(bool value) noexcept {
 }
 
 WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
-  using namespace StaticTheme;
+  namespace Common = StaticTheme::Common;
+  using namespace StaticTheme::ToggleSwitch;
   constexpr auto ColorAnimation
-    = LinearStyleTransition(ControlFasterAnimationDuration);
+    = LinearStyleTransition(Common::ControlFasterAnimationDuration);
+
   static const WidgetStyles baseStyles {
     .mBase = {
       .mBackgroundColor = { std::nullopt, ColorAnimation },
@@ -46,36 +47,36 @@ WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
   };
   static const WidgetStyles offStyles {
     .mBase = {
-      .mBackgroundColor = ControlAltFillColorSecondaryBrush,
-      .mBorderColor = ControlStrongStrokeColorDefaultBrush,
+      .mBackgroundColor = ToggleSwitchFillOff,
+      .mBorderColor = ToggleSwitchStrokeOff,
     },
     .mDisabled = {
-      .mBackgroundColor = ControlAltFillColorDisabledBrush,
-      .mBorderColor = ControlStrongStrokeColorDisabledBrush,
+      .mBackgroundColor = ToggleSwitchFillOffDisabled,
+      .mBorderColor = ToggleSwitchStrokeOffDisabled,
     },
     .mHover = {
-      .mBackgroundColor = ControlAltFillColorTertiaryBrush,
+      .mBackgroundColor = ToggleSwitchFillOffPointerOver,
     },
     .mActive = {
-      .mBackgroundColor = ControlAltFillColorQuarternaryBrush,
+      .mBackgroundColor = ToggleSwitchFillOffPressed,
     },
   };
   static const WidgetStyles onStyles {
     .mBase = {
-      .mBackgroundColor = AccentFillColorDefaultBrush,
-      .mBorderColor = AccentFillColorDefaultBrush,
+      .mBackgroundColor = ToggleSwitchFillOn,
+      .mBorderColor = ToggleSwitchStrokeOn,
     },
     .mDisabled = {
-      .mBackgroundColor = AccentFillColorDisabledBrush,
-      .mBorderColor = AccentFillColorDisabledBrush,
+      .mBackgroundColor = ToggleSwitchFillOnDisabled,
+      .mBorderColor = ToggleSwitchStrokeOnDisabled,
     },
     .mHover = {
-      .mBackgroundColor = AccentFillColorSecondaryBrush,
-      .mBorderColor = AccentFillColorSecondaryBrush,
+      .mBackgroundColor = ToggleSwitchFillOnPointerOver,
+      .mBorderColor = ToggleSwitchStrokeOnPointerOver,
     },
     .mActive = {
-      .mBackgroundColor = AccentFillColorTertiaryBrush,
-      .mBorderColor = AccentFillColorTertiaryBrush,
+      .mBackgroundColor = ToggleSwitchFillOnPressed,
+      .mBorderColor = ToggleSwitchStrokeOnPressed,
     },
   };
   return baseStyles + (this->IsOn() ? onStyles : offStyles);

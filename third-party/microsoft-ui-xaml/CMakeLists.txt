@@ -5,11 +5,17 @@ find_program(PWSH pwsh DOC "Modern Powershell" REQUIRED)
 set(OUTPUT_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 add_library(winui3-themes INTERFACE)
-function(add_winui3_theme_file COMPONENT SOURCE EXTENSION)
+function(add_winui3_theme_file COMPONENT EXTENSION)
   set(options)
   set(oneValueArgs DESTINATION)
-  set(multiValueArgs)
+  set(multiValueArgs SOURCES)
   cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set(SOURCES)
+  foreach (SOURCE IN LISTS arg_SOURCES)
+    cmake_path(ABSOLUTE_PATH SOURCE)
+    list(APPEND SOURCES "${SOURCE}")
+  endforeach ()
 
   if (arg_DESTINATION)
     set(OUTPUT_FILE_PATH "${arg_DESTINATION}")
@@ -30,13 +36,14 @@ function(add_winui3_theme_file COMPONENT SOURCE EXTENSION)
     -ExecutionPolicy Bypass
     "${CMAKE_CURRENT_SOURCE_DIR}/xaml-to-cpp.ps1"
     "${COMPONENT}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Common_themeresources_any.xaml"
+    "${SOURCES}"
     "${OUTPUT_FILE_PATH}"
     -Mode ${EXTENSION}
     MAIN_DEPENDENCY
     Common_themeresources_any.xaml
     DEPENDS
     xaml-to-cpp.ps1
+    VERBATIM
   )
   message(STATUS "Added rule to generate ${OUTPUT_FILE_PATH}")
   if ("${EXTENSION}" STREQUAL "Hpp")
@@ -59,13 +66,12 @@ function(add_winui3_theme_file COMPONENT SOURCE EXTENSION)
   target_link_libraries(winui3-themes INTERFACE "${TARGET}")
 endfunction()
 
-function(add_winui3_component_theme NAME SOURCE)
-  cmake_path(ABSOLUTE_PATH SOURCE)
-
+function(add_winui3_component_theme NAME)
   set(PUBLIC_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.hpp")
   set(PUBLIC_CPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.cpp")
 
-  add_winui3_theme_file(${NAME} "${SOURCE}" Hpp DESTINATION "${PUBLIC_HPP}")
-  add_winui3_theme_file(${NAME} "${SOURCE}" Cpp DESTINATION "${PUBLIC_CPP}")
+  add_winui3_theme_file(${NAME} Hpp DESTINATION "${PUBLIC_HPP}" SOURCES "${ARGN}")
+  add_winui3_theme_file(${NAME} Cpp DESTINATION "${PUBLIC_CPP}" SOURCES "${ARGN}")
 endfunction()
-add_winui3_component_theme(Common "Common_themeresources_any.xaml")
+add_winui3_component_theme(Common "Common_themeresources_any.xaml" "Common_themeresources.xaml")
+add_winui3_component_theme(ToggleSwitch "ToggleSwitch_themeresources.xaml")
