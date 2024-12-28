@@ -56,6 +56,8 @@ add_executable(
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
+  FredEmmott/GUI/StaticTheme/Resource.hpp
+  FredEmmott/GUI/StaticTheme/Theme.hpp
   FredEmmott/GUI/StyleProperty.hpp>
   FredEmmott/GUI/StyleTransition.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp

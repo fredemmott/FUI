@@ -15,6 +15,7 @@
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
+#include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>

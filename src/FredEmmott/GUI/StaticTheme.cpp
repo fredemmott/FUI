@@ -8,7 +8,6 @@
 #include <FredEmmott/GUI/detail/WinUI3Themes/Macros.hpp>
 #include <FredEmmott/GUI/detail/WinUI3Themes/Themes.hpp>
 
-#include "Brush.hpp"
 #include "Color.hpp"
 #include "SystemTheme.hpp"
 
@@ -19,11 +18,11 @@ using namespace gui_detail::WinUI3Themes;
 
 namespace {
 
-std::optional<ThemeKind> gThemeKind;
+std::optional<Theme> gThemeKind;
 
-const Theme& GetCurrentTheme() {
-  using enum ThemeKind;
-  switch (GetCurrentThemeKind()) {
+const auto& GetCurrentThemeData() {
+  using enum Theme;
+  switch (GetCurrent()) {
     case Dark:
       return DefaultTheme;
     case Light:
@@ -38,7 +37,7 @@ const Theme& GetCurrentTheme() {
 
 Color Resolve(const ColorType color) noexcept {
   using namespace gui_detail::WinUI3Themes;
-  const auto& theme = GetCurrentTheme();
+  const auto& theme = GetCurrentThemeData();
   switch (color) {
 #define DEFINE_CASE(X) \
   case ColorType::X: \
@@ -49,26 +48,13 @@ Color Resolve(const ColorType color) noexcept {
   std::unreachable();
 }
 
-Brush Resolve(const BrushType brush) noexcept {
-  using namespace gui_detail::WinUI3Themes;
-  const auto& theme = GetCurrentTheme();
-  switch (brush) {
-#define DEFINE_CASE(X) \
-  case X: \
-    return theme.m##X;
-    FUI_WINUI_THEME_BRUSHES(DEFINE_CASE)
-#undef DEFINE_CASE
-  }
-  std::unreachable();
-}
-
-ThemeKind GetCurrentThemeKind() {
+Theme GetCurrent() {
   if (gThemeKind) {
     return gThemeKind.value();
   }
 
   gThemeKind = []() {
-    using enum ThemeKind;
+    using enum Theme;
 
     HIGHCONTRAST contrast {sizeof(HIGHCONTRAST)};
     if (SystemParametersInfo(
@@ -94,7 +80,17 @@ void Refresh() {
   SystemTheme::Refresh();
 
   // Re-populate gThemeKind
-  (void)GetCurrentThemeKind();
+  (void)GetCurrent();
 }
+
+#define DEFINE_FUI_STATIC_THEME_BRUSH(X) \
+  const Resource<Brush> g##X { \
+    .mDefault = gui_detail::WinUI3Themes::DefaultTheme.m##X, \
+    .mLight = gui_detail::WinUI3Themes::LightTheme.m##X, \
+    .mHighContrast = gui_detail::WinUI3Themes::HighContrastTheme.m##X, \
+  }; \
+  const Resource<Brush>* X = &g##X;
+FUI_WINUI_THEME_BRUSHES(DEFINE_FUI_STATIC_THEME_BRUSH)
+#undef DEFINE_FUI_STATIC_THEME_BRUSH
 
 }// namespace FredEmmott::GUI::StaticTheme

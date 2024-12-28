@@ -3,6 +3,7 @@
 
 #include "Label.hpp"
 
+#include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/utility/lazy_init.hpp>
 
 using namespace FredEmmott::utility;

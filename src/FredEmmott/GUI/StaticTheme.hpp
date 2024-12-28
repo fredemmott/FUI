@@ -3,8 +3,12 @@
 #pragma once
 
 #include <FredEmmott/GUI/detail/WinUI3Themes/Enums.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/Macros.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/Themes.hpp>
 #include <array>
 #include <chrono>
+
+#include "StaticTheme/Resource.hpp"
 
 namespace FredEmmott::GUI {
 class Brush;
@@ -22,21 +26,9 @@ class Color;
  */
 namespace FredEmmott::GUI::StaticTheme {
 
-using BrushType = gui_detail::WinUI3Themes::Brushes;
 using ColorType = gui_detail::WinUI3Themes::Colors;
 
-using enum BrushType;
-// not using the `ColorType` enum as brushes are generally preferable
-
-Brush Resolve(BrushType brush) noexcept;
 Color Resolve(ColorType color) noexcept;
-
-enum class ThemeKind {
-  Light,
-  Dark,
-  HighContrast,
-};
-ThemeKind GetCurrentThemeKind();
 
 /** Match the current Windows (System) them.
  *
@@ -44,12 +36,16 @@ ThemeKind GetCurrentThemeKind();
  */
 void Refresh();
 
-// Also copied from the XML, but there's so few of them it semmed better
+// Generated from the XML files in WinUI3
+#define DECLARE_FUI_STATIC_THEME_BRUSH(X) extern const Resource<Brush>* X;
+FUI_WINUI_THEME_BRUSHES(DECLARE_FUI_STATIC_THEME_BRUSH)
+#undef DECLARE_FUI_STATIC_THEME_BRUSH
+
+// Also copied from the XML, but there's so few of them it seemed better
 // to hardcode them here than further complicate the XAML parser/codegen
 constexpr std::array<float, 4> ControlFastOutSlowInKeySpline {0, 0, 0, 1};
 constexpr std::chrono::milliseconds ControlNormalAnimationDuration {250};
 constexpr std::chrono::milliseconds ControlFastAnimationDuration {167};
 constexpr std::chrono::milliseconds ControlFastAnimationAfterDuration {168};
 constexpr std::chrono::milliseconds ControlFasterAnimationDuration {83};
-
 };// namespace FredEmmott::GUI::StaticTheme

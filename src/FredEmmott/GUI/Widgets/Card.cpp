@@ -3,6 +3,8 @@
 
 #include "Card.hpp"
 
+#include <FredEmmott/GUI/StaticTheme.hpp>
+
 namespace FredEmmott::GUI::Widgets {
 Card::Card(std::size_t id) : Widget(id) {
 }
