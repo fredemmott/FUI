@@ -5,8 +5,8 @@
 #include <Windows.h>
 #include <winrt/windows.ui.viewmanagement.h>
 
-#include <FredEmmott/GUI/detail/WinUI3Themes/macros.hpp>
-#include <FredEmmott/GUI/detail/WinUI3Themes/themes.hpp>
+#include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <FredEmmott/GUI/StaticTheme/Common/detail/macros.hpp>
 
 #include "Color.hpp"
 #include "SystemTheme.hpp"

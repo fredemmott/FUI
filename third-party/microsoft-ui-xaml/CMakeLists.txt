@@ -2,22 +2,36 @@ include(skia)
 
 find_program(PWSH pwsh DOC "Modern Powershell" REQUIRED)
 
-set(OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/include/FredEmmott/GUI/detail/WinUI3Themes")
-file(MAKE_DIRECTORY "${OUTPUT_PATH}")
+set(OUTPUT_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 add_library(winui3-themes INTERFACE)
-function(add_winui3_theme_hpp MODE EXTENSION)
+function(add_winui3_theme_file COMPONENT SOURCE MODE EXTENSION)
+  set(options)
+  set(oneValueArgs DESTINATION)
+  set(multiValueArgs)
+  cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (arg_DESTINATION)
+    set(OUTPUT_FILE_PATH "${arg_DESTINATION}")
+  else ()
+    string(TOLOWER "${MODE}.${EXTENSION}" OUTPUT_FILE_NAME)
+    set(OUTPUT_FILE_PATH "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${COMPONENT}/detail/${OUTPUT_FILE_NAME}")
+  endif ()
+  cmake_path(GET OUTPUT_FILE_PATH PARENT_PATH OUTPUT_DIRECTORY)
+  file(MAKE_DIRECTORY "${OUTPUT_DIRECTORY}")
+
+  set(CPP_TARGET "winui3-themes-${COMPONENT}-${MODE}-Cpp")
+  set(HPP_TARGET "winui3-themes-${COMPONENT}-${MODE}-Hpp")
+  set(TARGET "winui3-themes-${COMPONENT}-${MODE}-${EXTENSION}")
+
   set(MODE_SWITCH "-${MODE}${EXTENSION}")
-  string(TOLOWER "${MODE}.${EXTENSION}" OUTPUT_FILE_NAME)
-
-  set(OUTPUT_FILE_PATH "${OUTPUT_PATH}/${OUTPUT_FILE_NAME}")
-
   add_custom_command(
     OUTPUT "${OUTPUT_FILE_PATH}"
     COMMAND
     "${PWSH}"
     -ExecutionPolicy Bypass
     "${CMAKE_CURRENT_SOURCE_DIR}/xaml-to-cpp.ps1"
+    "${COMPONENT}"
     "${CMAKE_CURRENT_SOURCE_DIR}/Common_themeresources_any.xaml"
     "${OUTPUT_FILE_PATH}"
     "${MODE_SWITCH}"
@@ -28,26 +42,35 @@ function(add_winui3_theme_hpp MODE EXTENSION)
   )
   message(STATUS "Added rule to generate ${OUTPUT_FILE_PATH}")
   if ("${EXTENSION}" STREQUAL "Hpp")
-    add_library(winui3-themes-${MODE}Hpp INTERFACE "${OUTPUT_FILE_PATH}")
-    target_include_directories(winui3-themes-${MODE}Hpp INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include")
+    add_library("${HPP_TARGET}" INTERFACE "${OUTPUT_FILE_PATH}")
+    target_include_directories("${HPP_TARGET}" INTERFACE "${OUTPUT_BASE_PATH}")
   else ()
-    add_library(winui3-themes-${MODE}Cpp STATIC "${OUTPUT_FILE_PATH}")
+    add_library("${CPP_TARGET}" STATIC "${OUTPUT_FILE_PATH}")
     target_link_libraries(
-      winui3-themes-${MODE}Cpp
+      "${CPP_TARGET}"
       PRIVATE
-      winui3-themes-${MODE}Hpp
+      "${HPP_TARGET}"
       skia
     )
     target_include_directories(
-      winui3-themes-${MODE}Cpp
+      "${CPP_TARGET}"
       PRIVATE
       "${CMAKE_SOURCE_DIR}/src"
     )
   endif ()
-  target_link_libraries(winui3-themes INTERFACE winui3-themes-${MODE}${EXTENSION})
+  target_link_libraries(winui3-themes INTERFACE "${TARGET}")
 endfunction()
-add_winui3_theme_hpp(Macros Hpp)
-add_winui3_theme_hpp(Enums Hpp)
-add_winui3_theme_hpp(Types Hpp)
-add_winui3_theme_hpp(Themes Hpp)
-add_winui3_theme_hpp(Themes Cpp)
+
+function(add_winui3_component_theme NAME SOURCE)
+  cmake_path(ABSOLUTE_PATH SOURCE)
+
+  set(PUBLIC_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.hpp")
+  set(PUBLIC_CPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.cpp")
+
+  add_winui3_theme_file(${NAME} "${SOURCE}" Macros Hpp)
+  add_winui3_theme_file(${NAME} "${SOURCE}" Enums Hpp)
+  add_winui3_theme_file(${NAME} "${SOURCE}" Types Hpp)
+  add_winui3_theme_file(${NAME} "${SOURCE}" Themes Hpp DESTINATION "${PUBLIC_HPP}")
+  add_winui3_theme_file(${NAME} "${SOURCE}" Themes Cpp DESTINATION "${PUBLIC_CPP}")
+endfunction()
+add_winui3_component_theme(Common "Common_themeresources_any.xaml")

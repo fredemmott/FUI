@@ -1,6 +1,14 @@
 # Copyright 2024 Fred Emmott <fred@fredemmott.com>
 # SPDX-License-Identifier: MIT
-param($InputFile, $OutputFile, [switch]$MacrosHpp, [switch]$EnumsHpp, [switch]$ThemesHpp, [switch]$ThemesCpp, [switch]$TypesHpp)
+param(
+  $Component,
+  $InputFile,
+  $OutputFile,
+  [switch]$MacrosHpp,
+  [switch]$EnumsHpp,
+  [switch]$ThemesHpp,
+  [switch]$ThemesCpp,
+  [switch]$TypesHpp)
 
 $IsHeader = $OutputFile -match "hpp$"
 
@@ -214,7 +222,7 @@ struct Theme {$(
 function Get-Themes-Hpp()
 {
   @"
-#include "types.hpp"
+#include "Common/detail/types.hpp"
 
 namespace $CppNs {
 
@@ -231,7 +239,7 @@ function Get-Themes-Cpp()
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/LinearGradientBrush.hpp>
 #include <FredEmmott/GUI/SystemTheme.hpp>
-#include "themes.hpp"
+#include "$Component.hpp"
 
 namespace $CppNs {
 $( ($ThemeData | ForEach-Object { Get-Theme-Cpp $_ }) -join "`n" )
