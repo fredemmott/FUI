@@ -61,15 +61,20 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
     .mBase = {
       .mBackgroundColor = TextFillColorSecondaryBrush,
     },
+    .mDisabled = {
+      .mBackgroundColor = TextFillColorDisabledBrush,
+    },
   };
   // Positioning with `mMarginLeft` instead of align-self so that we
   // can animate it
   static const WidgetStyles onStyles {
-    .mBase
-    = {
+    .mBase = {
       .mBackgroundColor = TextOnAccentFillColorPrimaryBrush,
       .mBorderColor = CircleElevationBorderBrush,
       .mLeft = parentWidth - (height + (2 * margin)),
+    },
+    .mDisabled = {
+      .mBackgroundColor = TextOnAccentFillColorDisabledBrush,
     },
     .mActive = {
       .mMarginLeft = hoverMargin + hoverHeight - activeWidth,

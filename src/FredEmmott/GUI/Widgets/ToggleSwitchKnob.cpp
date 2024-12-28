@@ -49,6 +49,10 @@ WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
       .mBackgroundColor = ControlAltFillColorSecondaryBrush,
       .mBorderColor = ControlStrongStrokeColorDefaultBrush,
     },
+    .mDisabled = {
+      .mBackgroundColor = ControlAltFillColorDisabledBrush,
+      .mBorderColor = ControlStrongStrokeColorDisabledBrush,
+    },
     .mHover = {
       .mBackgroundColor = ControlAltFillColorTertiaryBrush,
     },
@@ -60,6 +64,10 @@ WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
     .mBase = {
       .mBackgroundColor = AccentFillColorDefaultBrush,
       .mBorderColor = AccentFillColorDefaultBrush,
+    },
+    .mDisabled = {
+      .mBackgroundColor = AccentFillColorDisabledBrush,
+      .mBorderColor = AccentFillColorDisabledBrush,
     },
     .mHover = {
       .mBackgroundColor = AccentFillColorSecondaryBrush,

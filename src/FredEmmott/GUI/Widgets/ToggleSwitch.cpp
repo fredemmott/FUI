@@ -44,6 +44,9 @@ WidgetStyles ToggleSwitch::GetDefaultStyles() const {
       .mFlexDirection = YGFlexDirectionRow,
       .mGap = Spacing * 2,
     },
+    .mDisabled = {
+      .mColor = StaticTheme::TextFillColorDisabledBrush,
+    },
   };
   return ret;
 }
