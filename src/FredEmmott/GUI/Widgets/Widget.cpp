@@ -100,6 +100,23 @@ void Widget::ChangeDirectChildren(const std::function<void()>& mutator) {
 
 Widget::~Widget() = default;
 
+bool Widget::IsDisabled() const {
+  return ((mDirectStateFlags | mInheritedStateFlags) & StateFlags::Disabled)
+    != StateFlags::Default;
+}
+
+bool Widget::IsDirectlyDisabled() const {
+  return (mDirectStateFlags & StateFlags::Disabled) != StateFlags::Default;
+}
+
+void Widget::SetIsDirectlyDisabled(bool value) {
+  if (value) {
+    mDirectStateFlags |= StateFlags::Disabled;
+  } else {
+    mDirectStateFlags &= ~StateFlags::Disabled;
+  }
+}
+
 void Widget::SetExplicitStyles(const WidgetStyles& styles) {
   if (styles == mExplicitStyles) {
     return;
@@ -174,9 +191,13 @@ void Widget::DispatchEvent(const Event* e) {
 Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   auto point = e->mPoint;
   auto& [x, y] = point;
+
   const auto layout = this->GetLayoutNode();
-  x -= YGNodeLayoutGetLeft(layout);
-  y -= YGNodeLayoutGetTop(layout);
+  const auto display = YGNodeStyleGetDisplay(layout);
+  if (display != YGDisplayContents) {
+    x -= YGNodeLayoutGetLeft(layout);
+    y -= YGNodeLayoutGetTop(layout);
+  }
   const auto w = YGNodeLayoutGetWidth(layout);
   const auto h = YGNodeLayoutGetHeight(layout);
 
@@ -217,8 +238,11 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   if (x < 0 || y < 0 || x > w || y > h) {
     mDirectStateFlags &= ~StateFlags::Hovered;
 
-    static constexpr auto invalid = -std::numeric_limits<SkScalar>::infinity();
-    translated->mPoint = {-invalid, -invalid};
+    if (display != YGDisplayContents) {
+      static constexpr auto invalid
+        = -std::numeric_limits<SkScalar>::infinity();
+      translated->mPoint = {-invalid, -invalid};
+    }
   } else {
     mDirectStateFlags |= StateFlags::Hovered;
   }
@@ -266,7 +290,7 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
     return result;
   }
 
-  if (isClick) {
+  if (isClick && !this->IsDisabled()) {
     result = this->OnClick(translated.get());
   }
 

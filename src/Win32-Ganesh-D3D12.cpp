@@ -14,6 +14,7 @@
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 
+#include <FredEmmott/GUI/Immediate/Disabled.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
@@ -334,9 +335,11 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     if (fuii::ToggleSwitch(&isOn)) {
       std::println(stderr, "Toggled to {}", isOn);
     }
+    fuii::BeginDisabled();
     if (fuii::ToggleSwitch(&isOn, {}, {"abc {}", 123})) {
       std::println(stderr, "Toggled to {}", isOn);
     }
+    fuii::EndDisabled();
 
     fuii::EndStackPanel();
     fuii::EndCard();

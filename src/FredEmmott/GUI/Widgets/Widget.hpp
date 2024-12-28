@@ -30,6 +30,13 @@ class Widget {
     return mID;
   }
 
+  /// Whether this widget is disabled, including by a parent
+  [[nodiscard]]
+  bool IsDisabled() const;
+  [[nodiscard]]
+  bool IsDirectlyDisabled() const;
+  void SetIsDirectlyDisabled(bool value);
+
   void ComputeStyles(const WidgetStyles& inherited);
 
   void SetExplicitStyles(const WidgetStyles& styles);
