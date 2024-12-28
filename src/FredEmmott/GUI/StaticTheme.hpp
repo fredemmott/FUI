@@ -3,7 +3,6 @@
 #pragma once
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
-#include <FredEmmott/GUI/StaticTheme/Common/detail/enums.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common/detail/macros.hpp>
 #include <array>
 #include <chrono>
@@ -26,10 +25,6 @@ class Color;
  */
 namespace FredEmmott::GUI::StaticTheme {
 
-using ColorType = gui_detail::WinUI3Themes::Colors;
-
-Color Resolve(ColorType color) noexcept;
-
 /** Match the current Windows (System) them.
  *
  * The implementation will call `SystemTheme::Refresh()` for you.
@@ -39,6 +34,9 @@ void Refresh();
 // Generated from the XML files in WinUI3
 #define DECLARE_FUI_STATIC_THEME_BRUSH(X) extern const Resource<Brush>* X;
 FUI_WINUI_THEME_BRUSHES(DECLARE_FUI_STATIC_THEME_BRUSH)
+#undef DECLARE_FUI_STATIC_THEME_BRUSH
+#define DECLARE_FUI_STATIC_THEME_COLOR(X) extern const Resource<Color>* X;
+FUI_WINUI_THEME_COLORS(DECLARE_FUI_STATIC_THEME_COLOR)
 #undef DECLARE_FUI_STATIC_THEME_BRUSH
 
 // Also copied from the XML, but there's so few of them it seemed better

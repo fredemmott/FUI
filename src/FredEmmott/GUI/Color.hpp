@@ -4,28 +4,28 @@
 
 #include <skia/core/SkColor.h>
 
-#include <FredEmmott/GUI/StaticTheme/Common/detail/enums.hpp>
 #include <variant>
 
+#include "StaticTheme/Resource.hpp"
 #include "SystemTheme.hpp"
 
 namespace FredEmmott::GUI {
 class Color;
 }
-namespace FredEmmott::GUI::StaticTheme {
-
-using ColorType = gui_detail::WinUI3Themes::Colors;
-Color Resolve(ColorType) noexcept;
-}// namespace FredEmmott::GUI::StaticTheme
 
 namespace FredEmmott::GUI {
 
 class Color final {
+  using StaticThemeColor = const StaticTheme::Resource<Color>*;
+
  public:
   Color() = delete;
   constexpr Color(SkColor color) : mVariant(color) {
   }
-  constexpr Color(StaticTheme::ColorType u) : mVariant(u) {
+  constexpr Color(StaticThemeColor color) : mVariant(color) {
+    if (!color) [[unlikely]] {
+      throw std::logic_error("Static resource colors must be a valid pointer");
+    }
   }
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {
   }
@@ -42,15 +42,14 @@ class Color final {
   constexpr bool operator==(const Color& other) const noexcept = default;
 
  private:
-  std::variant<SkColor, StaticTheme::ColorType, SystemTheme::ColorType>
-    mVariant;
+  std::variant<SkColor, StaticThemeColor, SystemTheme::ColorType> mVariant;
 
   constexpr SkColor Resolve() const noexcept {
     if (const auto it = get_if<SkColor>(&mVariant)) {
       return *it;
     }
-    if (const auto it = get_if<StaticTheme::ColorType>(&mVariant)) {
-      return StaticTheme::Resolve(*it);
+    if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
+      return (*it)->Resolve();
     }
     if (const auto it = get_if<SystemTheme::ColorType>(&mVariant)) {
       return SystemTheme::Resolve(*it);

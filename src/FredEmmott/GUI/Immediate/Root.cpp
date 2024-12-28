@@ -5,6 +5,8 @@
 
 #include <FredEmmott/GUI/Color.hpp>
 
+#include "FredEmmott/GUI/StaticTheme.hpp"
+
 using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Immediate {
@@ -61,7 +63,7 @@ void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
   }
   canvas->save();
   canvas->clipRect(SkRect::MakeXYWH(0, 0, w, h));
-  canvas->clear(Color {ColorType::SolidBackgroundFillColorBase});
+  canvas->clear(Color {SolidBackgroundFillColorBase});
 
   mWidget->ComputeStyles({});
   YGNodeCalculateLayout(mWidget->GetLayoutNode(), w, h, YGDirectionLTR);

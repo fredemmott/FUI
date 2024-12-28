@@ -20,33 +20,7 @@ namespace {
 
 std::optional<Theme> gThemeKind;
 
-const auto& GetCurrentThemeData() {
-  using enum Theme;
-  switch (GetCurrent()) {
-    case Dark:
-      return *DefaultTheme();
-    case Light:
-      return *LightTheme();
-    case HighContrast:
-      return *HighContrastTheme();
-  }
-  std::unreachable();
-}
-
 }// namespace
-
-Color Resolve(const ColorType color) noexcept {
-  using namespace gui_detail::WinUI3Themes;
-  const auto& theme = GetCurrentThemeData();
-  switch (color) {
-#define DEFINE_CASE(X) \
-  case ColorType::X: \
-    return theme.m##X;
-    FUI_WINUI_THEME_COLORS(DEFINE_CASE)
-#undef DEFINE_CASE
-  }
-  std::unreachable();
-}
 
 Theme GetCurrent() {
   if (gThemeKind) {
@@ -92,5 +66,15 @@ void Refresh() {
   const Resource<Brush>* X = &g##X;
 FUI_WINUI_THEME_BRUSHES(DEFINE_FUI_STATIC_THEME_BRUSH)
 #undef DEFINE_FUI_STATIC_THEME_BRUSH
+
+#define DEFINE_FUI_STATIC_THEME_COLOR(X) \
+  const Resource<Color> g##X { \
+    .mDefault = gui_detail::WinUI3Themes::DefaultTheme()->m##X, \
+    .mLight = gui_detail::WinUI3Themes::LightTheme()->m##X, \
+    .mHighContrast = gui_detail::WinUI3Themes::HighContrastTheme()->m##X, \
+  }; \
+  const Resource<Color>* X = &g##X;
+FUI_WINUI_THEME_COLORS(DEFINE_FUI_STATIC_THEME_COLOR)
+#undef DEFINE_FUI_STATIC_THEME_COLOR
 
 }// namespace FredEmmott::GUI::StaticTheme

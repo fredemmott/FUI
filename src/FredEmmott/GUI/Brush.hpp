@@ -16,6 +16,8 @@
 namespace FredEmmott::GUI {
 
 class Brush final {
+  using StaticThemeBrush = const StaticTheme::Resource<Brush>*;
+
  public:
   Brush() = delete;
   constexpr Brush(const Brush&) = default;
@@ -26,7 +28,7 @@ class Brush final {
   constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {
   }
 
-  Brush(const StaticTheme::Resource<Brush>* brush) : mBrush(brush) {
+  Brush(StaticThemeBrush brush) : mBrush(brush) {
     if (!brush) [[unlikely]] {
       throw std::logic_error("Static resource brushes must be a valid pointer");
     }
@@ -62,7 +64,6 @@ class Brush final {
   constexpr bool operator==(const Brush&) const noexcept = default;
 
  private:
-  using StaticThemeBrush = const StaticTheme::Resource<Brush>*;
   // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
   // wanting more than just LinearGradientBrush, but it's worth special-casing
   // SolidColorBrush

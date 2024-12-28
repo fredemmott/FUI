@@ -10,8 +10,8 @@
 
 #include <filesystem>
 
+#include "Font.hpp"
 #include "detail/font_detail.hpp"
-#include "font.hpp"
 
 using namespace FredEmmott::GUI::font_detail;
 
