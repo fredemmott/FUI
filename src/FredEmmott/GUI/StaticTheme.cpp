@@ -6,7 +6,6 @@
 #include <winrt/windows.ui.viewmanagement.h>
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
-#include <FredEmmott/GUI/StaticTheme/Common/detail/macros.hpp>
 
 #include "Color.hpp"
 #include "SystemTheme.hpp"
