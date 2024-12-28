@@ -75,13 +75,12 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
 
   {
     using enum ComputedStyleFlags;
+    auto propagateFlags = StateFlags::Default;
+    if (isDisabled) {
+      propagateFlags |= StateFlags::Disabled;
+    }
     if (const auto flags = this->OnComputedStyleChange(style);
         flags != Default) {
-      auto propagateFlags = StateFlags::Default;
-
-      if (isDisabled) {
-        propagateFlags |= StateFlags::Disabled;
-      }
       if ((flags & InheritableActiveState) == InheritableActiveState) {
         if (isActive) {
           propagateFlags |= StateFlags::Active;
@@ -92,11 +91,11 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
           propagateFlags |= StateFlags::Hovered;
         }
       }
+    }
 
-      if (propagateFlags != StateFlags::Default) {
-        for (auto&& child: this->GetDirectChildren()) {
-          child->mInheritedStateFlags = propagateFlags;
-        }
+    if (propagateFlags != StateFlags::Default) {
+      for (auto&& child: this->GetDirectChildren()) {
+        child->mInheritedStateFlags = propagateFlags;
       }
     }
   }
