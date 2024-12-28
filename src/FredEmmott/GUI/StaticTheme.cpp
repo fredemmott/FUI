@@ -5,8 +5,8 @@
 #include <Windows.h>
 #include <winrt/windows.ui.viewmanagement.h>
 
-#include <FredEmmott/GUI/detail/WinUI3Themes/Macros.hpp>
-#include <FredEmmott/GUI/detail/WinUI3Themes/Themes.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/macros.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/themes.hpp>
 
 #include "Color.hpp"
 #include "SystemTheme.hpp"
@@ -24,11 +24,11 @@ const auto& GetCurrentThemeData() {
   using enum Theme;
   switch (GetCurrent()) {
     case Dark:
-      return DefaultTheme;
+      return *DefaultTheme();
     case Light:
-      return LightTheme;
+      return *LightTheme();
     case HighContrast:
-      return HighContrastTheme;
+      return *HighContrastTheme();
   }
   std::unreachable();
 }
@@ -85,9 +85,9 @@ void Refresh() {
 
 #define DEFINE_FUI_STATIC_THEME_BRUSH(X) \
   const Resource<Brush> g##X { \
-    .mDefault = gui_detail::WinUI3Themes::DefaultTheme.m##X, \
-    .mLight = gui_detail::WinUI3Themes::LightTheme.m##X, \
-    .mHighContrast = gui_detail::WinUI3Themes::HighContrastTheme.m##X, \
+    .mDefault = gui_detail::WinUI3Themes::DefaultTheme()->m##X, \
+    .mLight = gui_detail::WinUI3Themes::LightTheme()->m##X, \
+    .mHighContrast = gui_detail::WinUI3Themes::HighContrastTheme()->m##X, \
   }; \
   const Resource<Brush>* X = &g##X;
 FUI_WINUI_THEME_BRUSHES(DEFINE_FUI_STATIC_THEME_BRUSH)

@@ -4,7 +4,7 @@
 
 #include <skia/core/SkColor.h>
 
-#include <FredEmmott/GUI/detail/WinUI3Themes/Enums.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/enums.hpp>
 #include <variant>
 
 #include "SystemTheme.hpp"

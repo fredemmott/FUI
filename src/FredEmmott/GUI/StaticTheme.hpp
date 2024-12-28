@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/WinUI3Themes/Enums.hpp>
-#include <FredEmmott/GUI/detail/WinUI3Themes/Macros.hpp>
-#include <FredEmmott/GUI/detail/WinUI3Themes/Themes.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/enums.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/macros.hpp>
+#include <FredEmmott/GUI/detail/WinUI3Themes/themes.hpp>
 #include <array>
 #include <chrono>
 
