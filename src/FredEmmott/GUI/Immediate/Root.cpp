@@ -3,6 +3,8 @@
 
 #include "Root.hpp"
 
+#include <wil/resource.h>
+
 #include <FredEmmott/GUI/Color.hpp>
 
 #include "FredEmmott/GUI/StaticTheme.hpp"
@@ -68,6 +70,11 @@ void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
   mWidget->ComputeStyles({});
   YGNodeCalculateLayout(mWidget->GetLayoutNode(), w, h, YGDirectionLTR);
   mWidget->Paint(canvas);
+
+  static const wil::unique_hcursor sDefaultCursor {
+    LoadCursor(nullptr, IDC_ARROW)};
+  // Hand: sPointerCursor -> IDC_HAND
+  SetCursor(sDefaultCursor.get());
 
   canvas->restore();
 }
