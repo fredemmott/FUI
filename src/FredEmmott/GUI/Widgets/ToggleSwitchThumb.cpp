@@ -64,14 +64,14 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
     .mBase = {
       .mBackgroundColor = ToggleSwitchKnobFillOff,
     },
+    .mDisabled = {
+      .mBackgroundColor = ToggleSwitchKnobFillOffDisabled,
+    },
     .mHover = {
       .mBackgroundColor = ToggleSwitchKnobFillOffPointerOver,
     },
     .mActive = {
       .mBackgroundColor = ToggleSwitchKnobFillOffPointerOver,
-    },
-    .mDisabled = {
-      .mBackgroundColor = ToggleSwitchKnobFillOffDisabled,
     },
   };
   // Positioning with `mMarginLeft` instead of align-self so that we
