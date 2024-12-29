@@ -6,6 +6,7 @@
 #include <Windows.h>
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/ToggleSwitch.hpp>
 
 using namespace FredEmmott::utility;
 using namespace FredEmmott::GUI::StaticTheme;
@@ -19,7 +20,9 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
 }
 
 WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
-  using namespace StaticTheme;
+  using namespace StaticTheme::Common::Animations;
+  using namespace StaticTheme::ToggleSwitch;
+
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;
   constexpr auto FasterAnimation
     = CubicBezierStyleTransition(ControlFasterAnimationDuration, KeySpline);
@@ -59,24 +62,37 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
   };
   static const WidgetStyles offStyles {
     .mBase = {
-      .mBackgroundColor = TextFillColorSecondaryBrush,
+      .mBackgroundColor = ToggleSwitchKnobFillOff,
+    },
+    .mHover = {
+      .mBackgroundColor = ToggleSwitchKnobFillOffPointerOver,
+    },
+    .mActive = {
+      .mBackgroundColor = ToggleSwitchKnobFillOffPointerOver,
     },
     .mDisabled = {
-      .mBackgroundColor = TextFillColorDisabledBrush,
+      .mBackgroundColor = ToggleSwitchKnobFillOffDisabled,
     },
   };
   // Positioning with `mMarginLeft` instead of align-self so that we
   // can animate it
   static const WidgetStyles onStyles {
     .mBase = {
-      .mBackgroundColor = TextOnAccentFillColorPrimaryBrush,
-      .mBorderColor = CircleElevationBorderBrush,
+      .mBackgroundColor = ToggleSwitchKnobFillOn,
+      .mBorderColor = ToggleSwitchStrokeOn,
       .mLeft = parentWidth - (height + (2 * margin)),
     },
     .mDisabled = {
-      .mBackgroundColor = TextOnAccentFillColorDisabledBrush,
+      .mBackgroundColor = ToggleSwitchKnobFillOnDisabled,
+      .mBorderColor = ToggleSwitchStrokeOnDisabled,
+    },
+    .mHover = {
+      .mBackgroundColor = ToggleSwitchKnobFillOnPointerOver,
+      .mBorderColor = ToggleSwitchStrokeOnPointerOver,
     },
     .mActive = {
+      .mBackgroundColor = ToggleSwitchKnobFillOnPressed,
+      .mBorderColor = ToggleSwitchStrokeOnPressed,
       .mMarginLeft = hoverMargin + hoverHeight - activeWidth,
     },
   };

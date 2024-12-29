@@ -4,6 +4,7 @@
 #include "ToggleSwitch.hpp"
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/ToggleSwitch.hpp>
 
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 #include "ToggleSwitchKnob.hpp"
@@ -40,14 +41,16 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
 }
 
 WidgetStyles ToggleSwitch::GetDefaultStyles() const {
+  using namespace StaticTheme::ToggleSwitch;
   static const WidgetStyles ret {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
       .mFlexDirection = YGFlexDirectionRow,
+      .mColor = ToggleSwitchContentForeground,
       .mGap = Spacing * 2,
     },
     .mDisabled = {
-      .mColor = StaticTheme::TextFillColorDisabledBrush,
+      .mColor = ToggleSwitchContentForegroundDisabled,
     },
   };
   return ret;
