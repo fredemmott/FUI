@@ -4,6 +4,7 @@
 #include "Button.hpp"
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/Button.hpp>
 
 using namespace FredEmmott::utility;
 using namespace FredEmmott::GUI::StaticTheme;
@@ -14,31 +15,38 @@ Button::Button(std::size_t id) : Widget(id) {
 }
 
 WidgetStyles Button::GetDefaultStyles() const {
+  using namespace StaticTheme::Button;
   constexpr auto VerticalPadding = Spacing;
   constexpr auto HorizontalPadding = Spacing * 3;
 
   static const WidgetStyles ret {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
-      .mBackgroundColor = ControlFillColorDefaultBrush,
-      .mBorderColor = ControlElevationBorderBrush,
+      .mBackgroundColor = ButtonBackground,
+      .mBorderColor = ButtonBorderBrush,
       .mBorderRadius = Spacing,
       .mBorderWidth = Spacing / 4,
-      .mColor = TextFillColorPrimaryBrush,
+      .mColor = ButtonForeground,
       .mFont = WidgetFont::ControlContent,
       .mPaddingBottom = VerticalPadding,
       .mPaddingLeft = HorizontalPadding,
       .mPaddingRight = HorizontalPadding,
       .mPaddingTop = VerticalPadding,
     },
+    .mDisabled = {
+      .mBackgroundColor = ButtonBackgroundDisabled,
+      .mBorderColor = ButtonBorderBrushDisabled,
+      .mColor = ButtonForegroundDisabled,
+    },
     .mHover = {
-      .mBackgroundColor = ControlFillColorSecondaryBrush,
-      .mBorderColor = ControlElevationBorderBrush,
+      .mBackgroundColor = ButtonBackgroundPointerOver,
+      .mBorderColor = ButtonBorderBrushPointerOver,
+      .mColor = ButtonForegroundPointerOver,
     },
     .mActive = {
-      .mBackgroundColor = ControlFillColorTertiaryBrush,
-      .mBorderColor = ControlStrokeColorDefaultBrush,
-      .mColor = TextFillColorSecondaryBrush,
+      .mBackgroundColor = ButtonBackgroundPressed,
+      .mBorderColor = ButtonBorderBrushPressed,
+      .mColor = ButtonForegroundPressed,
     },
   };
   return ret;
