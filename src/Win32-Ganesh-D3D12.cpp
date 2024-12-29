@@ -326,6 +326,11 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
 
     fuii::BeginCard();
     fuii::BeginVStackPanel();
+    fuii::Label("Disable all widgets");
+    static bool sDisableAll = false;
+    (void)fuii::ToggleSwitch(&sDisableAll);
+    fuii::BeginDisabled(sDisableAll);
+
     fuii::Label("Hello, world; this text doesn't make the button wider aeg");
     fuii::Label("Frame {}##Frames", mFrameCounter);
     if (fuii::Button("Click Me!")) {
@@ -336,12 +341,8 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     if (fuii::ToggleSwitch(&isOn)) {
       std::println(stderr, "Toggled to {}", isOn);
     }
-    fuii::BeginDisabled();
-    if (fuii::ToggleSwitch(&isOn, {}, {"abc {}", 123})) {
-      std::println(stderr, "Toggled to {}", isOn);
-    }
-    fuii::EndDisabled();
 
+    fuii::EndDisabled();
     fuii::EndStackPanel();
     fuii::EndCard();
 
