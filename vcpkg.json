@@ -3,13 +3,15 @@
   "dependencies": [
     "wil",
     {
-      "name":"skia",
+      "name": "skia",
       "features": [
         "direct3d",
         "freetype"
       ]
     },
-    "yoga"
+    "yoga",
+    "fmt",
+    "tinyxml"
   ],
   "vcpkg-configuration": {
     "overlay-ports": [

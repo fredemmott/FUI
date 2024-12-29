@@ -1,6 +1,8 @@
 find_package(yoga CONFIG REQUIRED)
 include(skia)
 
+add_subdirectory(xaml-to-fui-statictheme)
+
 add_executable(
   HelloSkia-Win32-Ganesh-D3D12
   WIN32
@@ -78,7 +80,7 @@ target_link_libraries(
 target_compile_definitions(
   HelloSkia-Win32-Ganesh-D3D12
   PRIVATE
-  " UNICODE=1"
+  "UNICODE=1"
   "_UNICODE=1"
 )
 target_include_directories(

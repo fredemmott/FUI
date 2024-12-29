@@ -21,5 +21,4 @@ project(HelloSkia VERSION 0.0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-add_subdirectory(third-party)
 add_subdirectory(src)
