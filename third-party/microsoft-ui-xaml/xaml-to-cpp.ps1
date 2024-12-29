@@ -4,6 +4,7 @@ param(
   $Component,
   $InputFiles,
   $OutputFile,
+  $Parent,
   [ValidateSet("Cpp", "Hpp")][string]$Mode)
 
 $InputFiles = $InputFiles -split ';'
@@ -54,12 +55,21 @@ function Resolve-Color($Value, $Colors)
       }
       return "SkColorSetARGB(0x$( $bytes[0] ), 0x$( $bytes[1] ), 0x$( $bytes[2] ), 0x$( $bytes[3] ))"
     }
-    '{ThemeResource System(Accent)?Color.*' {
-      return "SystemTheme::$( $Value -replace '.* (System.+)}', '$1' )"
+    '{ThemeResource System.*Brush}' {
+      return "$( $Value -replace '{ThemeResource (System.+)}', '$1' )"
+    }
+    '{ThemeResource System.*Color.*' {
+      return "$( $Value -replace '.* (System.+)}', '$1' )"
     }
     '{StaticResource .*Color.*}' {
       $Name = $Value -replace '.* ([A-Z][^ ]+)}$', '$1'
       return $Name;
+    }
+    'LightGray' {
+      return 'SK_ColorLTGRAY'
+    }
+    '^[A-Z][a-zA-Z]+$' {
+      return "SK_Color$($Value.ToUpper() )"
     }
     default {
       Write-Host "ERROR: Can't figure out how to parse ${Value} in SolidColorBrush"
@@ -151,9 +161,10 @@ function Get-Theme($Theme)
   }
 
   $SolidColorBrushes = $Theme.SolidColorBrush | ForEach-Object { Get-SolidColorBrush $Colors $_ }
+  $linearGradientBrushes = @()
   if ($Theme.LinearGradientBrush)
   {
-    $LinearGradientBrushes = $Theme.LinearGradientBrush | ForEach-Object { Get-LinearGradientBrush $Colors $_ }
+    $linearGradientBrushes = $Theme.LinearGradientBrush | ForEach-Object { Get-LinearGradientBrush $Colors $_ }
   }
 
   $brushes = @{ }
@@ -165,7 +176,7 @@ function Get-Theme($Theme)
   $aliases = @{ }
   if ($Theme.StaticResource)
   {
-    foreach ($Alias in $Theme.StaticResource | ForEach-Object { Get-StaticResource $_ } | Sort-Object -Property Key)
+    foreach ($Alias in $Theme.StaticResource | Sort-Object -Property Key | ForEach-Object { Get-StaticResource $_ })
     {
       $aliases[$Alias.Key] = $Alias
     }
@@ -213,25 +224,41 @@ $HighContrastTheme = $ThemesByName.HighContrast
 $CppNs = "FredEmmott::GUI::StaticTheme::$Component"
 $DetailNs = "detail_StaticTheme_${Component}"
 
+function Resolve-Alias-Target-Type($Value)
+{
+  if ($Value -match '^System.*Color$')
+  {
+    return 'Color'
+  }
+  return "std::decay_t<decltype(*$Value)>::value_type"
+}
+
 function Get-Alias-Hpp($Key)
 {
   $Default = $DefaultTheme.Aliases[$Key].Value
+  $Light = $LightTheme.Aliases.contains($Key) ? $LightTheme.Aliases[$Key].Value : $Default
+  $HighContrast = $HighContrastTheme.Aliases.contains($Key) ? $HighContrastTheme.Aliases[$Key].Value : $Default
   @"
-using ${Key}_t = std::decay_t<decltype(*$Default)>;
-const ${Key}_t* $Key { nullptr };
+using ${Key}_t = ResourceSupertype<
+  $( Resolve-Alias-Target-Type $Default ),
+  $( Resolve-Alias-Target-Type $Light ),
+  $( Resolve-Alias-Target-Type $HighContrast )
+>::type;
+const ${Key}_t* Get$Key();
+const ${Key}_t* $Key { Get$Key() };
 "@
 }
 
 function Resolve-Alias($Theme, $Value)
 {
   # Not actually a System color...
-  if ($Value -eq 'SystemControlTransparentColor')
+  if ($Value -match '^SystemControl(Disabled)?TransparentColor$')
   {
     return "$Value->Resolve(StaticTheme::Theme::$Theme)"
   }
   if ($Value -match "^System.+Color$")
   {
-    return "SystemTheme::${Value}"
+    return "${Value}"
   }
   "$Value->Resolve(StaticTheme::Theme::$Theme)"
 }
@@ -243,29 +270,32 @@ function Get-Alias-Cpp($Key)
   $HighContrast = $HighContrastTheme.Aliases.contains($Key) ? $HighContrastTheme.Aliases[$Key].Value : $Default
   @"
 
-  static const ${Key}_t s$Key {
+const Theme::${Key}_t* Theme::Get$Key() {
+  static const ${Key}_t sValue {
     .mDefault = $( Resolve-Alias 'Dark' $Default ),
     .mLight = $( Resolve-Alias 'Light' $Light ),
     .mHighContrast = $( Resolve-Alias 'HighContrast' $HighContrast ),
   };
-  this->$Key = &s$Key;
+  return &sValue;
+}
 "@
 }
 
 function Get-Hpp()
 {
-  if (-not ($Component -eq "Common"))
+  if ($Parent -ne "")
   {
-    $Inheritance = ": Common::detail_StaticTheme_Common::Theme"
+    $Inheritance = ": $Parent::detail_StaticTheme_$Parent::Theme"
   }
   @"
 #pragma once
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/StaticTheme/Resource.hpp>
-$( if (-not ($Component -eq "Common"))
+#include <FredEmmott/GUI/StaticTheme/detail/ResourceSupertype.hpp>
+$( if ($Parent -ne "")
   {
-    "#include <FredEmmott/GUI/StaticTheme/Common.hpp>"
+    "#include <FredEmmott/GUI/StaticTheme/$Parent.hpp>"
   } )
 
 namespace $CppNs::$DetailNs {
@@ -275,16 +305,20 @@ struct Theme $Inheritance {
   static Theme* GetInstance();
 
 $( ($ColorKeys | ForEach-Object {
-    "const Resource<Color>* $_ {nullptr};"
+    "const Resource<Color>* Get$_();"
+    "const Resource<Color>* $_ { Get$_() };"
   }) -join "`n" )
 
   $( ($BrushKeys | ForEach-Object {
-    "const Resource<Brush>* $_ {nullptr};"
+    "const Resource<Brush>* Get$_();"
+    "const Resource<Brush>* $_ = { Get$_() };"
   }) -join "`n" )
 
   $( ($AliasKeys | ForEach-Object {
     Get-Alias-Hpp $_
   }) -join "`n" )
+
+
 };
 
 }
@@ -305,12 +339,14 @@ function Get-Color-Cpp($Key)
 {
   @"
 
-  static const Resource<Color> s$Key {
+const Resource<Color>* Theme::Get$Key() {
+   static const Resource<Color> sValue {
     .mDefault = SkColor { $( $DefaultTheme.Colors[$Key].Value ) },
     .mLight = SkColor { $( $LightTheme.Colors[$Key].Value ) },
     .mHighContrast = SkColor { $( $HighContrastTheme.Colors[$Key].Value ) },
   };
-  this->$Key = &s$Key;
+  return &sValue;
+}
 "@
 }
 
@@ -321,12 +357,14 @@ function Get-Brush-Cpp($Key)
   $HighContrast = $HighContrastTheme.Brushes.contains($Key) ? $HighContrastTheme.Brushes[$Key].Value : $Default
   @"
 
-  static const Resource<Brush> s$Key {
+const Resource<Brush>* Theme::Get$Key() {
+  static const Resource<Brush> sValue {
     .mDefault = ResolveBrush<StaticTheme::Theme::Dark>($( $Default )),
     .mLight = ResolveBrush<StaticTheme::Theme::Light>($( $Light )),
     .mHighContrast = ResolveBrush<StaticTheme::Theme::HighContrast>($( $HighContrast )),
   };
-  this->$Key = &s$Key;
+  return &sValue;
+}
 "@
 }
 
@@ -342,14 +380,16 @@ function Get-Cpp()
 #include <FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp>
 
 #include <thread>
-#include <vector>
 
 namespace $CppNs::$DetailNs {
 
+using enum SystemTheme::ColorType;
+
 Theme::Theme() {
-  $( ($ColorKeys | ForEach-Object { Get-Color-Cpp $_ }) -join "`n" )
-  $( ($BrushKeys | ForEach-Object { Get-Brush-Cpp $_ }) -join "`n" )
-  $( ($AliasKeys | ForEach-Object { Get-Alias-Cpp $_ }) -join "`n" )
+$( foreach ($Key in ($ColorKeys + $BrushKeys + $AliasKeys))
+  {
+    "  $Key = Get$Key();`n"
+  } )
 }
 
 Theme* Theme::GetInstance() {
@@ -360,6 +400,11 @@ Theme* Theme::GetInstance() {
   });
   return sInstance.get();
 }
+
+  $( ($ColorKeys | ForEach-Object { Get-Color-Cpp $_ }) -join "`n" )
+  $( ($BrushKeys | ForEach-Object { Get-Brush-Cpp $_ }) -join "`n" )
+  $( ($AliasKeys | ForEach-Object { Get-Alias-Cpp $_ }) -join "`n" )
+
 
 }
 "@

@@ -28,10 +28,10 @@ class Color final {
     const std::source_location& loc = std::source_location::current())
     : mVariant(color) {
     if (!color) [[unlikely]] {
-      const auto dbg = loc;
       throw std::logic_error("Static resource colors must be a valid pointer");
     }
   }
+  constexpr Color(nullptr_t) = delete;
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {
   }
 

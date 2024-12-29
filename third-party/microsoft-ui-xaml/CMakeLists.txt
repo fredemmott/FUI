@@ -7,11 +7,20 @@ set(OUTPUT_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
 add_library(winui3-themes INTERFACE)
 function(add_winui3_theme_file COMPONENT EXTENSION)
   set(options)
-  set(oneValueArgs DESTINATION)
+  set(oneValueArgs DESTINATION PARENT)
   set(multiValueArgs SOURCES)
   cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+  if ("PARENT" IN_LIST ARGN)
+    set(PARENT_THEME "${arg_PARENT}")
+  else ()
+    set(PARENT_THEME "Common")
+  endif ()
+
   set(SOURCES)
+  if (NOT arg_SOURCES)
+    set(arg_SOURCES "${COMPONENT}_themeresources.xaml")
+  endif ()
   foreach (SOURCE IN LISTS arg_SOURCES)
     cmake_path(ABSOLUTE_PATH SOURCE)
     list(APPEND SOURCES "${SOURCE}")
@@ -35,14 +44,14 @@ function(add_winui3_theme_file COMPONENT EXTENSION)
     "${PWSH}"
     -ExecutionPolicy Bypass
     "${CMAKE_CURRENT_SOURCE_DIR}/xaml-to-cpp.ps1"
-    "${COMPONENT}"
-    "${SOURCES}"
-    "${OUTPUT_FILE_PATH}"
+    -Component "${COMPONENT}"
+    -InputFiles "${SOURCES}"
+    -OutputFile "${OUTPUT_FILE_PATH}"
+    -Parent "${PARENT_THEME}"
     -Mode ${EXTENSION}
-    MAIN_DEPENDENCY
-    Common_themeresources_any.xaml
     DEPENDS
     xaml-to-cpp.ps1
+    "${SOURCES}"
     VERBATIM
   )
   message(STATUS "Added rule to generate ${OUTPUT_FILE_PATH}")
@@ -66,12 +75,17 @@ function(add_winui3_theme_file COMPONENT EXTENSION)
   target_link_libraries(winui3-themes INTERFACE "${TARGET}")
 endfunction()
 
-function(add_winui3_component_theme NAME)
-  set(PUBLIC_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.hpp")
-  set(PUBLIC_CPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${NAME}.cpp")
+function(add_winui3_component_theme COMPONENT)
+  set(PUBLIC_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${COMPONENT}.hpp")
+  set(PUBLIC_CPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${COMPONENT}.cpp")
 
-  add_winui3_theme_file(${NAME} Hpp DESTINATION "${PUBLIC_HPP}" SOURCES "${ARGN}")
-  add_winui3_theme_file(${NAME} Cpp DESTINATION "${PUBLIC_CPP}" SOURCES "${ARGN}")
+  add_winui3_theme_file(${COMPONENT} Hpp DESTINATION "${PUBLIC_HPP}" ${ARGN})
+  add_winui3_theme_file(${COMPONENT} Cpp DESTINATION "${PUBLIC_CPP}" ${ARGN})
 endfunction()
-add_winui3_component_theme(Common "Common_themeresources_any.xaml" "Common_themeresources.xaml")
-add_winui3_component_theme(ToggleSwitch "ToggleSwitch_themeresources.xaml")
+add_winui3_component_theme(Generic SOURCES "generic.xaml" PARENT "")
+add_winui3_component_theme(Common SOURCES "Common_themeresources_any.xaml" "Common_themeresources.xaml" PARENT Generic)
+add_winui3_component_theme(Deprecated)
+
+add_winui3_component_theme(Button PARENT Deprecated)
+
+add_winui3_component_theme(ToggleSwitch)
