@@ -227,13 +227,13 @@ function Resolve-Alias($Theme, $Value)
   # Not actually a System color...
   if ($Value -eq 'SystemControlTransparentColor')
   {
-    return "$DetailNs::Theme::$Value->Resolve(StaticTheme::Theme::$Theme)"
+    return "$Value->Resolve(StaticTheme::Theme::$Theme)"
   }
   if ($Value -match "^System.+Color$")
   {
     return "SystemTheme::${Value}"
   }
-  "$DetailNs::Theme::$Value->Resolve(StaticTheme::Theme::$Theme)"
+  "$Value->Resolve(StaticTheme::Theme::$Theme)"
 }
 
 function Get-Alias-Cpp($Key)
