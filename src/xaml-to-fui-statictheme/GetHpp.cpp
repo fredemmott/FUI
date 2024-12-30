@@ -17,8 +17,12 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
     ? "/* : PARENT */"
     : fmt::format(": {0}::detail_StaticTheme_{0}::Theme", meta.mParent);
 
+  struct Constant {
+    std::string mName;
+    std::string mCode;
+  };
+  std::vector<Constant> constants;
   std::vector<std::string> members;
-  std::vector<std::string> constants;
 
   for (auto&& resource: resources) {
     std::string type = resource.mType;
@@ -32,21 +36,23 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
       fmt::format("const {0}* {1} = {{ Get{1}() }};", type, resource.mName));
 
     if (resource.IsLiteral()) {
-      constants.push_back(
+      constants.emplace_back(
+        resource.mName,
         fmt::format(
           "constexpr {} {} {{ {} }};",
           resource.mType,
           resource.mName,
           resource.mValue));
     } else {
-      constants.push_back(
+      constants.emplace_back(
+        resource.mName,
         fmt::format(
           "inline const auto {0} = {1}::Theme::GetInstance()->{0};",
           resource.mName,
           meta.mDetailNamespace));
     }
   }
-  std::ranges::sort(constants);
+  std::ranges::sort(constants, {}, &Constant::mName);
 
   return fmt::format(
     R"EOF(
@@ -88,6 +94,7 @@ namespace {NAMESPACE} {{
       std::ranges::to<std::string>(std::views::join_with(members, '\n'))),
     fmt::arg(
       "CONSTANTS",
-      std::ranges::to<std::string>(std::views::join_with(constants, '\n'))),
+      constants | std::views::transform(&Constant::mCode)
+        | std::views::join_with('\n') | std::ranges::to<std::string>()),
     nullptr);
 }
