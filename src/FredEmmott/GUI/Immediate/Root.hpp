@@ -16,6 +16,10 @@ class Root final {
 
  private:
   unique_ptr<Widgets::Widget> mWidget;
+  enum class Cursor {
+    Default,
+  };
+  std::optional<Cursor> mCursor;
 
   void Paint(SkScalar w, SkScalar h, SkCanvas*) const;
 };

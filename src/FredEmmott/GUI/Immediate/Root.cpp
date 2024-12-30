@@ -52,6 +52,15 @@ void Root::EndFrame(SkScalar w, SkScalar h, SkCanvas* canvas) {
   }
 
   this->Paint(w, h, canvas);
+
+  const auto desiredCursor = Cursor::Default;
+  if (mCursor != desiredCursor) {
+    static const wil::unique_hcursor sDefaultCursor {
+      LoadCursor(nullptr, IDC_ARROW)};
+    // Hand: sPointerCursor -> IDC_HAND
+    SetCursor(sDefaultCursor.get());
+    mCursor = {desiredCursor};
+  }
 }
 void Root::DispatchEvent(const Event* e) {
   if (mWidget) {
@@ -70,11 +79,6 @@ void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
   mWidget->ComputeStyles({});
   YGNodeCalculateLayout(mWidget->GetLayoutNode(), w, h, YGDirectionLTR);
   mWidget->Paint(canvas);
-
-  static const wil::unique_hcursor sDefaultCursor {
-    LoadCursor(nullptr, IDC_ARROW)};
-  // Hand: sPointerCursor -> IDC_HAND
-  SetCursor(sDefaultCursor.get());
 
   canvas->restore();
 }
