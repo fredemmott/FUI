@@ -31,7 +31,6 @@ add_executable(
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/StaticTheme/Resource.hpp
   FredEmmott/GUI/StaticTheme/Theme.hpp
-  FredEmmott/GUI/StaticTheme/Common/Animation.hpp
   FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp
   FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp
   FredEmmott/GUI/StyleProperty.hpp>

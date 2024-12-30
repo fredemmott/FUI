@@ -4,8 +4,6 @@
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 
-#include "StaticTheme/Common/Animation.hpp"
-
 /** A 'Static Theme' is compiled-in, based on the XAML files taken from
  * WinUI3.
  *

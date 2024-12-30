@@ -59,6 +59,7 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
 
 {PARENT_INCLUDE}
 
+#include <array>
 #include <chrono>
 
 namespace {NAMESPACE}::{DETAIL_NAMESPACE} {{

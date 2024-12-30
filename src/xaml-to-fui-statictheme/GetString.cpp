@@ -80,6 +80,16 @@ void GetString(
     }
   }
 
+  if (key.ends_with("KeySpline")) {
+    back = {
+      .mName = it.Attribute("x:Key"),
+      .mValue = std::format("{{ {} }}", it.GetText()),
+      .mType = "std::array<float, 4>",
+      .mKind = Resource::Kind::Literal,
+    };
+    return;
+  }
+
   back = {
     .mName = it.Attribute("x:Key"),
     .mValue = std::format("\"{}\"", it.GetText()),
