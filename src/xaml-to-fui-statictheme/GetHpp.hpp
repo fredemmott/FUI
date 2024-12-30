@@ -8,4 +8,16 @@
 #include "Metadata.hpp"
 #include "Resource.hpp"
 
-std::string GetHpp(const Metadata&, std::span<Resource> resources);
+struct HppData {
+  Metadata mMetadata;
+
+  std::string mParentInclude;
+  std::string mParent;
+  std::vector<std::string> mMembers;
+  std::vector<std::string> mConstants;
+};
+
+HppData GetHppData(const Metadata&, const std::span<Resource>&);
+
+std::string GetHpp(const HppData&);
+std::string GetDetailHpp(const HppData&);

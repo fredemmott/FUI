@@ -9,7 +9,7 @@
 #include <ranges>
 #include <vector>
 
-std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
+HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
   const auto parentInclude = meta.mParent.empty()
     ? "// #include PARENT"
     : fmt::format("#include <FredEmmott/GUI/StaticTheme/{}.hpp>", meta.mParent);
@@ -53,7 +53,39 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
     }
   }
   std::ranges::sort(constants, {}, &Constant::mName);
+  return {
+    .mMetadata = meta,
+    .mParentInclude = parentInclude,
+    .mParent = parent,
+    .mMembers = members,
+    .mConstants = constants | std::views::transform(&Constant::mCode)
+      | std::ranges::to<std::vector<std::string>>(),
+  };
+}
 
+std::string GetHpp(const HppData& data) {
+  return fmt::format(
+    R"EOF(
+#pragma once
+
+#include "detail/{COMPONENT}.hpp"
+
+namespace {NAMESPACE} {{
+
+{CONSTANTS}
+
+}} // namespace {NAMESPACE}
+)EOF",
+    fmt::arg("COMPONENT", data.mMetadata.mComponent),
+    fmt::arg("NAMESPACE", data.mMetadata.mNamespace),
+    fmt::arg(
+      "CONSTANTS",
+      std::ranges::to<std::string>(
+        std::views::join_with(data.mConstants, '\n'))),
+    nullptr);
+}
+
+std::string GetDetailHpp(const HppData& data) {
   return fmt::format(
     R"EOF(
 #pragma once
@@ -78,23 +110,13 @@ struct Theme {PARENT} {{
 }}; // struct Theme
 
 }} // namespace {NAMESPACE}::{DETAIL_NAMESPACE}
-
-namespace {NAMESPACE} {{
-
-{CONSTANTS}
-
-}} // namespace {NAMESPACE}
 )EOF",
-    fmt::arg("PARENT_INCLUDE", parentInclude),
-    fmt::arg("PARENT", parent),
-    fmt::arg("NAMESPACE", meta.mNamespace),
-    fmt::arg("DETAIL_NAMESPACE", meta.mDetailNamespace),
+    fmt::arg("PARENT_INCLUDE", data.mParentInclude),
+    fmt::arg("PARENT", data.mParent),
+    fmt::arg("NAMESPACE", data.mMetadata.mNamespace),
+    fmt::arg("DETAIL_NAMESPACE", data.mMetadata.mDetailNamespace),
     fmt::arg(
       "MEMBERS",
-      std::ranges::to<std::string>(std::views::join_with(members, '\n'))),
-    fmt::arg(
-      "CONSTANTS",
-      constants | std::views::transform(&Constant::mCode)
-        | std::views::join_with('\n') | std::ranges::to<std::string>()),
+      std::ranges::to<std::string>(std::views::join_with(data.mMembers, '\n'))),
     nullptr);
 }

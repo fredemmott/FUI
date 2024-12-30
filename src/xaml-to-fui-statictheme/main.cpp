@@ -1,6 +1,7 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include <chrono>
 #include <expected>
 #include <filesystem>
 #include <fstream>
@@ -21,13 +22,15 @@ struct Arguments {
   std::vector<std::filesystem::path> mInputs;
   std::filesystem::path mCppOutput;
   std::filesystem::path mHppOutput;
+  std::filesystem::path mDetailHppOutput;
   std::string mParent;
 };
 
 void ShowUsage(FILE* file, const char* self) {
   std::println(
     file,
-    "USAGE: {} [--cpp-output FILE] [--hpp-output FILE] [--parent PARENT] "
+    "USAGE: {} [--cpp-output FILE] [--hpp-output FILE] "
+    "[--detail-hpp-output FILE] [--parent PARENT] "
     "COMPONENT INPUT [INPUT...]\n"
     "  --parent PARENT: either 'NONE', or the name of a parent component",
     self);
@@ -98,6 +101,20 @@ std::expected<Arguments, ParseArgumentsExitCode> ParseArguments(
       continue;
     }
 
+    if (arg == "--detail-hpp-output") {
+      if (++i >= args.size()) {
+        std::println(stderr, "--detail-hpp-output requires an argument");
+        return std::unexpected {SyntaxError};
+      }
+      const auto value = args[i];
+      if (value.empty()) {
+        std::println(stderr, "--detail-hpp-output value can not be empty");
+        return std::unexpected {SyntaxError};
+      }
+      ret.mDetailHppOutput = value;
+      continue;
+    }
+
     if (arg == "--") {
       for (++i; i < args.size(); ++i) {
         ret.mInputs.push_back(args[i]);
@@ -140,6 +157,7 @@ void WriteOutput(const std::filesystem::path& path, std::string_view content) {
 }
 
 int main(int argc, char** argv) {
+  const auto start = std::chrono::steady_clock::now();
   const auto arguments = ParseArguments(argc, argv);
   if (!arguments.has_value()) {
     const auto result = arguments.error();
@@ -159,12 +177,6 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  if (arguments->mCppOutput.empty() && arguments->mHppOutput.empty()) {
-    std::println(
-      stderr, "WARNING: Neither --cpp-output nor --hpp-output was specified");
-    return EXIT_SUCCESS;
-  }
-
   SortResources(resources);
 
   const auto header = std::format(
@@ -181,17 +193,45 @@ int main(int argc, char** argv) {
     = std::format("detail_StaticTheme_{}", arguments->mComponent),
   };
 
+  std::size_t outputCount = 0;
+
+  const auto headerData = GetHppData(metadata, resources);
+
   if (const auto file = arguments->mHppOutput; !file.empty()) {
-    const auto content = GetHpp(metadata, resources);
+    ++outputCount;
+    const auto content = GetHpp(headerData);
+    WriteOutput(file, std::format("{}\n{}", header, content));
+    std::println(stderr, "Generated {}", file.string());
+  }
+
+  if (const auto file = arguments->mDetailHppOutput; !file.empty()) {
+    ++outputCount;
+    const auto content = GetDetailHpp(headerData);
     WriteOutput(file, std::format("{}\n{}", header, content));
     std::println(stderr, "Generated {}", file.string());
   }
 
   if (const auto file = arguments->mCppOutput; !file.empty()) {
+    ++outputCount;
     const auto content = GetCpp(metadata, resources);
     WriteOutput(file, std::format("{}\n{}", header, content));
     std::println(stderr, "Generated {}", file.string());
   }
+
+  if (outputCount == 0) {
+    std::println(
+      stderr,
+      "WARNING: No output requested. Use `--(cpp|hpp|detail-hpp)-output` "
+      "flags");
+    return EXIT_SUCCESS;
+  }
+
+  std::println(
+    stderr,
+    "{} StaticTheme generation took {}",
+    arguments->mComponent,
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::steady_clock::now() - start));
 
   return EXIT_SUCCESS;
 }

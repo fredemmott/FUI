@@ -46,7 +46,7 @@ set(OUTPUT_BASE_PATH "${CMAKE_CURRENT_BINARY_DIR}/generated")
 add_library(winui3-themes INTERFACE)
 function(add_winui3_theme_file COMPONENT)
   set(options)
-  set(oneValueArgs CPP_OUTPUT HPP_OUTPUT PARENT)
+  set(oneValueArgs CPP_OUTPUT HPP_OUTPUT DETAIL_HPP_OUTPUT PARENT)
   set(multiValueArgs SOURCES PUBLIC_INCLUDE_DIRECTORIES)
   cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -72,6 +72,8 @@ function(add_winui3_theme_file COMPONENT)
   file(MAKE_DIRECTORY "${CPP_OUTPUT_DIRECTORY}")
   cmake_path(GET arg_HPP_OUTPUT PARENT_PATH HPP_OUTPUT_DIRECTORY)
   file(MAKE_DIRECTORY "${HPP_OUTPUT_DIRECTORY}")
+  cmake_path(GET arg_DETAIL_HPP_OUTPUT PARENT_PATH DETAIL_HPP_OUTPUT_DIRECTORY)
+  file(MAKE_DIRECTORY "${DETAIL_HPP_OUTPUT_DIRECTORY}")
 
   set(TARGET "winui3-themes-${COMPONENT}")
 
@@ -79,20 +81,29 @@ function(add_winui3_theme_file COMPONENT)
     OUTPUT
     "${arg_CPP_OUTPUT}"
     "${arg_HPP_OUTPUT}"
+    "${arg_DETAIL_HPP_OUTPUT}"
     COMMAND
     "$<TARGET_FILE:xaml-to-fui-statictheme>"
     --cpp-output "${arg_CPP_OUTPUT}"
     --hpp-output "${arg_HPP_OUTPUT}"
+    --detail-hpp-output "${arg_DETAIL_HPP_OUTPUT}"
     --parent "${PARENT_THEME}"
     "${COMPONENT}"
     "${SOURCES}"
     DEPENDS
     xaml-to-fui-statictheme
     "${SOURCES}"
+    "${CMAKE_CURRENT_LIST_FILE}"
     VERBATIM
     COMMAND_EXPAND_LISTS
   )
-  add_library("${TARGET}" STATIC "${arg_CPP_OUTPUT}" "${arg_HPP_OUTPUT}")
+  add_library(
+    "${TARGET}"
+    STATIC
+    "${arg_CPP_OUTPUT}"
+    "${arg_HPP_OUTPUT}"
+    "${arg_DETAIL_HPP_OUTPUT}"
+  )
   target_link_libraries(
     "${TARGET}"
     PRIVATE
@@ -116,11 +127,13 @@ endfunction()
 function(add_winui3_component_theme COMPONENT)
   set(PUBLIC_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${COMPONENT}.hpp")
   set(PUBLIC_CPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/${COMPONENT}.cpp")
+  set(DETAIL_HPP "${OUTPUT_BASE_PATH}/FredEmmott/GUI/StaticTheme/detail/${COMPONENT}.hpp")
 
   add_winui3_theme_file(
     ${COMPONENT}
     CPP_OUTPUT "${PUBLIC_CPP}"
     HPP_OUTPUT "${PUBLIC_HPP}"
+    DETAIL_HPP_OUTPUT "${DETAIL_HPP}"
     PUBLIC_INCLUDE_DIRECTORIES "${OUTPUT_BASE_PATH}"
     ${ARGN}
   )
