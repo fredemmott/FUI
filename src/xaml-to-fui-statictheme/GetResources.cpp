@@ -11,10 +11,12 @@
 #include "GetAlias.hpp"
 #include "GetBoolean.hpp"
 #include "GetColor.hpp"
+#include "GetCornerRadius.hpp"
 #include "GetLinearGradientBrush.hpp"
 #include "GetNumber.hpp"
 #include "GetSolidColorBrush.hpp"
 #include "GetString.hpp"
+#include "GetThickness.hpp"
 
 void GetResources(
   std::back_insert_iterator<std::vector<Resource>>,
@@ -68,11 +70,11 @@ void GetResource(
     return;
   }
   if (tagType == "Thickness") {
-    // TODO
+    GetThickness(back, it);
     return;
   }
   if (tagType == "CornerRadius") {
-    // TODO
+    GetCornerRadius(back, it);
     return;
   }
   if (tagType == "FontWeight") {

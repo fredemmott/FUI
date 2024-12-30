@@ -12,6 +12,7 @@ add_executable(
   GetBoolean.cpp
   GetBoolean.hpp
   GetColor.cpp GetColor.hpp
+  GetCornerRadius.cpp GetCornerRadius.hpp
   GetCpp.cpp GetCpp.hpp
   GetHexColorValue.cpp GetHexColorValue.hpp
   GetHpp.cpp GetHpp.hpp
@@ -20,6 +21,7 @@ add_executable(
   GetResources.cpp GetResources.hpp
   GetSolidColorBrush.cpp GetSolidColorBrush.hpp
   GetString.cpp GetString.hpp
+  GetThickness.cpp GetThickness.hpp
   ResolveColorReference.cpp ResolveColorReference.hpp
   Resource.hpp
   SortResources.cpp SortResources.hpp
@@ -125,7 +127,7 @@ function(add_winui3_component_theme COMPONENT)
 endfunction()
 
 add_winui3_component_theme(Generic SOURCES "generic.xaml" PARENT "")
-add_winui3_component_theme(Common SOURCES "Common_themeresources_any.xaml" "Common_themeresources.xaml" PARENT Generic)
+add_winui3_component_theme(Common SOURCES "Common_themeresources_any.xaml" "Common_themeresources.xaml" "CornerRadius_themeresources.xaml" PARENT Generic)
 add_winui3_component_theme(Deprecated)
 
 add_winui3_component_theme(Button PARENT Deprecated)
