@@ -2,19 +2,24 @@
 // SPDX-License-Identifier: MIT
 
 #include "Font.hpp"
+
 #include "detail/font_detail.hpp"
 
 using namespace FredEmmott::GUI::font_detail;
 
 namespace FredEmmott::GUI {
 
-
-Font::Font(const SkFont& f): mFont(f), mMetricsInPixels(f) {}
+Font::Font(const SkFont& f) : mFont(f), mMetricsInPixels(f) {
+}
 
 SkScalar Font::GetMetricsInPixels(SkFontMetrics* metrics) const {
   if (metrics != nullptr) {
     *metrics = mMetricsInPixels.mMetrics;
   }
+  return mMetricsInPixels.mLineSpacing;
+}
+
+SkScalar Font::GetSpacingInPixels() const {
   return mMetricsInPixels.mLineSpacing;
 }
 

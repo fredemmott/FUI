@@ -24,11 +24,8 @@ class Font {
 
   Font(const SkFont& f);
 
-  SkScalar GetHeightInPixels(this const auto& self) noexcept {
-    return (self->getSize() * font_detail::BaselineDPI) / 72;
-  }
-
   SkScalar GetMetricsInPixels(SkFontMetrics* metrics) const;
+  SkScalar GetSpacingInPixels() const;
 
   operator SkFont() const noexcept {
     return mFont;
@@ -53,6 +50,10 @@ class Font {
 
   SkFont mFont;
   MetricsInPixels mMetricsInPixels;
+
+  SkScalar GetFontSizeInPixels(this const auto& self) noexcept {
+    return (self->getSize() * font_detail::BaselineDPI) / 72;
+  }
 };
 
 }// namespace FredEmmott::GUI

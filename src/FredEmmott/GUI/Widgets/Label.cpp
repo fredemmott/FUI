@@ -75,7 +75,7 @@ YGSize Label::Measure(
 
   return {
     font->measureText(text.data(), text.size(), SkTextEncoding::kUTF8),
-    font.GetHeightInPixels(),
+    font.GetSpacingInPixels(),
   };
 }
 
