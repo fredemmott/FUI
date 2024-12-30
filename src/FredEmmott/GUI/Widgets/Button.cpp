@@ -16,22 +16,20 @@ Button::Button(std::size_t id) : Widget(id) {
 
 WidgetStyles Button::GetDefaultStyles() const {
   using namespace StaticTheme::Button;
-  constexpr auto VerticalPadding = Spacing;
-  constexpr auto HorizontalPadding = Spacing * 3;
 
   static const WidgetStyles ret {
     .mBase = {
       .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = ButtonBackground,
       .mBorderColor = ButtonBorderBrush,
-      .mBorderRadius = Spacing,
-      .mBorderWidth = Spacing / 4,
+      .mBorderRadius = ControlCornerRadius,
+      .mBorderWidth = ButtonBorderThemeThickness,
       .mColor = ButtonForeground,
       .mFont = WidgetFont::ControlContent,
-      .mPaddingBottom = VerticalPadding,
-      .mPaddingLeft = HorizontalPadding,
-      .mPaddingRight = HorizontalPadding,
-      .mPaddingTop = VerticalPadding,
+      .mPaddingBottom = ButtonPaddingBottom,
+      .mPaddingLeft = ButtonPaddingLeft,
+      .mPaddingRight = ButtonPaddingRight,
+      .mPaddingTop = ButtonPaddingTop,
     },
     .mDisabled = {
       .mBackgroundColor = ButtonBackgroundDisabled,

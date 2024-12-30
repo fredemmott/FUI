@@ -42,6 +42,7 @@ WidgetStyles ToggleSwitchKnob::GetDefaultStyles() const {
       .mBorderWidth = 1,
       .mFlexDirection = YGFlexDirectionColumn,
       .mHeight = Spacing * 5,
+      .mMarginRight = ToggleSwitchPreContentMargin,
       .mWidth = Spacing * 10,
     },
   };

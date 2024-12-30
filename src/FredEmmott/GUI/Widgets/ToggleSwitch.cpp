@@ -47,7 +47,7 @@ WidgetStyles ToggleSwitch::GetDefaultStyles() const {
       .mAlignSelf = YGAlignFlexStart,
       .mColor = ToggleSwitchContentForeground,
       .mFlexDirection = YGFlexDirectionRow,
-      .mGap = Spacing * 2,
+      .mMarginRight = ToggleSwitchPostContentMargin,
     },
     .mDisabled = {
       .mColor = ToggleSwitchContentForegroundDisabled,

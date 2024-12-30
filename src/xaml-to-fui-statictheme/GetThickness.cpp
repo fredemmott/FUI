@@ -27,7 +27,20 @@ void GetThickness(
   const auto r = parts[uniform ? 0 : 2];
   const auto b = parts[uniform ? 0 : 3];
 
-  const auto key = it.Attribute("x:Key");
+  const auto key = std::string_view {it.Attribute("x:Key")};
+
+  if (uniform && (key.contains("Border") || key.contains("Stroke"))) {
+    // FUI's `Style` class only supports uniform thickness for these, so let's
+    // expose a uniform property.
+    back = {
+      .mName = std::string {key},
+      .mValue = std::string {l},
+      .mType = "double",
+      .mKind = Resource::Kind::Literal,
+    };
+    return;
+  }
+
   for (const auto& [suffix, value]: {
          std::tuple {
            "Left",

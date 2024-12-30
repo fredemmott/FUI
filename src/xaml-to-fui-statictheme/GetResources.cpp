@@ -144,7 +144,9 @@ void GetResources(
   }
   for (auto child = root->FirstChildElement(); child;
        child = child->NextSiblingElement()) {
-    if (!child->ValueStr().starts_with("x:")) {
+    const auto& tag = child->ValueStr();
+    if (!(tag.starts_with("x:") || tag == "Thickness"
+          || tag == "CornerRadius")) {
       continue;
     }
     auto it = std::ranges::find(
