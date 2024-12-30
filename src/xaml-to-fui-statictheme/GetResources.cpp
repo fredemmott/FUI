@@ -116,16 +116,19 @@ void GetResources(
     };
     ret.mDependencies = {defaultIt.mName};
     std::ranges::copy(
-      defaultIt.mDependencies, std::back_inserter(ret.mDependencies));
+      defaultIt.mDependencies,
+      std::inserter(ret.mDependencies, ret.mDependencies.begin()));
     if (lightIt) {
-      ret.mDependencies.push_back(lightIt->mName);
+      ret.mDependencies.emplace(lightIt->mName);
       std::ranges::copy(
-        lightIt->mDependencies, std::back_inserter(ret.mDependencies));
+        lightIt->mDependencies,
+        std::inserter(ret.mDependencies, ret.mDependencies.begin()));
     }
     if (highContrastIt) {
-      ret.mDependencies.push_back(highContrastIt->mName);
+      ret.mDependencies.emplace(highContrastIt->mName);
       std::ranges::copy(
-        highContrastIt->mDependencies, std::back_inserter(ret.mDependencies));
+        highContrastIt->mDependencies,
+        std::inserter(ret.mDependencies, ret.mDependencies.begin()));
     }
     back = std::move(ret);
   }

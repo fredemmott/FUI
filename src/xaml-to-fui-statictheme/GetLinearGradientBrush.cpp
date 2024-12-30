@@ -11,7 +11,7 @@
 void GetLinearGradientBrush(
   std::back_insert_iterator<std::vector<Resource>> back,
   const TiXmlElement& it) {
-  std::vector<std::string> dependencies;
+  std::unordered_set<std::string> dependencies;
   std::vector<std::string> stops;
 
   const auto stopsXML
@@ -19,7 +19,7 @@ void GetLinearGradientBrush(
   for (auto stop = stopsXML->FirstChildElement("GradientStop"); stop;
        stop = stop->NextSiblingElement("GradientStop")) {
     const auto value = ResolveColorReference(stop->Attribute("Color"));
-    dependencies.push_back(value);
+    dependencies.emplace(value);
 
     stops.push_back(
       std::format("{{ {}, {} }}", stop->Attribute("Offset"), value));
