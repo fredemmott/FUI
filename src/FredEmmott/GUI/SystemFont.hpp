@@ -23,4 +23,6 @@ using enum Usage;
 
 Font Resolve(Usage) noexcept;
 
+Font ResolveGlyphFont(Usage) noexcept;
+
 }// namespace FredEmmott::GUI::SystemFont

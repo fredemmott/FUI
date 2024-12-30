@@ -10,10 +10,11 @@ Card::Card(std::size_t id) : Widget(id) {
 }
 
 WidgetStyles Card::GetDefaultStyles() const {
+  using namespace StaticTheme::Common;
   static const WidgetStyles ret {
     .mBase = {
-      .mBackgroundColor = StaticTheme::CardBackgroundFillColorDefaultBrush,
-      .mBorderRadius = Spacing * 2,
+      .mBackgroundColor = CardBackgroundFillColorDefaultBrush,
+      .mBorderRadius = OverlayCornerRadius,
       .mMargin = Spacing * 9,
       .mPadding = Spacing * 4,
     },

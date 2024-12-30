@@ -47,27 +47,40 @@ std::filesystem::path GetFontsPath() {
 
 const auto gManager = SkFontMgr_New_Custom_Empty();
 
-auto LoadTypeface(auto name) {
-  return gManager->makeFromFile((GetFontsPath() / name).string().c_str());
+auto LoadTypeface(auto name, auto... fallbacks) {
+  const auto ret
+    = gManager->makeFromFile((GetFontsPath() / name).string().c_str());
+  if (ret) {
+    return ret;
+  }
+
+  if constexpr (sizeof...(fallbacks) == 0) {
+    return ret;
+  } else {
+    return LoadTypeface(fallbacks...);
+  }
 }
 
 const auto gRegularTypeface = LoadTypeface("segoeui.ttf");
 const auto gSemiboldTypeface = LoadTypeface("seguisb.ttf");
+const auto gGlyphTypeface = LoadTypeface("SegoeIcons.ttf", "segmdl2.ttf");
 
 template <Height THeight>
-SkFont RegularFont() {
+SkFont FontFromTypeface(auto typeface) {
   return {
-    gRegularTypeface,
+    typeface,
     PixelsToPoints(THeight),
   };
 }
 
 template <Height THeight>
+SkFont RegularFont() {
+  return FontFromTypeface<THeight>(gRegularTypeface);
+}
+
+template <Height THeight>
 SkFont SemiboldFont() {
-  return {
-    gSemiboldTypeface,
-    PixelsToPoints(THeight),
-  };
+  return FontFromTypeface<THeight>(gSemiboldTypeface);
 }
 }// namespace
 
@@ -82,11 +95,27 @@ const SkFont gTitle = SemiboldFont<Height::Title>();
 const SkFont gTitleLarge = SemiboldFont<Height::TitleLarge>();
 const SkFont gDisplay = SemiboldFont<Height::Display>();
 
+#define DEFINE_GLYPH_FONT(USAGE) \
+  const SkFont gGlyph##USAGE = FontFromTypeface<Height::USAGE>(gGlyphTypeface);
+FUI_SYSTEM_FONT_USAGES(DEFINE_GLYPH_FONT)
+#undef DEFINE_GLYPH_FONT
+
 Font Resolve(const Usage usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X) \
   case Usage::X: \
     return g##X;
+    FUI_SYSTEM_FONT_USAGES(USAGE_CASE)
+#undef USAGE_CASE
+  }
+  std::unreachable();
+}
+
+Font ResolveGlyphFont(const Usage usage) noexcept {
+  switch (usage) {
+#define USAGE_CASE(X) \
+  case Usage::X: \
+    return gGlyph##X;
     FUI_SYSTEM_FONT_USAGES(USAGE_CASE)
 #undef USAGE_CASE
   }

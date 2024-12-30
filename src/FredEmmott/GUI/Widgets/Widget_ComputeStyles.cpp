@@ -18,6 +18,9 @@ template <>
 struct yoga_default_value_t<SkScalar> : constant_t<YGUndefined> {};
 template <>
 struct yoga_default_value_t<YGDisplay> : constant_t<YGDisplayFlex> {};
+template <>
+struct yoga_default_value_t<YGPositionType> : constant_t<YGPositionTypeStatic> {
+};
 
 }// namespace
 
@@ -144,6 +147,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
   setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
   setYoga(&Style::mPaddingTop, &YGNodeStyleSetPadding, YGEdgeTop);
+  setYoga(&Style::mPosition, &YGNodeStyleSetPositionType);
   setYoga(&Style::mRight, &YGNodeStyleSetPosition, YGEdgeRight);
   setYoga(&Style::mTop, &YGNodeStyleSetPosition, YGEdgeTop);
   setYoga(&Style::mWidth, &YGNodeStyleSetWidth);

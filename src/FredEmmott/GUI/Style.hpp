@@ -35,6 +35,7 @@ struct Style {
   StyleProperty<SkScalar> mPaddingLeft;
   StyleProperty<SkScalar> mPaddingRight;
   StyleProperty<SkScalar> mPaddingTop;
+  StyleProperty<YGPositionType> mPosition;
   StyleProperty<SkScalar> mRight;
   StyleProperty<SkScalar> mTop;
   StyleProperty<SkScalar> mWidth;
@@ -78,6 +79,7 @@ struct Style {
   X(PaddingLeft) \
   X(PaddingRight) \
   X(PaddingTop) \
+  X(Position) \
   X(Right) \
   X(Top) \
   X(Width)

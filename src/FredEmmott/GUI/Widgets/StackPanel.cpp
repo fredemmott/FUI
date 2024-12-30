@@ -10,13 +10,12 @@ StackPanel::StackPanel(std::size_t id, Direction direction)
 }
 
 WidgetStyles StackPanel::GetDefaultStyles() const {
-  static const WidgetStyles ret {
+  return {
     .mBase = {
       .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
       .mGap = Spacing * 4,
     },
   };
-  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets

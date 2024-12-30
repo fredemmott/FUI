@@ -14,7 +14,14 @@
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 
+#include <FredEmmott/GUI/Immediate/Button.hpp>
+#include <FredEmmott/GUI/Immediate/Card.hpp>
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
+#include <FredEmmott/GUI/Immediate/FontIcon.hpp>
+#include <FredEmmott/GUI/Immediate/Label.hpp>
+#include <FredEmmott/GUI/Immediate/Root.hpp>
+#include <FredEmmott/GUI/Immediate/StackPanel.hpp>
+#include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
@@ -24,13 +31,6 @@
 #include <format>
 #include <print>
 #include <source_location>
-
-#include "FredEmmott/GUI/Immediate/Button.hpp"
-#include "FredEmmott/GUI/Immediate/Card.hpp"
-#include "FredEmmott/GUI/Immediate/Label.hpp"
-#include "FredEmmott/GUI/Immediate/Root.hpp"
-#include "FredEmmott/GUI/Immediate/StackPanel.hpp"
-#include "FredEmmott/GUI/Immediate/ToggleSwitch.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -343,6 +343,17 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     }
 
     fuii::EndDisabled();
+
+    fuii::BeginHStackPanel();
+    fuii::FontIcon("\ueb51");// Heart
+    fuii::FontIcon("\ueb52");// HeartFill
+    fuii::FontIcon({
+      {"\ueb52", {{.mColor = SK_ColorRED}}},
+      {"\ueb51"},
+    });
+    fuii::Label("After stack");
+    fuii::EndStackPanel();
+
     fuii::EndStackPanel();
     fuii::EndCard();
 

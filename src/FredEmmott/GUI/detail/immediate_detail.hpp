@@ -31,6 +31,15 @@ T* GetCurrentNode() {
 }
 
 template <std::derived_from<Widget> T = Widget>
+T* GetPreviousNode() {
+  const auto& [nodes, i] = tStack.back();
+  if (i - 1 >= nodes.size()) {
+    return nullptr;
+  }
+  return widget_cast<T>(nodes.at(i - 1));
+}
+
+template <std::derived_from<Widget> T = Widget>
 T* GetCurrentParentNode() {
   if (tStack.size() < 1) {
     return nullptr;
