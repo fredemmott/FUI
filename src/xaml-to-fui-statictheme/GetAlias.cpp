@@ -63,8 +63,8 @@ ResourceSupertype<
       GetAliasTargetType(defaultIt),
       GetAliasTargetType(lightIt),
       GetAliasTargetType(highContrastIt)),
-    .mIsAlias = true,
     .mDependencies = {defaultIt, lightIt, highContrastIt},
+    .mKind = Resource::Kind::Alias,
   };
   back = std::move(ret);
 }

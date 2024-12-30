@@ -22,7 +22,7 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
 
   for (auto&& resource: resources) {
     std::string type = resource.mType;
-    if (resource.mIsAlias) {
+    if (resource.IsAlias()) {
       type = fmt::format("{}_t", resource.mName);
       members.push_back(fmt::format("using {} = {};", type, resource.mType));
     }
@@ -31,11 +31,20 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
     members.push_back(
       fmt::format("const {0}* {1} = {{ Get{1}() }};", type, resource.mName));
 
-    constants.push_back(
-      fmt::format(
-        "inline const auto {0} = {1}::Theme::GetInstance()->{0};",
-        resource.mName,
-        meta.mDetailNamespace));
+    if (resource.IsLiteral()) {
+      constants.push_back(
+        fmt::format(
+          "constexpr {} {} {{ {} }};",
+          resource.mType,
+          resource.mName,
+          resource.mValue));
+    } else {
+      constants.push_back(
+        fmt::format(
+          "inline const auto {0} = {1}::Theme::GetInstance()->{0};",
+          resource.mName,
+          meta.mDetailNamespace));
+    }
   }
   std::ranges::sort(constants);
 

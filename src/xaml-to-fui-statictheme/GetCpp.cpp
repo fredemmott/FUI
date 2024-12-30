@@ -11,7 +11,7 @@
 std::string GetCpp(const Metadata& meta, const std::span<Resource> resources) {
   std::vector<std::string> resourceGetters;
   for (auto&& resource: resources) {
-    const std::string type = resource.mIsAlias
+    const std::string type = resource.IsAlias()
       ? fmt::format("Theme::{}_t", resource.mName)
       : resource.mType;
 

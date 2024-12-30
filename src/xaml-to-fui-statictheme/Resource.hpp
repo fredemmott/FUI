@@ -5,9 +5,22 @@
 #include <unordered_set>
 
 struct Resource {
+  enum class Kind {
+    Any,
+    Alias,
+    Literal,
+  };
   std::string mName;
   std::string mValue;
   std::string mType;
-  bool mIsAlias {false};
   std::unordered_set<std::string> mDependencies;
+  Kind mKind {Kind::Any};
+
+  constexpr bool IsAlias() const {
+    return mKind == Kind::Alias;
+  }
+
+  constexpr bool IsLiteral() const {
+    return mKind == Kind::Literal;
+  }
 };

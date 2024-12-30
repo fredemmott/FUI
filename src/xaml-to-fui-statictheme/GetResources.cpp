@@ -10,6 +10,7 @@
 #include "GetAlias.hpp"
 #include "GetColor.hpp"
 #include "GetLinearGradientBrush.hpp"
+#include "GetNumber.hpp"
 #include "GetSolidColorBrush.hpp"
 
 void GetResources(
@@ -42,6 +43,10 @@ void GetThemeResources(
     }
     if (tagType == "SolidColorBrush") {
       GetSolidColorBrush(back, *child);
+      continue;
+    }
+    if (tagType == "x:Double" || tagType == "x:Int32") {
+      GetNumber(back, *child);
       continue;
     }
   }
@@ -98,6 +103,17 @@ void GetResources(
         it != highContrastResources.end()) {
       highContrastIt = *it;
     }
+    const auto defaultValue = ResolveValue("Dark", defaultIt);
+    const auto lightValue = ResolveValue("Light", lightIt.value_or(defaultIt));
+    const auto highContrastValue
+      = ResolveValue("HighContrast", highContrastIt.value_or(defaultIt));
+
+    if (defaultIt.IsLiteral()) {
+      if (lightValue == defaultValue && highContrastValue == defaultValue) {
+        back = defaultIt;
+        continue;
+      }
+    }
 
     Resource ret {
       .mName = defaultIt.mName,
@@ -109,9 +125,9 @@ void GetResources(
   .mHighContrast = {},
 }}
 )EOF",
-        ResolveValue("Dark", defaultIt),
-        ResolveValue("Light", lightIt.value_or(defaultIt)),
-        ResolveValue("HighContrast", highContrastIt.value_or(defaultIt))),
+        defaultValue,
+        lightValue,
+        highContrastValue),
       .mType = std::format("Resource<{}>", defaultIt.mType),
     };
     ret.mDependencies = {defaultIt.mName};

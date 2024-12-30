@@ -14,6 +14,7 @@ add_executable(
   GetHexColorValue.cpp GetHexColorValue.hpp
   GetHpp.cpp GetHpp.hpp
   GetLinearGradientBrush.cpp GetLinearGradientBrush.hpp
+  GetNumber.cpp GetNumber.hpp
   GetResources.cpp GetResources.hpp
   GetSolidColorBrush.cpp GetSolidColorBrush.hpp
   ResolveColorReference.cpp ResolveColorReference.hpp
