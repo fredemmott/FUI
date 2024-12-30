@@ -9,6 +9,8 @@ add_executable(
   main.cpp
   AliasMap.cpp AliasMap.hpp
   GetAlias.cpp GetAlias.hpp
+  GetBoolean.cpp
+  GetBoolean.hpp
   GetColor.cpp GetColor.hpp
   GetCpp.cpp GetCpp.hpp
   GetHexColorValue.cpp GetHexColorValue.hpp
@@ -17,6 +19,7 @@ add_executable(
   GetNumber.cpp GetNumber.hpp
   GetResources.cpp GetResources.hpp
   GetSolidColorBrush.cpp GetSolidColorBrush.hpp
+  GetString.cpp GetString.hpp
   ResolveColorReference.cpp ResolveColorReference.hpp
   Resource.hpp
   SortResources.cpp SortResources.hpp

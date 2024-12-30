@@ -56,7 +56,10 @@ std::string GetHpp(const Metadata& meta, const std::span<Resource> resources) {
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/StaticTheme/Resource.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/ResourceSupertype.hpp>
+
 {PARENT_INCLUDE}
+
+#include <chrono>
 
 namespace {NAMESPACE}::{DETAIL_NAMESPACE} {{
 

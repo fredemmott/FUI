@@ -9,7 +9,6 @@
 
 #include "Resource.hpp"
 
-void GetNumber(
+void GetString(
   std::back_insert_iterator<std::vector<Resource>> back,
-  const TiXmlElement& it,
-  std::string_view type);
+  const TiXmlElement& it);

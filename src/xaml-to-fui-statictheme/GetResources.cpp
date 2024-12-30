@@ -4,14 +4,17 @@
 
 #include <tinyxml.h>
 
+#include <print>
 #include <ranges>
 
 #include "AliasMap.hpp"
 #include "GetAlias.hpp"
+#include "GetBoolean.hpp"
 #include "GetColor.hpp"
 #include "GetLinearGradientBrush.hpp"
 #include "GetNumber.hpp"
 #include "GetSolidColorBrush.hpp"
+#include "GetString.hpp"
 
 void GetResources(
   std::back_insert_iterator<std::vector<Resource>>,
@@ -28,27 +31,76 @@ void GetResources(
   GetResources(back, doc);
 }
 
+void GetResource(
+  std::back_insert_iterator<std::vector<Resource>> back,
+  const TiXmlElement& it) {
+  const std::string_view tagType {it.Value()};
+  if (tagType == "StaticResource") {
+    // We call this an 'alias'; handled separately
+    return;
+  }
+  if (tagType == "Color") {
+    GetColor(back, it);
+    return;
+  }
+  if (tagType == "LinearGradientBrush") {
+    GetLinearGradientBrush(back, it);
+    return;
+  }
+  if (tagType == "SolidColorBrush") {
+    GetSolidColorBrush(back, it);
+    return;
+  }
+  if (tagType == "x:Double") {
+    GetNumber(back, it, "double");
+    return;
+  }
+  if (tagType == "x:Int32") {
+    GetNumber(back, it, "int32_t");
+    return;
+  }
+  if (tagType == "x:Boolean") {
+    GetBoolean(back, it);
+    return;
+  }
+  if (tagType == "x:String") {
+    GetString(back, it);
+    return;
+  }
+  if (tagType == "Thickness") {
+    // TODO
+    return;
+  }
+  if (tagType == "CornerRadius") {
+    // TODO
+    return;
+  }
+  if (tagType == "FontWeight") {
+    // TODO
+    return;
+  }
+  if (tagType == "GridLength") {
+    // TODO
+    return;
+  }
+  if (tagType == "FontFamily" || tagType == "ListViewItemPresenterCheckMode") {
+    // honestly probably not going to do.
+    return;
+  }
+
+  std::println(
+    stderr,
+    "Unrecognized XAML theme tag type: {} {}",
+    tagType,
+    it.Attribute("x:Key"));
+}
+
 void GetThemeResources(
   std::back_insert_iterator<std::vector<Resource>> back,
   const TiXmlElement& theme) {
   for (auto child = theme.FirstChildElement(); child;
        child = child->NextSiblingElement()) {
-    const std::string_view tagType {child->Value()};
-    if (tagType == "Color") {
-      GetColor(back, *child);
-      continue;
-    }
-    if (tagType == "LinearGradientBrush") {
-      GetLinearGradientBrush(back, *child);
-    }
-    if (tagType == "SolidColorBrush") {
-      GetSolidColorBrush(back, *child);
-      continue;
-    }
-    if (tagType == "x:Double" || tagType == "x:Int32") {
-      GetNumber(back, *child);
-      continue;
-    }
+    GetResource(back, *child);
   }
 }
 
@@ -87,6 +139,17 @@ void GetResources(
     }
 
     GetThemeResources(std::back_inserter(*resources), *theme);
+  }
+  for (auto child = root->FirstChildElement(); child;
+       child = child->NextSiblingElement()) {
+    if (!child->ValueStr().starts_with("x:")) {
+      continue;
+    }
+    auto it = std::ranges::find(
+      defaultResources, child->Attribute("x:Key"), &Resource::mName);
+    if (it == defaultResources.end()) {
+      GetResource(std::back_inserter(defaultResources), *child);
+    }
   }
 
   for (auto&& defaultIt: defaultResources) {

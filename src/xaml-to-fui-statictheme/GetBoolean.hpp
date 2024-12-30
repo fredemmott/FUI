@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <tinyxml.h>
-
 #include <iterator>
 #include <vector>
+#include <tinyxml.h>
 
 #include "Resource.hpp"
 
-void GetNumber(
+void GetBoolean(
   std::back_insert_iterator<std::vector<Resource>> back,
-  const TiXmlElement& it,
-  std::string_view type);
+  const TiXmlElement& it);
