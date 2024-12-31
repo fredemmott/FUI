@@ -84,18 +84,6 @@ static inline void CheckHResult(
   throw std::system_error(ec);
 }
 
-template <const GUID& TFolderID>
-std::filesystem::path GetKnownFolderPath() {
-  wil::unique_cotaskmem_string buf;
-  CheckHResult(
-    SHGetKnownFolderPath(TFolderID, KF_FLAG_DEFAULT, nullptr, buf.put()));
-  std::filesystem::path path {std::wstring_view {buf.get()}};
-  if (std::filesystem::exists(path)) {
-    return std::filesystem::canonical(path);
-  }
-  return {};
-}
-
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
