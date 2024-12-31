@@ -16,6 +16,10 @@ namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 using namespace Widgets;
 
+Root::Root() {
+  mYogaRoot.reset(YGNodeNew());
+}
+
 void Root::BeginFrame() {
   if (!tStack.empty()) {
     throw std::logic_error(
@@ -28,7 +32,7 @@ void Root::BeginFrame() {
   }
 }
 
-void Root::EndFrame(SkScalar w, SkScalar h, SkCanvas* canvas) {
+void Root::EndFrame() {
   if (tStack.size() != 1) {
     throw std::logic_error("EndFrame() called, but children are open");
   }
@@ -37,7 +41,6 @@ void Root::EndFrame(SkScalar w, SkScalar h, SkCanvas* canvas) {
 
   if (widgets.empty()) {
     mWidget = nullptr;
-    this->Paint(w, h, canvas);
     return;
   }
 
@@ -49,9 +52,11 @@ void Root::EndFrame(SkScalar w, SkScalar h, SkCanvas* canvas) {
   const auto widget = widgets.front();
   if (widget != mWidget.get()) {
     mWidget.reset(widget);
+    auto node = mWidget->GetLayoutNode();
+    YGNodeSetChildren(mYogaRoot.get(), &node, 1);
   }
 
-  this->Paint(w, h, canvas);
+  mWidget->ComputeStyles({});
 
   const auto desiredCursor = Cursor::Default;
   if (mCursor != desiredCursor) {
@@ -68,19 +73,32 @@ void Root::DispatchEvent(const Event* e) {
   }
 }
 
-void Root::Paint(SkScalar w, SkScalar h, SkCanvas* canvas) const {
+void Root::Paint(SkCanvas* canvas, SkSize size) const {
   if (!mWidget) {
     return;
   }
   canvas->save();
-  canvas->clipRect(SkRect::MakeXYWH(0, 0, w, h));
+  canvas->clipRect(SkRect::MakeXYWH(0, 0, size.width(), size.height()));
   canvas->clear(Color {SolidBackgroundFillColorBase});
 
-  mWidget->ComputeStyles({});
-  YGNodeCalculateLayout(mWidget->GetLayoutNode(), w, h, YGDirectionLTR);
+  YGNodeCalculateLayout(
+    mYogaRoot.get(), size.width(), size.height(), YGDirectionLTR);
   mWidget->Paint(canvas);
 
   canvas->restore();
+}
+
+std::optional<SkSize> Root::GetMinimumSize() const {
+  if (!mWidget) {
+    return std::nullopt;
+  }
+
+  auto yoga = mYogaRoot.get();
+  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+  return SkSize {
+    YGNodeLayoutGetWidth(yoga),
+    YGNodeLayoutGetHeight(yoga),
+  };
 }
 
 }// namespace FredEmmott::GUI::Immediate

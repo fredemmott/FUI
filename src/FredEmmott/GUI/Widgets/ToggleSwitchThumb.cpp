@@ -15,6 +15,7 @@ namespace FredEmmott::GUI::Widgets {
 
 ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id) : Widget(id) {
 }
+
 void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
   mIsOn = value;
 }
@@ -32,21 +33,22 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
     = LinearStyleTransition(ControlFasterAnimationDuration);
 
   constexpr auto parentWidth = Spacing * 10;
-  constexpr auto margin = Spacing;
-  constexpr auto height = Spacing * 3;
+  constexpr auto height = 12;
+  constexpr auto margin = 3;
 
-  constexpr auto hoverHeight = Spacing * 3.5;
-  constexpr auto hoverMargin = Spacing * 0.75f;
+  constexpr auto hoverHeight = 14;
+  constexpr auto hoverMargin = margin - ((hoverHeight - height) / 2);
   constexpr auto activeWidth = hoverHeight + (Spacing / 2);
 
   static const WidgetStyles baseStyles {
     .mBase = {
       .mBackgroundColor = { std::nullopt, ColorAnimation},
       .mBorderColor = { std::nullopt, ColorAnimation},
-      .mBorderRadius = { Spacing * 2, FasterAnimation },
+      .mBorderRadius = { height / 2, FasterAnimation },
       .mHeight = { height, FasterAnimation },
       .mLeft = {0, NormalAnimation},
       .mMargin = { margin, FasterAnimation },
+      .mPosition = YGPositionTypeAbsolute,
       .mWidth = { height, FasterAnimation },
     },
     .mHover {
@@ -73,13 +75,12 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
       .mBackgroundColor = ToggleSwitchKnobFillOffPointerOver,
     },
   };
-  // Positioning with `mMarginLeft` instead of align-self so that we
-  // can animate it
+  const float onLeft = parentWidth;
   static const WidgetStyles onStyles {
     .mBase = {
       .mBackgroundColor = ToggleSwitchKnobFillOn,
       .mBorderColor = ToggleSwitchStrokeOn,
-      .mLeft = parentWidth - (height + (2 * margin)),
+      .mLeft = onLeft - (height + 4 + margin),
     },
     .mDisabled = {
       .mBackgroundColor = ToggleSwitchKnobFillOnDisabled,
@@ -88,11 +89,12 @@ WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
     .mHover = {
       .mBackgroundColor = ToggleSwitchKnobFillOnPointerOver,
       .mBorderColor = ToggleSwitchStrokeOnPointerOver,
+      .mMarginLeft = margin - (hoverHeight - height),
     },
     .mActive = {
       .mBackgroundColor = ToggleSwitchKnobFillOnPressed,
       .mBorderColor = ToggleSwitchStrokeOnPressed,
-      .mMarginLeft = hoverMargin + hoverHeight - activeWidth,
+      .mMarginLeft = margin - (activeWidth - height),
     },
   };
   return baseStyles + (IsOn() ? onStyles : offStyles);

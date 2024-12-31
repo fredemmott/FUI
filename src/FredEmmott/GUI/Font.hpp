@@ -39,21 +39,22 @@ class Font {
     return mFont == other.mFont;
   }
 
+  SkScalar GetFontSizeInPixels(this const auto& self) noexcept {
+    return font_detail::PointsToPixels(self->getSize());
+  }
+
  private:
   struct MetricsInPixels {
     MetricsInPixels() = delete;
     MetricsInPixels(const SkFont&);
 
+    SkScalar mSize {};
     SkScalar mLineSpacing {};
     SkFontMetrics mMetrics {};
   };
 
   SkFont mFont;
   MetricsInPixels mMetricsInPixels;
-
-  SkScalar GetFontSizeInPixels(this const auto& self) noexcept {
-    return (self->getSize() * font_detail::BaselineDPI) / 72;
-  }
 };
 
 }// namespace FredEmmott::GUI

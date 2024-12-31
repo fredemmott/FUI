@@ -55,6 +55,7 @@ add_executable(
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/widget_detail.hpp
+  FredEmmott/GUI/detail/style_detail.hpp
   FredEmmott/GUI/events/Event.hpp
   FredEmmott/GUI/events/MouseButton.hpp
   FredEmmott/GUI/events/MouseButtonPressEvent.hpp

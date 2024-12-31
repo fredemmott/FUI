@@ -19,9 +19,11 @@ struct Style {
   StyleProperty<SkScalar> mBorderWidth;
   StyleProperty<SkScalar> mBottom;
   InheritableStyleProperty<Brush> mColor;
-  StyleProperty<YGDisplay> mDisplay;
-  StyleProperty<SkScalar> mFlexBasis;
+  StyleProperty<YGDisplay, YGDisplayFlex> mDisplay;
+  StyleProperty<SkScalar, 0.0f> mFlexBasis;
   StyleProperty<YGFlexDirection> mFlexDirection;
+  StyleProperty<SkScalar, 0.0f> mFlexGrow;
+  StyleProperty<SkScalar, 0.0f> mFlexShrink;
   InheritableStyleProperty<Font> mFont;
   StyleProperty<SkScalar> mGap;
   StyleProperty<SkScalar> mHeight;
@@ -36,7 +38,7 @@ struct Style {
   StyleProperty<SkScalar> mPaddingLeft;
   StyleProperty<SkScalar> mPaddingRight;
   StyleProperty<SkScalar> mPaddingTop;
-  StyleProperty<YGPositionType> mPosition;
+  StyleProperty<YGPositionType, YGPositionTypeRelative> mPosition;
   StyleProperty<SkScalar> mRight;
   StyleProperty<SkScalar> mTop;
   StyleProperty<SkScalar> mWidth;
@@ -68,6 +70,8 @@ struct Style {
   X(Font) \
   X(FlexBasis) \
   X(FlexDirection) \
+  X(FlexShrink) \
+  X(FlexGrow) \
   X(Gap) \
   X(Height) \
   X(Left) \

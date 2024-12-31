@@ -42,35 +42,53 @@ void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
     return;
   }
 
-  const auto radius = style.mBorderRadius.value();
+  auto rrect = rect;
+  auto radius = style.mBorderRadius.value();
+  if (style.mBorderWidth && style.mBorderColor) {
+    radius -= style.mBorderWidth.value();
+    const auto inset = style.mBorderWidth.value() - 0.5f;
+    rrect.inset(inset, inset);
+  }
 
   paint.setAntiAlias(true);
-  canvas->drawRoundRect(rect, radius, radius, paint);
+  canvas->drawRoundRect(rrect, radius, radius, paint);
 }
 
-void PaintBorder(SkCanvas* canvas, const SkRect& rect, const Style& style) {
-  if (!(style.mBorderColor && style.mBorderWidth)) {
+void PaintBorder(
+  YGNodeConstRef yoga,
+  SkCanvas* canvas,
+  const SkRect& contentRect,
+  const Style& style) {
+  if (!(style.mBorderColor)) {
     return;
   }
 
-  // TODO: YGNodeStyleSetBorder
-  const auto bw = style.mBorderWidth.value();
-  auto paint = style.mBorderColor->GetPaint(rect);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(bw);
+  const auto top = YGNodeLayoutGetBorder(yoga, YGEdgeTop);
+  const auto left = YGNodeLayoutGetBorder(yoga, YGEdgeLeft);
+  const auto bottom = YGNodeLayoutGetBorder(yoga, YGEdgeBottom);
+  const auto right = YGNodeLayoutGetBorder(yoga, YGEdgeRight);
 
-  SkRect border = rect;
-  border.inset(bw / 2, bw / 2);
+  if (top != left || top != right || top != bottom) {
+    throw std::logic_error(
+      "Only equal-thickness borders are currently supported");
+  }
+  if (top == 0) {
+    return;
+  }
+  const auto borderRect = contentRect.makeInset(top / 2.0, top / 2.0);
+
+  auto paint = style.mBorderColor->GetPaint(contentRect);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(top);
 
   if (!style.mBorderRadius) {
-    canvas->drawRect(border, paint);
+    canvas->drawRect(borderRect, paint);
     return;
   }
 
-  const auto radius = style.mBorderRadius.value();
-
+  auto radius = style.mBorderRadius.value();
   paint.setAntiAlias(true);
-  canvas->drawRoundRect(border, radius, radius, paint);
+  canvas->drawRoundRect(borderRect, radius, radius, paint);
 }
 }// namespace
 
@@ -151,7 +169,7 @@ void Widget::Paint(SkCanvas* canvas) const {
     YGNodeLayoutGetHeight(yoga));
 
   PaintBackground(canvas, rect, style);
-  PaintBorder(canvas, rect, style);
+  PaintBorder(yoga, canvas, rect, style);
 
   this->PaintOwnContent(canvas, rect, style);
 

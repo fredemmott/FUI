@@ -4,6 +4,7 @@
 
 #include <yoga/YGValue.h>
 
+#include <FredEmmott/GUI/detail/style_detail.hpp>
 #include <FredEmmott/memory.hpp>
 
 #include "StyleTransition.hpp"
@@ -19,11 +20,12 @@ enum class StylePropertyScope {
   SelfAndDescendants,
 };
 
-template <class T, StylePropertyScope TDefaultScope>
+template <class T, auto TDefault, StylePropertyScope TDefaultScope>
 class BaseStyleProperty : private std::optional<T> {
  public:
   static constexpr StylePropertyScope DefaultScope = TDefaultScope;
   static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
+  static constexpr auto DefaultValue = TDefault;
 
   friend struct Style;
   friend class WidgetStyles;
@@ -114,9 +116,9 @@ class BaseStyleProperty : private std::optional<T> {
   FUI_NO_UNIQUE_ADDRESS optional_transition_t mTransition;
 };
 
-template <class T>
-using StyleProperty = BaseStyleProperty<T, StylePropertyScope::Self>;
-template <class T>
+template <class T, auto TDefault = style_detail::default_v<T>>
+using StyleProperty = BaseStyleProperty<T, TDefault, StylePropertyScope::Self>;
+template <class T, auto TDefault = style_detail::default_v<T>>
 using InheritableStyleProperty
-  = BaseStyleProperty<T, StylePropertyScope::SelfAndDescendants>;
+  = BaseStyleProperty<T, TDefault, StylePropertyScope::SelfAndDescendants>;
 }// namespace FredEmmott::GUI

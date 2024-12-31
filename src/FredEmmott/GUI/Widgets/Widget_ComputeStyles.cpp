@@ -11,21 +11,6 @@
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
-namespace {
-template <class T>
-struct yoga_default_value_t;
-template <>
-struct yoga_default_value_t<SkScalar> : constant_t<YGUndefined> {};
-template <>
-struct yoga_default_value_t<YGDisplay> : constant_t<YGDisplayFlex> {};
-// Yoga uses 'Relative' as default, which respsects top/left/bottom/right
-// Real CSS uses 'Static', which makes it ignore them
-template <>
-struct yoga_default_value_t<YGPositionType>
-  : constant_t<YGPositionTypeRelative> {};
-
-}// namespace
-
 void Widget::ComputeStyles(const WidgetStyles& inherited) {
   WidgetStyles merged = this->GetDefaultStyles();
   merged += inherited;
@@ -126,10 +111,12 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
       return;
     }
 
-    using T = typename std::decay_t<decltype(optional)>::value_type;
-    using default_t = yoga_default_value_t<T>;
-    if constexpr (requires { default_t::value; }) {
-      setter(yoga, std::forward<FrontArgs>(frontArgs)..., default_t::value);
+    constexpr auto defaultValue
+      = std::decay_t<decltype(optional)>::DefaultValue;
+    if constexpr (!std::same_as<
+                    std::nullopt_t,
+                    std::decay_t<decltype(defaultValue)>>) {
+      setter(yoga, std::forward<FrontArgs>(frontArgs)..., defaultValue);
     }
   };
 
@@ -137,10 +124,13 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
 
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
+  setYoga(&Style::mBorderWidth, &YGNodeStyleSetBorder, YGEdgeAll);
   setYoga(&Style::mBottom, &YGNodeStyleSetPosition, YGEdgeBottom);
   setYoga(&Style::mDisplay, &YGNodeStyleSetDisplay);
   setYoga(&Style::mFlexBasis, &YGNodeStyleSetFlexBasis);
   setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
+  setYoga(&Style::mFlexGrow, &YGNodeStyleSetFlexGrow);
+  setYoga(&Style::mFlexShrink, &YGNodeStyleSetFlexShrink);
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
   setYoga(&Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);

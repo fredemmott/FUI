@@ -9,19 +9,22 @@ namespace FredEmmott::GUI::Immediate {
 
 class Root final {
  public:
+  Root();
   void BeginFrame();
-  void EndFrame(SkScalar w, SkScalar h, SkCanvas*);
+  void EndFrame();
+  void Paint(SkCanvas*, SkSize) const;
+
+  std::optional<SkSize> GetMinimumSize() const;
 
   void DispatchEvent(const Event*);
 
  private:
   unique_ptr<Widgets::Widget> mWidget;
+  unique_ptr<YGNode> mYogaRoot;
   enum class Cursor {
     Default,
   };
   std::optional<Cursor> mCursor;
-
-  void Paint(SkScalar w, SkScalar h, SkCanvas*) const;
 };
 
 }// namespace FredEmmott::GUI::Immediate

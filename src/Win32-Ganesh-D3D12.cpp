@@ -357,8 +357,10 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     fuii::EndStackPanel();
     fuii::EndCard();
 
-    mFUIRoot.EndFrame(
-      mWindowSize.mWidth / mDPIScale, mWindowSize.mHeight / mDPIScale, canvas);
+    mFUIRoot.EndFrame();
+    mFUIRoot.Paint(
+      canvas,
+      {mWindowSize.mWidth / mDPIScale, mWindowSize.mHeight / mDPIScale});
   }
 }
 
@@ -461,6 +463,21 @@ LRESULT HelloSkiaWindow::WindowProc(
     case WM_SETTINGCHANGE:
       fui::StaticTheme::Refresh();
       break;
+    case WM_GETMINMAXINFO: {
+      const auto& min = gInstance->mMinimumSizeInDIPs;
+      if (!min) {
+        break;
+      }
+      auto* minInfo = reinterpret_cast<MINMAXINFO*>(lParam);
+      minInfo->ptMinTrackSize.x
+        = static_cast<LONG>(min->width() * gInstance->mDPIScale);
+      minInfo->ptMinTrackSize.y
+        = static_cast<LONG>(min->height() * gInstance->mDPIScale)
+        + (2
+           * (GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYBORDER)))
+        + GetSystemMetrics(SM_CYCAPTION);
+      return 0;
+    }
     case WM_SIZE: {
       const UINT width = LOWORD(lParam);
       const UINT height = HIWORD(lParam);
@@ -470,6 +487,7 @@ LRESULT HelloSkiaWindow::WindowProc(
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);
       // TODO: lParam is a RECT that we *should* use
+      gInstance->mDPI = newDPI;
       gInstance->mDPIScale
         = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
       break;

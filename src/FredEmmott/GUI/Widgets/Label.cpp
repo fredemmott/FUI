@@ -33,15 +33,15 @@ void Label::PaintOwnContent(
       "Stylesheet font does not match mFont; computed style not updated");
   }
 #endif
-  SkFontMetrics metrics {};
-  mFont.GetMetricsInPixels(&metrics);
 
   auto paint = style.mColor->GetPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
 
-  const auto textHeight = rect.height() - metrics.fDescent;
-  const auto textY = rect.y() + textHeight;
-  canvas->drawString(mText.c_str(), rect.x(), textY, mFont, paint);
+  SkFontMetrics metrics {};
+  mFont.GetMetricsInPixels(&metrics);
+
+  canvas->drawString(
+    mText.c_str(), rect.x(), rect.bottom() - metrics.fDescent, mFont, paint);
 }
 
 WidgetStyles Label::GetDefaultStyles() const {
@@ -75,9 +75,12 @@ YGSize Label::Measure(
   const auto& font = self->mFont;
   const auto& text = self->mText;
 
+  SkFontMetrics metrics {};
+  font.GetMetricsInPixels(&metrics);
+
   return {
     font->measureText(text.data(), text.size(), SkTextEncoding::kUTF8),
-    font.GetSpacingInPixels(),
+    font.GetFontSizeInPixels(),
   };
 }
 
