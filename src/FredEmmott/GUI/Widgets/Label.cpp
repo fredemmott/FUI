@@ -12,6 +12,7 @@ namespace FredEmmott::GUI::Widgets {
 
 Label::Label(std::size_t id) : Widget(id) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
+  YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
 
 void Label::SetText(std::string_view text) {
