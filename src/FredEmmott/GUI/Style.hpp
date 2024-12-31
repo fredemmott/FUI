@@ -20,6 +20,7 @@ struct Style {
   StyleProperty<SkScalar> mBottom;
   InheritableStyleProperty<Brush> mColor;
   StyleProperty<YGDisplay> mDisplay;
+  StyleProperty<SkScalar> mFlexBasis;
   StyleProperty<YGFlexDirection> mFlexDirection;
   InheritableStyleProperty<Font> mFont;
   StyleProperty<SkScalar> mGap;
@@ -65,6 +66,7 @@ struct Style {
   X(Color) \
   X(Display) \
   X(Font) \
+  X(FlexBasis) \
   X(FlexDirection) \
   X(Gap) \
   X(Height) \
