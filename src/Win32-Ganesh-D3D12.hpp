@@ -40,12 +40,9 @@ class HelloSkiaWindow final {
   std::optional<int> mExitCode;
 
   float mDPIScale = {1.0f};
-  struct PixelSize {
-    UINT mWidth {};
-    UINT mHeight {};
-  };
-  PixelSize mWindowSize;
-  std::optional<PixelSize> mPendingResize;
+  DWORD mDPI = USER_DEFAULT_SCREEN_DPI;
+  SkISize mWindowSize {};
+  std::optional<SkISize> mPendingResize;
 
   FredEmmott::GUI::Immediate::Root mFUIRoot;
 
@@ -73,6 +70,14 @@ class HelloSkiaWindow final {
   uint8_t mFrameIndex {};// Used to index into mFrames; reset when buffer reset
 
   uint64_t mFrameCounter {};// Displayed to the user, not used for correctness
+  // Device-independent pixels so that we keep the correct values when
+  // dragging between monitors
+  std::optional<SkSize> mMinimumContentSizeInDIPs;
+  // Includes the non-client-area
+  std::optional<SkISize> mMinimumWindowSize;
+
+  DWORD mWindowStyle {};
+  DWORD mWindowExStyle {};
 
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
@@ -80,6 +85,7 @@ class HelloSkiaWindow final {
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
+  SkISize CalculateMinimumWindowSize();
 
   void RenderFrame();
 

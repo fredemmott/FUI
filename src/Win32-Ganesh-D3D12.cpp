@@ -116,11 +116,15 @@ void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
     .lpszClassName = L"Hello Skia",
   };
   const auto classAtom = RegisterClassW(&wc);
+
+  mWindowStyle = WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX);
+  mWindowExStyle = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE;
+
   mHwnd.reset(CreateWindowExW(
-    WS_EX_APPWINDOW | WS_EX_CLIENTEDGE,
+    mWindowExStyle,
     MAKEINTATOM(classAtom),
     L"Hello Skia",
-    WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX),
+    mWindowStyle,
     CW_USEDEFAULT,
     CW_USEDEFAULT,
     width,
@@ -213,7 +217,10 @@ void HelloSkiaWindow::InitializeD3D() {
     nullptr,
     mSwapChain.put()));
   CheckHResult(mSwapChain->GetDesc1(&swapChainDesc));
-  mWindowSize = {swapChainDesc.Width, swapChainDesc.Height};
+  mWindowSize = {
+    static_cast<int32_t>(swapChainDesc.Width),
+    static_cast<int32_t>(swapChainDesc.Height),
+  };
 }
 
 void HelloSkiaWindow::InitializeSkia() {
@@ -358,9 +365,36 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
     fuii::EndCard();
 
     mFUIRoot.EndFrame();
-    mFUIRoot.Paint(
-      canvas,
-      {mWindowSize.mWidth / mDPIScale, mWindowSize.mHeight / mDPIScale});
+
+    const auto contentMin = mFUIRoot.GetMinimumSize();
+    if (contentMin != mMinimumContentSizeInDIPs) {
+      mMinimumContentSizeInDIPs = contentMin;
+      const auto windowMin = this->CalculateMinimumWindowSize();
+      if (
+        mWindowSize.fWidth < windowMin.fWidth
+        || mWindowSize.fHeight < windowMin.fHeight) {
+        mWindowSize = {
+          std::max(mWindowSize.fWidth, windowMin.fWidth),
+          std::max(mWindowSize.fHeight, windowMin.fHeight),
+        };
+        SetWindowPos(
+          mHwnd.get(),
+          nullptr,
+          0,
+          0,
+          mWindowSize.fWidth,
+          mWindowSize.fHeight,
+          SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+      }
+    }
+
+    const SkSize size {
+      mWindowSize.fWidth / mDPIScale,
+      mWindowSize.fHeight / mDPIScale,
+    };
+
+    // mFUIRoot.Paint(canvas, *mMinimumContentSizeInDIPs);
+    mFUIRoot.Paint(canvas, size);
   }
 }
 
@@ -398,8 +432,8 @@ void HelloSkiaWindow::RenderFrame() {
     this->CleanupFrameContexts();
     CheckHResult(mSwapChain->ResizeBuffers(
       0,
-      mPendingResize->mWidth,
-      mPendingResize->mHeight,
+      mPendingResize->fWidth,
+      mPendingResize->fHeight,
       DXGI_FORMAT_UNKNOWN,
       0));
     this->CreateRenderTargets();
@@ -464,24 +498,19 @@ LRESULT HelloSkiaWindow::WindowProc(
       fui::StaticTheme::Refresh();
       break;
     case WM_GETMINMAXINFO: {
-      const auto& min = gInstance->mMinimumSizeInDIPs;
+      const auto& min = gInstance->mMinimumWindowSize;
       if (!min) {
         break;
       }
       auto* minInfo = reinterpret_cast<MINMAXINFO*>(lParam);
-      minInfo->ptMinTrackSize.x
-        = static_cast<LONG>(min->width() * gInstance->mDPIScale);
-      minInfo->ptMinTrackSize.y
-        = static_cast<LONG>(min->height() * gInstance->mDPIScale)
-        + (2
-           * (GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYBORDER)))
-        + GetSystemMetrics(SM_CYCAPTION);
+      minInfo->ptMinTrackSize.x = min->fWidth;
+      minInfo->ptMinTrackSize.y = min->fHeight;
       return 0;
     }
     case WM_SIZE: {
-      const UINT width = LOWORD(lParam);
-      const UINT height = HIWORD(lParam);
-      gInstance->mPendingResize = PixelSize {width, height};
+      const auto width = LOWORD(lParam);
+      const auto height = HIWORD(lParam);
+      gInstance->mPendingResize = {width, height};
       break;
     }
     case WM_DPICHANGED: {
@@ -587,6 +616,30 @@ void HelloSkiaWindow::CleanupFrameContexts() {
   }
 
   mFrameIndex = 0;
+}
+SkISize HelloSkiaWindow::CalculateMinimumWindowSize() {
+  if (!mMinimumContentSizeInDIPs) {
+    throw std::logic_error(
+      "Can't calculate minimum window size without minimum content size");
+  }
+
+  RECT rect {
+    0,
+    0,
+    std::lround(mMinimumContentSizeInDIPs->width() * gInstance->mDPIScale),
+    std::lround(mMinimumContentSizeInDIPs->height() * gInstance->mDPIScale),
+  };
+  AdjustWindowRectEx(
+    &rect,
+    gInstance->mWindowStyle & ~WS_OVERLAPPED,
+    false,
+    gInstance->mWindowExStyle);
+
+  mMinimumWindowSize = {
+    rect.right - rect.left,
+    rect.bottom - rect.top,
+  };
+  return *mMinimumWindowSize;
 }
 
 HelloSkiaWindow* HelloSkiaWindow::gInstance {nullptr};
