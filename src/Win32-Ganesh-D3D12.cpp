@@ -97,8 +97,6 @@ std::filesystem::path GetKnownFolderPath() {
 }
 
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
-  gInstance = this;
-
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
   this->InitializeSkia();
@@ -138,6 +136,8 @@ void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
     return;
   }
+
+  gInstances.emplace(mHwnd.get(), this);
 
   mDPIScale = static_cast<float>(GetDpiForWindow(mHwnd.get()))
     / USER_DEFAULT_SCREEN_DPI;
@@ -275,7 +275,11 @@ void HelloSkiaWindow::ConfigureD3DDebugLayer() {
 HelloSkiaWindow::~HelloSkiaWindow() {
   this->CleanupFrameContexts();
 
-  gInstance = nullptr;
+  const auto it = std::ranges::find(
+    gInstances, this, [](const auto& pair) { return pair.second; });
+  if (it != gInstances.end()) {
+    gInstances.erase(it);
+  }
 }
 
 void HelloSkiaWindow::CreateRenderTargets() {
@@ -491,113 +495,132 @@ LRESULT HelloSkiaWindow::WindowProc(
   UINT uMsg,
   WPARAM wParam,
   LPARAM lParam) noexcept {
-  namespace fui = FredEmmott::GUI;
+  auto it = gInstances.find(hwnd);
+  if (it != gInstances.end()) {
+    auto& self = *it->second;
+    if (hwnd == self.mHwnd.get()) {
+      return self.WindowProc(uMsg, wParam, lParam);
+    }
+#ifndef NDEBUG
+    // Should *always* match above
+    __debugbreak();
+#endif
+  }
+#ifndef NDEBUG
+  // TODO: handle pre-window-creation messages (including WM_GETMINMAXINFO) then
+  // uncomment this
+  // __debugbreak();
+#endif
+  auto instance = gInstances;
+  return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+}
 
+LRESULT
+HelloSkiaWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+  namespace fui = FredEmmott::GUI;
   switch (uMsg) {
     case WM_SETTINGCHANGE:
       fui::StaticTheme::Refresh();
       break;
     case WM_GETMINMAXINFO: {
-      const auto& min = gInstance->mMinimumWindowSize;
-      if (!min) {
+      if (!mMinimumWindowSize) {
         break;
       }
       auto* minInfo = reinterpret_cast<MINMAXINFO*>(lParam);
-      minInfo->ptMinTrackSize.x = min->fWidth;
-      minInfo->ptMinTrackSize.y = min->fHeight;
+      minInfo->ptMinTrackSize.x = mMinimumWindowSize->fWidth;
+      minInfo->ptMinTrackSize.y = mMinimumWindowSize->fHeight;
       return 0;
     }
     case WM_SIZE: {
       const auto width = LOWORD(lParam);
       const auto height = HIWORD(lParam);
-      gInstance->mPendingResize = {width, height};
+      mPendingResize = {width, height};
       break;
     }
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);
       // TODO: lParam is a RECT that we *should* use
-      gInstance->mDPI = newDPI;
-      gInstance->mDPIScale
-        = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
+      mDPI = newDPI;
+      mDPIScale = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
       break;
     }
     case WM_MOUSEMOVE: {
       fui::MouseMoveEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_LBUTTONDOWN: {
       fui::MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = fui::MouseButton::Left;
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_LBUTTONUP: {
       fui::MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = fui::MouseButton::Left;
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MBUTTONDOWN: {
       fui::MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = fui::MouseButton::Middle;
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MBUTTONUP: {
       fui::MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = fui::MouseButton::Middle;
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_RBUTTONDOWN: {
       fui::MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = fui::MouseButton::Right;
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_RBUTTONUP: {
       fui::MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = fui::MouseButton::Right;
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_XBUTTONDOWN: {
       fui::MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
         e.mChangedButtons |= fui::MouseButton::X1;
       }
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
         e.mChangedButtons |= fui::MouseButton::X2;
       }
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_XBUTTONUP: {
       fui::MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, gInstance->mDPIScale);
+      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
         e.mChangedButtons |= fui::MouseButton::X1;
       }
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
         e.mChangedButtons |= fui::MouseButton::X2;
       }
-      gInstance->mFUIRoot.DispatchEvent(&e);
+      mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_CLOSE:
-      gInstance->mExitCode = 0;
+      mExitCode = 0;
       break;
   }
-  return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+  return DefWindowProc(mHwnd.get(), uMsg, wParam, lParam);
 }
 
 void HelloSkiaWindow::CleanupFrameContexts() {
@@ -626,14 +649,11 @@ SkISize HelloSkiaWindow::CalculateMinimumWindowSize() {
   RECT rect {
     0,
     0,
-    std::lround(mMinimumContentSizeInDIPs->width() * gInstance->mDPIScale),
-    std::lround(mMinimumContentSizeInDIPs->height() * gInstance->mDPIScale),
+    std::lround(mMinimumContentSizeInDIPs->width() * mDPIScale),
+    std::lround(mMinimumContentSizeInDIPs->height() * mDPIScale),
   };
   AdjustWindowRectEx(
-    &rect,
-    gInstance->mWindowStyle & ~WS_OVERLAPPED,
-    false,
-    gInstance->mWindowExStyle);
+    &rect, mWindowStyle & ~WS_OVERLAPPED, false, mWindowExStyle);
 
   mMinimumWindowSize = {
     rect.right - rect.left,
@@ -642,7 +662,8 @@ SkISize HelloSkiaWindow::CalculateMinimumWindowSize() {
   return *mMinimumWindowSize;
 }
 
-HelloSkiaWindow* HelloSkiaWindow::gInstance {nullptr};
+thread_local decltype(HelloSkiaWindow::gInstances)
+  HelloSkiaWindow::gInstances {};
 
 int WINAPI wWinMain(
   HINSTANCE hInstance,

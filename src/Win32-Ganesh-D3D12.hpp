@@ -34,7 +34,7 @@ class HelloSkiaWindow final {
   static constexpr UINT SwapChainLength = 3;
   static constexpr UINT MinimumFrameRate = 60;
 
-  static HelloSkiaWindow* gInstance;
+  static thread_local std::unordered_map<HWND, HelloSkiaWindow*> gInstances;
 
   wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;
@@ -91,6 +91,9 @@ class HelloSkiaWindow final {
 
   void RenderSkiaContent(FrameContext& frame);
   void RenderSkiaContent(SkCanvas* canvas);
+
+  LRESULT
+  WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 
   static LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
