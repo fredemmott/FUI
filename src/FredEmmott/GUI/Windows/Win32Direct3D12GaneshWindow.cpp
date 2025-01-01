@@ -3,6 +3,7 @@
 
 #include "Win32Direct3D12GaneshWindow.hpp"
 
+#include <dwmapi.h>
 #include <shlobj_core.h>
 #include <skia/core/SkCanvas.h>
 #include <skia/core/SkColor.h>
@@ -116,11 +117,24 @@ thread_local decltype(Win32Direct3D12GaneshWindow::gInstances)
 thread_local Win32Direct3D12GaneshWindow*
   Win32Direct3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
 
+void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
+  BOOL darkMode {
+    fui::StaticTheme::GetCurrent() == fui::StaticTheme::Theme::Dark};
+  // Support building with the Windows 10 SDK
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+  DwmSetWindowAttribute(
+    mHwnd.get(), DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
+}
 void Win32Direct3D12GaneshWindow::InitializeWindow() {
   this->CreateNativeWindow();
   this->InitializeD3D();
   this->InitializeSkia();
   this->CreateRenderTargets();
+
+  this->AdjustToWindowsTheme();
+
   ShowWindow(mHwnd.get(), mShowCommand);
 }
 
@@ -545,6 +559,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
     }
     case WM_SETTINGCHANGE:
       fui::StaticTheme::Refresh();
+      this->AdjustToWindowsTheme();
       break;
     case WM_GETMINMAXINFO: {
       if (!mDPI) {

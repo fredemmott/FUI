@@ -109,6 +109,7 @@ class Win32Direct3D12GaneshWindow final {
 
   std::chrono::steady_clock::time_point mBeginFrameTime;
 
+  void AdjustToWindowsTheme();
   void InitializeWindow();
   void CreateNativeWindow();
   void InitializeD3D();

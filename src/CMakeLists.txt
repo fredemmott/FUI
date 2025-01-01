@@ -74,9 +74,12 @@ add_executable(
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12
   PRIVATE
+  winui3-themes
+  # vpckg
   skia
   yoga::yogacore
-  winui3-themes
+  # system
+  Dwmapi
   User32
 )
 target_compile_definitions(
