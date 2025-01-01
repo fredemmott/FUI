@@ -28,15 +28,13 @@ class HelloSkiaWindow final {
   ~HelloSkiaWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
-  void RenderFUIContent();
-  void ResizeIfNeeded();
-  [[nodiscard]] int Run() noexcept;
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
   void WaitFrame(
     unsigned int minFPS = 0,
     unsigned int maxFPS = std::numeric_limits<unsigned int>::max()) const;
+  void EndFrame();
 
  private:
   static constexpr UINT SwapChainLength = 3;
@@ -94,8 +92,7 @@ class HelloSkiaWindow final {
   void CreateRenderTargets();
   void CleanupFrameContexts();
   SkISize CalculateMinimumWindowSize();
-
-  void EndFrame();
+  void ResizeIfNeeded();
 
   LRESULT
   WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;

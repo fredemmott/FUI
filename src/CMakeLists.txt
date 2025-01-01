@@ -69,6 +69,7 @@ add_executable(
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
+  main.cpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

@@ -14,14 +14,7 @@
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 
-#include <FredEmmott/GUI/Immediate/Button.hpp>
-#include <FredEmmott/GUI/Immediate/Card.hpp>
-#include <FredEmmott/GUI/Immediate/Disabled.hpp>
-#include <FredEmmott/GUI/Immediate/FontIcon.hpp>
-#include <FredEmmott/GUI/Immediate/Label.hpp>
 #include <FredEmmott/GUI/Immediate/Root.hpp>
-#include <FredEmmott/GUI/Immediate/StackPanel.hpp>
-#include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
@@ -29,7 +22,6 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
-#include <print>
 #include <source_location>
 
 namespace fui = FredEmmott::GUI;
@@ -83,6 +75,9 @@ static inline void CheckHResult(
   OutputDebugStringA(msg.c_str());
   throw std::system_error(ec);
 }
+
+thread_local decltype(HelloSkiaWindow::gInstances)
+  HelloSkiaWindow::gInstances {};
 
 HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
   this->CreateNativeWindow(instance);
@@ -314,42 +309,6 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
-void HelloSkiaWindow::RenderFUIContent() {
-  fuii::BeginCard();
-  fuii::BeginVStackPanel();
-  fuii::Label("Disable all widgets");
-  static bool sDisableAll = false;
-  (void)fuii::ToggleSwitch(&sDisableAll);
-  fuii::BeginDisabled(sDisableAll);
-
-  fuii::Label("Hello, world; this text doesn't make the button wider aeg");
-  static uint64_t frameCounter {};
-  fuii::Label("Frame {}##Frames", ++frameCounter);
-  if (fuii::Button("Click Me!")) {
-    std::println(stderr, "Clicked!");
-  }
-
-  static bool isOn = true;
-  if (fuii::ToggleSwitch(&isOn)) {
-    std::println(stderr, "Toggled to {}", isOn);
-  }
-
-  fuii::EndDisabled();
-
-  fuii::BeginHStackPanel();
-  fuii::FontIcon("\ueb51");// Heart
-  fuii::FontIcon("\ueb52");// HeartFill
-  fuii::FontIcon({
-    {"\ueb52", {{.mColor = SK_ColorRED}}},
-    {"\ueb51"},
-  });
-  fuii::Label("After stack");
-  fuii::EndStackPanel();
-
-  fuii::EndStackPanel();
-  fuii::EndCard();
-}
-
 void HelloSkiaWindow::ResizeIfNeeded() {
   const auto contentMin = mFUIRoot.GetMinimumSize();
   if (contentMin != mMinimumContentSizeInDIPs) {
@@ -461,20 +420,6 @@ void HelloSkiaWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
                         frameInterval - frameDuration)
                         .count();
   MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
-}
-
-int HelloSkiaWindow::Run() noexcept {
-  while (!mExitCode) {
-    this->WaitFrame();
-    if (const auto ret = this->BeginFrame(); !ret) {
-      return ret.error();
-    }
-
-    this->RenderFUIContent();
-    this->EndFrame();
-  }
-
-  return *mExitCode;
 }
 
 LRESULT HelloSkiaWindow::WindowProc(
@@ -647,19 +592,4 @@ SkISize HelloSkiaWindow::CalculateMinimumWindowSize() {
     rect.bottom - rect.top,
   };
   return *mMinimumWindowSize;
-}
-
-thread_local decltype(HelloSkiaWindow::gInstances)
-  HelloSkiaWindow::gInstances {};
-
-int WINAPI wWinMain(
-  HINSTANCE hInstance,
-  HINSTANCE hPrevInstance,
-  LPWSTR lpCmdLine,
-  int nCmdShow) {
-  CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-  HelloSkiaWindow app(hInstance);
-  ShowWindow(app.GetHWND(), nCmdShow);
-  return app.Run();
 }
