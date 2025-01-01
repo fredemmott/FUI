@@ -2,57 +2,31 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/ActivatedFlag.hpp>
-#include <FredEmmott/GUI/Immediate/concepts.hpp>
+#include <FredEmmott/GUI/Immediate/ID.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <ranges>
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-template <widget T, ActivatedFlag T::* P = nullptr, auto... TFixedArgs>
-struct BeginWidget {
-  static constexpr bool HasActivation = (P != nullptr);
+template <std::derived_from<Widgets::Widget> T, auto... TFixedArgs>
+void BeginWidget(const ID id) {
+  auto& frame = tStack.back();
+  auto pending
+    = std::ranges::find(frame.mPending, id.GetValue(), &Widget::GetID);
 
-  void operator()(
-    const Widgets::WidgetStyles& styles = {},
-    MangledID id = MakeID<T>(tStack.back().mNextIndex)) const
-    requires(!HasActivation)
-  {
-    Begin(styles, id);
+  if (pending == frame.mPending.end()) {
+    frame.mNewSiblings.push_back(new T(id.GetValue(), TFixedArgs...));
+  } else {
+    frame.mNewSiblings.push_back(*pending);
+    frame.mPending.erase(pending);
   }
 
-  void operator()(
-    bool* activated,
-    const Widgets::WidgetStyles& styles = {},
-    MangledID id = MakeID<T>(tStack.back().mNextIndex)) const
-    requires(HasActivation)
-  {
-    Begin(styles, id);
-    if (activated) {
-      *activated = (GetCurrentParentNode<T>()->*P).TestAndClear();
-    }
-  }
+  const auto it = GetCurrentNode();
 
- private:
-  static void Begin(const Widgets::WidgetStyles& styles, MangledID id) {
-    auto& frame = tStack.back();
-    auto pending = std::ranges::find(frame.mPending, id, &Widget::GetID);
-
-    if (pending == frame.mPending.end()) {
-      frame.mNewSiblings.push_back(new T(id, TFixedArgs...));
-    } else {
-      frame.mNewSiblings.push_back(*pending);
-      frame.mPending.erase(pending);
-    }
-
-    auto it = GetCurrentNode();
-    it->SetExplicitStyles(styles);
-
-    tStack.emplace_back(it->GetChildren() | std::ranges::to<std::vector>());
-    tStack.back().mNewSiblings.reserve(tStack.back().mPending.size());
-  }
-};
+  tStack.emplace_back(it->GetChildren() | std::ranges::to<std::vector>());
+  tStack.back().mNewSiblings.reserve(tStack.back().mPending.size());
+}
 
 template <class T>
 void EndWidget() {

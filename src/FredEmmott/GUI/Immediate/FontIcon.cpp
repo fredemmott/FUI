@@ -3,54 +3,46 @@
 
 #include "FontIcon.hpp"
 
+#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 #include "Label.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-void FontIcon(
-  const Widgets::WidgetStyles& explicitStyles,
-  std::string_view glyph,
-  FontIconSize size) {
+void FontIcon(std::string_view glyph, FontIconSize size, const ID id) {
   using Widgets::WidgetStyles;
 
-  const auto styles = WidgetStyles {
+  const WidgetStyles styles {
     .mBase = {
       .mFont = ResolveGlyphFont(size),
-    }
-  } + explicitStyles;
-  Label(styles, "{}", glyph);
+    }};
+  Label(glyph, id);
+  immediate_detail::GetCurrentNode()->SetExplicitStyles(styles);
 }
 
 void FontIcon(
-  const Widgets::WidgetStyles& explicitStyles,
-  std::initializer_list<StackedFontIconGlyph> glyphs,
-  FontIconSize size) {
+  std::initializer_list<FontIconStackedGlyph> glyphs,
+  FontIconSize size,
+  const ID id) {
   using Widgets::WidgetStyles;
 
-  const auto styles = WidgetStyles {
+  const WidgetStyles styles {
     .mBase = {
       .mFont = ResolveGlyphFont(size),
-    }
-  } + explicitStyles;
-
-  auto subStyles = styles.InheritableStyles()
-    + WidgetStyles {
-      .mBase = {
-        .mLeft = 0,
-      },
-    };
+    }};
 
   bool first = true;
-  immediate_detail::BeginWidget<Widgets::Widget> {}();
+  immediate_detail::BeginWidget<Widgets::Widget>(id);
+  std::size_t count = 0;
   for (auto&& [glyph, style]: glyphs) {
-    auto thisStyle = style;
+    auto thisStyle = styles + style;
     if (first) {
       first = false;
     } else {
-      thisStyle += WidgetStyles {{.mPosition = YGPositionTypeAbsolute}};
+      thisStyle.mBase.mPosition = YGPositionTypeAbsolute;
     }
 
-    Label(styles + thisStyle, "{}", glyph);
+    Label(glyph, ID {count++});
+    immediate_detail::GetCurrentNode()->SetExplicitStyles(thisStyle);
   }
 
   immediate_detail::EndWidget<Widgets::Widget>();

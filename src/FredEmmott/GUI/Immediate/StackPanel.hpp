@@ -7,16 +7,16 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-inline void BeginHStackPanel() {
+inline void BeginHStackPanel(ID id = ID {std::source_location::current()}) {
   using Widgets::StackPanel;
-  immediate_detail::
-    BeginWidget<StackPanel, nullptr, StackPanel::Direction::Horizontal> {}();
+  immediate_detail::BeginWidget<StackPanel, StackPanel::Direction::Horizontal>(
+    id);
 }
 
-inline void BeginVStackPanel() {
+inline void BeginVStackPanel(ID id = ID {std::source_location::current()}) {
   using Widgets::StackPanel;
-  immediate_detail::
-    BeginWidget<StackPanel, nullptr, StackPanel::Direction::Vertical> {}();
+  immediate_detail::BeginWidget<StackPanel, StackPanel::Direction::Vertical>(
+    id);
 }
 
 inline void EndStackPanel() {

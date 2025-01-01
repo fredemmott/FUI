@@ -4,18 +4,22 @@
 
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 
+#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
+
 namespace FredEmmott::GUI::Immediate {
 
 void BeginDisabled(
-  bool isDisabled = true,
-  const Widgets::WidgetStyles& styles = {});
+  bool isDisabled,
+  ID id = ID {std::source_location::current()});
 
-void EndDisabled();
+inline void EndDisabled() {
+  immediate_detail::EndWidget<Widgets::Widget>();
+}
 
 inline void BeginEnabled(
-  bool isEnabled = true,
-  const Widgets::WidgetStyles& styles = {}) {
-  BeginDisabled(!isEnabled, styles);
+  const bool isEnabled = true,
+  const ID id = ID {std::source_location::current()}) {
+  BeginDisabled(!isEnabled, id);
 }
 
 inline void EndEnabled() {

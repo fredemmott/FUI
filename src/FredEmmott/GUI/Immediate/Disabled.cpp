@@ -7,21 +7,17 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginDisabled(bool isDisabled, const Widgets::WidgetStyles& styles) {
+void BeginDisabled(const bool isDisabled, const ID id) {
   static const Widgets::WidgetStyles baseStyles {
     .mBase = {
       .mDisplay = YGDisplayContents,
     },
   };
-
-  immediate_detail::BeginWidget<Widgets::Widget> {}();
-  auto widget = immediate_detail::GetCurrentParentNode();
-  widget->SetExplicitStyles(baseStyles + styles);
+  using namespace immediate_detail;
+  BeginWidget<Widgets::Widget>(id);
+  auto widget = GetCurrentParentNode();
+  widget->SetExplicitStyles(baseStyles);
   widget->SetIsDirectlyDisabled(isDisabled);
-}
-
-void EndDisabled() {
-  immediate_detail::EndWidget<Widgets::Widget>();
 }
 
 }// namespace FredEmmott::GUI::Immediate

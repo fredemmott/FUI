@@ -5,35 +5,25 @@
 #include <FredEmmott/GUI/SystemFont.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetStyles.hpp>
 
+#include "ID.hpp"
+
 namespace FredEmmott::GUI::Immediate {
 
 using FontIconSize = SystemFont::Usage;
 
 void FontIcon(
-  const Widgets::WidgetStyles&,
   std::string_view glyph,
-  FontIconSize size = FontIconSize::Body);
+  FontIconSize size = FontIconSize::Body,
+  ID id = ID {std::source_location::current()});
 
-inline void FontIcon(
-  std::string_view glyph,
-  FontIconSize size = FontIconSize::Body) {
-  FontIcon({}, glyph, size);
-}
-
-struct StackedFontIconGlyph {
+struct FontIconStackedGlyph {
   std::string_view mGlyph;
   Widgets::WidgetStyles mBase;
 };
 
 void FontIcon(
-  const Widgets::WidgetStyles&,
-  std::initializer_list<StackedFontIconGlyph> glyph,
-  FontIconSize size = FontIconSize::Body);
-
-inline void FontIcon(
-  std::initializer_list<StackedFontIconGlyph> glyph,
-  FontIconSize size = FontIconSize::Body) {
-  FontIcon({}, glyph, size);
-}
+  std::initializer_list<FontIconStackedGlyph> glyph,
+  FontIconSize size = FontIconSize::Body,
+  ID id = ID {std::source_location::current()});
 
 }// namespace FredEmmott::GUI::Immediate

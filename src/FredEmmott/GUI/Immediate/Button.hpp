@@ -19,34 +19,23 @@ namespace FredEmmott::GUI::Immediate {
  *
  * @see `Button()` if you just want text
  */
-constexpr immediate_detail::
-  BeginWidget<Widgets::Button, &Widgets::Button::mClicked>
-    BeginButton;
+void BeginButton(bool* clicked, ID id = ID {std::source_location::current()});
+
 inline void EndButton() {
   immediate_detail::EndWidget<Widgets::Button>();
 }
 
-/// Create a button with options and a text label
-template <class... Args>
-[[nodiscard]] bool Button(
-  const Widgets::WidgetStyles& styles,
-  std::format_string<Args...> format,
-  Args&&... args) {
-  using namespace immediate_detail;
-
-  const auto [id, text]
-    = ParsedID::Make<Widgets::Button>(format, std::forward<Args>(args)...);
-  bool clicked {};
-  BeginButton(&clicked, styles, id);
-  Label("{}##Label", text);
-  EndButton();
-  return clicked;
-}
+/// Create a button with a text label
+[[nodiscard]]
+bool Button(
+  std::string_view label,
+  ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label
 template <class... Args>
 [[nodiscard]] bool Button(std::format_string<Args...> format, Args&&... args) {
-  return Button({}, format, std::forward<Args>(args)...);
+  const auto [id, text] = ParsedID(format, std::forward<Args>(args)...);
+  return Button(text, id);
 }
 
 }// namespace FredEmmott::GUI::Immediate

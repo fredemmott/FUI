@@ -15,15 +15,14 @@ add_executable(
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
-  FredEmmott/GUI/Immediate/Button.hpp
+  FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
-  FredEmmott/GUI/Immediate/Label.hpp
+  FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
-  FredEmmott/GUI/Immediate/concepts.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
@@ -70,6 +69,7 @@ add_executable(
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
+  FredEmmott/GUI/Immediate/ID.hpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

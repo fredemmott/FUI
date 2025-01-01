@@ -4,34 +4,13 @@
 
 #include <FredEmmott/GUI/Widgets/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
-#include <format>
 
 namespace FredEmmott::GUI::Immediate {
-
-struct FormattedString {
-  FormattedString() = delete;
-  FormattedString(std::string_view text) : mText(std::string {text}) {};
-
-  template <class... Args>
-  FormattedString(std::format_string<Args...> fmt, Args&&... args)
-    : mText(std::format(fmt, std::forward<Args>(args)...)) {
-  }
-
-  bool operator==(const FormattedString&) const noexcept = default;
-
-  operator std::string_view() const noexcept {
-    return mText;
-  }
-
- private:
-  std::string mText;
-};
 
 void BeginToggleSwitch(
   bool* isChanged,
   bool* isOn,
-  const Widgets::WidgetStyles& styles = {});
-
+  ID id = ID {std::source_location::current()});
 inline void EndToggleSwitch() {
   immediate_detail::EndWidget<Widgets::ToggleSwitch>();
 }
@@ -39,8 +18,8 @@ inline void EndToggleSwitch() {
 [[nodiscard]]
 bool ToggleSwitch(
   bool* isOn,
-  const Widgets::WidgetStyles& styles = {},
-  const FormattedString& offText = {"Off"},
-  const FormattedString& onText = {"On"});
+  std::string_view onText = "On",
+  std::string_view offText = "Off",
+  ID id = ID {std::source_location::current()});
 
 }// namespace FredEmmott::GUI::Immediate

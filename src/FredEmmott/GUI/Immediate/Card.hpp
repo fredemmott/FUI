@@ -7,7 +7,9 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-constexpr immediate_detail::BeginWidget<Widgets::Card> BeginCard;
+inline void BeginCard(ID id = ID {std::source_location::current()}) {
+  immediate_detail::BeginWidget<Widgets::Card>(ID {id});
+}
 
 inline void EndCard() {
   immediate_detail::EndWidget<Widgets::Card>();
