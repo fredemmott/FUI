@@ -29,6 +29,7 @@ class HelloSkiaWindow final {
 
   [[nodiscard]] HWND GetHWND() const noexcept;
   void RenderFUIContent();
+  void ResizeIfNeeded();
   [[nodiscard]] int Run() noexcept;
 
   [[nodiscard]]
@@ -94,10 +95,7 @@ class HelloSkiaWindow final {
   void CleanupFrameContexts();
   SkISize CalculateMinimumWindowSize();
 
-  void RenderFrame();
-
-  void RenderSkiaContent(FrameContext& frame);
-  void RenderSkiaContent(SkCanvas* canvas);
+  void EndFrame();
 
   LRESULT
   WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;

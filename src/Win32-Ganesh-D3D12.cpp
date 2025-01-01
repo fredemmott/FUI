@@ -350,62 +350,66 @@ void HelloSkiaWindow::RenderFUIContent() {
   fuii::EndCard();
 }
 
-void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
-  canvas->resetMatrix();
-
-  canvas->scale(mDPIScale, mDPIScale);
-  const auto it = canvas->imageInfo();
-
-  {
-    mFUIRoot.BeginFrame();
-
-    this->RenderFUIContent();
-
-    mFUIRoot.EndFrame();
-
-    const auto contentMin = mFUIRoot.GetMinimumSize();
-    if (contentMin != mMinimumContentSizeInDIPs) {
-      mMinimumContentSizeInDIPs = contentMin;
-      const auto windowMin = this->CalculateMinimumWindowSize();
-      if (
-        mWindowSize.fWidth < windowMin.fWidth
-        || mWindowSize.fHeight < windowMin.fHeight) {
-        mWindowSize = {
-          std::max(mWindowSize.fWidth, windowMin.fWidth),
-          std::max(mWindowSize.fHeight, windowMin.fHeight),
-        };
-        SetWindowPos(
-          mHwnd.get(),
-          nullptr,
-          0,
-          0,
-          mWindowSize.fWidth,
-          mWindowSize.fHeight,
-          SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
-      }
+void HelloSkiaWindow::ResizeIfNeeded() {
+  const auto contentMin = mFUIRoot.GetMinimumSize();
+  if (contentMin != mMinimumContentSizeInDIPs) {
+    mMinimumContentSizeInDIPs = contentMin;
+    const auto windowMin = CalculateMinimumWindowSize();
+    if (
+      mWindowSize.fWidth < windowMin.fWidth
+      || mWindowSize.fHeight < windowMin.fHeight) {
+      mWindowSize = {
+        std::max(mWindowSize.fWidth, windowMin.fWidth),
+        std::max(mWindowSize.fHeight, windowMin.fHeight),
+      };
+      SetWindowPos(
+        mHwnd.get(),
+        nullptr,
+        0,
+        0,
+        mWindowSize.fWidth,
+        mWindowSize.fHeight,
+        SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
     }
+  }
 
-    const SkSize size {
-      mWindowSize.fWidth / mDPIScale,
-      mWindowSize.fHeight / mDPIScale,
-    };
+  if (mPendingResize) {
+    this->CleanupFrameContexts();
+    CheckHResult(mSwapChain->ResizeBuffers(
+      0,
+      mPendingResize->fWidth,
+      mPendingResize->fHeight,
+      DXGI_FORMAT_UNKNOWN,
+      0));
+    this->CreateRenderTargets();
 
-    // mFUIRoot.Paint(canvas, *mMinimumContentSizeInDIPs);
-    mFUIRoot.Paint(canvas, size);
+    mWindowSize = *mPendingResize;
+    mPendingResize = std::nullopt;
   }
 }
+void HelloSkiaWindow::EndFrame() {
+  mFUIRoot.EndFrame();
 
-void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
-  try {
-    this->RenderSkiaContent(frame.mSkSurface->getCanvas());
-  } catch (const std::exception& e) {
-    std::println(
-      stderr, "Rendering Skia content threw an exception: {}", e.what());
-    if (IsDebuggerPresent()) {
-      __debugbreak();
-    }
-    throw;
+  this->ResizeIfNeeded();
+
+  auto& frame = mFrames.at(mFrameIndex);
+  mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
+
+  if (frame.mFenceValue) {
+    mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
+    WaitForSingleObject(mFenceEvent.get(), INFINITE);
   }
+
+  SkCanvas* canvas = frame.mSkSurface->getCanvas();
+  canvas->resetMatrix();
+  canvas->scale(mDPIScale, mDPIScale);
+
+  const SkSize size {
+    mWindowSize.fWidth / mDPIScale,
+    mWindowSize.fHeight / mDPIScale,
+  };
+
+  mFUIRoot.Paint(canvas, size);
 
   GrD3DFenceInfo fenceInfo {};
   fenceInfo.fFence.retain(mD3DFence.get());
@@ -422,32 +426,6 @@ void HelloSkiaWindow::RenderSkiaContent(FrameContext& frame) {
       .fSignalSemaphores = &flushSemaphore,
     });
   mSkContext->submit(GrSyncCpu::kNo);
-}
-
-void HelloSkiaWindow::RenderFrame() {
-  if (mPendingResize) {
-    this->CleanupFrameContexts();
-    CheckHResult(mSwapChain->ResizeBuffers(
-      0,
-      mPendingResize->fWidth,
-      mPendingResize->fHeight,
-      DXGI_FORMAT_UNKNOWN,
-      0));
-    this->CreateRenderTargets();
-
-    mWindowSize = *mPendingResize;
-    mPendingResize = std::nullopt;
-  }
-
-  auto& frame = mFrames.at(mFrameIndex);
-  mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
-
-  if (frame.mFenceValue) {
-    mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
-    WaitForSingleObject(mFenceEvent.get(), INFINITE);
-  }
-
-  RenderSkiaContent(frame);
 
   CheckHResult(mSwapChain->Present(0, 0));
 }
@@ -462,6 +440,7 @@ std::expected<void, int> HelloSkiaWindow::BeginFrame() {
       return std::unexpected {mExitCode.value_or(0)};
     }
   }
+  mFUIRoot.BeginFrame();
   return {};
 }
 
@@ -486,13 +465,13 @@ void HelloSkiaWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
 
 int HelloSkiaWindow::Run() noexcept {
   while (!mExitCode) {
+    this->WaitFrame();
     if (const auto ret = this->BeginFrame(); !ret) {
       return ret.error();
     }
 
-    this->RenderFrame();
-
-    this->WaitFrame();
+    this->RenderFUIContent();
+    this->EndFrame();
   }
 
   return *mExitCode;
