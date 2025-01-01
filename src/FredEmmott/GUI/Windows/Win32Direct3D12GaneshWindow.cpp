@@ -4,7 +4,6 @@
 #include "Win32Direct3D12GaneshWindow.hpp"
 
 #include <dwmapi.h>
-#include <shlobj_core.h>
 #include <skia/core/SkCanvas.h>
 #include <skia/core/SkColor.h>
 #include <skia/core/SkColorSpace.h>
@@ -27,7 +26,6 @@
 #include <source_location>
 
 namespace fui = FredEmmott::GUI;
-namespace fuii = fui::Immediate;
 
 namespace {
 
@@ -159,6 +157,7 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     : Utf8ToWide(mOptions.mClass);
 
   const WNDCLASSW wc {
+    .style = CS_HREDRAW | CS_VREDRAW,
     .lpfnWndProc = &StaticWindowProc,
     .hInstance = mInstanceHandle,
     .lpszClassName = className.c_str(),
@@ -396,6 +395,16 @@ HWND Win32Direct3D12GaneshWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
+void Win32Direct3D12GaneshWindow::ResizeSwapchain() {
+  this->CleanupFrameContexts();
+  CheckHResult(mSwapChain->ResizeBuffers(
+    0,
+    mPendingResize->fWidth,
+    mPendingResize->fHeight,
+    DXGI_FORMAT_UNKNOWN,
+    0));
+  this->CreateRenderTargets();
+}
 void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
   const auto contentMin = mFUIRoot.GetMinimumSize();
   if (contentMin != mMinimumContentSizeInDIPs) {
@@ -428,32 +437,13 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
     return;
   }
 
-  this->CleanupFrameContexts();
-  CheckHResult(mSwapChain->ResizeBuffers(
-    0,
-    mPendingResize->fWidth,
-    mPendingResize->fHeight,
-    DXGI_FORMAT_UNKNOWN,
-    0));
-  this->CreateRenderTargets();
+  ResizeSwapchain();
 
   mWindowSize = std::move(*mPendingResize);
   mPendingResize.reset();
 }
 
-void Win32Direct3D12GaneshWindow::EndFrame() {
-  mFUIRoot.EndFrame();
-
-  if (!mHwnd) [[unlikely]] {
-    this->InitializeWindow();
-    if (!mHwnd) {
-      mExitCode = EXIT_FAILURE;
-      return;
-    }
-  } else {
-    this->ResizeIfNeeded();
-  }
-
+void Win32Direct3D12GaneshWindow::Paint(const SkISize& realPixelSize) {
   auto& frame = mFrames.at(mFrameIndex);
   mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
 
@@ -467,8 +457,8 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
   canvas->scale(mDPIScale, mDPIScale);
 
   const SkSize size {
-    mWindowSize.fWidth / mDPIScale,
-    mWindowSize.fHeight / mDPIScale,
+    realPixelSize.fWidth / mDPIScale,
+    realPixelSize.fHeight / mDPIScale,
   };
 
   canvas->clear(
@@ -494,6 +484,21 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
   mSkContext->submit(GrSyncCpu::kNo);
 
   CheckHResult(mSwapChain->Present(0, 0));
+}
+void Win32Direct3D12GaneshWindow::EndFrame() {
+  mFUIRoot.EndFrame();
+
+  if (!mHwnd) [[unlikely]] {
+    this->InitializeWindow();
+    if (!mHwnd) {
+      mExitCode = EXIT_FAILURE;
+      return;
+    }
+  } else {
+    this->ResizeIfNeeded();
+  }
+
+  this->Paint(mWindowSize);
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
@@ -603,6 +608,26 @@ Win32Direct3D12GaneshWindow::WindowProc(
       const auto width = LOWORD(lParam);
       const auto height = HIWORD(lParam);
       mPendingResize = {width, height};
+      break;
+    }
+    case WM_PAINT:
+      if (mPendingResize) {
+        this->ResizeSwapchain();
+        this->Paint(*mPendingResize);
+      }
+      break;
+    case WM_SIZING: {
+      // Initially this is the full window size, including the non-client area
+      RECT rect = *reinterpret_cast<RECT*>(lParam);
+      // Let's figure out how the client relates, and adjust from there
+      RECT padding {};
+      AdjustWindowRectEx(&padding, mWindowStyle, false, mWindowExStyle);
+      padding.left = -padding.left;
+      padding.top = -padding.top;
+      mPendingResize = SkISize {
+        (rect.right - padding.right) - (rect.left + padding.left),
+        (rect.bottom - padding.bottom) - (rect.top + padding.top),
+      };
       break;
     }
     case WM_DPICHANGED: {

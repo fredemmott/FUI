@@ -48,6 +48,7 @@ class Win32Direct3D12GaneshWindow final {
   ~Win32Direct3D12GaneshWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
+  void ResizeSwapchain();
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
@@ -126,6 +127,7 @@ class Win32Direct3D12GaneshWindow final {
   void CleanupFrameContexts();
   SkISize CalculateMinimumWindowSize();
   void ResizeIfNeeded();
+  void Paint(const SkISize& realPixelSize);
 
   LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
