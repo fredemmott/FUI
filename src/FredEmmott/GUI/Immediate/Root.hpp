@@ -24,7 +24,6 @@ class Root final {
   enum class Cursor {
     Default,
   };
-  std::optional<Cursor> mCursor;
 };
 
 }// namespace FredEmmott::GUI::Immediate

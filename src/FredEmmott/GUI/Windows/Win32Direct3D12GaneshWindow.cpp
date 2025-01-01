@@ -532,6 +532,17 @@ Win32Direct3D12GaneshWindow::WindowProc(
   }
   namespace fui = FredEmmott::GUI;
   switch (uMsg) {
+    case WM_SETCURSOR: {
+      static const wil::unique_hcursor sDefaultCursor {
+        LoadCursor(nullptr, IDC_ARROW)};
+      const auto hitTest = LOWORD(lParam);
+      if (hitTest == HTCLIENT) {
+        // Hand: sPointerCursor -> IDC_HAND
+        SetCursor(sDefaultCursor.get());
+        return true;
+      }
+      break;
+    }
     case WM_SETTINGCHANGE:
       fui::StaticTheme::Refresh();
       break;
