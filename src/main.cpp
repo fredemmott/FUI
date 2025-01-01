@@ -31,6 +31,8 @@ static void AppTick() {
   fuii::EndDisabled();
 
   fuii::BeginHStackPanel();
+  // Glyphs are unicode private usage code points from
+  // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
   fuii::FontIcon("\ueb51");// Heart
   fuii::FontIcon("\ueb52");// HeartFill
   fuii::FontIcon({
