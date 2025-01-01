@@ -23,8 +23,10 @@ class Win32D3D12GaneshWindow final {
   Win32D3D12GaneshWindow& operator=(const Win32D3D12GaneshWindow&) = delete;
   Win32D3D12GaneshWindow& operator=(Win32D3D12GaneshWindow&&) = delete;
 
+  void InitializeWindow();
   explicit Win32D3D12GaneshWindow(
     HINSTANCE instance,
+    int showCommand,
     std::string_view windowTitle);
   ~Win32D3D12GaneshWindow();
 
@@ -41,14 +43,17 @@ class Win32D3D12GaneshWindow final {
   static constexpr UINT SwapChainLength = 3;
   static thread_local std::unordered_map<HWND, Win32D3D12GaneshWindow*>
     gInstances;
+  static thread_local Win32D3D12GaneshWindow* gInstanceCreatingWindow;
 
+  HINSTANCE mInstanceHandle {nullptr};
+  int mShowCommand {SW_SHOW};
   std::string mWindowTitle;
 
-  wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;
 
+  wil::unique_hwnd mHwnd;
   float mDPIScale = {1.0f};
-  DWORD mDPI = USER_DEFAULT_SCREEN_DPI;
+  std::optional<DWORD> mDPI;
   SkISize mWindowSize {};
   std::optional<SkISize> mPendingResize;
 
@@ -99,8 +104,8 @@ class Win32D3D12GaneshWindow final {
   void ResizeIfNeeded();
 
   LRESULT
-  WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
+  WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
   static LRESULT
-  WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
+  StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

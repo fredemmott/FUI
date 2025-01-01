@@ -78,24 +78,27 @@ static inline void CheckHResult(
 
 thread_local decltype(Win32D3D12GaneshWindow::gInstances)
   Win32D3D12GaneshWindow::gInstances {};
+thread_local Win32D3D12GaneshWindow*
+  Win32D3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
 
-Win32D3D12GaneshWindow::Win32D3D12GaneshWindow(
-  HINSTANCE instance,
-  std::string_view title)
-  : mWindowTitle(title) {
-  this->CreateNativeWindow(instance);
+void Win32D3D12GaneshWindow::InitializeWindow() {
+  this->CreateNativeWindow(mInstanceHandle);
   this->InitializeD3D();
   this->InitializeSkia();
   this->CreateRenderTargets();
+  ShowWindow(mHwnd.get(), mShowCommand);
+}
+
+Win32D3D12GaneshWindow::Win32D3D12GaneshWindow(
+  HINSTANCE hInstance,
+  int nCmdShow,
+  std::string_view title)
+  : mInstanceHandle(hInstance), mShowCommand(nCmdShow), mWindowTitle(title) {
 }
 
 void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
-  const auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
-  const auto height = screenHeight / 2;
-  const auto width = (height * 2) / 3;
-
   const WNDCLASSW wc {
-    .lpfnWndProc = &WindowProc,
+    .lpfnWndProc = &StaticWindowProc,
     .hInstance = instance,
     .lpszClassName = L"Hello Skia",
   };
@@ -124,6 +127,8 @@ void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
     title.erase(i);
   }
 
+  gInstanceCreatingWindow = this;
+  mMinimumContentSizeInDIPs = mFUIRoot.GetMinimumSize();
   mHwnd.reset(CreateWindowExW(
     mWindowExStyle,
     MAKEINTATOM(classAtom),
@@ -131,12 +136,13 @@ void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
     mWindowStyle,
     CW_USEDEFAULT,
     CW_USEDEFAULT,
-    width,
-    height,
+    0,
+    0,
     nullptr,
     nullptr,
     instance,
     nullptr));
+  gInstanceCreatingWindow = nullptr;
 
   if (!mHwnd) {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
@@ -145,8 +151,10 @@ void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
 
   gInstances.emplace(mHwnd.get(), this);
 
-  mDPIScale = static_cast<float>(GetDpiForWindow(mHwnd.get()))
-    / USER_DEFAULT_SCREEN_DPI;
+  if (!mDPI) {
+    mDPI = GetDpiForWindow(mHwnd.get());
+    mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
+  }
 }
 
 void Win32D3D12GaneshWindow::InitializeD3D() {
@@ -355,24 +363,40 @@ void Win32D3D12GaneshWindow::ResizeIfNeeded() {
     }
   }
 
-  if (mPendingResize) {
-    this->CleanupFrameContexts();
-    CheckHResult(mSwapChain->ResizeBuffers(
-      0,
-      mPendingResize->fWidth,
-      mPendingResize->fHeight,
-      DXGI_FORMAT_UNKNOWN,
-      0));
-    this->CreateRenderTargets();
-
-    mWindowSize = *mPendingResize;
-    mPendingResize = std::nullopt;
+  if (mPendingResize == mWindowSize) {
+    mPendingResize.reset();
+    return;
   }
+
+  if (!mPendingResize) {
+    return;
+  }
+
+  this->CleanupFrameContexts();
+  CheckHResult(mSwapChain->ResizeBuffers(
+    0,
+    mPendingResize->fWidth,
+    mPendingResize->fHeight,
+    DXGI_FORMAT_UNKNOWN,
+    0));
+  this->CreateRenderTargets();
+
+  mWindowSize = std::move(*mPendingResize);
+  mPendingResize.reset();
 }
+
 void Win32D3D12GaneshWindow::EndFrame() {
   mFUIRoot.EndFrame();
 
-  this->ResizeIfNeeded();
+  if (!mHwnd) [[unlikely]] {
+    this->InitializeWindow();
+    if (!mHwnd) {
+      mExitCode = EXIT_FAILURE;
+      return;
+    }
+  } else {
+    this->ResizeIfNeeded();
+  }
 
   auto& frame = mFrames.at(mFrameIndex);
   mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
@@ -445,44 +469,60 @@ void Win32D3D12GaneshWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
   MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
 }
 
-LRESULT Win32D3D12GaneshWindow::WindowProc(
+LRESULT Win32D3D12GaneshWindow::StaticWindowProc(
   HWND hwnd,
   UINT uMsg,
   WPARAM wParam,
-  LPARAM lParam) noexcept {
+  LPARAM lParam) {
   auto it = gInstances.find(hwnd);
   if (it != gInstances.end()) {
     auto& self = *it->second;
     if (hwnd == self.mHwnd.get()) {
-      return self.WindowProc(uMsg, wParam, lParam);
+      return self.WindowProc(hwnd, uMsg, wParam, lParam);
     }
 #ifndef NDEBUG
     // Should *always* match above
     __debugbreak();
 #endif
   }
+  if (gInstanceCreatingWindow) {
+    return gInstanceCreatingWindow->WindowProc(hwnd, uMsg, wParam, lParam);
+  }
 #ifndef NDEBUG
-  // TODO: handle pre-window-creation messages (including WM_GETMINMAXINFO) then
-  // uncomment this
-  // __debugbreak();
+  __debugbreak();
 #endif
-  auto instance = gInstances;
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
 LRESULT
 Win32D3D12GaneshWindow::WindowProc(
+  HWND hwnd,
   UINT uMsg,
   WPARAM wParam,
-  LPARAM lParam) noexcept {
+  LPARAM lParam) {
+  if (mHwnd && hwnd != mHwnd.get()) {
+    throw std::logic_error("hwnd mismatch");
+  }
   namespace fui = FredEmmott::GUI;
   switch (uMsg) {
     case WM_SETTINGCHANGE:
       fui::StaticTheme::Refresh();
       break;
     case WM_GETMINMAXINFO: {
+      if (!mDPI) {
+        mDPI = GetDpiForWindow(hwnd);
+        mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
+        CalculateMinimumWindowSize();
+      }
+
       if (!mMinimumWindowSize) {
-        break;
+        if (!mMinimumContentSizeInDIPs) {
+#ifndef NDEBUG
+          __debugbreak();
+#endif
+          break;
+        }
+        this->CalculateMinimumWindowSize();
       }
       auto* minInfo = reinterpret_cast<MINMAXINFO*>(lParam);
       minInfo->ptMinTrackSize.x = mMinimumWindowSize->fWidth;
@@ -578,7 +618,7 @@ Win32D3D12GaneshWindow::WindowProc(
       mExitCode = 0;
       break;
   }
-  return DefWindowProc(mHwnd.get(), uMsg, wParam, lParam);
+  return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
 void Win32D3D12GaneshWindow::CleanupFrameContexts() {
