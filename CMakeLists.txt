@@ -9,6 +9,8 @@ add_compile_options(
   "/EHsc"
   # Include content and marker in error messages
   "/diagnostics:caret"
+  # Source and execution charset
+  "/utf-8"
 )
 
 if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
