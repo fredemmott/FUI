@@ -15,8 +15,23 @@
 #include <expected>
 #include <optional>
 
+struct WindowOptions {
+  std::string mTitle;
+
+  /** Initial window size
+   *
+   * 0 = computed minimum width for content
+   * You may also want CW_USEDEFAULT.
+   */
+  SkISize mInitialSize {};
+
+  std::string mClass;
+  HWND mParentWindow {nullptr};
+};
+
 class Win32Direct3D12GaneshWindow final {
  public:
+  using Options = WindowOptions;
   Win32Direct3D12GaneshWindow() = delete;
   Win32Direct3D12GaneshWindow(const Win32Direct3D12GaneshWindow&) = delete;
   Win32Direct3D12GaneshWindow(Win32Direct3D12GaneshWindow&&) = delete;
@@ -25,11 +40,10 @@ class Win32Direct3D12GaneshWindow final {
   Win32Direct3D12GaneshWindow& operator=(Win32Direct3D12GaneshWindow&&)
     = delete;
 
-  void InitializeWindow();
   explicit Win32Direct3D12GaneshWindow(
     HINSTANCE instance,
     int showCommand,
-    std::string_view windowTitle);
+    const Options& options = {});
   ~Win32Direct3D12GaneshWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
@@ -49,7 +63,7 @@ class Win32Direct3D12GaneshWindow final {
 
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};
-  std::string mWindowTitle;
+  Options mOptions {};
 
   std::optional<int> mExitCode;
 
@@ -95,7 +109,8 @@ class Win32Direct3D12GaneshWindow final {
 
   std::chrono::steady_clock::time_point mBeginFrameTime;
 
-  void CreateNativeWindow(HINSTANCE);
+  void InitializeWindow();
+  void CreateNativeWindow();
   void InitializeD3D();
   void InitializeSkia();
   void ConfigureD3DDebugLayer();

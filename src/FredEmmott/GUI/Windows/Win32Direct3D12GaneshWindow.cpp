@@ -13,6 +13,7 @@
 #include <skia/gpu/GrDirectContext.h>
 #include <skia/gpu/d3d/GrD3DBackendContext.h>
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
+#include <wil/win32_helpers.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
@@ -27,7 +28,16 @@
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
 
-static void PopulateMouseEvent(
+namespace {
+
+std::wstring GetDefaultWindowClassName() {
+  const auto thisExe = wil::QueryFullProcessImageNameW(GetCurrentProcess(), 0);
+  return std::format(
+    L"FUI Window - {}",
+    std::filesystem::path(thisExe.get()).filename().wstring());
+}
+
+void PopulateMouseEvent(
   fui::MouseEvent* e,
   WPARAM wParam,
   LPARAM lParam,
@@ -55,7 +65,7 @@ static void PopulateMouseEvent(
   }
 }
 
-static inline void CheckHResult(
+void CheckHResult(
   const HRESULT ret,
   const std::source_location& caller = std::source_location::current()) {
   if (SUCCEEDED(ret)) [[likely]] {
@@ -76,13 +86,33 @@ static inline void CheckHResult(
   throw std::system_error(ec);
 }
 
+std::wstring Utf8ToWide(std::string_view s) {
+  const auto retCharCount = MultiByteToWideChar(
+    CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s.size(), nullptr, 0);
+  std::wstring ret;
+  ret.resize(retCharCount);
+  MultiByteToWideChar(
+    CP_UTF8,
+    MB_ERR_INVALID_CHARS,
+    s.data(),
+    s.size(),
+    ret.data(),
+    retCharCount);
+  if (const auto i = ret.find_last_of(L'\0'); i != std::wstring::npos) {
+    ret.erase(i);
+  }
+  return ret;
+}
+
+}// namespace
+
 thread_local decltype(Win32Direct3D12GaneshWindow::gInstances)
   Win32Direct3D12GaneshWindow::gInstances {};
 thread_local Win32Direct3D12GaneshWindow*
   Win32Direct3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
 
 void Win32Direct3D12GaneshWindow::InitializeWindow() {
-  this->CreateNativeWindow(mInstanceHandle);
+  this->CreateNativeWindow();
   this->InitializeD3D();
   this->InitializeSkia();
   this->CreateRenderTargets();
@@ -92,43 +122,29 @@ void Win32Direct3D12GaneshWindow::InitializeWindow() {
 Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
   HINSTANCE hInstance,
   int nCmdShow,
-  std::string_view title)
-  : mInstanceHandle(hInstance), mShowCommand(nCmdShow), mWindowTitle(title) {
+  const Options& options)
+  : mInstanceHandle(hInstance), mShowCommand(nCmdShow), mOptions(options) {
 }
 
-void Win32Direct3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
+void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
+  const std::wstring className = mOptions.mClass.empty()
+    ? GetDefaultWindowClassName()
+    : Utf8ToWide(mOptions.mClass);
+
   const WNDCLASSW wc {
     .lpfnWndProc = &StaticWindowProc,
-    .hInstance = instance,
-    .lpszClassName = L"Hello Skia",
+    .hInstance = mInstanceHandle,
+    .lpszClassName = className.c_str(),
   };
   const auto classAtom = RegisterClassW(&wc);
 
   mWindowStyle = WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX);
   mWindowExStyle = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE;
 
-  const auto titleCharCount = MultiByteToWideChar(
-    CP_UTF8,
-    MB_ERR_INVALID_CHARS,
-    mWindowTitle.data(),
-    mWindowTitle.size(),
-    nullptr,
-    0);
-  std::wstring title;
-  title.resize(titleCharCount);
-  MultiByteToWideChar(
-    CP_UTF8,
-    MB_ERR_INVALID_CHARS,
-    mWindowTitle.data(),
-    mWindowTitle.size(),
-    title.data(),
-    titleCharCount);
-  if (const auto i = title.find_last_of(L'\0'); i != std::wstring::npos) {
-    title.erase(i);
-  }
-
   gInstanceCreatingWindow = this;
   mMinimumContentSizeInDIPs = mFUIRoot.GetMinimumSize();
+  const std::wstring title
+    = mOptions.mTitle.empty() ? L"FUI Window" : Utf8ToWide(mOptions.mTitle);
   mHwnd.reset(CreateWindowExW(
     mWindowExStyle,
     MAKEINTATOM(classAtom),
@@ -136,11 +152,11 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
     mWindowStyle,
     CW_USEDEFAULT,
     CW_USEDEFAULT,
-    0,
-    0,
+    mOptions.mInitialSize.fWidth,
+    mOptions.mInitialSize.fHeight,
     nullptr,
     nullptr,
-    instance,
+    mInstanceHandle,
     nullptr));
   gInstanceCreatingWindow = nullptr;
 
