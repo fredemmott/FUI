@@ -15,17 +15,16 @@
 #include <expected>
 #include <optional>
 
-class HelloSkiaWindow final {
+class Win32D3D12GaneshWindow final {
  public:
-  HelloSkiaWindow() = delete;
-  HelloSkiaWindow(const HelloSkiaWindow&) = delete;
-  HelloSkiaWindow(HelloSkiaWindow&&) = delete;
-  HelloSkiaWindow& operator=(const HelloSkiaWindow&) = delete;
-  HelloSkiaWindow& operator=(HelloSkiaWindow&&) = delete;
+  Win32D3D12GaneshWindow() = delete;
+  Win32D3D12GaneshWindow(const Win32D3D12GaneshWindow&) = delete;
+  Win32D3D12GaneshWindow(Win32D3D12GaneshWindow&&) = delete;
+  Win32D3D12GaneshWindow& operator=(const Win32D3D12GaneshWindow&) = delete;
+  Win32D3D12GaneshWindow& operator=(Win32D3D12GaneshWindow&&) = delete;
 
-  void InitializeSkia();
-  explicit HelloSkiaWindow(HINSTANCE instance);
-  ~HelloSkiaWindow();
+  explicit Win32D3D12GaneshWindow(HINSTANCE instance);
+  ~Win32D3D12GaneshWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
 
@@ -39,7 +38,8 @@ class HelloSkiaWindow final {
  private:
   static constexpr UINT SwapChainLength = 3;
 
-  static thread_local std::unordered_map<HWND, HelloSkiaWindow*> gInstances;
+  static thread_local std::unordered_map<HWND, Win32D3D12GaneshWindow*>
+    gInstances;
 
   wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;
@@ -87,6 +87,7 @@ class HelloSkiaWindow final {
 
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
+  void InitializeSkia();
   void ConfigureD3DDebugLayer();
 
   void CreateRenderTargets();

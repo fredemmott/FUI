@@ -76,17 +76,17 @@ static inline void CheckHResult(
   throw std::system_error(ec);
 }
 
-thread_local decltype(HelloSkiaWindow::gInstances)
-  HelloSkiaWindow::gInstances {};
+thread_local decltype(Win32D3D12GaneshWindow::gInstances)
+  Win32D3D12GaneshWindow::gInstances {};
 
-HelloSkiaWindow::HelloSkiaWindow(HINSTANCE instance) {
+Win32D3D12GaneshWindow::Win32D3D12GaneshWindow(HINSTANCE instance) {
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
   this->InitializeSkia();
   this->CreateRenderTargets();
 }
 
-void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
+void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
   const auto screenHeight = GetSystemMetrics(SM_CYSCREEN);
   const auto height = screenHeight / 2;
   const auto width = (height * 2) / 3;
@@ -126,7 +126,7 @@ void HelloSkiaWindow::CreateNativeWindow(HINSTANCE instance) {
     / USER_DEFAULT_SCREEN_DPI;
 }
 
-void HelloSkiaWindow::InitializeD3D() {
+void Win32D3D12GaneshWindow::InitializeD3D() {
 #ifndef NDEBUG
   wil::com_ptr<ID3D12Debug> d3d12Debug;
   D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
@@ -206,7 +206,7 @@ void HelloSkiaWindow::InitializeD3D() {
   };
 }
 
-void HelloSkiaWindow::InitializeSkia() {
+void Win32D3D12GaneshWindow::InitializeSkia() {
   GrD3DBackendContext skiaD3DContext {};
   skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
   skiaD3DContext.fDevice.retain(mD3DDevice.get());
@@ -215,7 +215,7 @@ void HelloSkiaWindow::InitializeSkia() {
   mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
 }
 
-void HelloSkiaWindow::ConfigureD3DDebugLayer() {
+void Win32D3D12GaneshWindow::ConfigureD3DDebugLayer() {
 #ifndef NDEBUG
   auto infoQueue = mD3DDevice.try_query<ID3D12InfoQueue1>();
   if (!infoQueue) {
@@ -255,7 +255,7 @@ void HelloSkiaWindow::ConfigureD3DDebugLayer() {
 #endif
 }
 
-HelloSkiaWindow::~HelloSkiaWindow() {
+Win32D3D12GaneshWindow::~Win32D3D12GaneshWindow() {
   this->CleanupFrameContexts();
 
   const auto it = std::ranges::find(
@@ -265,7 +265,7 @@ HelloSkiaWindow::~HelloSkiaWindow() {
   }
 }
 
-void HelloSkiaWindow::CreateRenderTargets() {
+void Win32D3D12GaneshWindow::CreateRenderTargets() {
   const auto rtvStart = mD3DRTVHeap->GetCPUDescriptorHandleForHeapStart();
   const auto rtvStep = mD3DDevice->GetDescriptorHandleIncrementSize(
     D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -305,11 +305,11 @@ void HelloSkiaWindow::CreateRenderTargets() {
   }
 }
 
-HWND HelloSkiaWindow::GetHWND() const noexcept {
+HWND Win32D3D12GaneshWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
-void HelloSkiaWindow::ResizeIfNeeded() {
+void Win32D3D12GaneshWindow::ResizeIfNeeded() {
   const auto contentMin = mFUIRoot.GetMinimumSize();
   if (contentMin != mMinimumContentSizeInDIPs) {
     mMinimumContentSizeInDIPs = contentMin;
@@ -346,7 +346,7 @@ void HelloSkiaWindow::ResizeIfNeeded() {
     mPendingResize = std::nullopt;
   }
 }
-void HelloSkiaWindow::EndFrame() {
+void Win32D3D12GaneshWindow::EndFrame() {
   mFUIRoot.EndFrame();
 
   this->ResizeIfNeeded();
@@ -389,7 +389,7 @@ void HelloSkiaWindow::EndFrame() {
   CheckHResult(mSwapChain->Present(0, 0));
 }
 
-std::expected<void, int> HelloSkiaWindow::BeginFrame() {
+std::expected<void, int> Win32D3D12GaneshWindow::BeginFrame() {
   mBeginFrameTime = std::chrono::steady_clock::now();
   MSG msg {};
   while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -403,7 +403,7 @@ std::expected<void, int> HelloSkiaWindow::BeginFrame() {
   return {};
 }
 
-void HelloSkiaWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
+void Win32D3D12GaneshWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
   const {
   if (minFPS == std::numeric_limits<unsigned int>::max()) {
     return;
@@ -422,7 +422,7 @@ void HelloSkiaWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
   MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
 }
 
-LRESULT HelloSkiaWindow::WindowProc(
+LRESULT Win32D3D12GaneshWindow::WindowProc(
   HWND hwnd,
   UINT uMsg,
   WPARAM wParam,
@@ -448,7 +448,10 @@ LRESULT HelloSkiaWindow::WindowProc(
 }
 
 LRESULT
-HelloSkiaWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+Win32D3D12GaneshWindow::WindowProc(
+  UINT uMsg,
+  WPARAM wParam,
+  LPARAM lParam) noexcept {
   namespace fui = FredEmmott::GUI;
   switch (uMsg) {
     case WM_SETTINGCHANGE:
@@ -555,7 +558,7 @@ HelloSkiaWindow::WindowProc(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
   return DefWindowProc(mHwnd.get(), uMsg, wParam, lParam);
 }
 
-void HelloSkiaWindow::CleanupFrameContexts() {
+void Win32D3D12GaneshWindow::CleanupFrameContexts() {
   mSkContext->flushAndSubmit(GrSyncCpu::kYes);
 
   const auto fenceValue = ++mFenceValue;
@@ -572,7 +575,7 @@ void HelloSkiaWindow::CleanupFrameContexts() {
 
   mFrameIndex = 0;
 }
-SkISize HelloSkiaWindow::CalculateMinimumWindowSize() {
+SkISize Win32D3D12GaneshWindow::CalculateMinimumWindowSize() {
   if (!mMinimumContentSizeInDIPs) {
     throw std::logic_error(
       "Can't calculate minimum window size without minimum content size");

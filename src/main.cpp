@@ -1,16 +1,8 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include <FredEmmott/GUI/Immediate/Button.hpp>
-#include <FredEmmott/GUI/Immediate/Card.hpp>
-#include <FredEmmott/GUI/Immediate/Disabled.hpp>
-#include <FredEmmott/GUI/Immediate/FontIcon.hpp>
-#include <FredEmmott/GUI/Immediate/Label.hpp>
-#include <FredEmmott/GUI/Immediate/StackPanel.hpp>
-#include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
+#include <FredEmmott/GUI.hpp>
 #include <print>
-
-#include "Win32-Ganesh-D3D12.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -20,6 +12,7 @@ static void AppTick() {
   fuii::BeginVStackPanel();
   fuii::Label("Disable all widgets");
   static bool sDisableAll = false;
+  // (void) cast to ignore [[nodiscard]] is-changed return value
   (void)fuii::ToggleSwitch(&sDisableAll);
   fuii::BeginDisabled(sDisableAll);
 
@@ -59,9 +52,11 @@ int WINAPI wWinMain(
   CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-  HelloSkiaWindow window(hInstance);
+  fui::Window window(hInstance);
   ShowWindow(window.GetHWND(), nCmdShow);
   while (true) {
+    window.WaitFrame();
+
     const auto ok = window.BeginFrame();
     if (!ok) {
       return ok.error();
@@ -70,6 +65,5 @@ int WINAPI wWinMain(
     AppTick();
 
     window.EndFrame();
-    window.WaitFrame();
   }
 }
