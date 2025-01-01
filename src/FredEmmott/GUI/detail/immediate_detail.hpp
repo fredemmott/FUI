@@ -15,7 +15,8 @@ using namespace Widgets;
 using namespace widget_detail;
 
 struct StackEntry final {
-  std::vector<Widget*> mChildren;
+  std::vector<Widget*> mPending;
+  std::vector<Widget*> mNewSiblings;
   uint64_t mNextIndex {};
 };
 
@@ -23,20 +24,13 @@ extern thread_local std::vector<StackEntry> tStack;
 
 template <std::derived_from<Widget> T = Widget>
 T* GetCurrentNode() {
-  const auto& [nodes, i] = tStack.back();
-  if (i == nodes.size()) {
-    return nullptr;
-  }
-  return widget_cast<T>(nodes.at(i));
+  return widget_cast<T>(tStack.back().mNewSiblings.back());
 }
 
 template <std::derived_from<Widget> T = Widget>
 T* GetPreviousNode() {
-  const auto& [nodes, i] = tStack.back();
-  if (i - 1 >= nodes.size()) {
-    return nullptr;
-  }
-  return widget_cast<T>(nodes.at(i - 1));
+  const auto& frame = tStack.back();
+  return widget_cast<T>(frame.mNewSiblings.end() - 2);
 }
 
 template <std::derived_from<Widget> T = Widget>
@@ -44,14 +38,9 @@ T* GetCurrentParentNode() {
   if (tStack.size() < 1) {
     return nullptr;
   }
-  const auto& [nodes, i] = tStack.at(tStack.size() - 2);
-  if (i == nodes.size()) {
-    return nullptr;
-  }
-  return widget_cast<T>(nodes.at(i));
+  const auto& frame = tStack.at(tStack.size() - 2);
+  return widget_cast<T>(frame.mNewSiblings.back());
 }
-
-void TruncateUnlessNextIdEquals(std::size_t id);
 
 class MangledID {
  public:

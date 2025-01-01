@@ -36,17 +36,21 @@ struct BeginWidget {
 
  private:
   static void Begin(const Widgets::WidgetStyles& styles, MangledID id) {
-    TruncateUnlessNextIdEquals(id);
+    auto& frame = tStack.back();
+    auto pending = std::ranges::find(frame.mPending, id, &Widget::GetID);
 
-    auto& [siblings, i] = tStack.back();
-    if (i == siblings.size()) {
-      siblings.push_back(new T(id, TFixedArgs...));
+    if (pending == frame.mPending.end()) {
+      frame.mNewSiblings.push_back(new T(id, TFixedArgs...));
+    } else {
+      frame.mNewSiblings.push_back(*pending);
+      frame.mPending.erase(pending);
     }
 
     auto it = GetCurrentNode();
     it->SetExplicitStyles(styles);
 
     tStack.emplace_back(it->GetChildren() | std::ranges::to<std::vector>());
+    tStack.back().mNewSiblings.reserve(tStack.back().mPending.size());
   }
 };
 
@@ -60,7 +64,7 @@ void EndWidget() {
   const auto back = std::move(tStack.back());
   tStack.pop_back();
 
-  GetCurrentNode()->SetChildren(back.mChildren);
+  GetCurrentNode()->SetChildren(back.mNewSiblings);
   ++tStack.back().mNextIndex;
 }
 

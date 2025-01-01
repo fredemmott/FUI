@@ -28,7 +28,7 @@ void Root::BeginFrame() {
 
   tStack.push_back({});
   if (mWidget) {
-    tStack.front().mChildren.push_back(mWidget.get());
+    tStack.front().mPending.push_back(mWidget.get());
   }
 }
 
@@ -36,7 +36,7 @@ void Root::EndFrame() {
   if (tStack.size() != 1) {
     throw std::logic_error("EndFrame() called, but children are open");
   }
-  const auto widgets = tStack.front().mChildren;
+  const auto widgets = std::move(tStack.front().mNewSiblings);
   tStack.clear();
 
   if (widgets.empty()) {
