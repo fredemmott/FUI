@@ -1,7 +1,7 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include "Win32-Ganesh-D3D12.hpp"
+#include "Win32Direct3D12GaneshWindow.hpp"
 
 #include <shlobj_core.h>
 #include <skia/core/SkCanvas.h>
@@ -76,12 +76,12 @@ static inline void CheckHResult(
   throw std::system_error(ec);
 }
 
-thread_local decltype(Win32D3D12GaneshWindow::gInstances)
-  Win32D3D12GaneshWindow::gInstances {};
-thread_local Win32D3D12GaneshWindow*
-  Win32D3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
+thread_local decltype(Win32Direct3D12GaneshWindow::gInstances)
+  Win32Direct3D12GaneshWindow::gInstances {};
+thread_local Win32Direct3D12GaneshWindow*
+  Win32Direct3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
 
-void Win32D3D12GaneshWindow::InitializeWindow() {
+void Win32Direct3D12GaneshWindow::InitializeWindow() {
   this->CreateNativeWindow(mInstanceHandle);
   this->InitializeD3D();
   this->InitializeSkia();
@@ -89,14 +89,14 @@ void Win32D3D12GaneshWindow::InitializeWindow() {
   ShowWindow(mHwnd.get(), mShowCommand);
 }
 
-Win32D3D12GaneshWindow::Win32D3D12GaneshWindow(
+Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
   HINSTANCE hInstance,
   int nCmdShow,
   std::string_view title)
   : mInstanceHandle(hInstance), mShowCommand(nCmdShow), mWindowTitle(title) {
 }
 
-void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
+void Win32Direct3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
   const WNDCLASSW wc {
     .lpfnWndProc = &StaticWindowProc,
     .hInstance = instance,
@@ -157,7 +157,7 @@ void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
   }
 }
 
-void Win32D3D12GaneshWindow::InitializeD3D() {
+void Win32Direct3D12GaneshWindow::InitializeD3D() {
 #ifndef NDEBUG
   wil::com_ptr<ID3D12Debug> d3d12Debug;
   D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
@@ -237,7 +237,7 @@ void Win32D3D12GaneshWindow::InitializeD3D() {
   };
 }
 
-void Win32D3D12GaneshWindow::InitializeSkia() {
+void Win32Direct3D12GaneshWindow::InitializeSkia() {
   GrD3DBackendContext skiaD3DContext {};
   skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
   skiaD3DContext.fDevice.retain(mD3DDevice.get());
@@ -246,7 +246,7 @@ void Win32D3D12GaneshWindow::InitializeSkia() {
   mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
 }
 
-void Win32D3D12GaneshWindow::ConfigureD3DDebugLayer() {
+void Win32Direct3D12GaneshWindow::ConfigureD3DDebugLayer() {
 #ifndef NDEBUG
   auto infoQueue = mD3DDevice.try_query<ID3D12InfoQueue1>();
   if (!infoQueue) {
@@ -286,7 +286,7 @@ void Win32D3D12GaneshWindow::ConfigureD3DDebugLayer() {
 #endif
 }
 
-Win32D3D12GaneshWindow::~Win32D3D12GaneshWindow() {
+Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
   this->CleanupFrameContexts();
 
   const auto it = std::ranges::find(
@@ -296,7 +296,7 @@ Win32D3D12GaneshWindow::~Win32D3D12GaneshWindow() {
   }
 }
 
-void Win32D3D12GaneshWindow::CreateRenderTargets() {
+void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
   const auto rtvStart = mD3DRTVHeap->GetCPUDescriptorHandleForHeapStart();
   const auto rtvStep = mD3DDevice->GetDescriptorHandleIncrementSize(
     D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -336,11 +336,11 @@ void Win32D3D12GaneshWindow::CreateRenderTargets() {
   }
 }
 
-HWND Win32D3D12GaneshWindow::GetHWND() const noexcept {
+HWND Win32Direct3D12GaneshWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
-void Win32D3D12GaneshWindow::ResizeIfNeeded() {
+void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
   const auto contentMin = mFUIRoot.GetMinimumSize();
   if (contentMin != mMinimumContentSizeInDIPs) {
     mMinimumContentSizeInDIPs = contentMin;
@@ -385,7 +385,7 @@ void Win32D3D12GaneshWindow::ResizeIfNeeded() {
   mPendingResize.reset();
 }
 
-void Win32D3D12GaneshWindow::EndFrame() {
+void Win32Direct3D12GaneshWindow::EndFrame() {
   mFUIRoot.EndFrame();
 
   if (!mHwnd) [[unlikely]] {
@@ -436,7 +436,7 @@ void Win32D3D12GaneshWindow::EndFrame() {
   CheckHResult(mSwapChain->Present(0, 0));
 }
 
-std::expected<void, int> Win32D3D12GaneshWindow::BeginFrame() {
+std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
   mBeginFrameTime = std::chrono::steady_clock::now();
   MSG msg {};
   while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -450,8 +450,9 @@ std::expected<void, int> Win32D3D12GaneshWindow::BeginFrame() {
   return {};
 }
 
-void Win32D3D12GaneshWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
-  const {
+void Win32Direct3D12GaneshWindow::WaitFrame(
+  unsigned int minFPS,
+  unsigned int maxFPS) const {
   if (minFPS == std::numeric_limits<unsigned int>::max()) {
     return;
   }
@@ -469,7 +470,7 @@ void Win32D3D12GaneshWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
   MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
 }
 
-LRESULT Win32D3D12GaneshWindow::StaticWindowProc(
+LRESULT Win32Direct3D12GaneshWindow::StaticWindowProc(
   HWND hwnd,
   UINT uMsg,
   WPARAM wParam,
@@ -495,7 +496,7 @@ LRESULT Win32D3D12GaneshWindow::StaticWindowProc(
 }
 
 LRESULT
-Win32D3D12GaneshWindow::WindowProc(
+Win32Direct3D12GaneshWindow::WindowProc(
   HWND hwnd,
   UINT uMsg,
   WPARAM wParam,
@@ -621,7 +622,7 @@ Win32D3D12GaneshWindow::WindowProc(
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
-void Win32D3D12GaneshWindow::CleanupFrameContexts() {
+void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
   mSkContext->flushAndSubmit(GrSyncCpu::kYes);
 
   const auto fenceValue = ++mFenceValue;
@@ -638,7 +639,7 @@ void Win32D3D12GaneshWindow::CleanupFrameContexts() {
 
   mFrameIndex = 0;
 }
-SkISize Win32D3D12GaneshWindow::CalculateMinimumWindowSize() {
+SkISize Win32Direct3D12GaneshWindow::CalculateMinimumWindowSize() {
   if (!mMinimumContentSizeInDIPs) {
     throw std::logic_error(
       "Can't calculate minimum window size without minimum content size");

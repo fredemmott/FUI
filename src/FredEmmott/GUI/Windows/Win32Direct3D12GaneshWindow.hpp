@@ -15,20 +15,22 @@
 #include <expected>
 #include <optional>
 
-class Win32D3D12GaneshWindow final {
+class Win32Direct3D12GaneshWindow final {
  public:
-  Win32D3D12GaneshWindow() = delete;
-  Win32D3D12GaneshWindow(const Win32D3D12GaneshWindow&) = delete;
-  Win32D3D12GaneshWindow(Win32D3D12GaneshWindow&&) = delete;
-  Win32D3D12GaneshWindow& operator=(const Win32D3D12GaneshWindow&) = delete;
-  Win32D3D12GaneshWindow& operator=(Win32D3D12GaneshWindow&&) = delete;
+  Win32Direct3D12GaneshWindow() = delete;
+  Win32Direct3D12GaneshWindow(const Win32Direct3D12GaneshWindow&) = delete;
+  Win32Direct3D12GaneshWindow(Win32Direct3D12GaneshWindow&&) = delete;
+  Win32Direct3D12GaneshWindow& operator=(const Win32Direct3D12GaneshWindow&)
+    = delete;
+  Win32Direct3D12GaneshWindow& operator=(Win32Direct3D12GaneshWindow&&)
+    = delete;
 
   void InitializeWindow();
-  explicit Win32D3D12GaneshWindow(
+  explicit Win32Direct3D12GaneshWindow(
     HINSTANCE instance,
     int showCommand,
     std::string_view windowTitle);
-  ~Win32D3D12GaneshWindow();
+  ~Win32Direct3D12GaneshWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
 
@@ -41,9 +43,9 @@ class Win32D3D12GaneshWindow final {
 
  private:
   static constexpr UINT SwapChainLength = 3;
-  static thread_local std::unordered_map<HWND, Win32D3D12GaneshWindow*>
+  static thread_local std::unordered_map<HWND, Win32Direct3D12GaneshWindow*>
     gInstances;
-  static thread_local Win32D3D12GaneshWindow* gInstanceCreatingWindow;
+  static thread_local Win32Direct3D12GaneshWindow* gInstanceCreatingWindow;
 
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};

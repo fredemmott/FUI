@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/Windows/Win32-Ganesh-D3D12.hpp>
+#include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
 
 namespace FredEmmott::GUI {
 
-using Window = Win32D3D12GaneshWindow;
+using Window = Win32Direct3D12GaneshWindow;
 
 }

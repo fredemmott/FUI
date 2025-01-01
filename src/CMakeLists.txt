@@ -51,8 +51,7 @@ add_executable(
   FredEmmott/GUI/Widgets/WidgetStyles.cpp FredEmmott/GUI/Widgets/WidgetStyles.hpp
   FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
-  FredEmmott/GUI/Windows/Win32-Ganesh-D3D12.cpp
-  FredEmmott/GUI/Windows/Win32-Ganesh-D3D12.hpp
+  FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
