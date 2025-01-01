@@ -128,7 +128,7 @@ void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
     mHwnd.get(), DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
 
   DWM_SYSTEMBACKDROP_TYPE backdropType {DWMSBT_MAINWINDOW};
-  CheckHResult(DwmSetWindowAttribute(
+  mHaveSystemBackdrop = SUCCEEDED(DwmSetWindowAttribute(
     mHwnd.get(),
     DWMWA_SYSTEMBACKDROP_TYPE,
     &backdropType,
@@ -471,6 +471,10 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
     mWindowSize.fHeight / mDPIScale,
   };
 
+  canvas->clear(
+    mHaveSystemBackdrop
+      ? fui::Color {SK_ColorTRANSPARENT}
+      : fui::Color {fui::StaticTheme::SolidBackgroundFillColorBase});
   mFUIRoot.Paint(canvas, size);
 
   GrD3DFenceInfo fenceInfo {};

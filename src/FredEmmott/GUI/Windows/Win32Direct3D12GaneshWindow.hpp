@@ -79,6 +79,7 @@ class Win32Direct3D12GaneshWindow final {
   wil::com_ptr<IDCompositionDevice> mCompositionDevice;
   wil::com_ptr<IDCompositionTarget> mCompositionTarget;
   wil::com_ptr<IDCompositionVisual> mCompositionVisual;
+  bool mHaveSystemBackdrop {false};
 
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;

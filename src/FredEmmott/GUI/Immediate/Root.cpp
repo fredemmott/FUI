@@ -71,7 +71,6 @@ void Root::Paint(SkCanvas* canvas, SkSize size) const {
   }
   canvas->save();
   canvas->clipRect(SkRect::MakeXYWH(0, 0, size.width(), size.height()));
-  canvas->clear(Color {SK_ColorTRANSPARENT});
 
   YGNodeCalculateLayout(
     mYogaRoot.get(), size.width(), size.height(), YGDirectionLTR);
