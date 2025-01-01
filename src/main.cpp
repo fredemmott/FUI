@@ -55,6 +55,7 @@ int WINAPI wWinMain(
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
   fui::Window window(hInstance, nCmdShow, {"FUI Demo"});
+  fui::Window window2(hInstance, nCmdShow, {"FUI Demo 2"});
   while (true) {
     // Variable FPS - wait for whichever is sooner:
     // - input
@@ -72,5 +73,10 @@ int WINAPI wWinMain(
     AppTick();
 
     window.EndFrame();
+
+    if (window2.BeginFrame()) {
+      fuii::Label("Hello, world");
+      window2.EndFrame();
+    }
   }
 }

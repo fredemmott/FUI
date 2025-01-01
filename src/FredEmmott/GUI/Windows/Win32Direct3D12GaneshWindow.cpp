@@ -65,13 +65,9 @@ void PopulateMouseEvent(
   }
 }
 
-void CheckHResult(
+void ThrowHResult(
   const HRESULT ret,
   const std::source_location& caller = std::source_location::current()) {
-  if (SUCCEEDED(ret)) [[likely]] {
-    return;
-  }
-
   const std::error_code ec {ret, std::system_category()};
 
   const auto msg = std::format(
@@ -84,6 +80,15 @@ void CheckHResult(
     ec.message());
   OutputDebugStringA(msg.c_str());
   throw std::system_error(ec);
+}
+
+void CheckHResult(
+  const HRESULT ret,
+  const std::source_location& caller = std::source_location::current()) {
+  if (SUCCEEDED(ret)) [[likely]] {
+    return;
+  }
+  ThrowHResult(ret, caller);
 }
 
 std::wstring Utf8ToWide(std::string_view s) {
@@ -136,7 +141,12 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     .hInstance = mInstanceHandle,
     .lpszClassName = className.c_str(),
   };
-  const auto classAtom = RegisterClassW(&wc);
+  if (!RegisterClassW(&wc)) {
+    if (const auto error = GetLastError();
+        error != ERROR_CLASS_ALREADY_EXISTS) {
+      ThrowHResult(HRESULT_FROM_WIN32(error));
+    }
+  }
 
   mWindowStyle = WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX);
   mWindowExStyle = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE;
@@ -147,7 +157,7 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     = mOptions.mTitle.empty() ? L"FUI Window" : Utf8ToWide(mOptions.mTitle);
   mHwnd.reset(CreateWindowExW(
     mWindowExStyle,
-    MAKEINTATOM(classAtom),
+    className.c_str(),
     title.c_str(),
     mWindowStyle,
     CW_USEDEFAULT,
