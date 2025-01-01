@@ -23,7 +23,9 @@ class Win32D3D12GaneshWindow final {
   Win32D3D12GaneshWindow& operator=(const Win32D3D12GaneshWindow&) = delete;
   Win32D3D12GaneshWindow& operator=(Win32D3D12GaneshWindow&&) = delete;
 
-  explicit Win32D3D12GaneshWindow(HINSTANCE instance);
+  explicit Win32D3D12GaneshWindow(
+    HINSTANCE instance,
+    std::string_view windowTitle);
   ~Win32D3D12GaneshWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
@@ -37,9 +39,10 @@ class Win32D3D12GaneshWindow final {
 
  private:
   static constexpr UINT SwapChainLength = 3;
-
   static thread_local std::unordered_map<HWND, Win32D3D12GaneshWindow*>
     gInstances;
+
+  std::string mWindowTitle;
 
   wil::unique_hwnd mHwnd;
   std::optional<int> mExitCode;

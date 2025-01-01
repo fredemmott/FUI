@@ -79,7 +79,10 @@ static inline void CheckHResult(
 thread_local decltype(Win32D3D12GaneshWindow::gInstances)
   Win32D3D12GaneshWindow::gInstances {};
 
-Win32D3D12GaneshWindow::Win32D3D12GaneshWindow(HINSTANCE instance) {
+Win32D3D12GaneshWindow::Win32D3D12GaneshWindow(
+  HINSTANCE instance,
+  std::string_view title)
+  : mWindowTitle(title) {
   this->CreateNativeWindow(instance);
   this->InitializeD3D();
   this->InitializeSkia();
@@ -101,10 +104,30 @@ void Win32D3D12GaneshWindow::CreateNativeWindow(HINSTANCE instance) {
   mWindowStyle = WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX);
   mWindowExStyle = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE;
 
+  const auto titleCharCount = MultiByteToWideChar(
+    CP_UTF8,
+    MB_ERR_INVALID_CHARS,
+    mWindowTitle.data(),
+    mWindowTitle.size(),
+    nullptr,
+    0);
+  std::wstring title;
+  title.resize(titleCharCount);
+  MultiByteToWideChar(
+    CP_UTF8,
+    MB_ERR_INVALID_CHARS,
+    mWindowTitle.data(),
+    mWindowTitle.size(),
+    title.data(),
+    titleCharCount);
+  if (const auto i = title.find_last_of(L'\0'); i != std::wstring::npos) {
+    title.erase(i);
+  }
+
   mHwnd.reset(CreateWindowExW(
     mWindowExStyle,
     MAKEINTATOM(classAtom),
-    L"Hello Skia",
+    title.c_str(),
     mWindowStyle,
     CW_USEDEFAULT,
     CW_USEDEFAULT,
