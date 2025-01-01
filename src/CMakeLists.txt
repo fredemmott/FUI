@@ -79,6 +79,7 @@ target_link_libraries(
   skia
   yoga::yogacore
   # system
+  Dcomp
   Dwmapi
   User32
 )

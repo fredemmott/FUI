@@ -126,7 +126,15 @@ void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
 #endif
   DwmSetWindowAttribute(
     mHwnd.get(), DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
+
+  DWM_SYSTEMBACKDROP_TYPE backdropType {DWMSBT_MAINWINDOW};
+  CheckHResult(DwmSetWindowAttribute(
+    mHwnd.get(),
+    DWMWA_SYSTEMBACKDROP_TYPE,
+    &backdropType,
+    sizeof(backdropType)));
 }
+
 void Win32Direct3D12GaneshWindow::InitializeWindow() {
   this->CreateNativeWindow();
   this->InitializeD3D();
@@ -163,7 +171,8 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
   }
 
   mWindowStyle = WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX);
-  mWindowExStyle = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE;
+  mWindowExStyle
+    = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE | WS_EX_NOREDIRECTIONBITMAP;
 
   gInstanceCreatingWindow = this;
   mMinimumContentSizeInDIPs = mFUIRoot.GetMinimumSize();
@@ -195,6 +204,12 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     mDPI = GetDpiForWindow(mHwnd.get());
     mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
   }
+  RECT windowRect {};
+  GetWindowRect(mHwnd.get(), &windowRect);
+  mWindowSize = {
+    windowRect.right - windowRect.left,
+    windowRect.bottom - windowRect.top,
+  };
 }
 
 void Win32Direct3D12GaneshWindow::InitializeD3D() {
@@ -254,27 +269,28 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
       mD3DDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mD3DSRVHeap.put())));
   }
 
+  CheckHResult(
+    DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
+  CheckHResult(mCompositionDevice->CreateTargetForHwnd(
+    mHwnd.get(), true, mCompositionTarget.put()));
+  CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
+
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
+    .Width = static_cast<UINT>(mWindowSize.fWidth),
+    .Height = static_cast<UINT>(mWindowSize.fHeight),
     .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
     .SampleDesc = {1, 0},
     .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
     .BufferCount = SwapChainLength,
     .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-    .AlphaMode = DXGI_ALPHA_MODE_IGNORE,
+    .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
   };
 
-  CheckHResult(dxgiFactory->CreateSwapChainForHwnd(
-    mD3DCommandQueue.get(),
-    mHwnd.get(),
-    &swapChainDesc,
-    nullptr,
-    nullptr,
-    mSwapChain.put()));
-  CheckHResult(mSwapChain->GetDesc1(&swapChainDesc));
-  mWindowSize = {
-    static_cast<int32_t>(swapChainDesc.Width),
-    static_cast<int32_t>(swapChainDesc.Height),
-  };
+  CheckHResult(dxgiFactory->CreateSwapChainForComposition(
+    mD3DCommandQueue.get(), &swapChainDesc, nullptr, mSwapChain.put()));
+  mCompositionVisual->SetContent(mSwapChain.get());
+  mCompositionTarget->SetRoot(mCompositionVisual.get());
+  mCompositionDevice->Commit();
 }
 
 void Win32Direct3D12GaneshWindow::InitializeSkia() {
@@ -529,9 +545,6 @@ LRESULT Win32Direct3D12GaneshWindow::StaticWindowProc(
   if (gInstanceCreatingWindow) {
     return gInstanceCreatingWindow->WindowProc(hwnd, uMsg, wParam, lParam);
   }
-#ifndef NDEBUG
-  __debugbreak();
-#endif
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 

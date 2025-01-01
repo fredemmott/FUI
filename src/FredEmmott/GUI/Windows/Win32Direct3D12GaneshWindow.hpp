@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <core/SkCanvas.h>
 #include <d3d12.h>
+#include <dcomp.h>
 #include <dxgi1_4.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <wil/com.h>
@@ -74,6 +75,10 @@ class Win32Direct3D12GaneshWindow final {
   std::optional<SkISize> mPendingResize;
 
   FredEmmott::GUI::Immediate::Root mFUIRoot;
+
+  wil::com_ptr<IDCompositionDevice> mCompositionDevice;
+  wil::com_ptr<IDCompositionTarget> mCompositionTarget;
+  wil::com_ptr<IDCompositionVisual> mCompositionVisual;
 
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;
