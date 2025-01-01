@@ -57,6 +57,12 @@ int WINAPI wWinMain(
   fui::Window window(hInstance, "FUI Demo");
   ShowWindow(window.GetHWND(), nCmdShow);
   while (true) {
+    // Variable FPS - wait for whichever is sooner:
+    // - input
+    // - target frame interval
+    //
+    // The default target FPS varies; it is '0 fps - input only' usually, but
+    // is 60FPS when an animation is active.
     window.WaitFrame();
 
     const auto ok = window.BeginFrame();
