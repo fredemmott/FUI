@@ -314,6 +314,42 @@ HWND HelloSkiaWindow::GetHWND() const noexcept {
   return mHwnd.get();
 }
 
+void HelloSkiaWindow::RenderFUIContent() {
+  fuii::BeginCard();
+  fuii::BeginVStackPanel();
+  fuii::Label("Disable all widgets");
+  static bool sDisableAll = false;
+  (void)fuii::ToggleSwitch(&sDisableAll);
+  fuii::BeginDisabled(sDisableAll);
+
+  fuii::Label("Hello, world; this text doesn't make the button wider aeg");
+  static uint64_t frameCounter {};
+  fuii::Label("Frame {}##Frames", ++frameCounter);
+  if (fuii::Button("Click Me!")) {
+    std::println(stderr, "Clicked!");
+  }
+
+  static bool isOn = true;
+  if (fuii::ToggleSwitch(&isOn)) {
+    std::println(stderr, "Toggled to {}", isOn);
+  }
+
+  fuii::EndDisabled();
+
+  fuii::BeginHStackPanel();
+  fuii::FontIcon("\ueb51");// Heart
+  fuii::FontIcon("\ueb52");// HeartFill
+  fuii::FontIcon({
+    {"\ueb52", {{.mColor = SK_ColorRED}}},
+    {"\ueb51"},
+  });
+  fuii::Label("After stack");
+  fuii::EndStackPanel();
+
+  fuii::EndStackPanel();
+  fuii::EndCard();
+}
+
 void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   canvas->resetMatrix();
 
@@ -323,38 +359,7 @@ void HelloSkiaWindow::RenderSkiaContent(SkCanvas* canvas) {
   {
     mFUIRoot.BeginFrame();
 
-    fuii::BeginCard();
-    fuii::BeginVStackPanel();
-    fuii::Label("Disable all widgets");
-    static bool sDisableAll = false;
-    (void)fuii::ToggleSwitch(&sDisableAll);
-    fuii::BeginDisabled(sDisableAll);
-
-    fuii::Label("Hello, world; this text doesn't make the button wider aeg");
-    fuii::Label("Frame {}##Frames", mFrameCounter);
-    if (fuii::Button("Click Me!")) {
-      std::println(stderr, "Clicked!");
-    }
-
-    static bool isOn = true;
-    if (fuii::ToggleSwitch(&isOn)) {
-      std::println(stderr, "Toggled to {}", isOn);
-    }
-
-    fuii::EndDisabled();
-
-    fuii::BeginHStackPanel();
-    fuii::FontIcon("\ueb51");// Heart
-    fuii::FontIcon("\ueb52");// HeartFill
-    fuii::FontIcon({
-      {"\ueb52", {{.mColor = SK_ColorRED}}},
-      {"\ueb51"},
-    });
-    fuii::Label("After stack");
-    fuii::EndStackPanel();
-
-    fuii::EndStackPanel();
-    fuii::EndCard();
+    this->RenderFUIContent();
 
     mFUIRoot.EndFrame();
 
@@ -434,7 +439,6 @@ void HelloSkiaWindow::RenderFrame() {
     mPendingResize = std::nullopt;
   }
 
-  ++mFrameCounter;
   auto& frame = mFrames.at(mFrameIndex);
   mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
 
@@ -448,31 +452,47 @@ void HelloSkiaWindow::RenderFrame() {
   CheckHResult(mSwapChain->Present(0, 0));
 }
 
+std::expected<void, int> HelloSkiaWindow::BeginFrame() {
+  mBeginFrameTime = std::chrono::steady_clock::now();
+  MSG msg {};
+  while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+    if (mExitCode.has_value()) {
+      return std::unexpected {mExitCode.value_or(0)};
+    }
+  }
+  return {};
+}
+
+void HelloSkiaWindow::WaitFrame(unsigned int minFPS, unsigned int maxFPS)
+  const {
+  if (minFPS == std::numeric_limits<unsigned int>::max()) {
+    return;
+  }
+
+  const auto fps = std::clamp<unsigned int>(60, minFPS, maxFPS);
+  std::chrono::milliseconds frameInterval {1000 / fps};
+
+  const auto frameDuration = std::chrono::steady_clock::now() - mBeginFrameTime;
+  if (frameDuration > frameInterval) {
+    return;
+  }
+  const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        frameInterval - frameDuration)
+                        .count();
+  MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
+}
+
 int HelloSkiaWindow::Run() noexcept {
-  std::chrono::milliseconds frameInterval {1000 / MinimumFrameRate};
-
   while (!mExitCode) {
-    const auto frameStart = std::chrono::steady_clock::now();
-
-    MSG msg {};
-    while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-      if (msg.message == WM_QUIT) {
-        return mExitCode.value_or(0);
-      }
+    if (const auto ret = this->BeginFrame(); !ret) {
+      return ret.error();
     }
 
     this->RenderFrame();
 
-    const auto frameDuration = std::chrono::steady_clock::now() - frameStart;
-    if (frameDuration > frameInterval) {
-      continue;
-    }
-    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          frameInterval - frameDuration)
-                          .count();
-    MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
+    this->WaitFrame();
   }
 
   return *mExitCode;

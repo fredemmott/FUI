@@ -7,12 +7,12 @@
 #include <core/SkCanvas.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
-#include <skia/core/SkFont.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <wil/com.h>
 #include <wil/resource.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
+#include <expected>
 #include <optional>
 
 class HelloSkiaWindow final {
@@ -28,11 +28,17 @@ class HelloSkiaWindow final {
   ~HelloSkiaWindow();
 
   [[nodiscard]] HWND GetHWND() const noexcept;
+  void RenderFUIContent();
   [[nodiscard]] int Run() noexcept;
+
+  [[nodiscard]]
+  std::expected<void, int> BeginFrame();
+  void WaitFrame(
+    unsigned int minFPS = 0,
+    unsigned int maxFPS = std::numeric_limits<unsigned int>::max()) const;
 
  private:
   static constexpr UINT SwapChainLength = 3;
-  static constexpr UINT MinimumFrameRate = 60;
 
   static thread_local std::unordered_map<HWND, HelloSkiaWindow*> gInstances;
 
@@ -69,7 +75,6 @@ class HelloSkiaWindow final {
   std::array<FrameContext, SwapChainLength> mFrames;
   uint8_t mFrameIndex {};// Used to index into mFrames; reset when buffer reset
 
-  uint64_t mFrameCounter {};// Displayed to the user, not used for correctness
   // Device-independent pixels so that we keep the correct values when
   // dragging between monitors
   std::optional<SkSize> mMinimumContentSizeInDIPs;
@@ -78,6 +83,8 @@ class HelloSkiaWindow final {
 
   DWORD mWindowStyle {};
   DWORD mWindowExStyle {};
+
+  std::chrono::steady_clock::time_point mBeginFrameTime;
 
   void CreateNativeWindow(HINSTANCE);
   void InitializeD3D();
