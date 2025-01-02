@@ -92,4 +92,11 @@ std::optional<SkSize> Root::GetMinimumSize() const {
   };
 }
 
+FrameRateRequirement Root::GetFrameRateRequirement() const {
+  if (!mWidget) {
+    return FrameRateRequirement::SmoothAnimation;
+  }
+  return mWidget->GetFrameRateRequirement();
+}
+
 }// namespace FredEmmott::GUI::Immediate

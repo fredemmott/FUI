@@ -123,6 +123,21 @@ bool Widget::IsDisabled() const {
     != StateFlags::Default;
 }
 
+FrameRateRequirement Widget::GetFrameRateRequirement() const noexcept {
+  using enum StateFlags;
+  if ((mDirectStateFlags & Animating) != StateFlags::Default) {
+    return FrameRateRequirement::SmoothAnimation;
+  }
+  for (auto&& child: this->GetDirectChildren()) {
+    if (
+      child->GetFrameRateRequirement()
+      == FrameRateRequirement::SmoothAnimation) {
+      return FrameRateRequirement::SmoothAnimation;
+    }
+  }
+  return FrameRateRequirement::None;
+}
+
 bool Widget::IsDirectlyDisabled() const {
   return (mDirectStateFlags & StateFlags::Disabled) != StateFlags::Default;
 }

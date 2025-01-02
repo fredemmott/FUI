@@ -15,6 +15,7 @@ add_executable(
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
+  FredEmmott/GUI/FrameRateRequirement.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp

@@ -24,6 +24,7 @@
 #include <filesystem>
 #include <format>
 #include <source_location>
+#include <thread>
 
 namespace fui = FredEmmott::GUI;
 
@@ -526,17 +527,26 @@ void Win32Direct3D12GaneshWindow::WaitFrame(
     return;
   }
 
-  const auto fps = std::clamp<unsigned int>(60, minFPS, maxFPS);
-  std::chrono::milliseconds frameInterval {1000 / fps};
+  const auto fps = std::clamp<unsigned int>(
+    mFUIRoot.GetFrameRateRequirement()
+        == fui::FrameRateRequirement::SmoothAnimation
+      ? 60
+      : 0,
+    minFPS,
+    maxFPS);
+  if (fps == 0) {
+    MsgWaitForMultipleObjects(0, nullptr, false, INFINITE, QS_ALLINPUT);
+  }
+  std::chrono::milliseconds frameInterval {1000 / maxFPS};
 
   const auto frameDuration = std::chrono::steady_clock::now() - mBeginFrameTime;
-  if (frameDuration > frameInterval) {
+  if (frameDuration >= frameInterval) {
     return;
   }
   const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        frameInterval - frameDuration)
-                        .count();
-  MsgWaitForMultipleObjects(0, nullptr, false, millis, QS_ALLINPUT);
+    frameInterval - frameDuration);
+
+  std::this_thread::sleep_for(millis);
 }
 
 LRESULT Win32Direct3D12GaneshWindow::StaticWindowProc(

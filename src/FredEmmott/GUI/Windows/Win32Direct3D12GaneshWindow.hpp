@@ -52,9 +52,7 @@ class Win32Direct3D12GaneshWindow final {
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
-  void WaitFrame(
-    unsigned int minFPS = 0,
-    unsigned int maxFPS = std::numeric_limits<unsigned int>::max()) const;
+  void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
   void EndFrame();
 
  private:

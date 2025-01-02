@@ -16,6 +16,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   merged += inherited;
   merged += mExplicitStyles;
 
+  mDirectStateFlags &= ~StateFlags::Animating;
   const auto stateFlags = mDirectStateFlags | mInheritedStateFlags;
 
   const bool isHovered
@@ -91,7 +92,12 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   }
 
   if (mComputedStyle != Style {}) {
-    mStyleTransitions->Apply(mComputedStyle, &style);
+    auto animated = style;
+    mStyleTransitions->Apply(mComputedStyle, &animated);
+    if (animated != style) {
+      style = std::move(animated);
+      mDirectStateFlags |= StateFlags::Animating;
+    }
   }
 
   mInheritedStyles = inherited;

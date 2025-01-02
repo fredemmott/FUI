@@ -16,6 +16,8 @@ class Root final {
 
   std::optional<SkSize> GetMinimumSize() const;
 
+  FrameRateRequirement GetFrameRateRequirement() const;
+
   void DispatchEvent(const Event*);
 
  private:

@@ -4,10 +4,10 @@
 
 #include <skia/core/SkCanvas.h>
 
+#include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetStyles.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
-#include <span>
 
 #include "../yoga.hpp"
 
@@ -29,6 +29,8 @@ class Widget {
   std::size_t GetID() const noexcept {
     return mID;
   }
+
+  FrameRateRequirement GetFrameRateRequirement() const noexcept;
 
   /// Whether this widget is disabled, including by a parent
   [[nodiscard]]
@@ -109,6 +111,7 @@ class Widget {
     Disabled = 1 << 2,
     Hovered = 1 << 3,
     Active = 1 << 4,
+    Animating = 1 << 5,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
