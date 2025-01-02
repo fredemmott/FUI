@@ -44,6 +44,14 @@ bool BeginPopupWindow(const ID id) {
   return false;
 }
 
+bool BeginPopupWindow(bool* open, ID id) {
+  if (!(open && *open)) {
+    return false;
+  }
+  const auto shown = BeginPopupWindow(id);
+  return *open = shown;
+}
+
 void EndPopupWindow() {
   auto window = tPopupStack.back().mWindow;
   window->EndFrame();

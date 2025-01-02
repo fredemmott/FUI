@@ -20,26 +20,22 @@ static void AppTick() {
   static uint64_t frameCounter {};
   fuii::Label("Frame {}##Frames", ++frameCounter);
 
-  static bool showPopup = false;
+  static bool popupVisible = false;
   if (fuii::Button("Click Me!")) {
-    showPopup = true;
+    popupVisible = true;
     std::println(stderr, "Clicked!");
   }
 
-  if (showPopup) {
-    if (fuii::BeginPopupWindow()) {
-      fuii::BeginCard();
-      fuii::BeginVStackPanel();
-      fuii::Label("This is a popup");
-      if (fuii::Button("Close")) {
-        showPopup = false;
-      }
-      fuii::EndStackPanel();
-      fuii::EndCard();
-      fuii::EndPopupWindow();
-    } else {
-      showPopup = false;
+  if (fuii::BeginPopupWindow(&popupVisible)) {
+    fuii::BeginCard();
+    fuii::BeginVStackPanel();
+    fuii::Label("This is a popup");
+    if (fuii::Button("Close")) {
+      popupVisible = false;
     }
+    fuii::EndStackPanel();
+    fuii::EndCard();
+    fuii::EndPopupWindow();
   }
 
   static bool isOn = true;
