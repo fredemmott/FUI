@@ -7,6 +7,7 @@
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>
+#include <FredEmmott/GUI/Immediate/PopupWindow.hpp>
 #include <FredEmmott/GUI/Immediate/StackPanel.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/Window.hpp>

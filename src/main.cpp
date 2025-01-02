@@ -19,8 +19,27 @@ static void AppTick() {
   fuii::Label("Hello, world; this text doesn't make the button wider aeg");
   static uint64_t frameCounter {};
   fuii::Label("Frame {}##Frames", ++frameCounter);
+
+  static bool showPopup = false;
   if (fuii::Button("Click Me!")) {
+    showPopup = true;
     std::println(stderr, "Clicked!");
+  }
+
+  if (showPopup) {
+    if (fuii::BeginPopupWindow()) {
+      fuii::BeginCard();
+      fuii::BeginVStackPanel();
+      fuii::Label("This is a popup");
+      if (fuii::Button("Close")) {
+        showPopup = false;
+      }
+      fuii::EndStackPanel();
+      fuii::EndCard();
+      fuii::EndPopupWindow();
+    } else {
+      showPopup = false;
+    }
   }
 
   static bool isOn = true;

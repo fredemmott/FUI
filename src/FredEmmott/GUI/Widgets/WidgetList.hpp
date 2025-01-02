@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <variant>
-#include <vector>
 #include <ranges>
 #include <span>
+#include <variant>
+#include <vector>
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -40,6 +40,10 @@ struct WidgetList {
     return Get().empty();
   }
 
+  static WidgetList MakeEmpty() {
+    return WidgetList {std::span<Widget*> {}};
+  }
+
  private:
   mutable std::variant<TSpan, TVector> mStorage;
 
@@ -56,4 +60,4 @@ struct WidgetList {
 };
 static_assert(std::ranges::input_range<WidgetList>);
 
-}
+}// namespace FredEmmott::GUI::Widgets
