@@ -80,6 +80,10 @@ class Win32Direct3D12GaneshWindow final {
   wil::com_ptr<IDCompositionVisual> mCompositionVisual;
   bool mHaveSystemBackdrop {false};
 
+  struct SharedResources;
+  std::shared_ptr<SharedResources> mSharedResources;
+  static std::weak_ptr<SharedResources> gSharedResources;
+
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;
   wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
@@ -119,7 +123,6 @@ class Win32Direct3D12GaneshWindow final {
   void CreateNativeWindow();
   void InitializeD3D();
   void InitializeSkia();
-  void ConfigureD3DDebugLayer();
 
   void CreateRenderTargets();
   void CleanupFrameContexts();

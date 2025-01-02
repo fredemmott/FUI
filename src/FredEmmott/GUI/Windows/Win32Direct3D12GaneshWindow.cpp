@@ -109,12 +109,101 @@ std::wstring Utf8ToWide(std::string_view s) {
   return ret;
 }
 
+void ConfigureD3DDebugLayer(const wil::com_ptr<ID3D12Device>& device) {
+#ifndef NDEBUG
+  auto infoQueue = device.try_query<ID3D12InfoQueue1>();
+  if (!infoQueue) {
+    return;
+  }
+
+  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+
+  // Skia internally triggers this; explicitly suppress it so we can
+  // keep breaking on everything WARNING or above
+  D3D12_MESSAGE_ID skiaIssues[] = {
+    D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
+  };
+  for (const auto id: skiaIssues) {
+    infoQueue->SetBreakOnID(id, false);
+  }
+
+  D3D12_MESSAGE_SEVERITY allowSeverities[] = {
+    D3D12_MESSAGE_SEVERITY_WARNING,
+    D3D12_MESSAGE_SEVERITY_ERROR,
+    D3D12_MESSAGE_SEVERITY_CORRUPTION,
+  };
+
+  D3D12_INFO_QUEUE_FILTER filter {
+        .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
+          .NumSeverities = std::size(allowSeverities),
+          .pSeverityList = allowSeverities,
+        },
+        .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
+          .NumIDs = std::size(skiaIssues),
+          .pIDList = skiaIssues,
+        },
+      };
+  CheckHResult(infoQueue->PushStorageFilter(&filter));
+#endif
+}
+
 }// namespace
 
 thread_local decltype(Win32Direct3D12GaneshWindow::gInstances)
   Win32Direct3D12GaneshWindow::gInstances {};
 thread_local Win32Direct3D12GaneshWindow*
   Win32Direct3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
+
+struct Win32Direct3D12GaneshWindow::SharedResources {
+  wil::com_ptr<IDXGIFactory4> mDXGIFactory;
+  wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
+  wil::com_ptr<ID3D12Device> mD3DDevice;
+  wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
+
+  static std::shared_ptr<SharedResources> Get();
+};
+std::weak_ptr<Win32Direct3D12GaneshWindow::SharedResources>
+  Win32Direct3D12GaneshWindow::gSharedResources;
+
+std::shared_ptr<Win32Direct3D12GaneshWindow::SharedResources>
+Win32Direct3D12GaneshWindow::SharedResources::Get() {
+  if (auto ret = gSharedResources.lock()) {
+    return ret;
+  }
+
+  auto ret = std::shared_ptr<SharedResources>(new SharedResources());
+
+#ifndef NDEBUG
+  wil::com_ptr<ID3D12Debug> d3d12Debug;
+  D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
+  if (d3d12Debug) {
+    d3d12Debug->EnableDebugLayer();
+  }
+#endif
+
+  {
+    UINT flags = 0;
+#ifndef NDEBUG
+    flags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif
+    CheckHResult(
+      CreateDXGIFactory2(flags, IID_PPV_ARGS(ret->mDXGIFactory.put())));
+  }
+
+  CheckHResult(ret->mDXGIFactory->EnumAdapters1(0, ret->mDXGIAdapter.put()));
+
+  D3D_FEATURE_LEVEL featureLevel {D3D_FEATURE_LEVEL_11_0};
+  CheckHResult(D3D12CreateDevice(
+    ret->mDXGIAdapter.get(),
+    featureLevel,
+    IID_PPV_ARGS(ret->mD3DDevice.put())));
+  ConfigureD3DDebugLayer(ret->mD3DDevice);
+
+  gSharedResources = ret;
+  return ret;
+}
 
 void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
   BOOL darkMode {
@@ -213,29 +302,10 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
 }
 
 void Win32Direct3D12GaneshWindow::InitializeD3D() {
-#ifndef NDEBUG
-  wil::com_ptr<ID3D12Debug> d3d12Debug;
-  D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
-  if (d3d12Debug) {
-    d3d12Debug->EnableDebugLayer();
-  }
-#endif
-
-  wil::com_ptr<IDXGIFactory4> dxgiFactory;
-  {
-    UINT flags = 0;
-#ifndef NDEBUG
-    flags |= DXGI_CREATE_FACTORY_DEBUG;
-#endif
-    CheckHResult(CreateDXGIFactory2(flags, IID_PPV_ARGS(dxgiFactory.put())));
-  }
-
-  CheckHResult(dxgiFactory->EnumAdapters1(0, mDXGIAdapter.put()));
-
-  D3D_FEATURE_LEVEL featureLevel {D3D_FEATURE_LEVEL_11_0};
-  CheckHResult(D3D12CreateDevice(
-    mDXGIAdapter.get(), featureLevel, IID_PPV_ARGS(mD3DDevice.put())));
-  this->ConfigureD3DDebugLayer();
+  mSharedResources = SharedResources::Get();
+  mDXGIAdapter = mSharedResources->mDXGIAdapter;
+  mD3DDevice = mSharedResources->mD3DDevice;
+  mD3DCommandQueue = mSharedResources->mD3DCommandQueue;
 
   CheckHResult(mD3DDevice->CreateFence(
     0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mD3DFence.put())));
@@ -286,7 +356,7 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
     .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
   };
 
-  CheckHResult(dxgiFactory->CreateSwapChainForComposition(
+  CheckHResult(mSharedResources->mDXGIFactory->CreateSwapChainForComposition(
     mD3DCommandQueue.get(), &swapChainDesc, nullptr, mSwapChain.put()));
   mCompositionVisual->SetContent(mSwapChain.get());
   mCompositionTarget->SetRoot(mCompositionVisual.get());
@@ -300,46 +370,6 @@ void Win32Direct3D12GaneshWindow::InitializeSkia() {
   skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
   // skiaD3DContext.fMemoryAllocator can be left as nullptr
   mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
-}
-
-void Win32Direct3D12GaneshWindow::ConfigureD3DDebugLayer() {
-#ifndef NDEBUG
-  auto infoQueue = mD3DDevice.try_query<ID3D12InfoQueue1>();
-  if (!infoQueue) {
-    return;
-  }
-
-  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
-
-  // Skia internally triggers this; explicitly suppress it so we can
-  // keep breaking on everything WARNING or above
-  D3D12_MESSAGE_ID skiaIssues[] = {
-    D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
-  };
-  for (const auto id: skiaIssues) {
-    infoQueue->SetBreakOnID(id, false);
-  }
-
-  D3D12_MESSAGE_SEVERITY allowSeverities[] = {
-    D3D12_MESSAGE_SEVERITY_WARNING,
-    D3D12_MESSAGE_SEVERITY_ERROR,
-    D3D12_MESSAGE_SEVERITY_CORRUPTION,
-  };
-
-  D3D12_INFO_QUEUE_FILTER filter {
-        .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
-          .NumSeverities = std::size(allowSeverities),
-          .pSeverityList = allowSeverities,
-        },
-        .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
-          .NumIDs = std::size(skiaIssues),
-          .pIDList = skiaIssues,
-        },
-      };
-  CheckHResult(infoQueue->PushStorageFilter(&filter));
-#endif
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
