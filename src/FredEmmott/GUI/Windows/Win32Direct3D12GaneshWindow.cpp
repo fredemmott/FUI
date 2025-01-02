@@ -428,6 +428,10 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
     }
   }
 
+  if (mPendingResize == SkISize {}) {
+    return;
+  }
+
   if (mPendingResize == mWindowSize) {
     mPendingResize.reset();
     return;
