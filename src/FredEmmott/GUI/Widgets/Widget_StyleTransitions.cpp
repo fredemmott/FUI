@@ -108,7 +108,7 @@ void Widget::StyleTransitions::Apply(const Style& oldStyle, Style* newStyle) {
   const auto now = std::chrono::steady_clock::now();
 
 #define APPLY_TRANSITION(X) \
-  Apply<&Style::m##X, &StyleTransitions::m##X>(now, oldStyle, newStyle); \
+  Apply<&Style::m##X, &StyleTransitions::m##X>(now, oldStyle, newStyle);
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
 }
