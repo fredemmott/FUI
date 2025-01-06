@@ -2,14 +2,24 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <skia/core/SkCanvas.h>
+#include <skia/core/SkSize.h>
+
+#include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
+#include <FredEmmott/GUI/yoga.hpp>
+#include <optional>
+
+namespace FredEmmott::GUI::Widgets {
+class Widget;
+};
 
 namespace FredEmmott::GUI::Immediate {
 
 class Root final {
  public:
   Root();
+  ~Root();
   void BeginFrame();
   void EndFrame();
   void Paint(SkCanvas*, SkSize) const;

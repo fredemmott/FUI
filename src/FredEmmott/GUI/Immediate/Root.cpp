@@ -3,9 +3,8 @@
 
 #include "Root.hpp"
 
-#include <wil/resource.h>
-
-#include <FredEmmott/GUI/Color.hpp>
+#include <FredEmmott/GUI/Widgets/Widget.hpp>
+#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
 #include "FredEmmott/GUI/StaticTheme.hpp"
 
@@ -18,6 +17,8 @@ using namespace Widgets;
 
 Root::Root() {
   mYogaRoot.reset(YGNodeNew());
+}
+Root::~Root() {
 }
 
 void Root::BeginFrame() {

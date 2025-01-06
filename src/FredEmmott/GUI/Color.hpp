@@ -5,6 +5,7 @@
 #include <skia/core/SkColor.h>
 
 #include <source_location>
+#include <stdexcept>
 #include <variant>
 
 #include "StaticTheme/Resource.hpp"
