@@ -15,13 +15,16 @@ using namespace immediate_detail;
 namespace {
 
 struct ParentContext {
+  Window* mPreviousWindow {nullptr};
   Window* mWindow {nullptr};
   decltype(tStack) mWindowStack;
 };
 thread_local std::vector<ParentContext> tPopupStack;
 
 void PopParentContext() {
-  tStack = std::move(tPopupStack.back().mWindowStack);
+  auto& back = tPopupStack.back();
+  tWindow = back.mPreviousWindow;
+  tStack = std::move(back.mWindowStack);
   tPopupStack.pop_back();
 }
 
@@ -31,7 +34,8 @@ bool BeginPopupWindow(const ID id) {
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
 
-  tPopupStack.emplace_back(window, std::move(tStack));
+  tPopupStack.emplace_back(tWindow, window, std::move(tStack));
+  tWindow = nullptr;
   tStack = {};
 
   // TODO: mark as closed, handle re-open

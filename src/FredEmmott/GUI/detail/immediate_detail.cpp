@@ -5,5 +5,6 @@
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
 thread_local std::vector<StackEntry> tStack;
+thread_local Window* tWindow {nullptr};
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

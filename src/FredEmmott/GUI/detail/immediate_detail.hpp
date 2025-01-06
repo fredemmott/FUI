@@ -4,6 +4,7 @@
 
 #include <FredEmmott/GUI/Immediate/ID.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
+#include <FredEmmott/GUI/Window.hpp>
 #include <format>
 #include <functional>
 #include <span>
@@ -22,6 +23,7 @@ struct StackEntry final {
 };
 
 extern thread_local std::vector<StackEntry> tStack;
+extern thread_local Window* tWindow;
 
 template <std::derived_from<Widget> T = Widget>
 T* GetCurrentNode() {

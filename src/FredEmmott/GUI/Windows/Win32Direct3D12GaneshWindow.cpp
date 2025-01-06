@@ -17,6 +17,8 @@
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/assert.hpp>
+#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
@@ -543,7 +545,11 @@ void Win32Direct3D12GaneshWindow::Paint(const SkISize& realPixelSize) {
   CheckHResult(mSwapChain->Present(0, 0));
 }
 void Win32Direct3D12GaneshWindow::EndFrame() {
+  using namespace Immediate::immediate_detail;
   mFUIRoot.EndFrame();
+
+  FUI_ASSERT(tWindow == this, "Improperly nested windows");
+  tWindow = nullptr;
 
   if (!mHwnd) [[unlikely]] {
     this->InitializeWindow();
@@ -559,6 +565,10 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
+  using namespace Immediate::immediate_detail;
+  FUI_ASSERT(!tWindow);
+  tWindow = this;
+
   mBeginFrameTime = std::chrono::steady_clock::now();
   MSG msg {};
   while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
