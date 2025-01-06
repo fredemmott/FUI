@@ -820,6 +820,11 @@ Win32Direct3D12GaneshWindow::WindowProc(
       mFUIRoot.DispatchEvent(&e);
       break;
     }
+    case WM_KILLFOCUS:
+      if ((mOptions.mWindowStyle & WS_POPUP) == WS_POPUP) {
+        mExitCode = 0;
+      }
+      break;
     case WM_CLOSE:
       mExitCode = 0;
       break;
