@@ -28,6 +28,10 @@ struct WindowOptions {
 
   std::string mClass;
   HWND mParentWindow {nullptr};
+
+  DWORD mWindowStyle {WS_OVERLAPPEDWINDOW};
+  DWORD mWindowExStyle {
+    WS_EX_APPWINDOW | WS_EX_CLIENTEDGE | WS_EX_NOREDIRECTIONBITMAP};
 };
 
 class Win32Direct3D12GaneshWindow final {
@@ -70,7 +74,8 @@ class Win32Direct3D12GaneshWindow final {
   wil::unique_hwnd mHwnd;
   float mDPIScale = {1.0f};
   std::optional<DWORD> mDPI;
-  SkISize mWindowSize {};
+  SkISize mNCSize {};
+  SkISize mClientSize {};
   std::optional<SkISize> mPendingResize;
 
   FredEmmott::GUI::Immediate::Root mFUIRoot;
@@ -112,9 +117,6 @@ class Win32Direct3D12GaneshWindow final {
   std::optional<SkSize> mMinimumContentSizeInDIPs;
   // Includes the non-client-area
   std::optional<SkISize> mMinimumWindowSize;
-
-  DWORD mWindowStyle {};
-  DWORD mWindowExStyle {};
 
   std::chrono::steady_clock::time_point mBeginFrameTime;
 

@@ -22,6 +22,12 @@ class PopupWindow final : public Widget {
 
  private:
   unique_ptr<Widget> mRootWidget;
-  Window mWindow {GetModuleHandleW(nullptr), SW_SHOW};
+  Window mWindow {
+    GetModuleHandleW(nullptr),
+    SW_SHOW,
+    {
+      .mInitialSize = {CW_USEDEFAULT, CW_USEDEFAULT},
+      .mWindowStyle = WS_POPUP | WS_BORDER,
+    }};
 };
 }// namespace FredEmmott::GUI::Widgets

@@ -259,19 +259,15 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     }
   }
 
-  mWindowStyle = WS_OVERLAPPEDWINDOW & (~WS_MAXIMIZEBOX);
-  mWindowExStyle
-    = WS_EX_APPWINDOW | WS_EX_CLIENTEDGE | WS_EX_NOREDIRECTIONBITMAP;
-
   gInstanceCreatingWindow = this;
   mMinimumContentSizeInDIPs = mFUIRoot.GetMinimumSize();
   const std::wstring title
     = mOptions.mTitle.empty() ? L"FUI Window" : Utf8ToWide(mOptions.mTitle);
   mHwnd.reset(CreateWindowExW(
-    mWindowExStyle,
+    mOptions.mWindowExStyle,
     className.c_str(),
     title.c_str(),
-    mWindowStyle,
+    mOptions.mWindowStyle,
     CW_USEDEFAULT,
     CW_USEDEFAULT,
     mOptions.mInitialSize.fWidth,
@@ -281,23 +277,47 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     mInstanceHandle,
     nullptr));
   gInstanceCreatingWindow = nullptr;
-
   if (!mHwnd) {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
     return;
   }
 
+  mDPI = GetDpiForWindow(mHwnd.get());
+  mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
+
+  RECT clientRect {};
+  GetClientRect(mHwnd.get(), &clientRect);
+
+  if (
+    clientRect.right - clientRect.left <= 0
+    || clientRect.bottom - clientRect.top <= 0) {
+    this->CalculateMinimumWindowSize();
+    const auto width = std::max<int>(
+      mMinimumWindowSize->fWidth, clientRect.right - clientRect.left);
+    const auto height = std::max<int>(
+      mMinimumWindowSize->fHeight, clientRect.bottom - clientRect.top);
+    SetWindowPos(
+      mHwnd.get(),
+      nullptr,
+      0,
+      0,
+      width,
+      height,
+      SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+  }
+
   gInstances.emplace(mHwnd.get(), this);
 
-  if (!mDPI) {
-    mDPI = GetDpiForWindow(mHwnd.get());
-    mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
-  }
   RECT windowRect {};
   GetWindowRect(mHwnd.get(), &windowRect);
-  mWindowSize = {
+  mNCSize = {
     windowRect.right - windowRect.left,
     windowRect.bottom - windowRect.top,
+  };
+  GetClientRect(mHwnd.get(), &clientRect);
+  mClientSize = {
+    clientRect.right - clientRect.left,
+    clientRect.bottom - clientRect.top,
   };
 }
 
@@ -346,8 +366,8 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
   CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
 
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
-    .Width = static_cast<UINT>(mWindowSize.fWidth),
-    .Height = static_cast<UINT>(mWindowSize.fHeight),
+    .Width = static_cast<UINT>(mClientSize.fWidth),
+    .Height = static_cast<UINT>(mClientSize.fHeight),
     .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
     .SampleDesc = {1, 0},
     .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
@@ -442,20 +462,26 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
     mMinimumContentSizeInDIPs = contentMin;
     const auto windowMin = CalculateMinimumWindowSize();
     if (
-      mWindowSize.fWidth < windowMin.fWidth
-      || mWindowSize.fHeight < windowMin.fHeight) {
-      mWindowSize = {
-        std::max(mWindowSize.fWidth, windowMin.fWidth),
-        std::max(mWindowSize.fHeight, windowMin.fHeight),
+      mNCSize.fWidth < windowMin.fWidth
+      || mNCSize.fHeight < windowMin.fHeight) {
+      mNCSize = {
+        std::max(mNCSize.fWidth, windowMin.fWidth),
+        std::max(mNCSize.fHeight, windowMin.fHeight),
       };
       SetWindowPos(
         mHwnd.get(),
         nullptr,
         0,
         0,
-        mWindowSize.fWidth,
-        mWindowSize.fHeight,
+        mNCSize.fWidth,
+        mNCSize.fHeight,
         SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+      RECT clientRect {};
+      GetClientRect(mHwnd.get(), &clientRect);
+      mClientSize = {
+        clientRect.right - clientRect.left,
+        clientRect.bottom - clientRect.top,
+      };
     }
   }
 
@@ -463,7 +489,7 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
     return;
   }
 
-  if (mPendingResize == mWindowSize) {
+  if (mPendingResize == mNCSize) {
     mPendingResize.reset();
     return;
   }
@@ -474,7 +500,7 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
 
   ResizeSwapchain();
 
-  mWindowSize = std::move(*mPendingResize);
+  mNCSize = std::move(*mPendingResize);
   mPendingResize.reset();
 }
 
@@ -533,7 +559,7 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
     this->ResizeIfNeeded();
   }
 
-  this->Paint(mWindowSize);
+  this->Paint(mClientSize);
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
@@ -651,7 +677,9 @@ Win32Direct3D12GaneshWindow::WindowProc(
     case WM_SIZE: {
       const auto width = LOWORD(lParam);
       const auto height = HIWORD(lParam);
-      mPendingResize = {width, height};
+      if (width > 0 && height > 0) {
+        mPendingResize = {width, height};
+      }
       break;
     }
     case WM_PAINT:
@@ -665,7 +693,8 @@ Win32Direct3D12GaneshWindow::WindowProc(
       RECT rect = *reinterpret_cast<RECT*>(lParam);
       // Let's figure out how the client relates, and adjust from there
       RECT padding {};
-      AdjustWindowRectEx(&padding, mWindowStyle, false, mWindowExStyle);
+      AdjustWindowRectEx(
+        &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
       padding.left = -padding.left;
       padding.top = -padding.top;
       mPendingResize = SkISize {
@@ -790,7 +819,10 @@ SkISize Win32Direct3D12GaneshWindow::CalculateMinimumWindowSize() {
     std::lround(mMinimumContentSizeInDIPs->height() * mDPIScale),
   };
   AdjustWindowRectEx(
-    &rect, mWindowStyle & ~WS_OVERLAPPED, false, mWindowExStyle);
+    &rect,
+    mOptions.mWindowStyle & ~WS_OVERLAPPED,
+    false,
+    mOptions.mWindowExStyle);
 
   mMinimumWindowSize = {
     rect.right - rect.left,
