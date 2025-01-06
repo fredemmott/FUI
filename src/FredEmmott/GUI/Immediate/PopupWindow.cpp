@@ -31,9 +31,21 @@ void PopParentContext() {
 }// namespace
 
 bool BeginPopupWindow(const ID id) {
+  auto previous = GetCurrentNode();
+
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
   window->SetParent(tWindow->GetNativeHandle());
+  if (previous && !window->GetNativeHandle()) {
+    SkIPoint position {};
+    for (auto node = previous->GetLayoutNode(); node;
+         node = YGNodeGetParent(node)) {
+      position.fX += YGNodeLayoutGetLeft(node);
+      position.fY += YGNodeLayoutGetTop(node);
+    }
+    position = tWindow->CanvasPointToNativePoint(position);
+    window->SetInitialPosition(position);
+  }
 
   tPopupStack.emplace_back(tWindow, window, std::move(tStack));
   tWindow = nullptr;

@@ -25,6 +25,7 @@ struct WindowOptions {
    * You may also want CW_USEDEFAULT.
    */
   SkISize mInitialSize {};
+  SkIPoint mInitialPosition {CW_USEDEFAULT, CW_USEDEFAULT};
 
   std::string mClass;
   HWND mParentWindow {nullptr};
@@ -51,14 +52,17 @@ class Win32Direct3D12GaneshWindow final {
     const Options& options = {});
   ~Win32Direct3D12GaneshWindow();
 
-  [[nodiscard]] HWND GetHWND() const noexcept;
   void ResizeSwapchain();
 
-  HWND GetNativeHandle() const {
+  [[nodiscard]]
+  HWND GetNativeHandle() const noexcept {
     return mHwnd ? mHwnd.get() : nullptr;
   }
 
   void SetParent(HWND);
+  void SetInitialPosition(const SkIPoint& nativeTopLeft);
+
+  SkIPoint CanvasPointToNativePoint(const SkIPoint& point);
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();

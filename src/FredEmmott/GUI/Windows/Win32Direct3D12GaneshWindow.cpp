@@ -268,8 +268,8 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     className.c_str(),
     title.c_str(),
     mOptions.mWindowStyle,
-    CW_USEDEFAULT,
-    CW_USEDEFAULT,
+    mOptions.mInitialPosition.fX,
+    mOptions.mInitialPosition.fY,
     mOptions.mInitialSize.fWidth,
     mOptions.mInitialSize.fHeight,
     mParentHwnd,
@@ -442,10 +442,6 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
   }
 }
 
-HWND Win32Direct3D12GaneshWindow::GetHWND() const noexcept {
-  return mHwnd.get();
-}
-
 void Win32Direct3D12GaneshWindow::ResizeSwapchain() {
   this->CleanupFrameContexts();
   CheckHResult(mSwapChain->ResizeBuffers(
@@ -571,6 +567,34 @@ void Win32Direct3D12GaneshWindow::SetParent(HWND value) {
   }
   mParentHwnd = value;
   FUI_ASSERT(!(value && mHwnd), "Parent must be set before window is created");
+}
+
+void Win32Direct3D12GaneshWindow::SetInitialPosition(const SkIPoint& topLeft) {
+  FUI_ASSERT(!mHwnd, "Initial position must be set before window is created");
+  mOptions.mInitialPosition = topLeft;
+}
+
+SkIPoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
+  const SkIPoint& point) {
+  FUI_ASSERT(mDPI && mHwnd);
+
+  SkIPoint ret = point;
+  ret.fX *= mDPIScale;
+  ret.fY *= mDPIScale;
+
+  // Adjust an all-zero rect to get padding
+  RECT rect {};
+  AdjustWindowRectEx(
+    &rect, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
+  // Top and left padding will be <= 0
+  ret.fX -= rect.left;
+  ret.fY -= rect.top;
+
+  GetWindowRect(mHwnd.get(), &rect);
+  ret.fX += rect.left;
+  ret.fY += rect.top;
+
+  return ret;
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
