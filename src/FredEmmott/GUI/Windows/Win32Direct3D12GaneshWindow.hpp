@@ -10,12 +10,12 @@
 #include <dxgi1_4.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <wil/com.h>
-#include <wil/resource.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <expected>
 #include <optional>
 
+namespace FredEmmott::GUI {
 struct WindowOptions {
   std::string mTitle;
 
@@ -138,3 +138,5 @@ class Win32Direct3D12GaneshWindow final {
   static LRESULT
   StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
+
+}// namespace FredEmmott::GUI

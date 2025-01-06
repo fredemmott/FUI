@@ -26,8 +26,7 @@
 #include <source_location>
 #include <thread>
 
-namespace fui = FredEmmott::GUI;
-
+namespace FredEmmott::GUI {
 namespace {
 
 std::wstring GetDefaultWindowClassName() {
@@ -38,7 +37,7 @@ std::wstring GetDefaultWindowClassName() {
 }
 
 void PopulateMouseEvent(
-  fui::MouseEvent* e,
+  MouseEvent* e,
   WPARAM wParam,
   LPARAM lParam,
   float dpiScale) {
@@ -47,7 +46,6 @@ void PopulateMouseEvent(
     HIWORD(lParam) / dpiScale,
   };
 
-  using fui::MouseButton;
   if (wParam & MK_LBUTTON) {
     e->mButtons |= MouseButton::Left;
   }
@@ -136,15 +134,15 @@ void ConfigureD3DDebugLayer(const wil::com_ptr<ID3D12Device>& device) {
   };
 
   D3D12_INFO_QUEUE_FILTER filter {
-        .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
-          .NumSeverities = std::size(allowSeverities),
-          .pSeverityList = allowSeverities,
-        },
-        .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
-          .NumIDs = std::size(skiaIssues),
-          .pIDList = skiaIssues,
-        },
-      };
+    .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
+      .NumSeverities = std::size(allowSeverities),
+      .pSeverityList = allowSeverities,
+    },
+    .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
+      .NumIDs = std::size(skiaIssues),
+      .pIDList = skiaIssues,
+    },
+  };
   CheckHResult(infoQueue->PushStorageFilter(&filter));
 #endif
 }
@@ -206,8 +204,7 @@ Win32Direct3D12GaneshWindow::SharedResources::Get() {
 }
 
 void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
-  BOOL darkMode {
-    fui::StaticTheme::GetCurrent() == fui::StaticTheme::Theme::Dark};
+  BOOL darkMode {StaticTheme::GetCurrent() == StaticTheme::Theme::Dark};
   // Support building with the Windows 10 SDK
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -523,9 +520,8 @@ void Win32Direct3D12GaneshWindow::Paint(const SkISize& realPixelSize) {
   };
 
   canvas->clear(
-    mHaveSystemBackdrop
-      ? fui::Color {SK_ColorTRANSPARENT}
-      : fui::Color {fui::StaticTheme::SolidBackgroundFillColorBase});
+    mHaveSystemBackdrop ? Color {SK_ColorTRANSPARENT}
+                        : Color {StaticTheme::SolidBackgroundFillColorBase});
   mFUIRoot.Paint(canvas, size);
 
   GrD3DFenceInfo fenceInfo {};
@@ -584,8 +580,7 @@ void Win32Direct3D12GaneshWindow::WaitFrame(
   }
 
   const auto fps = std::clamp<unsigned int>(
-    mFUIRoot.GetFrameRateRequirement()
-        == fui::FrameRateRequirement::SmoothAnimation
+    mFUIRoot.GetFrameRateRequirement() == FrameRateRequirement::SmoothAnimation
       ? 60
       : 0,
     minFPS,
@@ -650,7 +645,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
       break;
     }
     case WM_SETTINGCHANGE:
-      fui::StaticTheme::Refresh();
+      StaticTheme::Refresh();
       this->AdjustToWindowsTheme();
       break;
     case WM_GETMINMAXINFO: {
@@ -711,73 +706,73 @@ Win32Direct3D12GaneshWindow::WindowProc(
       break;
     }
     case WM_MOUSEMOVE: {
-      fui::MouseMoveEvent e;
+      MouseMoveEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_LBUTTONDOWN: {
-      fui::MouseButtonPressEvent e;
+      MouseButtonPressEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = fui::MouseButton::Left;
+      e.mChangedButtons = MouseButton::Left;
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_LBUTTONUP: {
-      fui::MouseButtonReleaseEvent e;
+      MouseButtonReleaseEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = fui::MouseButton::Left;
+      e.mChangedButtons = MouseButton::Left;
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MBUTTONDOWN: {
-      fui::MouseButtonPressEvent e;
+      MouseButtonPressEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = fui::MouseButton::Middle;
+      e.mChangedButtons = MouseButton::Middle;
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MBUTTONUP: {
-      fui::MouseButtonReleaseEvent e;
+      MouseButtonReleaseEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = fui::MouseButton::Middle;
+      e.mChangedButtons = MouseButton::Middle;
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_RBUTTONDOWN: {
-      fui::MouseButtonPressEvent e;
+      MouseButtonPressEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = fui::MouseButton::Right;
+      e.mChangedButtons = MouseButton::Right;
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_RBUTTONUP: {
-      fui::MouseButtonReleaseEvent e;
+      MouseButtonReleaseEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = fui::MouseButton::Right;
+      e.mChangedButtons = MouseButton::Right;
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_XBUTTONDOWN: {
-      fui::MouseButtonPressEvent e;
+      MouseButtonPressEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
-        e.mChangedButtons |= fui::MouseButton::X1;
+        e.mChangedButtons |= MouseButton::X1;
       }
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
-        e.mChangedButtons |= fui::MouseButton::X2;
+        e.mChangedButtons |= MouseButton::X2;
       }
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_XBUTTONUP: {
-      fui::MouseButtonReleaseEvent e;
+      MouseButtonReleaseEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
-        e.mChangedButtons |= fui::MouseButton::X1;
+        e.mChangedButtons |= MouseButton::X1;
       }
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
-        e.mChangedButtons |= fui::MouseButton::X2;
+        e.mChangedButtons |= MouseButton::X2;
       }
       mFUIRoot.DispatchEvent(&e);
       break;
@@ -830,3 +825,5 @@ SkISize Win32Direct3D12GaneshWindow::CalculateMinimumWindowSize() {
   };
   return *mMinimumWindowSize;
 }
+
+}// namespace FredEmmott::GUI
