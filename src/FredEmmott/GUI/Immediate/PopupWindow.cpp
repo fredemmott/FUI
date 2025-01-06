@@ -33,6 +33,7 @@ void PopParentContext() {
 bool BeginPopupWindow(const ID id) {
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
+  window->SetParent(tWindow->GetNativeHandle());
 
   tPopupStack.emplace_back(tWindow, window, std::move(tStack));
   tWindow = nullptr;

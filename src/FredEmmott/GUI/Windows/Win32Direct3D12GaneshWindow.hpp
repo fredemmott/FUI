@@ -54,6 +54,12 @@ class Win32Direct3D12GaneshWindow final {
   [[nodiscard]] HWND GetHWND() const noexcept;
   void ResizeSwapchain();
 
+  HWND GetNativeHandle() const {
+    return mHwnd ? mHwnd.get() : nullptr;
+  }
+
+  void SetParent(HWND);
+
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
   void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
@@ -71,6 +77,7 @@ class Win32Direct3D12GaneshWindow final {
 
   std::optional<int> mExitCode;
 
+  HWND mParentHwnd {nullptr};
   wil::unique_hwnd mHwnd;
   float mDPIScale = {1.0f};
   std::optional<DWORD> mDPI;

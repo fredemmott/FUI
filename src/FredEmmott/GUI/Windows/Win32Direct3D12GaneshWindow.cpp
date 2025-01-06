@@ -272,7 +272,7 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     CW_USEDEFAULT,
     mOptions.mInitialSize.fWidth,
     mOptions.mInitialSize.fHeight,
-    nullptr,
+    mParentHwnd,
     nullptr,
     mInstanceHandle,
     nullptr));
@@ -563,6 +563,14 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
   }
 
   this->Paint(mClientSize);
+}
+
+void Win32Direct3D12GaneshWindow::SetParent(HWND value) {
+  if (mParentHwnd == value) {
+    return;
+  }
+  mParentHwnd = value;
+  FUI_ASSERT(!(value && mHwnd), "Parent must be set before window is created");
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
