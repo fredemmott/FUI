@@ -18,8 +18,7 @@ using namespace Widgets;
 Root::Root() {
   mYogaRoot.reset(YGNodeNew());
 }
-Root::~Root() {
-}
+Root::~Root() {}
 
 void Root::BeginFrame() {
   if (!tStack.empty()) {

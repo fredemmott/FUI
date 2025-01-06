@@ -237,8 +237,9 @@ Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
   HINSTANCE hInstance,
   int nCmdShow,
   const Options& options)
-  : mInstanceHandle(hInstance), mShowCommand(nCmdShow), mOptions(options) {
-}
+  : mInstanceHandle(hInstance),
+    mShowCommand(nCmdShow),
+    mOptions(options) {}
 
 void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
   const std::wstring className = mOptions.mClass.empty()
