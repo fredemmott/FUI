@@ -8,6 +8,7 @@
 #include <ranges>
 
 #include "AliasMap.hpp"
+#include "GetAcrylicBrush.hpp"
 #include "GetAlias.hpp"
 #include "GetBoolean.hpp"
 #include "GetColor.hpp"
@@ -51,6 +52,10 @@ void GetResource(
   }
   if (tagType == "SolidColorBrush") {
     GetSolidColorBrush(back, it);
+    return;
+  }
+  if (tagType == "AcrylicBrush") {
+    GetAcrylicBrush(back, it);
     return;
   }
   if (tagType == "x:Double") {

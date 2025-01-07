@@ -11,6 +11,7 @@ add_executable(
   GetAlias.cpp GetAlias.hpp
   GetBoolean.cpp
   GetBoolean.hpp
+  GetAcrylicBrush.cpp GetAcrylicBrush.hpp
   GetColor.cpp GetColor.hpp
   GetCornerRadius.cpp GetCornerRadius.hpp
   GetCpp.cpp GetCpp.hpp
@@ -140,9 +141,19 @@ function(add_winui3_component_theme COMPONENT)
 endfunction()
 
 add_winui3_component_theme(Generic SOURCES "generic.xaml" PARENT "")
-add_winui3_component_theme(Common SOURCES "Common_themeresources_any.xaml" "Common_themeresources.xaml" "CornerRadius_themeresources.xaml" PARENT Generic)
+add_winui3_component_theme(
+  Common
+  SOURCES
+  "Common_themeresources_any.xaml"
+  "Common_themeresources.xaml"
+  "CornerRadius_themeresources.xaml"
+  "AcrylicBrush_themeresources.xaml"
+  PARENT Generic
+)
+
 add_winui3_component_theme(Deprecated)
 
 add_winui3_component_theme(Button PARENT Deprecated)
+add_winui3_component_theme(ComboBox PARENT Button)
 
 add_winui3_component_theme(ToggleSwitch)
