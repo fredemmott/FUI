@@ -76,7 +76,7 @@ void EndComboBoxButton() {
   constexpr auto FasterAnimation
     = CubicBezierStyleTransition(ControlFasterAnimationDuration, KeySpline);
 
-  FontIcon("\ue70d");// ChevronDown
+  FontIcon("\ue70d", FontIconSize::Body, ID {"glyph"});// ChevronDown
   // This is hardcoded in the XAML :(
   GetCurrentNode()->SetExplicitStyles({
     .mBase = {
@@ -99,7 +99,7 @@ void EndComboBoxButton() {
 bool ComboBoxButton(const std::string_view label, const ID id) {
   bool clicked {};
   BeginComboBoxButton(&clicked, id);
-  Label(label, ID {"glyph"});
+  Label(label, ID {0});
   EndComboBoxButton();
   return clicked;
 }
