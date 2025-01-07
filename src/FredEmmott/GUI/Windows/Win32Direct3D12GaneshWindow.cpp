@@ -214,7 +214,7 @@ void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
   DwmSetWindowAttribute(
     mHwnd.get(), DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
 
-  DWM_SYSTEMBACKDROP_TYPE backdropType {DWMSBT_MAINWINDOW};
+  DWM_SYSTEMBACKDROP_TYPE backdropType {mOptions.mSystemBackdrop};
   mHaveSystemBackdrop = SUCCEEDED(DwmSetWindowAttribute(
     mHwnd.get(),
     DWMWA_SYSTEMBACKDROP_TYPE,

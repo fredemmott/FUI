@@ -7,6 +7,7 @@
 #include <core/SkCanvas.h>
 #include <d3d12.h>
 #include <dcomp.h>
+#include <dwmapi.h>
 #include <dxgi1_4.h>
 #include <skia/gpu/GrDirectContext.h>
 #include <wil/com.h>
@@ -33,6 +34,8 @@ struct WindowOptions {
   DWORD mWindowStyle {WS_OVERLAPPEDWINDOW};
   DWORD mWindowExStyle {
     WS_EX_APPWINDOW | WS_EX_CLIENTEDGE | WS_EX_NOREDIRECTIONBITMAP};
+
+  DWM_SYSTEMBACKDROP_TYPE mSystemBackdrop {DWMSBT_MAINWINDOW};
 };
 
 class Win32Direct3D12GaneshWindow final {
