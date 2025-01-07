@@ -12,13 +12,19 @@
 namespace FredEmmott::GUI {
 
 struct Style;
-class WidgetStyles;
 
 enum class StylePropertyScope {
   Self,
   SelfAndChildren,
   SelfAndDescendants,
 };
+
+struct important_style_property_t {
+  constexpr const important_style_property_t& operator!() const noexcept {
+    return *this;
+  }
+};
+constexpr important_style_property_t important;
 
 template <class T, auto TDefault, StylePropertyScope TDefaultScope>
 class BaseStyleProperty : private std::optional<T> {
@@ -28,7 +34,6 @@ class BaseStyleProperty : private std::optional<T> {
   static constexpr auto DefaultValue = TDefault;
 
   friend struct Style;
-  friend class WidgetStyles;
 
   using std::optional<T>::optional;
   using std::optional<T>::operator->;
@@ -42,7 +47,8 @@ class BaseStyleProperty : private std::optional<T> {
     const T& value,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions
-    : std::optional<T>(value), mTransition(transition) {
+    : std::optional<T>(value),
+      mTransition(transition) {
     if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
       static_cast<std::optional<T>&>(*this) = std::nullopt;
     }
@@ -52,14 +58,28 @@ class BaseStyleProperty : private std::optional<T> {
     std::nullopt_t,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions && std::same_as<T, SkScalar>
-    : mTransition(transition) {
-  }
+    : mTransition(transition) {}
 
   BaseStyleProperty(
     std::nullopt_t,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions && (!std::same_as<T, SkScalar>)
-    : mTransition(transition) {
+    : mTransition(transition) {}
+
+  template <class U>
+  BaseStyleProperty(U&& u, important_style_property_t)
+    requires requires { BaseStyleProperty(std::forward<U>(u)); }
+    : BaseStyleProperty(std::forward<U>(u)) {
+    mIsImportant = true;
+  }
+
+  template <class U, class V>
+  BaseStyleProperty(U&& u, V&& v, important_style_property_t)
+    requires requires {
+      BaseStyleProperty(std::forward<U>(u), std::forward<V>(v));
+    }
+    : BaseStyleProperty(std::forward<U>(u), std::forward<V>(v)) {
+    mIsImportant = true;
   }
 
   [[nodiscard]]
@@ -87,6 +107,10 @@ class BaseStyleProperty : private std::optional<T> {
 
   constexpr BaseStyleProperty& operator+=(
     const BaseStyleProperty& other) noexcept {
+    if (mIsImportant && !other.mIsImportant) {
+      return *this;
+    }
+    mIsImportant = other.mIsImportant;
     if (other.has_value()) {
       static_cast<std::optional<T>&>(*this) = other.value();
       mScope = other.mScope;
@@ -114,6 +138,7 @@ class BaseStyleProperty : private std::optional<T> {
 
   StylePropertyScope mScope {TDefaultScope};
   FUI_NO_UNIQUE_ADDRESS optional_transition_t mTransition;
+  bool mIsImportant {false};
 };
 
 template <class T, auto TDefault = style_detail::default_v<T>>
