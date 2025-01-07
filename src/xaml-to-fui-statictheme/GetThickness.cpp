@@ -15,21 +15,40 @@ void GetThickness(
         return std::string_view(&*range.begin(), std::ranges::distance(range));
       })
     | std::ranges::to<std::vector>();
-  const auto uniform = parts.size() == 1;
-  if ((!uniform) && parts.size() != 4) {
-    throw std::runtime_error(
-      std::format(
-        "<Thickness> value `{}` has an unhandled number of components", text));
+
+  uint8_t topIndex = 0;
+  uint8_t rightIndex = 0;
+  uint8_t bottomIndex = 0;
+  switch (parts.size()) {
+    case 1:
+      break;
+    case 2:
+      topIndex = 1;
+      rightIndex = 0;
+      bottomIndex = 1;
+      break;
+    case 4:
+      topIndex = 1;
+      rightIndex = 2;
+      bottomIndex = 3;
+      break;
+    default:
+      throw std::runtime_error(
+        std::format(
+          "<Thickness> value `{}` has an unhandled number of components ({})",
+          text,
+          parts.size()));
   }
 
   const auto l = parts[0];
-  const auto t = parts[uniform ? 0 : 1];
-  const auto r = parts[uniform ? 0 : 2];
-  const auto b = parts[uniform ? 0 : 3];
+  const auto t = parts[topIndex];
+  const auto r = parts[rightIndex];
+  const auto b = parts[bottomIndex];
 
   const auto key = std::string_view {it.Attribute("x:Key")};
 
-  if (uniform && (key.contains("Border") || key.contains("Stroke"))) {
+  if (
+    (parts.size() == 1) && (key.contains("Border") || key.contains("Stroke"))) {
     // FUI's `Style` class only supports uniform thickness for these, so let's
     // expose a uniform property.
     back = {
