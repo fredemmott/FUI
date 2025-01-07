@@ -17,11 +17,11 @@ class ToggleSwitchKnob final : public Widget {
   void SetIsOn(bool) noexcept;
 
  protected:
-  WidgetStyles GetDefaultStyles() const override;
+  WidgetStyles GetBuiltInStyles() const override;
+  WidgetList GetDirectChildren() const noexcept override;
 
  private:
   unique_ptr<ToggleSwitchThumb> mThumb {nullptr};
-  WidgetList GetDirectChildren() const noexcept override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

@@ -11,10 +11,9 @@ using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Widgets {
 
-Button::Button(std::size_t id) : Widget(id) {
-}
+Button::Button(std::size_t id) : Widget(id) {}
 
-WidgetStyles Button::GetDefaultStyles() const {
+WidgetStyles Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;
 
   static const WidgetStyles ret {
@@ -53,6 +52,10 @@ WidgetStyles Button::GetDefaultStyles() const {
 Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {
   mClicked.Set();
   return EventHandlerResult::StopPropagation;
+}
+Widget::ComputedStyleFlags Button::OnComputedStyleChange(const Style& style) {
+  return ComputedStyleFlags::InheritableActiveState
+    | ComputedStyleFlags::InheritableHoverState;
 }
 
 }// namespace FredEmmott::GUI::Widgets

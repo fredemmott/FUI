@@ -15,7 +15,7 @@ class StackPanel final : public Widget {
   StackPanel(std::size_t id, Direction);
 
  protected:
-  WidgetStyles GetDefaultStyles() const override;
+  WidgetStyles GetBuiltInStyles() const override;
   Direction mDirection;
 };
 

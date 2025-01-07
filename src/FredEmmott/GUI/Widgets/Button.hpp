@@ -15,8 +15,9 @@ class Button final : public Widget {
   ActivatedFlag mClicked;
 
  protected:
-  WidgetStyles GetDefaultStyles() const override;
+  WidgetStyles GetBuiltInStyles() const override;
   EventHandlerResult OnClick(MouseEvent* e) override;
+  ComputedStyleFlags OnComputedStyleChange(const Style& style) override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

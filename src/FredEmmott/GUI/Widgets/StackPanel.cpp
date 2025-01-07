@@ -9,7 +9,7 @@ StackPanel::StackPanel(std::size_t id, Direction direction)
   : Widget(id), mDirection(direction) {
 }
 
-WidgetStyles StackPanel::GetDefaultStyles() const {
+WidgetStyles StackPanel::GetBuiltInStyles() const {
   return {
     .mBase = {
       .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,

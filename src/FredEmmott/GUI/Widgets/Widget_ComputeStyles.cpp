@@ -12,7 +12,8 @@ namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
 void Widget::ComputeStyles(const WidgetStyles& inherited) {
-  WidgetStyles merged = this->GetDefaultStyles();
+  WidgetStyles merged = mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
+                                               : this->GetBuiltInStyles();
   merged += inherited;
   merged += mExplicitStyles;
 
@@ -144,6 +145,8 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mMarginLeft, &YGNodeStyleSetMargin, YGEdgeLeft);
   setYoga(&Style::mMarginRight, &YGNodeStyleSetMargin, YGEdgeRight);
   setYoga(&Style::mMarginTop, &YGNodeStyleSetMargin, YGEdgeTop);
+  setYoga(&Style::mMinHeight, &YGNodeStyleSetMinHeight);
+  setYoga(&Style::mMinWidth, &YGNodeStyleSetMinWidth);
   setYoga(&Style::mPaddingBottom, &YGNodeStyleSetPadding, YGEdgeBottom);
   setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
   setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);

@@ -20,7 +20,7 @@ class Label final : public Widget {
  protected:
   void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
     const override;
-  WidgetStyles GetDefaultStyles() const override;
+  WidgetStyles GetBuiltInStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& base) override;
 
  private:

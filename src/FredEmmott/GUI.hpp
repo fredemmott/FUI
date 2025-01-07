@@ -4,6 +4,7 @@
 
 #include <FredEmmott/GUI/Immediate/Button.hpp>
 #include <FredEmmott/GUI/Immediate/Card.hpp>
+#include <FredEmmott/GUI/Immediate/ComboBoxButton.hpp>
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>

@@ -13,10 +13,10 @@ void FontIcon(std::string_view glyph, FontIconSize size, const ID id) {
 
   const WidgetStyles styles {
     .mBase = {
-      .mFont = ResolveGlyphFont(size),
+      .mFont = {ResolveGlyphFont(size), !important},
     }};
   Label(glyph, id);
-  immediate_detail::GetCurrentNode()->SetExplicitStyles(styles);
+  immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(styles);
 }
 
 void FontIcon(
@@ -27,7 +27,7 @@ void FontIcon(
 
   const WidgetStyles styles {
     .mBase = {
-      .mFont = ResolveGlyphFont(size),
+      .mFont = {ResolveGlyphFont(size), !important},
     }};
 
   bool first = true;
@@ -42,7 +42,7 @@ void FontIcon(
     }
 
     Label(glyph, ID {count++});
-    immediate_detail::GetCurrentNode()->SetExplicitStyles(thisStyle);
+    immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(thisStyle);
   }
 
   immediate_detail::EndWidget<Widgets::Widget>();

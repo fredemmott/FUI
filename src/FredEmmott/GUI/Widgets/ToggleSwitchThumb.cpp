@@ -20,7 +20,7 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
   mIsOn = value;
 }
 
-WidgetStyles ToggleSwitchThumb::GetDefaultStyles() const {
+WidgetStyles ToggleSwitchThumb::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
 
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;

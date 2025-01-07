@@ -13,7 +13,7 @@ PopupWindow::PopupWindow(std::size_t id) : Widget(id) {
 WidgetList PopupWindow::GetDirectChildren() const noexcept {
   return WidgetList::MakeEmpty();
 }
-WidgetStyles PopupWindow::GetDefaultStyles() const {
+WidgetStyles PopupWindow::GetBuiltInStyles() const {
   return {{.mDisplay = YGDisplayNone}};
 }
 

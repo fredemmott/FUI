@@ -43,10 +43,14 @@ static void AppTick() {
     std::println(stderr, "Toggled to {}", isOn);
   }
 
+  {
+    bool clicked = fuii::ComboBoxButton("Test ComboBox");
+  }
+
   fuii::EndDisabled();
 
   fuii::BeginHStackPanel();
-  // Glyphs are unicode private usage code points from
+  // Glyphs areIUnicode private usage code points from
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
   fuii::FontIcon("\ueb51");// Heart
   fuii::FontIcon("\ueb52");// HeartFill

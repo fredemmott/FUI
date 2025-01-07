@@ -18,7 +18,7 @@ class PopupWindow final : public Widget {
 
  protected:
   WidgetList GetDirectChildren() const noexcept override;
-  WidgetStyles GetDefaultStyles() const override;
+  WidgetStyles GetBuiltInStyles() const override;
 
  private:
   unique_ptr<Widget> mRootWidget;

@@ -93,7 +93,8 @@ void PaintBorder(
 }// namespace
 
 Widget::Widget(std::size_t id)
-  : mID(id), mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
+  : mID(id),
+    mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   YGNodeSetContext(mYoga.get(), this);
   mStyleTransitions.reset(new StyleTransitions());
 }
@@ -157,6 +158,14 @@ void Widget::SetExplicitStyles(const WidgetStyles& styles) {
   mExplicitStyles = styles;
 
   this->ComputeStyles(mInheritedStyles);
+}
+
+void Widget::SetBuiltInStyles(const WidgetStyles& styles) {
+  mReplacedBuiltInStyles = styles;
+}
+void Widget::SetAdditionalBuiltInStyles(const WidgetStyles& styles) {
+  mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
+
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {

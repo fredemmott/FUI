@@ -44,7 +44,7 @@ void Label::PaintOwnContent(
     mText.c_str(), rect.x(), rect.bottom() - metrics.fDescent, mFont, paint);
 }
 
-WidgetStyles Label::GetDefaultStyles() const {
+WidgetStyles Label::GetBuiltInStyles() const {
   static const WidgetStyles ret {
     .mBase = {
       .mColor = StaticTheme::TextFillColorPrimaryBrush,

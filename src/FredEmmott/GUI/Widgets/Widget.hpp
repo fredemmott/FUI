@@ -41,7 +41,11 @@ class Widget {
 
   void ComputeStyles(const WidgetStyles& inherited);
 
+  /// User-provided styles
   void SetExplicitStyles(const WidgetStyles& styles);
+  // For immediate API - fake a widget by replacing its built-in styles
+  void SetBuiltInStyles(const WidgetStyles& styles);
+  void SetAdditionalBuiltInStyles(const WidgetStyles& styles);
   void Paint(SkCanvas* canvas) const;
 
   auto GetChildren() const noexcept {
@@ -69,7 +73,7 @@ class Widget {
   static constexpr SkScalar Spacing = 4;
 
   [[nodiscard]]
-  virtual WidgetStyles GetDefaultStyles() const {
+  virtual WidgetStyles GetBuiltInStyles() const {
     return {};
   }
 
@@ -77,8 +81,7 @@ class Widget {
   virtual ComputedStyleFlags OnComputedStyleChange(const Style& style);
 
   virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
-    const {
-  }
+    const {}
 
   [[nodiscard]]
   virtual EventHandlerResult OnClick(MouseEvent* event) {
@@ -120,6 +123,7 @@ class Widget {
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
   WidgetStyles mExplicitStyles {};
+  std::optional<WidgetStyles> mReplacedBuiltInStyles;
 
   WidgetStyles mInheritedStyles;
   Style mComputedStyle;

@@ -33,6 +33,8 @@ struct Style {
   StyleProperty<SkScalar> mMarginLeft;
   StyleProperty<SkScalar> mMarginRight;
   StyleProperty<SkScalar> mMarginTop;
+  StyleProperty<SkScalar> mMinHeight;
+  StyleProperty<SkScalar> mMinWidth;
   StyleProperty<SkScalar> mPadding;
   StyleProperty<SkScalar> mPaddingBottom;
   StyleProperty<SkScalar> mPaddingLeft;
@@ -80,6 +82,8 @@ struct Style {
   X(MarginLeft) \
   X(MarginRight) \
   X(MarginTop) \
+  X(MinHeight) \
+  X(MinWidth) \
   X(Padding) \
   X(PaddingBottom) \
   X(PaddingLeft) \

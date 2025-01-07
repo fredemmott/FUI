@@ -40,7 +40,7 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
   mKnob->SetIsOn(value);
 }
 
-WidgetStyles ToggleSwitch::GetDefaultStyles() const {
+WidgetStyles ToggleSwitch::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
   static const WidgetStyles ret {
     .mBase = {

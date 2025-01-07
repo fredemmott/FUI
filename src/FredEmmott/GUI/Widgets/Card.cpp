@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 Card::Card(std::size_t id) : Widget(id) {
 }
 
-WidgetStyles Card::GetDefaultStyles() const {
+WidgetStyles Card::GetBuiltInStyles() const {
   using namespace StaticTheme::Common;
   static const WidgetStyles ret {
     .mBase = {
