@@ -93,7 +93,7 @@ std::optional<SkSize> Root::GetMinimumSize() const {
 }
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {
-  if (!mWidget) {
+  if (tNeedAdditionalFrame.TestAndClear() || !mWidget) {
     return FrameRateRequirement::SmoothAnimation;
   }
   return mWidget->GetFrameRateRequirement();

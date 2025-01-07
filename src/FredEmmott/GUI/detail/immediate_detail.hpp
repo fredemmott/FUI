@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/ActivatedFlag.hpp>
 #include <FredEmmott/GUI/Immediate/ID.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <format>
-#include <functional>
 #include <span>
 
 #include "widget_detail.hpp"
@@ -24,6 +24,7 @@ struct StackEntry final {
 
 extern thread_local std::vector<StackEntry> tStack;
 extern thread_local Window* tWindow;
+extern thread_local ActivatedFlag tNeedAdditionalFrame;
 
 template <std::derived_from<Widget> T = Widget>
 T* GetCurrentNode() {
