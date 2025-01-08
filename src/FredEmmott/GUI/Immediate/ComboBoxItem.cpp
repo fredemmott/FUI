@@ -58,20 +58,21 @@ void BeginComboBoxItem(bool* selectedInOut, ID id) {
 
   const auto pillHeightAnimation = CubicBezierStyleTransition(
     ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
-    .mBase = {
-      .mBackgroundColor = isSelected ?  ComboBoxItemPillFillBrush : Brush { SK_ColorTRANSPARENT },
+  const SkScalar height = isSelected ? ComboBoxItemPillHeight : 0;
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles(WidgetStyles {
+    .mBase = Style {
+      .mBackgroundColor = ComboBoxItemPillFillBrush,
       .mBorderRadius = ComboBoxItemPillCornerRadius,
-      .mHeight = { ComboBoxItemPillHeight, pillHeightAnimation },
+      .mHeight = { height, pillHeightAnimation },
       .mMarginLeft = 0.5,
       .mMarginRight = 6,
-      .mMarginTop = 0.5,
+      .mMarginTop = 2.5,
       .mTop = { 0, pillHeightAnimation },
       .mWidth = ComboBoxItemPillWidth,
     },
-    .mActive {
-      .mHeight = ComboBoxItemPillHeight * ComboBoxItemPillMinScale,
-      .mTop = (ComboBoxItemPillHeight - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale)) / 2,
+    .mActive = Style {
+      .mHeight = height * ComboBoxItemPillMinScale,
+      .mTop = (height - (height * ComboBoxItemPillMinScale)) / 2,
     },
   });
   EndWidget<Widget>();
