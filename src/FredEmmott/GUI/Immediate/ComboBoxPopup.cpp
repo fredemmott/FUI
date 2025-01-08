@@ -24,16 +24,20 @@ bool BeginComboBoxPopup(ID id) {
   if (!BeginPopupWindow(id)) {
     return false;
   }
+  BeginWidget<Widget>(ID {0});
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
+    .mBackgroundColor = ComboBoxDropDownBackground,
+    .mBorderColor = ComboBoxDropDownBorderBrush,
+    .mBorderRadius = ControlCornerRadius,
+    .mBorderWidth = ComboBoxDropdownBorderThickness,
+    .mMinWidth = 80,
+  }});
   BeginVStackPanel();
   GetCurrentParentNode()->SetAdditionalBuiltInStyles( {
     .mBase = {
-      .mBackgroundColor = ComboBoxDropDownBackground,
-      .mBorderColor = ComboBoxDropDownBorderBrush,
       .mBorderRadius = OverlayCornerRadius,
-      .mBorderWidth = ComboBoxDropdownBorderThickness,
       .mColor = ComboBoxDropDownForeground,
       .mGap = 0,
-      .mMinWidth = 80,
       .mPadding = ComboBoxDropdownBorderPadding,
     },
     .mHover = {
@@ -48,7 +52,9 @@ bool BeginComboBoxPopup(ID id) {
 }
 
 void EndComboBoxPopup() {
+  using namespace immediate_detail;
   EndStackPanel();
+  EndWidget<Widget>();
   EndPopupWindow();
 }
 

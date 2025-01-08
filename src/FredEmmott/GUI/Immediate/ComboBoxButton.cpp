@@ -25,14 +25,15 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
   using namespace StaticTheme::ComboBox;
   static const WidgetStyles styles {
     .mBase = {
+      .mAlignSelf = YGAlignFlexStart,
       .mBackgroundColor = ComboBoxBackground,
       .mBorderColor =ComboBoxBorderBrush,
       .mBorderRadius = ControlCornerRadius,
       .mBorderWidth = ComboBoxBorderThemeThickness,
       .mColor = ComboBoxForeground,
-      .mFlexBasis = ComboBoxThemeMinWidth,
       .mFlexDirection = YGFlexDirectionRow,
       .mFont = WidgetFont::ControlContent,
+      .mMinWidth = ComboBoxThemeMinWidth,
       .mPaddingBottom = ComboBoxPaddingBottom,
       .mPaddingLeft = ComboBoxPaddingLeft,
       .mPaddingRight = ComboBoxPaddingRight,
@@ -57,11 +58,9 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
   button->SetBuiltInStyles(styles);
 
   BeginWidget<Widget>(ID {"container"});
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
-    .mBase = {
-      .mFlexGrow = 1,
-    },
-  });
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
+    .mFlexGrow = 1,
+  }});
   BeginWidget<Widget>(ID {0});
   GetCurrentParentNode()->SetBuiltInStyles({{.mDisplay = YGDisplayContents}});
 };
@@ -77,11 +76,13 @@ void EndComboBoxButton() {
     = CubicBezierStyleTransition(ControlFasterAnimationDuration, KeySpline);
 
   FontIcon("\ue70d", FontIconSize::Body, ID {"glyph"});// ChevronDown
-  // This is hardcoded in the XAML :(
+  // MarginRight of 14 is in the Xaml without an alias; MarginLeft
+  // is not set in the XAML at all.
   GetCurrentNode()->SetExplicitStyles({
     .mBase = {
       .mAlignSelf = YGAlignFlexEnd,
       .mFlexGrow = 0,
+      .mMarginLeft = 14,
       .mMarginRight = 14,
       .mMarginTop = -2,
       .mTop = {
