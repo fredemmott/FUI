@@ -37,6 +37,7 @@ bool BeginComboBoxPopup(ID id) {
     .mBorderRadius = OverlayCornerRadius,
     .mBorderWidth = ComboBoxDropdownBorderThickness,
     .mMinWidth = YGNodeLayoutGetWidth(button->GetLayoutNode()),
+    .mPadding = ComboBoxDropdownBorderPadding,
   }});
   BeginVStackPanel();
   GetCurrentParentNode()->SetAdditionalBuiltInStyles( {
@@ -49,7 +50,10 @@ bool BeginComboBoxPopup(ID id) {
       .mMarginLeft = 0.0,
       .mMarginRight = 0.0,
       .mMarginTop = -0.5,
-      .mPadding = ComboBoxDropdownBorderPadding,
+      .mPaddingBottom = ComboBoxDropdownContentMarginBottom,
+      .mPaddingLeft = ComboBoxDropdownContentMarginLeft,
+      .mPaddingRight = ComboBoxDropdownContentMarginRight,
+      .mPaddingTop = ComboBoxDropdownContentMarginTop,
     },
     .mHover = {
       .mBackgroundColor = ComboBoxDropDownBackgroundPointerOver,
@@ -58,7 +62,6 @@ bool BeginComboBoxPopup(ID id) {
       .mBackgroundColor = ComboBoxDropDownBackgroundPointerPressed,
     },
   });
-  // TODO
   return true;
 }
 
