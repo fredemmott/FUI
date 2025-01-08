@@ -63,8 +63,9 @@ class Widget {
   };
   enum class ComputedStyleFlags {
     Default = 0,
-    InheritableHoverState = 1,
-    InheritableActiveState = 2,
+    InheritableHoverState = 1 << 0,
+    InheritableActiveState = 1 << 1,
+    Animating = 1 << 2,
   };
   friend consteval bool is_bitflag_enum(
     utility::type_tag_t<ComputedStyleFlags>);

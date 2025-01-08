@@ -588,6 +588,10 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
 
   this->Paint(mClientSize);
 }
+FrameRateRequirement Win32Direct3D12GaneshWindow::GetFrameRateRequirement()
+  const {
+  return mFUIRoot.GetFrameRateRequirement();
+}
 
 void Win32Direct3D12GaneshWindow::SetParent(HWND value) {
   if (mParentHwnd == value) {

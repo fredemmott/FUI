@@ -83,6 +83,9 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
           propagateFlags |= StateFlags::Hovered;
         }
       }
+      if ((flags & Animating) == Animating) {
+        mDirectStateFlags |= StateFlags::Animating;
+      }
     }
 
     if (propagateFlags != StateFlags::Default) {

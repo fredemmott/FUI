@@ -73,6 +73,8 @@ class Win32Direct3D12GaneshWindow final {
   void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
   void EndFrame();
 
+  FrameRateRequirement GetFrameRateRequirement() const;
+
  private:
   static constexpr UINT SwapChainLength = 3;
   static thread_local std::unordered_map<HWND, Win32Direct3D12GaneshWindow*>
