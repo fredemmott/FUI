@@ -32,7 +32,6 @@ void BeginComboBoxItem(bool* selectedInOut, ID id) {
       .mMarginRight = 5,
       .mMarginTop = 2,
       .mPaddingBottom = ComboBoxItemThemePaddingBottom,
-      .mPaddingLeft = ComboBoxItemThemePaddingLeft,
       .mPaddingRight = ComboBoxItemThemePaddingRight,
       .mPaddingTop = ComboBoxItemThemePaddingTop,
     },
