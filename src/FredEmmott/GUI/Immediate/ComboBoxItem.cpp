@@ -6,14 +6,21 @@
 
 #include "Button.hpp"
 #include "Label.hpp"
+#include "StackPanel.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginComboBoxItem(bool* selected, ID id) {
+void BeginComboBoxItem(bool* selectedInOut, ID id) {
   using namespace immediate_detail;
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
-  BeginButton(selected, id);
+  bool clicked = false;
+  BeginButton(&clicked, id);
+  const bool isSelected = clicked || (selectedInOut && *selectedInOut);
+  if (selectedInOut) {
+    *selectedInOut = isSelected;
+  }
+
   GetCurrentParentNode()->SetBuiltInStyles({
     .mBase = {
       .mBackgroundColor = ComboBoxItemBackground,
@@ -45,9 +52,39 @@ void BeginComboBoxItem(bool* selected, ID id) {
       .mColor = ComboBoxItemForegroundPressed,
     },
   });
+  BeginHStackPanel();
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({{.mGap = 0.0}});
+  BeginWidget<Widget>(ID {"pill"});
+
+  const auto pillHeightAnimation = CubicBezierStyleTransition(
+    ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
+    .mBase = {
+      .mBackgroundColor = isSelected ?  ComboBoxItemPillFillBrush : Brush { SK_ColorTRANSPARENT },
+      .mBorderRadius = ComboBoxItemPillCornerRadius,
+      .mHeight = { ComboBoxItemPillHeight, pillHeightAnimation },
+      .mMarginLeft = 0.5,
+      .mMarginRight = 6,
+      .mMarginTop = 0.5,
+      .mTop = { 0, pillHeightAnimation },
+      .mWidth = ComboBoxItemPillWidth,
+    },
+    .mActive {
+      .mHeight = ComboBoxItemPillHeight * ComboBoxItemPillMinScale,
+      .mTop = (ComboBoxItemPillHeight - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale)) / 2,
+    },
+  });
+  EndWidget<Widget>();
+  BeginWidget<Widget>(ID {"content"});
+  GetCurrentParentNode()->SetBuiltInStyles({{
+    .mDisplay = YGDisplayContents,
+  }});
 }
 
 void EndComboBoxItem() {
+  using namespace immediate_detail;
+  EndWidget<Widget>();// content
+  EndStackPanel();
   EndButton();
 }
 
