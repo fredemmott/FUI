@@ -53,6 +53,7 @@ class Win32Direct3D12GaneshWindow final {
     HINSTANCE instance,
     int showCommand,
     const Options& options = {});
+  void TrackMouseEvent();
   ~Win32Direct3D12GaneshWindow();
 
   void SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE);
@@ -91,6 +92,7 @@ class Win32Direct3D12GaneshWindow final {
   SkISize mNCSize {};
   SkISize mClientSize {};
   std::optional<SkISize> mPendingResize;
+  bool mTrackingMouseEvents = false;
 
   FredEmmott::GUI::Immediate::Root mFUIRoot;
 

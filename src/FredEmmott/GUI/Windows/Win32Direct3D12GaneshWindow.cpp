@@ -241,6 +241,19 @@ Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
     mShowCommand(nCmdShow),
     mOptions(options) {}
 
+void Win32Direct3D12GaneshWindow::TrackMouseEvent() {
+  if (mTrackingMouseEvents) {
+    return;
+  }
+  TRACKMOUSEEVENT tme {
+    .cbSize = sizeof(tme),
+    .dwFlags = TME_LEAVE,
+    .hwndTrack = mHwnd.get(),
+    .dwHoverTime = HOVER_DEFAULT,
+  };
+  ::TrackMouseEvent(&tme);
+  mTrackingMouseEvents = true;
+}
 void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
   const std::wstring className = mOptions.mClass.empty()
     ? GetDefaultWindowClassName()
@@ -281,6 +294,8 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
     return;
   }
+
+  this->TrackMouseEvent();
 
   mDPI = GetDpiForWindow(mHwnd.get());
   mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
@@ -766,9 +781,17 @@ Win32Direct3D12GaneshWindow::WindowProc(
       break;
     }
     case WM_MOUSEMOVE: {
+      TrackMouseEvent();
       MouseMoveEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_MOUSELEAVE: {
+      MouseMoveEvent e;
+      e.mPoint = {-1, -1};
+      mFUIRoot.DispatchEvent(&e);
+      mTrackingMouseEvents = false;
       break;
     }
     case WM_LBUTTONDOWN: {
