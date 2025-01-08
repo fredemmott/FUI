@@ -629,6 +629,10 @@ void Win32Direct3D12GaneshWindow::WaitFrame(
     return;
   }
 
+  if (mExitCode) {
+    return;
+  }
+
   const auto fps = std::clamp<unsigned int>(
     mFUIRoot.GetFrameRateRequirement() == FrameRateRequirement::SmoothAnimation
       ? 60
