@@ -29,7 +29,7 @@ class PopupWindow final : public Widget {
       .mInitialSize = {CW_USEDEFAULT, CW_USEDEFAULT},
       .mWindowStyle = WS_POPUP | WS_BORDER,
       .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP,
-      .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
+      .mSystemBackdrop = DWMSBT_NONE,
     }};
 };
 }// namespace FredEmmott::GUI::Widgets

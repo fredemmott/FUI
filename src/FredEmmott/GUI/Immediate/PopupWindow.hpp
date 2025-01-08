@@ -26,7 +26,6 @@ namespace FredEmmott::GUI::Immediate {
  */
 [[nodiscard]]
 bool BeginPopupWindow(ID id = ID {std::source_location::current()});
-[[nodiscard]]
 /** Start a popup window; optionally show it.
  *
  * Returns true if the window is open and content should follow.
@@ -34,6 +33,7 @@ bool BeginPopupWindow(ID id = ID {std::source_location::current()});
  * @param open inout: if true, the window will be shown. When the window is
  *   closed, it will be set to false.
  */
+[[nodiscard]]
 bool BeginPopupWindow(bool* open, ID id = ID {std::source_location::current()});
 void EndPopupWindow();
 

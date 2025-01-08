@@ -5,6 +5,8 @@
 #include <FredEmmott/GUI/Immediate/Button.hpp>
 #include <FredEmmott/GUI/Immediate/Card.hpp>
 #include <FredEmmott/GUI/Immediate/ComboBoxButton.hpp>
+#include <FredEmmott/GUI/Immediate/ComboBoxItem.hpp>
+#include <FredEmmott/GUI/Immediate/ComboBoxPopup.hpp>
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
 #include <FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp>
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>

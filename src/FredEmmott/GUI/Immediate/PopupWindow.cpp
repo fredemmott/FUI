@@ -75,8 +75,8 @@ bool BeginPopupWindow(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }
-  const auto shown = BeginPopupWindow(id);
-  return *open = shown;
+  *open = BeginPopupWindow(id);
+  return *open;
 }
 
 void EndPopupWindow() {

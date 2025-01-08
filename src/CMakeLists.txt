@@ -18,6 +18,8 @@ add_executable(
   FredEmmott/GUI/FrameRateRequirement.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/ComboBoxButton.cpp FredEmmott/GUI/Immediate/ComboBoxButton.hpp
+  FredEmmott/GUI/Immediate/ComboBoxPopup.cpp FredEmmott/GUI/Immediate/ComboBoxPopup.hpp
+  FredEmmott/GUI/Immediate/ComboBoxItem.cpp FredEmmott/GUI/Immediate/ComboBoxItem.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.cpp FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp

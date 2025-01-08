@@ -44,8 +44,15 @@ static void AppTick() {
     std::println(stderr, "Toggled to {}", isOn);
   }
 
-  {
-    bool clicked = fuii::ComboBoxButton("Test ComboBox");
+  static bool comboBoxVisible = false;
+  if (fuii::ComboBoxButton("Test ComboBox")) {
+    comboBoxVisible = true;
+  }
+  if (fuii::BeginComboBoxPopup(&comboBoxVisible)) {
+    (void)fuii::ComboBoxItem(false, "foo");
+    (void)fuii::ComboBoxItem(true, "bar");
+    (void)fuii::ComboBoxItem(false, "baz");
+    fuii::EndComboBoxPopup();
   }
 
   fuii::EndDisabled();
