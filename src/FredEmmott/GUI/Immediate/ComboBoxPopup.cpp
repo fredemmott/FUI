@@ -55,12 +55,6 @@ bool BeginComboBoxPopup(ID id) {
       .mPaddingRight = ComboBoxDropdownContentMarginRight,
       .mPaddingTop = ComboBoxDropdownContentMarginTop,
     },
-    .mHover = {
-      .mBackgroundColor = ComboBoxDropDownBackgroundPointerOver,
-    },
-    .mActive = {
-      .mBackgroundColor = ComboBoxDropDownBackgroundPointerPressed,
-    },
   });
   return true;
 }
