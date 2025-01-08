@@ -5,6 +5,7 @@
 #include <ComboBox.hpp>
 #include <FredEmmott/GUI/StaticTheme/ComboBox.hpp>
 
+#include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
 #include "PopupWindow.hpp"
 #include "StackPanel.hpp"
 
@@ -25,6 +26,10 @@ bool BeginComboBoxPopup(ID id) {
   if (!BeginPopupWindow(id)) {
     return false;
   }
+  if (tWindow && !tWindow->GetNativeHandle()) {
+    tWindow->SetSystemBackdropType(DWMSBT_NONE);
+  }
+
   BeginWidget<Widget>(ID {0});
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
     .mBackgroundColor = ComboBoxDropDownBackground,

@@ -401,6 +401,12 @@ Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
     gInstances.erase(it);
   }
 }
+void Win32Direct3D12GaneshWindow::SetSystemBackdropType(
+  DWM_SYSTEMBACKDROP_TYPE type) {
+  FUI_ASSERT(
+    !mHwnd, "Can't set system backdrop type after creating the window");
+  mOptions.mSystemBackdrop = type;
+}
 
 void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
   const auto rtvStart = mD3DRTVHeap->GetCPUDescriptorHandleForHeapStart();

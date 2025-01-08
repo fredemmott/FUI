@@ -55,7 +55,7 @@ class Win32Direct3D12GaneshWindow final {
     const Options& options = {});
   ~Win32Direct3D12GaneshWindow();
 
-  void ResizeSwapchain();
+  void SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE);
 
   [[nodiscard]]
   HWND GetNativeHandle() const noexcept {
@@ -134,6 +134,7 @@ class Win32Direct3D12GaneshWindow final {
 
   std::chrono::steady_clock::time_point mBeginFrameTime;
 
+  void ResizeSwapchain();
   void AdjustToWindowsTheme();
   void InitializeWindow();
   void CreateNativeWindow();
