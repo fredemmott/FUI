@@ -497,6 +497,13 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
   ResizeSwapchain();
 
   mNCSize = std::move(*mPendingResize);
+  RECT clientRect {};
+  GetClientRect(mHwnd.get(), &clientRect);
+  mClientSize = {
+    clientRect.right - clientRect.left,
+    clientRect.bottom - clientRect.top,
+  };
+
   mPendingResize.reset();
 }
 
