@@ -21,6 +21,7 @@ bool BeginComboBoxPopup(ID id) {
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   using namespace immediate_detail;
+  auto button = GetCurrentNode();
   if (!BeginPopupWindow(id)) {
     return false;
   }
@@ -28,16 +29,21 @@ bool BeginComboBoxPopup(ID id) {
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
     .mBackgroundColor = ComboBoxDropDownBackground,
     .mBorderColor = ComboBoxDropDownBorderBrush,
-    .mBorderRadius = ControlCornerRadius,
+    .mBorderRadius = OverlayCornerRadius,
     .mBorderWidth = ComboBoxDropdownBorderThickness,
-    .mMinWidth = 80,
+    .mMinWidth = YGNodeLayoutGetWidth(button->GetLayoutNode()),
   }});
   BeginVStackPanel();
   GetCurrentParentNode()->SetAdditionalBuiltInStyles( {
     .mBase = {
       .mBorderRadius = OverlayCornerRadius,
       .mColor = ComboBoxDropDownForeground,
-      .mGap = 0,
+      .mFlexGrow = 1.0,
+      .mGap = 0.0,
+      .mMarginBottom = -1.0,
+      .mMarginLeft = 0.0,
+      .mMarginRight = 0.0,
+      .mMarginTop = -0.5,
       .mPadding = ComboBoxDropdownBorderPadding,
     },
     .mHover = {
