@@ -30,8 +30,11 @@ bool ComboBoxButton(
 
 /// Create a button with a text label
 template <class... Args>
-[[nodiscard]] bool ComboBoxButton(std::format_string<Args...> format, Args&&... args) {
-  const auto [id, text] = ParsedID(format, std::forward<Args>(args)...);
+[[nodiscard]] bool ComboBoxButton(
+  std::format_string<Args...> format,
+  Args&&... args) {
+  const auto [id, text]
+    = immediate_detail::ParsedID(format, std::forward<Args>(args)...);
   return ComboBoxButton(text, id);
 }
 
