@@ -3,12 +3,8 @@
 
 #include "SystemFont.hpp"
 
-#include <Shlobj.h>
-#include <ports/SkFontMgr_empty.h>
 #include <skia/core/SkFontMgr.h>
-#include <wil/resource.h>
-
-#include <filesystem>
+#include <skia/ports/SkTypeface_win.h>
 
 #include "Font.hpp"
 #include "detail/font_detail.hpp"
@@ -39,17 +35,10 @@ enum class Height : uint16_t {
   Display = 92,
 };
 
-std::filesystem::path GetFontsPath() {
-  wil::unique_hlocal_string ret;
-  SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, std::out_ptr(ret));
-  return std::wstring_view {ret.get()};
-}
+const auto gManager = SkFontMgr_New_DirectWrite();
 
-const auto gManager = SkFontMgr_New_Custom_Empty();
-
-auto LoadTypeface(auto name, auto... fallbacks) {
-  const auto ret
-    = gManager->makeFromFile((GetFontsPath() / name).string().c_str());
+auto LoadTypeface(const SkFontStyle& style, auto name, auto... fallbacks) {
+  const auto ret = gManager->matchFamilyStyle(name, style);
   if (ret) {
     return ret;
   }
@@ -57,13 +46,28 @@ auto LoadTypeface(auto name, auto... fallbacks) {
   if constexpr (sizeof...(fallbacks) == 0) {
     return ret;
   } else {
-    return LoadTypeface(fallbacks...);
+    return LoadTypeface(style, fallbacks...);
   }
 }
 
-const auto gRegularTypeface = LoadTypeface("segoeui.ttf");
-const auto gSemiboldTypeface = LoadTypeface("seguisb.ttf");
-const auto gGlyphTypeface = LoadTypeface("SegoeIcons.ttf", "segmdl2.ttf");
+constexpr SkFontStyle SemiBold {
+  SkFontStyle::kSemiBold_Weight,
+  SkFontStyle::kNormal_Width,
+  SkFontStyle::kUpright_Slant,
+};
+
+const auto gRegularTypeface
+  = LoadTypeface(SkFontStyle::Normal(), "Segoe UI Variable Text", "Segoe UI");
+const auto gBodyStrongTypeface
+  = LoadTypeface(SemiBold, "Segoe UI Variable Text", "Segoe UI");
+const auto gCaptionTypeface
+  = LoadTypeface(SkFontStyle::Normal(), "Segoe UI Variable Small");
+const auto gDisplayTypeface
+  = LoadTypeface(SemiBold, "Segoe UI Variable Display", "Segoe UI");
+const auto gGlyphTypeface = LoadTypeface(
+  SkFontStyle::Normal(),
+  "Segoe Fluent Icons",
+  "Segoe MDL2 Assets");
 
 template <Height THeight>
 SkFont FontFromTypeface(auto typeface) {
@@ -73,27 +77,20 @@ SkFont FontFromTypeface(auto typeface) {
   };
 }
 
-template <Height THeight>
-SkFont RegularFont() {
-  return FontFromTypeface<THeight>(gRegularTypeface);
-}
-
-template <Height THeight>
-SkFont SemiboldFont() {
-  return FontFromTypeface<THeight>(gSemiboldTypeface);
-}
 }// namespace
 
 namespace FredEmmott::GUI::SystemFont {
 
-const SkFont gCaption = RegularFont<Height::Caption>();
-const SkFont gBody = RegularFont<Height::Body>();
-const SkFont gBodyStrong = SemiboldFont<Height::BodyStrong>();
-const SkFont gBodyLarge = RegularFont<Height::BodyLarge>();
-const SkFont gSubtitle = SemiboldFont<Height::Subtitle>();
-const SkFont gTitle = SemiboldFont<Height::Title>();
-const SkFont gTitleLarge = SemiboldFont<Height::TitleLarge>();
-const SkFont gDisplay = SemiboldFont<Height::Display>();
+const SkFont gCaption = FontFromTypeface<Height::Caption>(gCaptionTypeface);
+const SkFont gBody = FontFromTypeface<Height::Body>(gRegularTypeface);
+const SkFont gBodyStrong
+  = FontFromTypeface<Height::BodyStrong>(gBodyStrongTypeface);
+const SkFont gBodyLarge = FontFromTypeface<Height::BodyLarge>(gRegularTypeface);
+const SkFont gSubtitle = FontFromTypeface<Height::Subtitle>(gDisplayTypeface);
+const SkFont gTitle = FontFromTypeface<Height::Title>(gDisplayTypeface);
+const SkFont gTitleLarge
+  = FontFromTypeface<Height::TitleLarge>(gDisplayTypeface);
+const SkFont gDisplay = FontFromTypeface<Height::Display>(gDisplayTypeface);
 
 #define DEFINE_GLYPH_FONT(USAGE) \
   const SkFont gGlyph##USAGE = FontFromTypeface<Height::USAGE>(gGlyphTypeface);
