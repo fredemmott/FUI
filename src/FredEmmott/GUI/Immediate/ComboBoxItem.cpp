@@ -21,9 +21,9 @@ void BeginComboBoxItem(bool* selectedInOut, ID id) {
     *selectedInOut = isSelected;
   }
 
-  GetCurrentParentNode()->SetBuiltInStyles({
+  WidgetStyles buttonStyles {
     .mBase = {
-      .mBackgroundColor = ComboBoxItemBackground,
+      .mBackgroundColor = isSelected ? ComboBoxItemBackgroundSelected : ComboBoxItemBackground,
       .mBorderColor = ComboBoxItemBorderBrush,
       .mBorderRadius = ComboBoxItemCornerRadius,
       .mColor = ComboBoxItemForeground,
@@ -36,12 +36,12 @@ void BeginComboBoxItem(bool* selectedInOut, ID id) {
       .mPaddingTop = ComboBoxItemThemePaddingTop,
     },
     .mDisabled = {
-      .mBackgroundColor = ComboBoxItemBackgroundDisabled,
+      .mBackgroundColor = isSelected ? ComboBoxItemBackgroundSelectedDisabled : ComboBoxItemBackgroundDisabled,
       .mBorderColor = ComboBoxItemBorderBrushDisabled,
       .mColor = ComboBoxItemForegroundDisabled,
     },
     .mHover = {
-      .mBackgroundColor = ComboBoxItemBackgroundPointerOver,
+      .mBackgroundColor = isSelected ? ComboBoxItemBackgroundSelectedPointerOver : ComboBoxItemBackgroundPointerOver,
       .mBorderColor = ComboBoxItemBorderBrushPointerOver,
       .mColor = ComboBoxItemForegroundPointerOver,
     },
@@ -50,7 +50,33 @@ void BeginComboBoxItem(bool* selectedInOut, ID id) {
       .mBorderColor = ComboBoxItemBorderBrushPressed,
       .mColor = ComboBoxItemForegroundPressed,
     },
-  });
+  };
+  if (isSelected) {
+    buttonStyles += WidgetStyles {
+      .mBase = {
+        .mBackgroundColor = ComboBoxItemBackgroundSelected,
+        .mBorderColor = ComboBoxItemBorderBrushSelected,
+        .mColor = ComboBoxItemForegroundSelected,
+      },
+      .mDisabled = {
+        .mBackgroundColor = ComboBoxItemBackgroundSelectedDisabled,
+        .mBorderColor = ComboBoxItemBorderBrushSelectedDisabled,
+        .mColor = ComboBoxItemForegroundSelectedDisabled,
+      },
+      .mHover = {
+        .mBackgroundColor = ComboBoxItemBackgroundSelectedPointerOver,
+        .mBorderColor = ComboBoxItemBorderBrushSelectedPointerOver,
+        .mColor = ComboBoxItemForegroundSelectedPointerOver,
+      },
+      .mActive = {
+        .mBackgroundColor = ComboBoxItemBackgroundSelectedPressed,
+        .mBorderColor = ComboBoxItemBorderBrushSelectedPressed,
+        .mColor = ComboBoxItemForegroundSelectedPressed,
+      },
+    };
+  }
+
+  GetCurrentParentNode()->SetBuiltInStyles(buttonStyles);
   BeginHStackPanel();
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({{.mGap = 0.0}});
   BeginWidget<Widget>(ID {"pill"});
