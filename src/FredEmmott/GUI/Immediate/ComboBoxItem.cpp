@@ -119,7 +119,7 @@ bool ComboBoxItem(bool initiallySelected, std::string_view label, ID id) {
   BeginComboBoxItem(&selected, id);
   Label(label, ID {0});
   EndComboBoxItem();
-  return selected;
+  return selected && !initiallySelected;
 }
 
 }// namespace FredEmmott::GUI::Immediate
