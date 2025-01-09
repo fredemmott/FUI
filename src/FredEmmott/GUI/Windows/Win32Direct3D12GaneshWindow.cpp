@@ -431,7 +431,7 @@ void Win32Direct3D12GaneshWindow::InitializeSkia() {
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
-  if (mParentHwnd) {
+  if (mParentHwnd && gInstances.contains(mParentHwnd)) {
     auto& siblings = gInstances.at(mParentHwnd)->mChildren;
     siblings.erase(std::ranges::find(siblings, mHwnd.get()));
   }
