@@ -3,6 +3,7 @@
 #include "ComboBoxItem.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/ComboBox.hpp>
+#include <FredEmmott/GUI/assert.hpp>
 
 #include "Button.hpp"
 #include "Label.hpp"
@@ -17,6 +18,10 @@ void BeginComboBoxItem(bool* selectedInOut, ID id) {
   bool clicked = false;
   BeginButton(&clicked, id);
   const bool isSelected = clicked || (selectedInOut && *selectedInOut);
+  if (isSelected) {
+    FUI_ASSERT(tWindow);
+    tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
+  }
   if (selectedInOut) {
     *selectedInOut = isSelected;
   }

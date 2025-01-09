@@ -300,6 +300,25 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
   mDPI = GetDpiForWindow(mHwnd.get());
   mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
 
+  if (mOffsetToChild) {
+    SkIPoint offset {};
+    for (auto node = mOffsetToChild->GetLayoutNode(); node;
+         node = YGNodeGetParent(node)) {
+      offset.fX += YGNodeLayoutGetLeft(node);
+      offset.fY += YGNodeLayoutGetTop(node);
+    }
+    offset = CanvasPointToNativePoint({-offset.fX, -offset.fY});
+    SetWindowPos(
+      mHwnd.get(),
+      nullptr,
+      offset.fX,
+      offset.fY,
+      0,
+      0,
+      SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
+        | SWP_NOCOPYBITS);
+  }
+
   RECT clientRect {};
   GetClientRect(mHwnd.get(), &clientRect);
 
@@ -591,6 +610,14 @@ void Win32Direct3D12GaneshWindow::EndFrame() {
 FrameRateRequirement Win32Direct3D12GaneshWindow::GetFrameRateRequirement()
   const {
   return mFUIRoot.GetFrameRateRequirement();
+}
+void Win32Direct3D12GaneshWindow::OffsetPositionToDescendant(
+  Widgets::Widget* child) {
+  FUI_ASSERT(child);
+  if (mHwnd) {
+    return;
+  }
+  mOffsetToChild = child;
 }
 
 void Win32Direct3D12GaneshWindow::SetParent(HWND value) {

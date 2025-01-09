@@ -16,7 +16,12 @@
 #include <expected>
 #include <optional>
 
+namespace FredEmmott::GUI::Widgets {
+class Widget;
+}
+
 namespace FredEmmott::GUI {
+
 struct WindowOptions {
   std::string mTitle;
 
@@ -75,6 +80,8 @@ class Win32Direct3D12GaneshWindow final {
 
   FrameRateRequirement GetFrameRateRequirement() const;
 
+  void OffsetPositionToDescendant(Widgets::Widget* child);
+
  private:
   static constexpr UINT SwapChainLength = 3;
   static thread_local std::unordered_map<HWND, Win32Direct3D12GaneshWindow*>
@@ -93,6 +100,7 @@ class Win32Direct3D12GaneshWindow final {
   std::optional<DWORD> mDPI;
   SkISize mNCSize {};
   SkISize mClientSize {};
+  Widgets::Widget* mOffsetToChild {nullptr};
   std::optional<SkISize> mPendingResize;
   bool mTrackingMouseEvents = false;
 

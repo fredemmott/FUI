@@ -36,7 +36,7 @@ bool BeginComboBoxPopup(ID id) {
     .mBorderColor = ComboBoxDropDownBorderBrush,
     .mBorderRadius = OverlayCornerRadius,
     .mBorderWidth = ComboBoxDropdownBorderThickness,
-    .mMinWidth = YGNodeLayoutGetWidth(button->GetLayoutNode()),
+    .mMinWidth = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8,
     .mPadding = ComboBoxDropdownBorderPadding,
   }});
   BeginVStackPanel();
@@ -48,7 +48,7 @@ bool BeginComboBoxPopup(ID id) {
       .mGap = 0.0,
       .mMarginBottom = -1.0,
       .mMarginLeft = 0.0,
-      .mMarginRight = 0.0,
+      .mMarginRight = 0,
       .mMarginTop = -0.5,
       .mPaddingBottom = ComboBoxDropdownContentMarginBottom,
       .mPaddingLeft = ComboBoxDropdownContentMarginLeft,
