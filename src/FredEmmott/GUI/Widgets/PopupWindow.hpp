@@ -25,11 +25,11 @@ class PopupWindow final : public Widget {
   unique_ptr<Widget> mRootWidget;
   Window mWindow {
     GetModuleHandleW(nullptr),
-    SW_SHOW,
+    SW_SHOWNA,
     {
       .mInitialSize = {CW_USEDEFAULT, CW_USEDEFAULT},
       .mWindowStyle = WS_POPUP | WS_BORDER,
-      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP,
+      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_NOACTIVATE,
       .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
     }};
 };

@@ -128,6 +128,8 @@ class Win32Direct3D12GaneshWindow final {
 
   sk_sp<GrDirectContext> mSkContext;
 
+  std::vector<HWND> mChildren;
+
   struct FrameContext {
     wil::com_ptr<ID3D12Resource> mRenderTarget;
     D3D12_CPU_DESCRIPTOR_HANDLE mRenderTargetView {};

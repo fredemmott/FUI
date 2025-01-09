@@ -295,6 +295,10 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     return;
   }
 
+  if (mParentHwnd) {
+    gInstances.at(mParentHwnd)->mChildren.push_back(mHwnd.get());
+  }
+
   this->TrackMouseEvent();
 
   mDPI = GetDpiForWindow(mHwnd.get());
@@ -427,6 +431,10 @@ void Win32Direct3D12GaneshWindow::InitializeSkia() {
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
+  if (mParentHwnd) {
+    auto& siblings = gInstances.at(mParentHwnd)->mChildren;
+    siblings.erase(std::ranges::find(siblings, mHwnd.get()));
+  }
   this->CleanupFrameContexts();
 
   const auto it = std::ranges::find(
@@ -790,7 +798,8 @@ Win32Direct3D12GaneshWindow::WindowProc(
       }
       break;
     case WM_SIZING: {
-      // Initially this is the full window size, including the non-client area
+      // Initially this is the full window size, including the non-client
+      // area
       RECT rect = *reinterpret_cast<RECT*>(lParam);
       // Let's figure out how the client relates, and adjust from there
       RECT padding {};
@@ -811,6 +820,12 @@ Win32Direct3D12GaneshWindow::WindowProc(
       mDPIScale = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
       break;
     }
+    case WM_MOUSEACTIVATE: {
+      if ((mOptions.mWindowExStyle & WS_EX_NOACTIVATE)) {
+        return MA_NOACTIVATE;
+      }
+      break;
+    }
     case WM_MOUSEMOVE: {
       TrackMouseEvent();
       MouseMoveEvent e;
@@ -826,6 +841,10 @@ Win32Direct3D12GaneshWindow::WindowProc(
       break;
     }
     case WM_LBUTTONDOWN: {
+      for (auto&& child: mChildren) {
+        ShowWindow(child, SW_HIDE);
+        gInstances.at(child)->mExitCode = 0;
+      }
       MouseButtonPressEvent e;
       PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
       e.mChangedButtons = MouseButton::Left;
@@ -891,11 +910,6 @@ Win32Direct3D12GaneshWindow::WindowProc(
       mFUIRoot.DispatchEvent(&e);
       break;
     }
-    case WM_KILLFOCUS:
-      if ((mOptions.mWindowStyle & WS_POPUP) == WS_POPUP) {
-        mExitCode = 0;
-      }
-      break;
     case WM_CLOSE:
       mExitCode = 0;
       break;
