@@ -826,6 +826,26 @@ Win32Direct3D12GaneshWindow::WindowProc(
       }
       break;
     }
+    case WM_MOVE: {
+      const auto x = LOWORD(lParam);
+      const auto y = HIWORD(lParam);
+      const auto dx = x - mPosition.fX;
+      const auto dy = y - mPosition.fY;
+      mPosition = {x, y};
+      for (auto&& child: mChildren) {
+        RECT rect {};
+        GetWindowRect(child, &rect);
+        SetWindowPos(
+          child,
+          nullptr,
+          rect.left + dx,
+          rect.top + dy,
+          0,
+          0,
+          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+      }
+      break;
+    }
     case WM_MOUSEMOVE: {
       TrackMouseEvent();
       MouseMoveEvent e;
