@@ -84,13 +84,12 @@ void EndComboBoxButton() {
       .mFlexGrow = 0,
       .mMarginLeft = 14,
       .mMarginRight = 14,
-      .mMarginTop = -2,
       .mTop = {
-        0, FasterAnimation,
+        -2, FasterAnimation,
       },
     },
     .mActive = {
-      .mTop = 2,
+      .mTop = 0,
     },
   });
 
