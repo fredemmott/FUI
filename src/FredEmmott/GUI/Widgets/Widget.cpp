@@ -19,17 +19,6 @@ using namespace widget_detail;
 
 namespace {
 
-YGConfigRef GetYogaConfig() {
-  static unique_ptr<YGConfig> sInstance;
-  static std::once_flag sOnceFlag;
-  std::call_once(sOnceFlag, [&ret = sInstance]() {
-    ret.reset(YGConfigNew());
-    YGConfigSetUseWebDefaults(ret.get(), true);
-    YGConfigSetPointScaleFactor(ret.get(), 0.0f);
-  });
-  return sInstance.get();
-}
-
 void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
   if (!style.mBackgroundColor) {
     return;
@@ -165,7 +154,6 @@ void Widget::SetBuiltInStyles(const WidgetStyles& styles) {
 }
 void Widget::SetAdditionalBuiltInStyles(const WidgetStyles& styles) {
   mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
-
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {

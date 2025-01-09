@@ -167,6 +167,7 @@ class Win32Direct3D12GaneshWindow final {
 
   static LRESULT
   StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+  void SetDPI(WORD newDPI);
 };
 
 }// namespace FredEmmott::GUI

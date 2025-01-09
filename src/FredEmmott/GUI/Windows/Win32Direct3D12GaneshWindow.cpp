@@ -301,8 +301,7 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
 
   this->TrackMouseEvent();
 
-  mDPI = GetDpiForWindow(mHwnd.get());
-  mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
+  this->SetDPI(GetDpiForWindow(mHwnd.get()));
 
   if (mOffsetToChild) {
     SkIPoint offset {};
@@ -736,6 +735,12 @@ LRESULT Win32Direct3D12GaneshWindow::StaticWindowProc(
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
+void Win32Direct3D12GaneshWindow::SetDPI(const WORD newDPI) {
+  mDPI = newDPI;
+  mDPIScale = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
+  YGConfigSetPointScaleFactor(GetYogaConfig(), mDPIScale);
+}
+
 LRESULT
 Win32Direct3D12GaneshWindow::WindowProc(
   HWND hwnd,
@@ -764,8 +769,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
       break;
     case WM_GETMINMAXINFO: {
       if (!mDPI) {
-        mDPI = GetDpiForWindow(hwnd);
-        mDPIScale = static_cast<float>(*mDPI) / USER_DEFAULT_SCREEN_DPI;
+        this->SetDPI(GetDpiForWindow(hwnd));
         CalculateMinimumWindowSize();
       }
 
@@ -816,8 +820,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);
       // TODO: lParam is a RECT that we *should* use
-      mDPI = newDPI;
-      mDPIScale = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
+      SetDPI(newDPI);
       break;
     }
     case WM_MOUSEACTIVATE: {

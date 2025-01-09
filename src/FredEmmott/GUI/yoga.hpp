@@ -24,4 +24,7 @@ struct deleter<YGConfig> {
 
 namespace FredEmmott::GUI {
 using namespace FredEmmott::Memory;
-}
+
+YGConfigRef GetYogaConfig();
+
+}// namespace FredEmmott::GUI

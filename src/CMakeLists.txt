@@ -70,7 +70,7 @@ add_executable(
   FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
   FredEmmott/GUI/events/MouseMoveEvent.hpp
-  FredEmmott/GUI/yoga.hpp
+  FredEmmott/GUI/yoga.cpp FredEmmott/GUI/yoga.hpp
   FredEmmott/memory.hpp
   FredEmmott/memory/memory_detail.hpp
   FredEmmott/type_traits/concepts.hpp
