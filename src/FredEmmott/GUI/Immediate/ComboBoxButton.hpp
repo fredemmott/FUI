@@ -18,7 +18,9 @@ namespace FredEmmott::GUI::Immediate {
  *
  * @see `ComboBoxButton()` if you just want text
  */
-void BeginComboBoxButton(bool* clicked, ID id = ID {std::source_location::current()});
+void BeginComboBoxButton(
+  bool* clicked,
+  ID id = ID {std::source_location::current()});
 
 void EndComboBoxButton();
 
