@@ -51,18 +51,8 @@ static void AppTick() {
     "bar",
     "baz",
   };
-  if (fuii::ComboBoxButton("{}", comboItems.at(selectedIndex))) {
-    comboBoxVisible = true;
-  }
-  if (fuii::BeginComboBoxPopup(&comboBoxVisible)) {
-    for (std::size_t i = 0; i < std::size(comboItems); ++i) {
-      if (fuii::ComboBoxItem(selectedIndex == i, comboItems[i])) {
-        selectedIndex = i;
-        comboBoxVisible = false;
-        fuii::EnqueueAdditionalFrame();
-      }
-    }
-    fuii::EndComboBoxPopup();
+  if (fuii::ComboBox(&selectedIndex, comboItems)) {
+    std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
   }
 
   fuii::EndDisabled();

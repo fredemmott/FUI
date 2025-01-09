@@ -17,6 +17,7 @@ add_executable(
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/FrameRateRequirement.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
+  FredEmmott/GUI/Immediate/ComboBox.cpp FredEmmott/GUI/Immediate/ComboBox.hpp
   FredEmmott/GUI/Immediate/ComboBoxButton.cpp FredEmmott/GUI/Immediate/ComboBoxButton.hpp
   FredEmmott/GUI/Immediate/ComboBoxPopup.cpp FredEmmott/GUI/Immediate/ComboBoxPopup.hpp
   FredEmmott/GUI/Immediate/ComboBoxItem.cpp FredEmmott/GUI/Immediate/ComboBoxItem.hpp

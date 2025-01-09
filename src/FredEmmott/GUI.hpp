@@ -4,6 +4,7 @@
 
 #include <FredEmmott/GUI/Immediate/Button.hpp>
 #include <FredEmmott/GUI/Immediate/Card.hpp>
+#include <FredEmmott/GUI/Immediate/ComboBox.hpp>
 #include <FredEmmott/GUI/Immediate/ComboBoxButton.hpp>
 #include <FredEmmott/GUI/Immediate/ComboBoxItem.hpp>
 #include <FredEmmott/GUI/Immediate/ComboBoxPopup.hpp>
