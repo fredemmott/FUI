@@ -20,7 +20,7 @@ struct Style {
   StyleProperty<SkScalar> mBottom;
   InheritableStyleProperty<Brush> mColor;
   StyleProperty<YGDisplay, YGDisplayFlex> mDisplay;
-  StyleProperty<SkScalar, 0.0f> mFlexBasis;
+  StyleProperty<SkScalar> mFlexBasis;
   StyleProperty<YGFlexDirection> mFlexDirection;
   StyleProperty<SkScalar, 0.0f> mFlexGrow;
   StyleProperty<SkScalar, 0.0f> mFlexShrink;

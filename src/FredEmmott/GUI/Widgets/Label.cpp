@@ -48,7 +48,6 @@ WidgetStyles Label::GetBuiltInStyles() const {
   static const WidgetStyles ret {
     .mBase = {
       .mColor = StaticTheme::TextFillColorPrimaryBrush,
-      .mFlexBasis = 0,
       .mFont = SystemFont::Body,
     },
   };
