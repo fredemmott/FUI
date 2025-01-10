@@ -10,6 +10,7 @@ namespace FredEmmott::GUI::Immediate {
 
 void BeginComboBoxItem(
   bool* selected,
+  bool initiallySelected,
   ID id = ID {std::source_location::current()});
 void EndComboBoxItem();
 

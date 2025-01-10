@@ -11,19 +11,15 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginComboBoxItem(bool* selectedInOut, ID id) {
+void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
   using namespace immediate_detail;
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
-  bool clicked = false;
-  BeginButton(&clicked, id);
-  const bool isSelected = clicked || (selectedInOut && *selectedInOut);
+  BeginButton(clicked, id);
+  const bool isSelected = initiallySelected || (clicked && *clicked);
   if (isSelected) {
     FUI_ASSERT(tWindow);
     tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
-  }
-  if (selectedInOut) {
-    *selectedInOut = isSelected;
   }
 
   WidgetStyles buttonStyles {
@@ -120,11 +116,11 @@ void EndComboBoxItem() {
 }
 
 bool ComboBoxItem(bool initiallySelected, std::string_view label, ID id) {
-  bool selected = initiallySelected;
-  BeginComboBoxItem(&selected, id);
+  bool clicked = false;
+  BeginComboBoxItem(&clicked, initiallySelected, id);
   Label(label, ID {0});
   EndComboBoxItem();
-  return selected && !initiallySelected;
+  return clicked;
 }
 
 }// namespace FredEmmott::GUI::Immediate
