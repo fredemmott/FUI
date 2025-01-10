@@ -82,7 +82,6 @@ WidgetStyles TextBlock::GetBuiltInStyles() const {
     .mBase = {
       .mBackgroundColor = SK_ColorBLACK,
       .mColor = StaticTheme::TextFillColorPrimaryBrush,
-      .mFlexBasis = 0,
       .mFlexGrow = 0,
       .mFlexShrink = 1,
       .mFont = SystemFont::Body,
