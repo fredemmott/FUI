@@ -11,8 +11,8 @@
 namespace FredEmmott::GUI {
 
 struct Style {
-  StyleProperty<YGAlign> mAlignSelf;
   StyleProperty<YGAlign> mAlignItems;
+  StyleProperty<YGAlign> mAlignSelf;
   StyleProperty<Brush> mBackgroundColor;
   StyleProperty<Brush> mBorderColor;
   StyleProperty<SkScalar> mBorderRadius;

@@ -119,4 +119,8 @@ Font ResolveGlyphFont(const Usage usage) noexcept {
   std::unreachable();
 }
 
+sk_sp<SkFontMgr> GetFontManager() noexcept {
+  return gManager;
+}
+
 }// namespace FredEmmott::GUI::SystemFont

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <skia/core/SkFontMgr.h>
+
 namespace FredEmmott::GUI {
 class Font;
 }
@@ -24,5 +26,7 @@ using enum Usage;
 Font Resolve(Usage) noexcept;
 
 Font ResolveGlyphFont(Usage) noexcept;
+
+sk_sp<SkFontMgr> GetFontManager() noexcept;
 
 }// namespace FredEmmott::GUI::SystemFont

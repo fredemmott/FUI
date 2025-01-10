@@ -6,8 +6,7 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 
 namespace FredEmmott::GUI::Widgets {
-Card::Card(std::size_t id) : Widget(id) {
-}
+Card::Card(std::size_t id) : Widget(id) {}
 
 WidgetStyles Card::GetBuiltInStyles() const {
   using namespace StaticTheme::Common;

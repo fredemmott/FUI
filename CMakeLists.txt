@@ -23,6 +23,8 @@ if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
     "/DEFAULTLIB:ucrt$<$<CONFIG:Debug>:d>.lib" # include the dynamic UCRT
     "/NODEFAULTLIB:libucrt$<$<CONFIG:Debug>:d>.lib" # remove the static UCRT
   )
+else ()
+  message(WARNING "Advanced text features require SkParagraph, which is only available with vcpkg static triplets}")
 endif ()
 
 set(

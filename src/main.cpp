@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <FredEmmott/GUI.hpp>
+#include <FredEmmott/GUI/Widgets/TextBlock.hpp>
 #include <print>
 
 namespace fui = FredEmmott::GUI;
@@ -68,6 +69,20 @@ static void AppTick() {
   });
   fuii::Label("After stack");
   fuii::EndStackPanel();
+
+  fuii::immediate_detail::BeginWidget<fui::Widgets::TextBlock>(
+    fuii::ID {std::source_location::current()});
+  FredEmmott::GUI::Immediate::immediate_detail::GetCurrentParentNode<
+    fui::Widgets::TextBlock>()
+    ->SetText(
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
+      "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
+      "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea "
+      "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate "
+      "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
+      "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+      "mollit anim id est laborum.");
+  fuii::immediate_detail::EndWidget<fui::Widgets::TextBlock>();
 
   fuii::EndStackPanel();
   fuii::EndCard();
