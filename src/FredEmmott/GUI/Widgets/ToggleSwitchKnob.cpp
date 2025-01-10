@@ -40,7 +40,7 @@ WidgetStyles ToggleSwitchKnob::GetBuiltInStyles() const {
       .mBorderColor = { std::nullopt, ColorAnimation },
       .mBorderRadius = Spacing * 2.5f,
       .mBorderWidth = ToggleSwitchOuterBorderStrokeThickness,
-      .mFlexBasis = 0,
+      .mFlexBasis = Spacing * 10,
       .mFlexDirection = YGFlexDirectionColumn,
       .mHeight = 20,
       .mMarginRight = ToggleSwitchPreContentMargin,
