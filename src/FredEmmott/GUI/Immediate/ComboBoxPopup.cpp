@@ -29,6 +29,7 @@ bool BeginComboBoxPopup(ID id) {
   if (tWindow && !tWindow->GetNativeHandle()) {
     tWindow->SetSystemBackdropType(DWMSBT_NONE);
   }
+  const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
   BeginWidget<Widget>(ID {0});
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
@@ -36,7 +37,6 @@ bool BeginComboBoxPopup(ID id) {
     .mBorderColor = ComboBoxDropDownBorderBrush,
     .mBorderRadius = OverlayCornerRadius,
     .mBorderWidth = ComboBoxDropdownBorderThickness,
-    .mMinWidth = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8,
     .mPadding = ComboBoxDropdownBorderPadding,
   }});
   BeginVStackPanel();
@@ -54,6 +54,7 @@ bool BeginComboBoxPopup(ID id) {
       .mPaddingLeft = ComboBoxDropdownContentMarginLeft,
       .mPaddingRight = ComboBoxDropdownContentMarginRight,
       .mPaddingTop = ComboBoxDropdownContentMarginTop,
+      .mWidth = width,
     },
   });
   return true;

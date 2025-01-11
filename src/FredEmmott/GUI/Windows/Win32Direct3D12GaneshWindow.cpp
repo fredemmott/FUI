@@ -302,25 +302,6 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
 
   this->SetDPI(GetDpiForWindow(mHwnd.get()));
 
-  if (mOffsetToChild) {
-    SkIPoint offset {};
-    for (auto node = mOffsetToChild->GetLayoutNode(); node;
-         node = YGNodeGetParent(node)) {
-      offset.fX += YGNodeLayoutGetLeft(node);
-      offset.fY += YGNodeLayoutGetTop(node);
-    }
-    offset = CanvasPointToNativePoint({-offset.fX, -offset.fY});
-    SetWindowPos(
-      mHwnd.get(),
-      nullptr,
-      offset.fX,
-      offset.fY,
-      0,
-      0,
-      SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
-        | SWP_NOCOPYBITS);
-  }
-
   gInstances.emplace(mHwnd.get(), this);
   RECT clientRect {};
   GetClientRect(mHwnd.get(), &clientRect);
@@ -338,6 +319,25 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
       calculatedInitialSize.fWidth,
       calculatedInitialSize.fHeight,
       SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+  }
+
+  if (mOffsetToChild) {
+    SkIPoint offset {};
+    for (auto node = mOffsetToChild->GetLayoutNode(); node;
+         node = YGNodeGetParent(node)) {
+      offset.fX += YGNodeLayoutGetLeft(node);
+      offset.fY += YGNodeLayoutGetTop(node);
+    }
+    offset = CanvasPointToNativePoint({-offset.fX, -offset.fY});
+    SetWindowPos(
+      mHwnd.get(),
+      nullptr,
+      offset.fX,
+      offset.fY,
+      0,
+      0,
+      SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
+        | SWP_NOCOPYBITS);
   }
 
   GetWindowRect(mHwnd.get(), &mNCRect);
