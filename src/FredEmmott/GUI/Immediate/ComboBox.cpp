@@ -53,7 +53,6 @@ bool ComboBox(
           *selectedIndex = i;
         }
         widget->mIsPopupOpen = false;
-        EnqueueAdditionalFrame();
       }
     }
     EndComboBoxPopup();

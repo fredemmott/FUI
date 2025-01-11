@@ -614,6 +614,13 @@ SkIPoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
+  // We may have failed since the last window message without it being directly
+  // caused by a window message to this window.
+  //
+  // For example, popup windows can be closed by a click on their owner window.
+  if (mExitCode.has_value()) {
+    return std::unexpected {mExitCode.value()};
+  }
   using namespace Immediate::immediate_detail;
 
   mBeginFrameTime = std::chrono::steady_clock::now();
@@ -622,7 +629,7 @@ std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
     if (mExitCode.has_value()) {
-      return std::unexpected {mExitCode.value_or(0)};
+      return std::unexpected {mExitCode.value()};
     }
   }
   FUI_ASSERT(!tWindow);
@@ -812,7 +819,6 @@ Win32Direct3D12GaneshWindow::WindowProc(
     }
     case WM_LBUTTONDOWN: {
       for (auto&& child: mChildren) {
-        ShowWindow(child, SW_HIDE);
         gInstances.at(child)->mExitCode = 0;
       }
       MouseButtonPressEvent e;
