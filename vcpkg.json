@@ -6,8 +6,7 @@
     {
       "name": "skia",
       "features": [
-        "direct3d",
-        "freetype"
+        "direct3d"
       ]
     },
     "yoga",
