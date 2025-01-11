@@ -22,10 +22,15 @@ class Root final {
   ~Root();
   void BeginFrame();
   void EndFrame();
-  void Paint(SkCanvas*, SkSize) const;
+  void Paint(SkCanvas*, SkSize);
 
-  std::optional<SkSize> GetMinimumSize() const;
+  [[nodiscard]]
+  bool CanFit(const SkSize&) const;
+  [[nodiscard]]
+  bool CanFit(float width, float height) const;
+  SkSize GetInitialSize() const;
 
+  float GetHeightForWidth(float) const;
   FrameRateRequirement GetFrameRateRequirement() const;
 
   void DispatchEvent(const Event*);

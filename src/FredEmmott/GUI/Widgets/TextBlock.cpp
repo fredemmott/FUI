@@ -80,7 +80,6 @@ void TextBlock::PaintOwnContent(
 WidgetStyles TextBlock::GetBuiltInStyles() const {
   static const WidgetStyles ret {
     .mBase = {
-      .mBackgroundColor = SK_ColorBLACK,
       .mColor = StaticTheme::TextFillColorPrimaryBrush,
       .mFlexGrow = 0,
       .mFlexShrink = 1,

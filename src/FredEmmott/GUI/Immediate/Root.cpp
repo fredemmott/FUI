@@ -65,31 +65,53 @@ void Root::DispatchEvent(const Event* e) {
   }
 }
 
-void Root::Paint(SkCanvas* canvas, SkSize size) const {
+void Root::Paint(SkCanvas* canvas, SkSize size) {
   if (!mWidget) {
     return;
   }
   canvas->save();
   canvas->clipRect(SkRect::MakeXYWH(0, 0, size.width(), size.height()));
 
-  YGNodeCalculateLayout(
-    mYogaRoot.get(), size.width(), size.height(), YGDirectionLTR);
+  auto yoga = mYogaRoot.get();
+  YGNodeCalculateLayout(yoga, size.fWidth, size.fHeight, YGDirectionLTR);
   mWidget->Paint(canvas);
 
   canvas->restore();
 }
+bool Root::CanFit(const SkSize& size) const {
+  return CanFit(size.width(), size.height());
+}
 
-std::optional<SkSize> Root::GetMinimumSize() const {
-  if (!mWidget) {
-    return std::nullopt;
+bool Root::CanFit(float width, float height) const {
+  auto yoga = mYogaRoot.get();
+  YGNodeCalculateLayout(yoga, width, height, YGDirectionLTR);
+  if (YGNodeLayoutGetHadOverflow(yoga)) {
+    return false;
   }
+  return true;
+}
 
+SkSize Root::GetInitialSize() const {
+  float minWidth = 0;
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-  return SkSize {
-    YGNodeLayoutGetWidth(yoga),
-    YGNodeLayoutGetHeight(yoga),
-  };
+  float maxWidth = YGNodeLayoutGetWidth(yoga) + 1;
+  while ((maxWidth - minWidth) > 1) {
+    const auto it = std::floor(minWidth + maxWidth) / 2;
+    YGNodeCalculateLayout(yoga, it, YGUndefined, YGDirectionLTR);
+    if (YGNodeLayoutGetHadOverflow(yoga)) {
+      minWidth = it;
+    } else {
+      maxWidth = it;
+    }
+  }
+  return SkSize {maxWidth, GetHeightForWidth(maxWidth)};
+}
+
+float Root::GetHeightForWidth(float width) const {
+  auto yoga = mYogaRoot.get();
+  YGNodeCalculateLayout(yoga, width, YGUndefined, YGDirectionLTR);
+  return YGNodeLayoutGetHeight(yoga);
 }
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {

@@ -12,6 +12,7 @@
 #include <skia/gpu/GrDirectContext.h>
 #include <wil/com.h>
 
+#include <FredEmmott/GUI/ActivatedFlag.hpp>
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <expected>
 #include <optional>
@@ -98,12 +99,13 @@ class Win32Direct3D12GaneshWindow final {
   wil::unique_hwnd mHwnd;
   float mDPIScale = {1.0f};
   std::optional<DWORD> mDPI;
-  SkISize mNCSize {};
+  RECT mNCRect {};
   SkISize mClientSize {};
   Widgets::Widget* mOffsetToChild {nullptr};
-  std::optional<SkISize> mPendingResize;
+  ActivatedFlag mPendingResize;
   bool mTrackingMouseEvents = false;
   SkIPoint mPosition {};
+  int mMinimumWidth {};
 
   FredEmmott::GUI::Immediate::Root mFUIRoot;
 
@@ -141,12 +143,6 @@ class Win32Direct3D12GaneshWindow final {
   std::array<FrameContext, SwapChainLength> mFrames;
   uint8_t mFrameIndex {};// Used to index into mFrames; reset when buffer reset
 
-  // Device-independent pixels so that we keep the correct values when
-  // dragging between monitors
-  std::optional<SkSize> mMinimumContentSizeInDIPs;
-  // Includes the non-client-area
-  std::optional<SkISize> mMinimumWindowSize;
-
   std::chrono::steady_clock::time_point mBeginFrameTime;
 
   void ResizeSwapchain();
@@ -158,9 +154,9 @@ class Win32Direct3D12GaneshWindow final {
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
-  SkISize CalculateMinimumWindowSize();
+  SkISize CalculateInitialWindowSize() const;
   void ResizeIfNeeded();
-  void Paint(const SkISize& realPixelSize);
+  void Paint();
 
   LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
