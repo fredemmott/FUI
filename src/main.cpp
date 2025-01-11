@@ -56,8 +56,6 @@ static void AppTick() {
     std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
   }
 
-  fuii::EndDisabled();
-
   fuii::BeginHStackPanel();
   // Glyphs areIUnicode private usage code points from
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
@@ -83,6 +81,8 @@ static void AppTick() {
       "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
       "mollit anim id est laborum.");
   fuii::immediate_detail::EndWidget<fui::Widgets::TextBlock>();
+
+  fuii::EndDisabled();
 
   fuii::EndStackPanel();
   fuii::EndCard();

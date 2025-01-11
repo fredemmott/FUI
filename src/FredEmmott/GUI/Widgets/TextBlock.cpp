@@ -85,6 +85,9 @@ WidgetStyles TextBlock::GetBuiltInStyles() const {
       .mFlexShrink = 1,
       .mFont = SystemFont::Body,
     },
+    .mDisabled = {
+      .mColor = StaticTheme::TextFillColorDisabledBrush,
+    },
   };
   return ret;
 }
@@ -93,8 +96,8 @@ Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   const Style& style) {
   if (mFont != style.mFont) {
     mFont = style.mFont.value();
-    this->UpdateParagraph();
   }
+  this->UpdateParagraph();
 
   return ComputedStyleFlags::Default;
 }

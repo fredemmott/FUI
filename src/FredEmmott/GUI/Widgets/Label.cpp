@@ -50,6 +50,9 @@ WidgetStyles Label::GetBuiltInStyles() const {
       .mColor = StaticTheme::TextFillColorPrimaryBrush,
       .mFont = SystemFont::Body,
     },
+    .mDisabled = {
+      .mColor = StaticTheme::TextFillColorDisabledBrush,
+    },
   };
   return ret;
 }
