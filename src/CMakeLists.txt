@@ -29,6 +29,7 @@ add_executable(
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
+  FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
