@@ -92,20 +92,19 @@ bool Root::CanFit(float width, float height) const {
 }
 
 SkSize Root::GetInitialSize() const {
-  float minWidth = 0;
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-  float maxWidth = YGNodeLayoutGetWidth(yoga) + 1;
-  while ((maxWidth - minWidth) > 1) {
-    const auto it = std::floor(minWidth + maxWidth) / 2;
-    YGNodeCalculateLayout(yoga, it, YGUndefined, YGDirectionLTR);
-    if (YGNodeLayoutGetHadOverflow(yoga)) {
-      minWidth = it;
-    } else {
-      maxWidth = it;
-    }
-  }
-  return SkSize {maxWidth, GetHeightForWidth(maxWidth)};
+  // This works as for things with a variable width (e.g. wrappable text), we
+  // return `YGUndefined` from the measure functions if the width is undefined.
+  //
+  // While we 'should' return the true maximum size (e.g the length of all the
+  // text as a single line), that unfortunately is interpreted as having a
+  // definite size, as Yoga does not currently support measure funcs providing
+  // minimum values.
+  return SkSize {
+    YGNodeLayoutGetWidth(yoga),
+    YGNodeLayoutGetHeight(yoga),
+  };
 }
 
 float Root::GetHeightForWidth(float width) const {
