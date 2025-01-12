@@ -173,15 +173,6 @@ void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
 
 void Widget::Paint(SkCanvas* canvas) const {
   const auto& style = mComputedStyle;
-  const auto yoga = this->GetLayoutNode();
-  const auto rect = SkRect::MakeXYWH(
-    YGNodeLayoutGetLeft(yoga),
-    YGNodeLayoutGetTop(yoga),
-    YGNodeLayoutGetWidth(yoga),
-    YGNodeLayoutGetHeight(yoga));
-
-  PaintBackground(canvas, rect, style);
-  PaintBorder(yoga, canvas, rect, style);
 
   const auto opacity = style.mOpacity.value_or_default();
   if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
@@ -197,6 +188,15 @@ void Widget::Paint(SkCanvas* canvas) const {
   };
   const scope_exit_t restore {canvas};
 
+  const auto yoga = this->GetLayoutNode();
+  const auto rect = SkRect::MakeXYWH(
+    YGNodeLayoutGetLeft(yoga),
+    YGNodeLayoutGetTop(yoga),
+    YGNodeLayoutGetWidth(yoga),
+    YGNodeLayoutGetHeight(yoga));
+
+  PaintBackground(canvas, rect, style);
+  PaintBorder(yoga, canvas, rect, style);
   this->PaintOwnContent(canvas, rect, style);
 
   const auto children = this->GetDirectChildren();
