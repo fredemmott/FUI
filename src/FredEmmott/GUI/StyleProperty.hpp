@@ -43,6 +43,10 @@ class BaseStyleProperty : private std::optional<T> {
   using std::optional<T>::value_or;
   using value_type = typename std::optional<T>::value_type;
 
+  constexpr auto value_or_default() const {
+    return this->value_or(TDefault);
+  }
+
   BaseStyleProperty(
     const T& value,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)

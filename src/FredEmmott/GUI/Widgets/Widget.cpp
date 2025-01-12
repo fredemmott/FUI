@@ -183,6 +183,20 @@ void Widget::Paint(SkCanvas* canvas) const {
   PaintBackground(canvas, rect, style);
   PaintBorder(yoga, canvas, rect, style);
 
+  const auto opacity = style.mOpacity.value_or_default();
+  if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
+    canvas->save();
+  } else {
+    canvas->saveLayerAlphaf(nullptr, opacity);
+  }
+  struct scope_exit_t {
+    SkCanvas* mCanvas {nullptr};
+    ~scope_exit_t() {
+      mCanvas->restore();
+    }
+  };
+  const scope_exit_t restore {canvas};
+
   this->PaintOwnContent(canvas, rect, style);
 
   const auto children = this->GetDirectChildren();
@@ -190,12 +204,10 @@ void Widget::Paint(SkCanvas* canvas) const {
     return;
   }
 
-  canvas->save();
   canvas->translate(rect.x(), rect.y());
   for (auto&& child: children) {
     child->Paint(canvas);
   }
-  canvas->restore();
 }
 
 void Widget::SetChildren(const std::vector<Widget*>& children) {
