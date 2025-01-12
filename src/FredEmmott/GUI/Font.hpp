@@ -14,13 +14,10 @@ namespace FredEmmott::GUI {
 
 class Font {
  public:
-  Font() : Font(SkFont {}) {
-  }
+  Font() : Font(SkFont {}) {}
 
-  Font(SystemFont::Usage usage) : Font(Resolve(usage)) {
-  }
-  Font(WidgetFont::Usage usage) : Font(Resolve(usage)) {
-  }
+  Font(SystemFont::Usage usage) : Font(Resolve(usage)) {}
+  Font(WidgetFont::Usage usage) : Font(Resolve(usage)) {}
 
   Font(const SkFont& f);
 
@@ -41,6 +38,12 @@ class Font {
 
   SkScalar GetFontSizeInPixels(this const auto& self) noexcept {
     return font_detail::PointsToPixels(self->getSize());
+  }
+
+  Font WithSizeInPixels(float pixels) const noexcept {
+    auto ret = mFont;
+    ret.setSize(font_detail::PixelsToPoints(pixels));
+    return ret;
   }
 
  private:

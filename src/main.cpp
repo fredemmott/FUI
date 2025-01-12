@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <FredEmmott/GUI.hpp>
+#include <FredEmmott/GUI/Widgets/ScrollBar.hpp>
 #include <print>
 
 namespace fui = FredEmmott::GUI;
@@ -75,6 +76,11 @@ static void AppTick() {
     "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.");
+
+  fuii::immediate_detail::
+    BeginWidget<fui::Widgets::ScrollBar, fui::Orientation::Horizontal>(
+      fuii::ID {"scrollBar"});
+  fuii::immediate_detail::EndWidget<fui::Widgets::ScrollBar>();
 
   fuii::EndDisabled();
 
