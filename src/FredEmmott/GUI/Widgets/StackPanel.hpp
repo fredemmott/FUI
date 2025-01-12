@@ -2,21 +2,19 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/Orientation.hpp>
+
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
 class StackPanel final : public Widget {
  public:
-  enum class Direction {
-    Horizontal,
-    Vertical,
-  };
-  StackPanel(std::size_t id, Direction);
+  StackPanel(std::size_t id, Orientation);
 
  protected:
   WidgetStyles GetBuiltInStyles() const override;
-  Direction mDirection;
+  Orientation mOrientation;
 };
 
 }// namespace FredEmmott::GUI::Widgets

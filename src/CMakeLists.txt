@@ -34,6 +34,7 @@ add_executable(
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
+  FredEmmott/GUI/Orientation.hpp
   FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
   FredEmmott/GUI/StaticTheme/Resource.hpp

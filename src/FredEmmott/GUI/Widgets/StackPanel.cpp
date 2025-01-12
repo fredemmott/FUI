@@ -5,14 +5,14 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-StackPanel::StackPanel(std::size_t id, Direction direction)
+StackPanel::StackPanel(std::size_t id, Orientation direction)
   : Widget(id),
-    mDirection(direction) {}
+    mOrientation(direction) {}
 
 WidgetStyles StackPanel::GetBuiltInStyles() const {
   return {
     .mBase = {
-      .mFlexDirection = (mDirection == Direction::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
+      .mFlexDirection = (mOrientation == Orientation::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
       .mFlexGrow = 1,
       .mGap = Spacing * 4,
     },
