@@ -300,20 +300,19 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
     case EventKind::Move:
       break;
     case EventKind::ButtonPress: {
-      constexpr auto flags = StateFlags::MouseDownTarget | StateFlags::Active;
       if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
-        mDirectStateFlags |= flags;
+        mDirectStateFlags |= StateFlags::Active;
       } else {
-        mDirectStateFlags &= ~flags;
+        mDirectStateFlags &= ~StateFlags::Active;
       }
       break;
     }
     case EventKind::ButtonRelease: {
-      constexpr auto flags = StateFlags::Hovered | StateFlags::MouseDownTarget;
+      constexpr auto flags = StateFlags::Hovered | StateFlags::Active;
       if ((mDirectStateFlags & flags) == flags) {
         isClick = true;
       }
-      mDirectStateFlags &= ~(StateFlags::MouseDownTarget | StateFlags::Active);
+      mDirectStateFlags &= ~StateFlags::Active;
       break;
     }
   }

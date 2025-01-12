@@ -111,11 +111,10 @@ class Widget {
 
   enum class StateFlags {
     Default = 0,
-    MouseDownTarget = 1,
-    Disabled = 1 << 2,
-    Hovered = 1 << 3,
-    Active = 1 << 4,
-    Animating = 1 << 5,
+    Disabled = 1 << 1,
+    Hovered = 1 << 2,
+    Active = 1 << 3,
+    Animating = 1 << 4,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
