@@ -735,9 +735,18 @@ Win32Direct3D12GaneshWindow::WindowProc(
       minInfo->ptMinTrackSize.x = mMinimumWidth;
       return 0;
     }
-    case WM_SIZE:
+    case WM_SIZE: {
+      if (wParam == SIZE_MINIMIZED) {
+        break;
+      }
+      const auto w = LOWORD(lParam);
+      const auto h = HIWORD(lParam);
+      if (w == mClientSize.fWidth && h == mClientSize.fHeight) {
+        break;
+      }
       mPendingResize.Set();
       break;
+    }
     case WM_PAINT:
       this->Paint();
       break;
