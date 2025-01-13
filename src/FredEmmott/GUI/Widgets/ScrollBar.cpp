@@ -84,10 +84,18 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   mLargeDecrement->SetBuiltInStyles(sLargeChangeStyles);
   mLargeIncrement->SetBuiltInStyles(sLargeChangeStyles);
 
+  const bool isHorizontal = (orientation == Orientation::Horizontal);
+
   auto thumbStyles  = WidgetStyles {
     .mBase = Style {
       .mBackgroundColor = ScrollBarThumbFill,
       .mBorderRadius = ScrollBarCornerRadius,
+      .mHeight = {
+        static_cast<float>(isHorizontal ? ScrollBarHorizontalThumbMinHeight : ScrollBarVerticalThumbMinHeight),
+        ContractAnimation},
+      .mWidth = {
+        static_cast<float>(isHorizontal ? ScrollBarHorizontalThumbMinWidth : ScrollBarVerticalThumbMinWidth),
+        ExpandAnimation},
     },
     .mDisabled = Style {
       .mBackgroundColor = ScrollBarThumbFillDisabled,
@@ -102,16 +110,14 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   switch (orientation) {
     case Orientation::Vertical:
       thumbStyles.mBase += Style {
-        .mMinHeight = ScrollBarVerticalThumbMinHeight,
-        .mMinWidth = ScrollBarVerticalThumbMinWidth,
+        .mWidth = {ScrollBarHorizontalThumbMinWidth, ContractAnimation},
       };
       mSmallDecrement->SetText(upGlyph);
       mSmallIncrement->SetText(downGlyph);
       break;
     case Orientation::Horizontal:
       thumbStyles.mBase += Style {
-        .mMinHeight = ScrollBarHorizontalThumbMinHeight,
-        .mMinWidth = ScrollBarHorizontalThumbMinWidth,
+        .mHeight = {ScrollBarHorizontalThumbMinHeight, ContractAnimation},
       };
       mSmallDecrement->SetText(leftGlyph);
       mSmallIncrement->SetText(rightGlyph);
@@ -151,6 +157,17 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   };
   mSmallDecrement->SetExplicitStyles(smallChangeStyles);
   mSmallIncrement->SetExplicitStyles(smallChangeStyles);
+
+  if (mOrientation == Orientation::Horizontal) {
+    mThumb->SetExplicitStyles({
+    .mBase = {
+      .mHeight = {
+           static_cast<float>(hovered ? ScrollBarSize
+           : ScrollBarHorizontalThumbMinHeight), hovered ? ExpandAnimation : ContractAnimation,
+        },
+    },
+  });
+  }
 
   return Widget::OnComputedStyleChange(style, state);
 }
