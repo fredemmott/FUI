@@ -1,8 +1,10 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/widget_detail.hpp>
+#include <print>
 
 #include "Widget.hpp"
 
@@ -70,6 +72,7 @@ void Widget::StyleTransitions::Apply(
     }
   }
 
+  const auto& transition = newOpt.transition();
   constexpr bool DebugAnimations = false;
   const auto duration
     = newOpt.transition().mDuration * (DebugAnimations ? 10 : 1);
@@ -78,9 +81,9 @@ void Widget::StyleTransitions::Apply(
   if (!transitionState.has_value()) {
     transitionState = {
       .mStartValue = startValue,
-      .mStartTime = now,
+      .mStartTime = now + transition.mDelay,
       .mEndValue = endValue,
-      .mEndTime = now + duration,
+      .mEndTime = now + transition.mDelay + duration,
     };
     newOpt = startValue;
     return;
@@ -91,16 +94,17 @@ void Widget::StyleTransitions::Apply(
     return;
   }
 
-  newOpt = transitionState->Evaluate(newOpt.transition(), now);
+  newOpt = transitionState->Evaluate(transition, now);
 
   if (transitionState->mEndValue == endValue) {
     return;
   }
+
   transitionState = {
     .mStartValue = newOpt.value(),
-    .mStartTime = now,
+    .mStartTime = std::max(transitionState->mStartTime, now),
     .mEndValue = endValue,
-    .mEndTime = now + duration,
+    .mEndTime = std::max(transitionState->mEndTime, now + duration),
   };
 }
 
