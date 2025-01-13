@@ -30,11 +30,6 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
     mSmallIncrement.reset(new Label(0));
   });
 
-  const auto smallChangeOpacityAnimation = CubicBezierStyleTransition(
-    ScrollBarContractBeginTime,
-    ScrollBarOpacityChangeDuration,
-    StaticTheme::Common::ControlFastOutSlowInKeySpline);
-
   static const WidgetStyles sSmallChangeStyles {
     .mBase = {
       .mColor = ScrollBarButtonArrowForeground,
@@ -42,7 +37,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
         ResolveGlyphFont(SystemFont::Body).WithSizeInPixels(ScrollBarButtonArrowIconFontSize),
         !important,
       },
-      .mOpacity = { 0, smallChangeOpacityAnimation },
+      .mOpacity = 0,
     },
     .mHover = {
       .mColor = ScrollBarButtonArrowForegroundPointerOver,
@@ -118,11 +113,24 @@ WidgetStyles ScrollBar::GetBuiltInStyles() const {
 Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   const Style& style,
   StateFlags state) {
+  using namespace StaticTheme::ScrollBar;
   const bool hovered = (state & StateFlags::Hovered) == StateFlags::Hovered;
+
+  const auto contractAnimation = CubicBezierStyleTransition(
+    ScrollBarContractBeginTime,
+    ScrollBarOpacityChangeDuration,
+    StaticTheme::Common::ControlFastOutSlowInKeySpline);
+  const auto expandAnimation = CubicBezierStyleTransition(
+    ScrollBarExpandBeginTime,
+    ScrollBarOpacityChangeDuration,
+    StaticTheme::Common::ControlFastOutSlowInKeySpline);
 
   const WidgetStyles smallChangeStyles {
     .mBase = {
-      .mOpacity = (hovered ? 1 : 0),
+      .mOpacity = {
+        (hovered ? 1.0f : 0.0f),
+        (hovered ? expandAnimation : contractAnimation),
+      },
     },
   };
   mSmallDecrement->SetExplicitStyles(smallChangeStyles);
