@@ -100,7 +100,7 @@ Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   }
   this->UpdateParagraph();
 
-  return ComputedStyleFlags::Default;
+  return ComputedStyleFlags::Empty;
 }
 
 YGSize TextBlock::Measure(

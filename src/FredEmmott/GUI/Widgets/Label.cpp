@@ -65,7 +65,7 @@ Widget::ComputedStyleFlags Label::OnComputedStyleChange(
     YGNodeMarkDirty(this->GetLayoutNode());
   }
 
-  return ComputedStyleFlags::Default;
+  return ComputedStyleFlags::Empty;
 }
 
 YGSize Label::Measure(

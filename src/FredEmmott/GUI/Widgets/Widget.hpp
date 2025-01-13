@@ -71,7 +71,7 @@ class Widget {
     StopPropagation,
   };
   enum class ComputedStyleFlags {
-    Default = 0,
+    Empty = 0,
     InheritableHoverState = 1 << 0,
     InheritableActiveState = 1 << 1,
     Animating = 1 << 2,

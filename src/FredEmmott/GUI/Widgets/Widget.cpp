@@ -9,6 +9,7 @@
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <format>
+#include <print>
 #include <ranges>
 
 #include "WidgetList.hpp"
@@ -174,10 +175,10 @@ void Widget::Paint(SkCanvas* canvas) const {
   const auto& style = mComputedStyle;
 
   const auto opacity = style.mOpacity.value_or_default();
-  if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
-    canvas->save();
-  } else if (opacity <= std::numeric_limits<float>::epsilon()) {
+  if (opacity <= std::numeric_limits<float>::epsilon()) {
     return;
+  } else if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
+    canvas->save();
   } else {
     canvas->saveLayerAlphaf(nullptr, opacity);
   }
@@ -190,11 +191,20 @@ void Widget::Paint(SkCanvas* canvas) const {
   const scope_exit_t restore {canvas};
 
   const auto yoga = this->GetLayoutNode();
-  const auto rect = SkRect::MakeXYWH(
-    YGNodeLayoutGetLeft(yoga),
-    YGNodeLayoutGetTop(yoga),
-    YGNodeLayoutGetWidth(yoga),
-    YGNodeLayoutGetHeight(yoga));
+  canvas->translate(
+    YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default(),
+    YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default());
+  auto rect
+    = SkRect::MakeWH(YGNodeLayoutGetWidth(yoga), YGNodeLayoutGetHeight(yoga));
+
+  const auto scaleY = style.mScaleY.value_or_default();
+  if (
+    scaleY + std::numeric_limits<float>::epsilon() < 1.0f
+    || scaleY > 1.0f + std::numeric_limits<float>::epsilon()) {
+    canvas->scale(1.0f, scaleY);
+    canvas->translate(0, (rect.height() * (1.0f - scaleY) / 2.0f));
+    rect = SkRect::MakeWH(rect.width(), rect.height() * scaleY);
+  }
 
   PaintBackground(canvas, rect, style);
   PaintBorder(yoga, canvas, rect, style);
@@ -205,7 +215,6 @@ void Widget::Paint(SkCanvas* canvas) const {
     return;
   }
 
-  canvas->translate(rect.x(), rect.y());
   for (auto&& child: children) {
     child->Paint(canvas);
   }

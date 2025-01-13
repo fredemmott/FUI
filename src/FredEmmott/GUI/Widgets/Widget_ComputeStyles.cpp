@@ -73,7 +73,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     }
     if (const auto flags = this->OnComputedStyleChange(
           style, mDirectStateFlags | mInheritedStateFlags);
-        flags != Default) {
+        flags != Empty) {
       if ((flags & InheritableActiveState) == InheritableActiveState) {
         if (isActive) {
           propagateFlags |= StateFlags::Active;
@@ -163,7 +163,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
 Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
   const Style&,
   StateFlags state) {
-  auto ret = ComputedStyleFlags::Default;
+  auto ret = ComputedStyleFlags::Empty;
   if ((mInheritedStateFlags & StateFlags::Hovered) != StateFlags::Default) {
     ret |= ComputedStyleFlags::InheritableHoverState;
   }
