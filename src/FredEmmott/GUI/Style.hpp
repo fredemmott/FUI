@@ -43,7 +43,11 @@ struct Style {
   StyleProperty<SkScalar> mPaddingTop;
   StyleProperty<YGPositionType, YGPositionTypeRelative> mPosition;
   StyleProperty<SkScalar> mRight;
+  StyleProperty<SkScalar, 1.0f> mScaleX;
+  StyleProperty<SkScalar, 1.0f> mScaleY;
   StyleProperty<SkScalar> mTop;
+  StyleProperty<SkScalar, 0.0f> mTranslateX;
+  StyleProperty<SkScalar, 0.0f> mTranslateY;
   StyleProperty<SkScalar> mWidth;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
@@ -93,5 +97,9 @@ struct Style {
   X(PaddingTop) \
   X(Position) \
   X(Right) \
+  X(ScaleX) \
+  X(ScaleY) \
   X(Top) \
+  X(TranslateX) \
+  X(TranslateY) \
   X(Width)

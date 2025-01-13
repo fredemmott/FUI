@@ -11,11 +11,25 @@
 
 namespace FredEmmott::GUI::Widgets {
 
+using namespace StaticTheme::ScrollBar;
+
+namespace {
+
+const auto ContractAnimation = CubicBezierStyleTransition(
+  ScrollBarContractBeginTime,
+  ScrollBarOpacityChangeDuration,
+  StaticTheme::Common::ControlFastOutSlowInKeySpline);
+const auto ExpandAnimation = CubicBezierStyleTransition(
+  ScrollBarExpandBeginTime,
+  ScrollBarOpacityChangeDuration,
+  StaticTheme::Common::ControlFastOutSlowInKeySpline);
+
+}// namespace
+
 ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   : Widget(id),
     mOrientation(orientation),
     mBuiltinStyles(GetBuiltinStylesForOrientation()) {
-  using namespace StaticTheme::ScrollBar;
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
   constexpr auto leftGlyph = "\uedd9";
   constexpr auto rightGlyph = "\uedda";
@@ -30,6 +44,10 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
     mSmallIncrement.reset(new Label(0));
   });
 
+  // Hardcoded in XAML
+  const auto SmallPressedAnimation
+    = LinearStyleTransition(std::chrono::milliseconds(16));
+
   static const WidgetStyles sSmallChangeStyles {
     .mBase = {
       .mColor = ScrollBarButtonArrowForeground,
@@ -38,12 +56,20 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
         !important,
       },
       .mOpacity = 0,
+      .mScaleX = { 1, SmallPressedAnimation },
+      .mScaleY = { 1, SmallPressedAnimation },
+      .mTranslateX = {0, SmallPressedAnimation},
+      .mTranslateY = {0, SmallPressedAnimation},
     },
     .mHover = {
       .mColor = ScrollBarButtonArrowForegroundPointerOver,
     },
     .mActive = {
       .mColor = ScrollBarButtonArrowForegroundPressed,
+      .mScaleX = (orientation == Orientation::Horizontal) ? 1.0 : ScrollBarButtonArrowScalePressed,
+      .mScaleY = (orientation == Orientation::Vertical) ? 1.0 : ScrollBarButtonArrowScalePressed,
+      .mTranslateX = (orientation == Orientation::Horizontal) ? 0 : 0.5f,
+      .mTranslateY = (orientation == Orientation::Vertical) ? 0 : 1.0f,
     },
   };
 
@@ -113,23 +139,13 @@ WidgetStyles ScrollBar::GetBuiltInStyles() const {
 Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   const Style& style,
   StateFlags state) {
-  using namespace StaticTheme::ScrollBar;
   const bool hovered = (state & StateFlags::Hovered) == StateFlags::Hovered;
-
-  const auto contractAnimation = CubicBezierStyleTransition(
-    ScrollBarContractBeginTime,
-    ScrollBarOpacityChangeDuration,
-    StaticTheme::Common::ControlFastOutSlowInKeySpline);
-  const auto expandAnimation = CubicBezierStyleTransition(
-    ScrollBarExpandBeginTime,
-    ScrollBarOpacityChangeDuration,
-    StaticTheme::Common::ControlFastOutSlowInKeySpline);
 
   const WidgetStyles smallChangeStyles {
     .mBase = {
       .mOpacity = {
         (hovered ? 1.0f : 0.0f),
-        (hovered ? expandAnimation : contractAnimation),
+        (hovered ? ExpandAnimation : ContractAnimation),
       },
     },
   };
@@ -140,8 +156,6 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
 }
 
 WidgetStyles ScrollBar::GetBuiltinStylesForOrientation() const {
-  using namespace StaticTheme::ScrollBar;
-
   static const WidgetStyles sBaseStyles {
     .mBase = {
       .mBackgroundColor = ScrollBarBackground,
