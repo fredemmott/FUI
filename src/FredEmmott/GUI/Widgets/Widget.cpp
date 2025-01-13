@@ -8,7 +8,6 @@
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
-#include <cassert>
 #include <format>
 #include <ranges>
 
@@ -177,6 +176,8 @@ void Widget::Paint(SkCanvas* canvas) const {
   const auto opacity = style.mOpacity.value_or_default();
   if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
     canvas->save();
+  } else if (opacity <= std::numeric_limits<float>::epsilon()) {
+    return;
   } else {
     canvas->saveLayerAlphaf(nullptr, opacity);
   }
