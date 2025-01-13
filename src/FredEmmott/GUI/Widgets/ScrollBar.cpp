@@ -109,8 +109,9 @@ WidgetStyles ScrollBar::GetBuiltInStyles() const {
   return mBuiltinStyles;
 }
 Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
-  const Style& style) {
-  return Widget::OnComputedStyleChange(style);
+  const Style& style,
+  StateFlags state) {
+  return Widget::OnComputedStyleChange(style, state);
 }
 
 WidgetStyles ScrollBar::GetBuiltinStylesForOrientation() const {

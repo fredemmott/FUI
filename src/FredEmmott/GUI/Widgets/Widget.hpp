@@ -57,6 +57,15 @@ class Widget {
   void DispatchEvent(const Event*);
 
  protected:
+  enum class StateFlags {
+    Default = 0,
+    Disabled = 1 << 1,
+    Hovered = 1 << 2,
+    Active = 1 << 3,
+    Animating = 1 << 4,
+  };
+  friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
+
   enum class EventHandlerResult {
     Default,
     StopPropagation,
@@ -79,7 +88,9 @@ class Widget {
   }
 
   [[nodiscard]]
-  virtual ComputedStyleFlags OnComputedStyleChange(const Style& style);
+  virtual ComputedStyleFlags OnComputedStyleChange(
+    const Style& style,
+    StateFlags state);
 
   virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
     const {}
@@ -108,15 +119,6 @@ class Widget {
  private:
   struct StyleTransitions;
   unique_ptr<StyleTransitions> mStyleTransitions;
-
-  enum class StateFlags {
-    Default = 0,
-    Disabled = 1 << 1,
-    Hovered = 1 << 2,
-    Active = 1 << 3,
-    Animating = 1 << 4,
-  };
-  friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
   const std::size_t mID {};
   unique_ptr<YGNode> mYoga;

@@ -24,7 +24,8 @@ class TextBlock final : public Widget {
   void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
     const override;
   WidgetStyles GetBuiltInStyles() const override;
-  ComputedStyleFlags OnComputedStyleChange(const Style& base) override;
+  ComputedStyleFlags OnComputedStyleChange(const Style& base, StateFlags state)
+    override;
 
  private:
   std::unique_ptr<skia::textlayout::Paragraph> mParagraph;

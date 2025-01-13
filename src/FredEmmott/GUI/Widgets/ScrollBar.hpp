@@ -30,7 +30,8 @@ class ScrollBar final : public Widget {
   [[nodiscard]]
   WidgetStyles GetBuiltInStyles() const override;
   [[nodiscard]]
-  ComputedStyleFlags OnComputedStyleChange(const Style& style) override;
+  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
+    override;
 
  private:
   Orientation mOrientation;

@@ -17,7 +17,8 @@ class Button final : public Widget {
  protected:
   WidgetStyles GetBuiltInStyles() const override;
   EventHandlerResult OnClick(MouseEvent* e) override;
-  ComputedStyleFlags OnComputedStyleChange(const Style& style) override;
+  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
+    override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

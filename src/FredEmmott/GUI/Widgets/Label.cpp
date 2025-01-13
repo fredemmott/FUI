@@ -57,7 +57,9 @@ WidgetStyles Label::GetBuiltInStyles() const {
   return ret;
 }
 
-Widget::ComputedStyleFlags Label::OnComputedStyleChange(const Style& style) {
+Widget::ComputedStyleFlags Label::OnComputedStyleChange(
+  const Style& style,
+  StateFlags state) {
   if (mFont != style.mFont) {
     mFont = style.mFont.value();
     YGNodeMarkDirty(this->GetLayoutNode());

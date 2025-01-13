@@ -17,14 +17,15 @@ WidgetStyles PopupWindow::GetBuiltInStyles() const {
 }
 
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(
-  const Style& style) {
-  auto flags = Widget::OnComputedStyleChange(style);
+  const Style& style,
+  StateFlags flags) {
+  auto ret = Widget::OnComputedStyleChange(style, flags);
   if (
     mWindow.GetFrameRateRequirement()
     == FrameRateRequirement::SmoothAnimation) {
-    flags |= ComputedStyleFlags::Animating;
+    ret |= ComputedStyleFlags::Animating;
   }
-  return flags;
+  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets

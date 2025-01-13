@@ -71,7 +71,8 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     if (isDisabled) {
       propagateFlags |= StateFlags::Disabled;
     }
-    if (const auto flags = this->OnComputedStyleChange(style);
+    if (const auto flags = this->OnComputedStyleChange(
+          style, mDirectStateFlags | mInheritedStateFlags);
         flags != Default) {
       if ((flags & InheritableActiveState) == InheritableActiveState) {
         if (isActive) {
@@ -159,7 +160,9 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
 }
 
-Widget::ComputedStyleFlags Widget::OnComputedStyleChange(const Style&) {
+Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
+  const Style&,
+  StateFlags state) {
   auto ret = ComputedStyleFlags::Default;
   if ((mInheritedStateFlags & StateFlags::Hovered) != StateFlags::Default) {
     ret |= ComputedStyleFlags::InheritableHoverState;

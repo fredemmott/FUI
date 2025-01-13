@@ -93,7 +93,8 @@ WidgetStyles TextBlock::GetBuiltInStyles() const {
 }
 
 Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
-  const Style& style) {
+  const Style& style,
+  StateFlags state) {
   if (mFont != style.mFont) {
     mFont = style.mFont.value();
   }

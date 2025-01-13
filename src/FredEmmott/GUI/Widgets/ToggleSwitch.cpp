@@ -56,10 +56,11 @@ WidgetStyles ToggleSwitch::GetBuiltInStyles() const {
   return ret;
 }
 Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
-  const Style& style) {
+  const Style& style,
+  StateFlags state) {
   using enum ComputedStyleFlags;
-  return Widget::OnComputedStyleChange(style) | InheritableActiveState
-    | InheritableHoverState;
+  return Widget::OnComputedStyleChange(style, StateFlags::Animating)
+    | InheritableActiveState | InheritableHoverState;
 }
 
 Widget::EventHandlerResult ToggleSwitch::OnClick(MouseEvent* event) {

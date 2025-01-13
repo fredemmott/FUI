@@ -53,7 +53,10 @@ Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {
   mClicked.Set();
   return EventHandlerResult::StopPropagation;
 }
-Widget::ComputedStyleFlags Button::OnComputedStyleChange(const Style& style) {
+
+Widget::ComputedStyleFlags Button::OnComputedStyleChange(
+  const Style& style,
+  StateFlags state) {
   return ComputedStyleFlags::InheritableActiveState
     | ComputedStyleFlags::InheritableHoverState;
 }
