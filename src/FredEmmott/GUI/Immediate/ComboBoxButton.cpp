@@ -72,6 +72,7 @@ void EndComboBoxButton() {
   EndWidget<Widget>();// container
 
   using namespace StaticTheme::Common;
+  using enum Style::PseudoClass;
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;
   constexpr auto FasterAnimation
     = CubicBezierStyleTransition(ControlFasterAnimationDuration, KeySpline);
@@ -88,9 +89,11 @@ void EndComboBoxButton() {
       .mTop = {
         -2, FasterAnimation,
       },
-    },
-    .mActive = {
-      .mTop = 0,
+      .mAnd = {
+        { Active, Style {
+          .mTop = 0,
+        }},
+      },
     },
   });
 
