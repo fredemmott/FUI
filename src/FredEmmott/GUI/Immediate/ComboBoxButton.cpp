@@ -23,39 +23,46 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
 
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
-  static const WidgetStyles styles {
-    .mBase = {
-      .mAlignSelf = YGAlignFlexStart,
-      .mBackgroundColor = ComboBoxBackground,
-      .mBorderColor =ComboBoxBorderBrush,
-      .mBorderRadius = ControlCornerRadius,
-      .mBorderWidth = ComboBoxBorderThemeThickness,
-      .mColor = ComboBoxForeground,
-      .mFlexDirection = YGFlexDirectionRow,
-      .mFont = WidgetFont::ControlContent,
-      .mMinWidth = ComboBoxThemeMinWidth,
-      .mPaddingBottom = ComboBoxPaddingBottom,
-      .mPaddingLeft = ComboBoxPaddingLeft,
-      .mPaddingRight = ComboBoxPaddingRight,
-      .mPaddingTop = ComboBoxPaddingTop,
-    },
-    .mDisabled = {
-      .mBackgroundColor = ComboBoxBackgroundDisabled,
-      .mBorderColor = ComboBoxBorderBrushDisabled,
-      .mColor = ComboBoxForegroundDisabled,
-    },
-    .mHover = {
-      .mBackgroundColor = ComboBoxBackgroundPointerOver,
-      .mBorderColor = ComboBoxBorderBrushPointerOver,
-      .mColor = ComboBoxForegroundPointerOver,
-    },
-    .mActive = {
-      .mBackgroundColor = ComboBoxBackgroundPressed,
-      .mBorderColor = ComboBoxBorderBrushPressed,
-      .mColor = ComboBoxForegroundPressed,
+  using enum Style::PseudoClass;
+  static const Style styles {
+    .mAlignSelf = YGAlignFlexStart,
+    .mBackgroundColor = ComboBoxBackground,
+    .mBorderColor =ComboBoxBorderBrush,
+    .mBorderRadius = ControlCornerRadius,
+    .mBorderWidth = ComboBoxBorderThemeThickness,
+    .mColor = ComboBoxForeground,
+    .mFlexDirection = YGFlexDirectionRow,
+    .mFont = WidgetFont::ControlContent,
+    .mMinWidth = ComboBoxThemeMinWidth,
+    .mPaddingBottom = ComboBoxPaddingBottom,
+    .mPaddingLeft = ComboBoxPaddingLeft,
+    .mPaddingRight = ComboBoxPaddingRight,
+    .mPaddingTop = ComboBoxPaddingTop,
+    .mAnd = {
+      {
+        Disabled, Style {
+          .mBackgroundColor = ComboBoxBackgroundDisabled,
+          .mBorderColor = ComboBoxBorderBrushDisabled,
+          .mColor = ComboBoxForegroundDisabled,
+        },
+      },
+      {
+        Hover, Style {
+          .mBackgroundColor = ComboBoxBackgroundPointerOver,
+          .mBorderColor = ComboBoxBorderBrushPointerOver,
+          .mColor = ComboBoxForegroundPointerOver,
+        },
+      },
+      {
+        Active, Style {
+          .mBackgroundColor = ComboBoxBackgroundPressed,
+          .mBorderColor = ComboBoxBorderBrushPressed,
+          .mColor = ComboBoxForegroundPressed,
+        },
+      },
     },
   };
-  button->SetBuiltInStyles(styles);
+  button->SetBuiltInStyles({styles});
 
   BeginWidget<Widget>(ID {"container"});
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
