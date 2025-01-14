@@ -67,75 +67,73 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   const auto SmallPressedAnimation
     = LinearStyleTransition(std::chrono::milliseconds(16));
 
-  static const WidgetStyles sSmallChangeStyles {
-    .mBase = {
-      .mColor = ScrollBarButtonArrowForeground,
-      .mFont = {
-        ResolveGlyphFont(SystemFont::Body).WithSizeInPixels(ScrollBarButtonArrowIconFontSize),
-        !important,
-      },
-      .mOpacity = 0,
-      .mScaleX = { 1, SmallPressedAnimation },
-      .mScaleY = { 1, SmallPressedAnimation },
-      .mTranslateX = {0, SmallPressedAnimation},
-      .mTranslateY = {0, SmallPressedAnimation},
+  using enum Style::PseudoClass;
+  static const Style sSmallChangeStyles {
+    .mColor = ScrollBarButtonArrowForeground,
+    .mFont = {
+      ResolveGlyphFont(SystemFont::Body).WithSizeInPixels(ScrollBarButtonArrowIconFontSize),
+      !important,
     },
-    .mHover = {
-      .mColor = ScrollBarButtonArrowForegroundPointerOver,
-    },
-    .mActive = {
-      .mColor = ScrollBarButtonArrowForegroundPressed,
-      .mScaleX = (orientation == Orientation::Horizontal) ? 1.0 : ScrollBarButtonArrowScalePressed,
-      .mScaleY = (orientation == Orientation::Vertical) ? 1.0 : ScrollBarButtonArrowScalePressed,
-      .mTranslateX = (orientation == Orientation::Horizontal) ? 0 : 0.5f,
-      .mTranslateY = (orientation == Orientation::Vertical) ? 0 : 1.0f,
+    .mOpacity = 0,
+    .mScaleX = { 1, SmallPressedAnimation },
+    .mScaleY = { 1, SmallPressedAnimation },
+    .mTranslateX = {0, SmallPressedAnimation},
+    .mTranslateY = {0, SmallPressedAnimation},
+    .mAnd = {
+      { Hover, Style {
+        .mColor = ScrollBarButtonArrowForegroundPointerOver,
+      }},
+      { Active, Style {
+        .mColor = ScrollBarButtonArrowForegroundPressed,
+        .mScaleX = (orientation == Orientation::Horizontal) ? 1.0 : ScrollBarButtonArrowScalePressed,
+        .mScaleY = (orientation == Orientation::Vertical) ? 1.0 : ScrollBarButtonArrowScalePressed,
+        .mTranslateX = (orientation == Orientation::Horizontal) ? 0 : 0.5f,
+        .mTranslateY = (orientation == Orientation::Vertical) ? 0 : 1.0f,
+      }},
     },
   };
 
-  mSmallDecrement->SetBuiltInStyles(sSmallChangeStyles);
-  mSmallIncrement->SetBuiltInStyles(sSmallChangeStyles);
+  mSmallDecrement->SetBuiltInStyles({sSmallChangeStyles});
+  mSmallIncrement->SetBuiltInStyles({sSmallChangeStyles});
 
-  static const WidgetStyles sLargeChangeStyles {
-    .mBase = {
-      .mFlexGrow = 1,
-    },
+  static const Style sLargeChangeStyles {
+    .mFlexGrow = 1,
   };
-  mLargeDecrement->SetBuiltInStyles(sLargeChangeStyles);
-  mLargeIncrement->SetBuiltInStyles(sLargeChangeStyles);
+  mLargeDecrement->SetBuiltInStyles({sLargeChangeStyles});
+  mLargeIncrement->SetBuiltInStyles({sLargeChangeStyles});
 
   const bool isHorizontal = (orientation == Orientation::Horizontal);
-
-  auto thumbStyles  = WidgetStyles {
-    .mBase = Style {
-      .mBackgroundColor = ScrollBarThumbFill,
-      .mBorderRadius = ScrollBarCornerRadius,
-      .mHeight = {
-        static_cast<float>(isHorizontal ? ScrollBarHorizontalThumbMinHeight : ScrollBarVerticalThumbMinHeight),
-        ContractAnimation},
-      .mWidth = {
-        static_cast<float>(isHorizontal ? ScrollBarHorizontalThumbMinWidth : ScrollBarVerticalThumbMinWidth),
-        ExpandAnimation},
-    },
-    .mDisabled = Style {
-      .mBackgroundColor = ScrollBarThumbFillDisabled,
-    },
-    .mHover = Style {
-      .mBackgroundColor = ScrollBarThumbFillPointerOver,
-    },
-    .mActive = Style {
-      .mBackgroundColor = ScrollBarThumbFillPressed,
+  Style thumbStyles {
+    .mBackgroundColor = ScrollBarThumbFill,
+    .mBorderRadius = ScrollBarCornerRadius,
+    .mHeight = {
+      static_cast<float>(isHorizontal ? ScrollBarHorizontalThumbMinHeight : ScrollBarVerticalThumbMinHeight),
+      ContractAnimation},
+    .mWidth = {
+      static_cast<float>(isHorizontal ? ScrollBarHorizontalThumbMinWidth : ScrollBarVerticalThumbMinWidth),
+      ExpandAnimation},
+    .mAnd = {
+      { Disabled, Style {
+        .mBackgroundColor = ScrollBarThumbFillDisabled,
+      }},
+      { Hover, Style {
+        .mBackgroundColor = ScrollBarThumbFillPointerOver,
+      }},
+      { Active, Style {
+        .mBackgroundColor = ScrollBarThumbFillPressed,
+      }},
     },
   };
   switch (orientation) {
     case Orientation::Vertical:
-      thumbStyles.mBase += Style {
+      thumbStyles += Style {
         .mWidth = {ScrollBarHorizontalThumbMinWidth, ContractAnimation},
       };
       mSmallDecrement->SetText(upGlyph);
       mSmallIncrement->SetText(downGlyph);
       break;
     case Orientation::Horizontal:
-      thumbStyles.mBase += Style {
+      thumbStyles += Style {
         .mHeight = {ScrollBarHorizontalThumbMinHeight, ContractAnimation},
       };
       mSmallDecrement->SetText(leftGlyph);
@@ -143,7 +141,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
       break;
   }
 
-  mThumb->SetBuiltInStyles(thumbStyles);
+  mThumb->SetBuiltInStyles({thumbStyles});
 }
 
 ScrollBar::~ScrollBar() = default;
