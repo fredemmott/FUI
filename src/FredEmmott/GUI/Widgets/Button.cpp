@@ -20,37 +20,38 @@ Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
 WidgetStyles Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;
 
-  static const WidgetStyles ret {
-    .mBase = {
-      .mAlignSelf = YGAlignFlexStart,
-      .mBackgroundColor = ButtonBackground,
-      .mBorderColor = ButtonBorderBrush,
-      .mBorderRadius = ControlCornerRadius,
-      .mBorderWidth = ButtonBorderThemeThickness,
-      .mColor = ButtonForeground,
-      .mFont = WidgetFont::ControlContent,
-      .mPaddingBottom = ButtonPaddingBottom,
-      .mPaddingLeft = ButtonPaddingLeft,
-      .mPaddingRight = ButtonPaddingRight,
-      .mPaddingTop = ButtonPaddingTop,
-    },
-    .mDisabled = {
-      .mBackgroundColor = ButtonBackgroundDisabled,
-      .mBorderColor = ButtonBorderBrushDisabled,
-      .mColor = ButtonForegroundDisabled,
-    },
-    .mHover = {
+  using enum Style::PseudoClass;
+  static const Style ret {
+    .mAlignSelf = YGAlignFlexStart,
+    .mBackgroundColor = ButtonBackground,
+    .mBorderColor = ButtonBorderBrush,
+    .mBorderRadius = ControlCornerRadius,
+    .mBorderWidth = ButtonBorderThemeThickness,
+    .mColor = ButtonForeground,
+    .mFont = WidgetFont::ControlContent,
+    .mPaddingBottom = ButtonPaddingBottom,
+    .mPaddingLeft = ButtonPaddingLeft,
+    .mPaddingRight = ButtonPaddingRight,
+    .mPaddingTop = ButtonPaddingTop,
+    .mAnd = {
+      { Disabled, Style {
+        .mBackgroundColor = ButtonBackgroundDisabled,
+        .mBorderColor = ButtonBorderBrushDisabled,
+        .mColor = ButtonForegroundDisabled,
+      }},
+      { Hover, Style {
       .mBackgroundColor = ButtonBackgroundPointerOver,
       .mBorderColor = ButtonBorderBrushPointerOver,
       .mColor = ButtonForegroundPointerOver,
-    },
-    .mActive = {
-      .mBackgroundColor = ButtonBackgroundPressed,
-      .mBorderColor = ButtonBorderBrushPressed,
-      .mColor = ButtonForegroundPressed,
+      }},
+      { Active, Style {
+        .mBackgroundColor = ButtonBackgroundPressed,
+        .mBorderColor = ButtonBorderBrushPressed,
+        .mColor = ButtonForegroundPressed,
+      }},
     },
   };
-  return ret;
+  return {ret};
 }
 
 Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {
