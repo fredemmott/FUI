@@ -40,54 +40,53 @@ WidgetStyles ToggleSwitchKnob::GetBuiltInStyles() const {
   constexpr auto ColorAnimation
     = LinearStyleTransition(Common::ControlFasterAnimationDuration);
 
-  static const WidgetStyles baseStyles {
-    .mBase = {
-      .mBackgroundColor = { std::nullopt, ColorAnimation },
-      .mBorderColor = { std::nullopt, ColorAnimation },
-      .mBorderRadius = Spacing * 2.5f,
-      .mBorderWidth = ToggleSwitchOuterBorderStrokeThickness,
-      .mFlexBasis = Spacing * 10,
-      .mFlexDirection = YGFlexDirectionColumn,
-      .mHeight = 20,
-      .mMarginRight = ToggleSwitchPreContentMargin,
-      .mWidth = Spacing * 10,
+  using enum Style::PseudoClass;
+  static const Style baseStyles {
+    .mBackgroundColor = {std::nullopt, ColorAnimation},
+    .mBorderColor = {std::nullopt, ColorAnimation},
+    .mBorderRadius = Spacing * 2.5f,
+    .mBorderWidth = ToggleSwitchOuterBorderStrokeThickness,
+    .mFlexBasis = Spacing * 10,
+    .mFlexDirection = YGFlexDirectionColumn,
+    .mHeight = 20,
+    .mMarginRight = ToggleSwitchPreContentMargin,
+    .mWidth = Spacing * 10,
+  };
+  static const Style offStyles {
+    .mBackgroundColor = ToggleSwitchFillOff,
+    .mBorderColor = ToggleSwitchStrokeOff,
+    .mAnd = {
+      {Disabled, Style {
+        .mBackgroundColor = ToggleSwitchFillOffDisabled,
+        .mBorderColor = ToggleSwitchStrokeOffDisabled,
+      }},
+      {Hover, Style {
+        .mBackgroundColor = ToggleSwitchFillOffPointerOver,
+      }},
+      {Active, Style {
+        .mBackgroundColor = ToggleSwitchFillOffPressed,
+      }},
     },
   };
-  static const WidgetStyles offStyles {
-    .mBase = {
-      .mBackgroundColor = ToggleSwitchFillOff,
-      .mBorderColor = ToggleSwitchStrokeOff,
-    },
-    .mDisabled = {
-      .mBackgroundColor = ToggleSwitchFillOffDisabled,
-      .mBorderColor = ToggleSwitchStrokeOffDisabled,
-    },
-    .mHover = {
-      .mBackgroundColor = ToggleSwitchFillOffPointerOver,
-    },
-    .mActive = {
-      .mBackgroundColor = ToggleSwitchFillOffPressed,
-    },
-  };
-  static const WidgetStyles onStyles {
-    .mBase = {
-      .mBackgroundColor = ToggleSwitchFillOn,
-      .mBorderColor = ToggleSwitchStrokeOn,
-    },
-    .mDisabled = {
-      .mBackgroundColor = ToggleSwitchFillOnDisabled,
-      .mBorderColor = ToggleSwitchStrokeOnDisabled,
-    },
-    .mHover = {
-      .mBackgroundColor = ToggleSwitchFillOnPointerOver,
-      .mBorderColor = ToggleSwitchStrokeOnPointerOver,
-    },
-    .mActive = {
-      .mBackgroundColor = ToggleSwitchFillOnPressed,
-      .mBorderColor = ToggleSwitchStrokeOnPressed,
+  static const Style onStyles {
+    .mBackgroundColor = ToggleSwitchFillOn,
+    .mBorderColor = ToggleSwitchStrokeOn,
+    .mAnd = {
+      { Disabled , Style {
+        .mBackgroundColor = ToggleSwitchFillOnDisabled,
+        .mBorderColor = ToggleSwitchStrokeOnDisabled,
+      }},
+      { Hover, Style {
+        .mBackgroundColor = ToggleSwitchFillOnPointerOver,
+        .mBorderColor = ToggleSwitchStrokeOnPointerOver,
+      }},
+      { Active, Style {
+        .mBackgroundColor = ToggleSwitchFillOnPressed,
+        .mBorderColor = ToggleSwitchStrokeOnPressed,
+      }},
     },
   };
-  return baseStyles + (this->IsOn() ? onStyles : offStyles);
+  return {baseStyles + (this->IsOn() ? onStyles : offStyles)};
 }
 
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {
