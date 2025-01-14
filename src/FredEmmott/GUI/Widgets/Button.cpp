@@ -11,7 +11,11 @@ using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Widgets {
 
-Button::Button(std::size_t id) : Widget(id) {}
+namespace {
+const auto ButtonStyleClass = Style::Class::Make("Button");
+}
+
+Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
 
 WidgetStyles Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;

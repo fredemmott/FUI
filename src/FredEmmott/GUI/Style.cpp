@@ -3,7 +3,24 @@
 
 #include "Style.hpp"
 
+#include <mutex>
+
 namespace FredEmmott::GUI {
+
+namespace {
+std::mutex gClassMutex;
+std::vector<std::string> gClassNames;
+}// namespace
+
+Style::Class Style::Class::Make(std::string_view name) {
+  std::unique_lock lock(gClassMutex);
+  const auto it = std::ranges::find(gClassNames, name);
+  if (it != gClassNames.end()) {
+    return {static_cast<std::size_t>(it - std::ranges::begin(gClassNames))};
+  }
+  gClassNames.push_back(std::string(name));
+  return {static_cast<std::size_t>(gClassNames.size() - 1)};
+}
 
 Style& Style::operator+=(const Style& other) noexcept {
   /* Set the lhs to the rhs, if the rhs is set.
@@ -38,6 +55,8 @@ Style& Style::operator+=(const Style& other) noexcept {
 #define MERGE_PROPERTY(X) merge(&Style::m##X);
   FUI_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
+  mAnd.append_range(other.mAnd);
+  mDescendants.append_range(other.mDescendants);
 
   return *this;
 }
@@ -67,6 +86,13 @@ Style Style::InheritableValues() const noexcept {
 #define COPY_IF_INHERITABLE(X) copyIfInheritable(&Style::m##X);
   FUI_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
+  ret.mDescendants = mDescendants;
+  return ret;
+}
+
+Style::ClassList operator+(const Style::ClassList& lhs, Style::Class rhs) {
+  auto ret = lhs;
+  ret.emplace(rhs);
   return ret;
 }
 

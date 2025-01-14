@@ -81,8 +81,9 @@ void PaintBorder(
 }
 }// namespace
 
-Widget::Widget(std::size_t id)
-  : mID(id),
+Widget::Widget(std::size_t id, const Style::ClassList& classes)
+  : mClassList(classes),
+    mID(id),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   YGNodeSetContext(mYoga.get(), this);
   mStyleTransitions.reset(new StyleTransitions());

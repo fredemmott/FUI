@@ -19,7 +19,7 @@ struct WidgetList;
 class Widget {
  public:
   Widget() = delete;
-  explicit Widget(std::size_t id);
+  Widget(std::size_t id, const Style::ClassList& = {});
   virtual ~Widget();
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
@@ -120,8 +120,10 @@ class Widget {
   struct StyleTransitions;
   unique_ptr<StyleTransitions> mStyleTransitions;
 
+  Style::ClassList mClassList;
   const std::size_t mID {};
   unique_ptr<YGNode> mYoga;
+
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
   WidgetStyles mExplicitStyles {};
@@ -136,6 +138,11 @@ class Widget {
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent*);
   void SetManagedChildren(const std::vector<Widget*>& children);
+
+  [[nodiscard]]
+  bool MatchesStyleSelector(Style::PseudoClass) const;
+  [[nodiscard]]
+  bool MatchesStyleSelector(Style::Selector) const;
 };
 
 consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {

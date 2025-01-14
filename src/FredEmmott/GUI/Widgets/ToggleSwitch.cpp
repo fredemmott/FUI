@@ -14,13 +14,20 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
+namespace {
+const auto ToggleSwitchStyleClass = Style::Class::Make("ToggleSwitch");
+const auto ToggleSwitchContentStyleClass
+  = Style::Class::Make("ToggleSwitchContent");
+}// namespace
+
 using namespace StaticTheme;
 using namespace widget_detail;
 
-ToggleSwitch::ToggleSwitch(std::size_t id) : Widget(id) {
+ToggleSwitch::ToggleSwitch(std::size_t id)
+  : Widget(id, {ToggleSwitchStyleClass}) {
   this->ChangeDirectChildren([this] {
     mKnob.reset(new ToggleSwitchKnob({}));
-    mFosterParent.reset(new Widget({}));
+    mFosterParent.reset(new Widget({}, {ToggleSwitchContentStyleClass}));
   });
   mFosterParent->SetExplicitStyles({
     .mBase = {

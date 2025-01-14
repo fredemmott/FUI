@@ -15,6 +15,21 @@ using namespace StaticTheme::ScrollBar;
 
 namespace {
 
+const auto ScrollBarStyleClass = Style::Class::Make("ScrollBar");
+const auto VerticalScrollBarStyleClass
+  = Style::Class::Make("VerticalScrollBar");
+const auto HorizontalScrollBarStyleClass
+  = Style::Class::Make("HorizontalScrollBar");
+const auto SmallDecrementStyleClass
+  = Style::Class::Make("ScrollBarSmallDecrement");
+const auto LargeDecrementStyleClass
+  = Style::Class::Make("ScrollBarLargeDecrement");
+const auto ThumbStyleClass = Style::Class::Make("ScrollBarThumb");
+const auto LargeIncrementStyleClass
+  = Style::Class::Make("ScrollBarLargeIncrement");
+const auto SmallIncrementStyleClass
+  = Style::Class::Make("ScrollBarSmallIncrement");
+
 const auto ContractAnimation = CubicBezierStyleTransition(
   ScrollBarContractBeginTime,
   ScrollBarOpacityChangeDuration,
@@ -27,7 +42,11 @@ const auto ExpandAnimation = CubicBezierStyleTransition(
 }// namespace
 
 ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
-  : Widget(id),
+  : Widget(
+      id,
+      {ScrollBarStyleClass,
+       (orientation == Orientation::Horizontal ? HorizontalScrollBarStyleClass
+                                               : VerticalScrollBarStyleClass)}),
     mOrientation(orientation),
     mBuiltinStyles(GetBuiltinStylesForOrientation()) {
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
@@ -37,11 +56,11 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   constexpr auto downGlyph = "\ueddc";
 
   this->ChangeDirectChildren([this] {
-    mSmallDecrement.reset(new Label(0));
-    mLargeDecrement.reset(new Widget(0));
-    mThumb.reset(new Widget(0));
-    mLargeIncrement.reset(new Widget(0));
-    mSmallIncrement.reset(new Label(0));
+    mSmallDecrement.reset(new Label(0, {SmallDecrementStyleClass}));
+    mLargeDecrement.reset(new Widget(0, {LargeDecrementStyleClass}));
+    mThumb.reset(new Widget(0, {ThumbStyleClass}));
+    mLargeIncrement.reset(new Widget(0, {LargeIncrementStyleClass}));
+    mSmallIncrement.reset(new Label(0, {SmallIncrementStyleClass}));
   });
 
   // Hardcoded in XAML

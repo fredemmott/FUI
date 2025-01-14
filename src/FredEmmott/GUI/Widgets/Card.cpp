@@ -6,7 +6,12 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 
 namespace FredEmmott::GUI::Widgets {
-Card::Card(std::size_t id) : Widget(id) {}
+
+namespace {
+const auto CardStyleClass = Style::Class::Make("Card");
+}
+
+Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {}
 
 WidgetStyles Card::GetBuiltInStyles() const {
   using namespace StaticTheme::Common;

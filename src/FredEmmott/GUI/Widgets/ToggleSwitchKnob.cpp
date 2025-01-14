@@ -13,9 +13,15 @@
 using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
+
+namespace {
+const auto ToggleSwitchKnobStyleClass = Style::Class::Make("ToggleSwitchKnob");
+}
+
 using namespace widget_detail;
 
-ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id) : Widget(id) {
+ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id)
+  : Widget(id, {ToggleSwitchKnobStyleClass}) {
   this->ChangeDirectChildren(
     [this] { mThumb.reset(new ToggleSwitchThumb({})); });
 }

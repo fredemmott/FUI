@@ -10,7 +10,12 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
-Label::Label(std::size_t id) : Widget(id) {
+namespace {
+const auto LabelStyleClass = Style::Class::Make("Label");
+}
+
+Label::Label(std::size_t id, const Style::ClassList& classes)
+  : Widget(id, classes + LabelStyleClass) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }

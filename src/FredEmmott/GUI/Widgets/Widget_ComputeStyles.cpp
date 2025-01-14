@@ -38,6 +38,29 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
       style += merged.mActive;
     }
   }
+  bool haveChanges = false;
+  do {
+    haveChanges = false;
+    for (auto it = style.mAnd.begin(); it != style.mAnd.end();
+         it = style.mAnd.erase(it)) {
+      const auto& [selector, rules] = *it;
+      if (this->MatchesStyleSelector(selector)) {
+        style += rules;
+        haveChanges = true;
+      }
+    }
+    for (auto it = style.mDescendants.begin();
+         it != style.mDescendants.end();) {
+      const auto& [selector, rules] = *it;
+      if (this->MatchesStyleSelector(selector)) {
+        style += rules;
+        haveChanges = true;
+        it = style.mDescendants.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  } while (haveChanges);
 
   const auto flattenEdge = [&style]<class T>(T allEdges, T thisEdge) {
     auto& thisEdgeOpt = style.*thisEdge;
@@ -172,4 +195,41 @@ Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
   }
   return ret;
 }
+
+bool Widget::MatchesStyleSelector(Style::PseudoClass selector) const {
+  using enum Style::PseudoClass;
+
+  const auto state = mDirectStateFlags | mInheritedStateFlags;
+  if ((state & StateFlags::Disabled) != StateFlags::Default) {
+    return selector == Disabled;
+  }
+
+  if (selector == Hover) {
+    return (state & (StateFlags::Hovered | StateFlags::Active))
+      != StateFlags::Default;
+  }
+
+  if (selector == Active) {
+    return (state & StateFlags::Active) != StateFlags::Default;
+  }
+
+  return false;
+}
+
+bool Widget::MatchesStyleSelector(Style::Selector selector) const {
+  if (const auto it = get_if<Style::PseudoClass>(&selector)) {
+    return MatchesStyleSelector(*it);
+  }
+  if (const auto it = get_if<const Widget*>(&selector)) {
+    return *it == this;
+  }
+  if (const auto it = get_if<Style::Class>(&selector)) {
+    return mClassList.contains(*it);
+  }
+#ifndef NDEBUG
+  __debugbreak();
+#endif
+  return false;
+}
+
 }// namespace FredEmmott::GUI::Widgets

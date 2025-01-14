@@ -5,16 +5,37 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-StackPanel::StackPanel(std::size_t id, Orientation direction)
-  : Widget(id),
-    mOrientation(direction) {}
+namespace {
+const auto HorizontalStyleClass = Style::Class::Make("HorizontalStackPanel");
+const auto VerticalStyleClass = Style::Class::Make("VerticalStackPanel");
+}// namespace
+
+StackPanel::StackPanel(std::size_t id, Orientation orientation)
+  : Widget(
+      id,
+      {orientation == Orientation::Horizontal ? HorizontalStyleClass
+                                              : VerticalStyleClass}),
+    mOrientation(orientation) {}
 
 WidgetStyles StackPanel::GetBuiltInStyles() const {
   return {
     .mBase = {
-      .mFlexDirection = (mOrientation == Orientation::Horizontal) ? YGFlexDirectionRow : YGFlexDirectionColumn,
       .mFlexGrow = 1,
       .mGap = Spacing * 4,
+      .mAnd = {
+        {
+          HorizontalStyleClass,
+          Style {
+            .mFlexDirection = YGFlexDirectionRow,
+          },
+        },
+        {
+          VerticalStyleClass,
+          Style {
+            .mFlexDirection = YGFlexDirectionColumn,
+          },
+        }
+      },
     },
   };
 }

@@ -16,10 +16,14 @@
 namespace FredEmmott::GUI::Immediate {
 
 namespace {
+
+const auto ComboBoxWidgetStyleClass = Style::Class::Make("ComboBoxWidget");
+
 class ComboBoxWidget : public Widgets::Widget {
  public:
   using Widget::Widget;
 
+  ComboBoxWidget() : Widget(0, {ComboBoxWidgetStyleClass}) {}
   bool mIsPopupOpen = false;
 };
 }// namespace

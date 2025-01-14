@@ -4,13 +4,45 @@
 
 #include <YGEnums.h>
 
+#include <unordered_set>
+
 #include "Brush.hpp"
 #include "Font.hpp"
 #include "StyleProperty.hpp"
 
+namespace FredEmmott::GUI::Widgets {
+class Widget;
+}
+
 namespace FredEmmott::GUI {
 
 struct Style {
+  class Class {
+    friend class std::hash<Class>;
+
+   public:
+    Class() = delete;
+    Class(const Class&) = default;
+    Class(Class&&) = default;
+    Class& operator=(const Class&) = default;
+    Class& operator=(Class&&) = default;
+
+    static Class Make(std::string_view name);
+
+    bool operator==(const Class&) const noexcept = default;
+
+   private:
+    Class(std::size_t id) : mID(id) {}
+    std::size_t mID {};
+  };
+  enum class PseudoClass {
+    Active,
+    Disabled,
+    Hover,
+  };
+  using Selector = std::variant<PseudoClass, Class, const Widgets::Widget*>;
+  using ClassList = std::unordered_set<Class>;
+
   StyleProperty<YGAlign> mAlignItems;
   StyleProperty<YGAlign> mAlignSelf;
   StyleProperty<Brush> mBackgroundColor;
@@ -50,6 +82,9 @@ struct Style {
   StyleProperty<SkScalar, 0.0f> mTranslateY;
   StyleProperty<SkScalar> mWidth;
 
+  std::vector<std::tuple<Selector, Style>> mAnd;
+  std::vector<std::tuple<Selector, Style>> mDescendants;
+
   [[nodiscard]] Style InheritableValues() const noexcept;
 
   Style& operator+=(const Style& other) noexcept;
@@ -61,6 +96,8 @@ struct Style {
 
   bool operator==(const Style& other) const noexcept = default;
 };
+
+Style::ClassList operator+(const Style::ClassList& lhs, Style::Class rhs);
 
 }// namespace FredEmmott::GUI
 
@@ -103,3 +140,11 @@ struct Style {
   X(TranslateX) \
   X(TranslateY) \
   X(Width)
+
+template <>
+struct std::hash<FredEmmott::GUI::Style::Class> {
+  std::size_t operator()(
+    const FredEmmott::GUI::Style::Class& c) const noexcept {
+    return std::hash<std::size_t> {}(c.mID);
+  }
+};

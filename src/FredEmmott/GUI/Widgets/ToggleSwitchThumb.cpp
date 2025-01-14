@@ -13,8 +13,13 @@ using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Widgets {
 
-ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id) : Widget(id) {
+namespace {
+const auto ToggleSwitchThumbStyleClass
+  = Style::Class::Make("ToggleSwitchThumb");
 }
+
+ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id)
+  : Widget(id, {ToggleSwitchThumbStyleClass}) {}
 
 void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
   mIsOn = value;
