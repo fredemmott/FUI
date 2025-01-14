@@ -190,32 +190,27 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
 }
 
 WidgetStyles ScrollBar::GetBuiltinStylesForOrientation() const {
-  static const WidgetStyles sBaseStyles {
-    .mBase = {
-      .mBackgroundColor = ScrollBarBackground,
-    },
-    .mDisabled = {
-      .mBackgroundColor = ScrollBarBackgroundDisabled,
-    },
-    .mHover = {
-      .mBackgroundColor = ScrollBarBackgroundPointerOver,
-    },
-  };
-  static const WidgetStyles sHorizontalStyles = sBaseStyles + WidgetStyles {
-    .mBase = {
-      .mFlexDirection = YGFlexDirectionRow,
+  using enum Style::PseudoClass;
+  static const Style sBaseStyles {
+    .mBackgroundColor = ScrollBarBackground,
+    .mAnd = {
+      { Disabled, Style {
+        .mBackgroundColor = ScrollBarBackgroundDisabled,
+      }},
+      { Hover, Style {
+        .mBackgroundColor = ScrollBarBackgroundPointerOver,
+      }},
     },
   };
-  static const WidgetStyles sVerticalStyles = sBaseStyles + WidgetStyles {
-    .mBase = {
-      .mFlexDirection = YGFlexDirectionColumn,
-    },
-  };
+  static const Style sHorizontalStyles
+    = sBaseStyles + Style {.mFlexDirection = YGFlexDirectionRow};
+  static const Style sVerticalStyles
+    = sBaseStyles + Style {.mFlexDirection = YGFlexDirectionColumn};
 
   if (mOrientation == Orientation::Horizontal) {
-    return sHorizontalStyles;
+    return {sHorizontalStyles};
   } else {
-    return sVerticalStyles;
+    return {sVerticalStyles};
   }
 }
 
