@@ -39,27 +39,21 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
     .mPaddingRight = ComboBoxPaddingRight,
     .mPaddingTop = ComboBoxPaddingTop,
     .mAnd = {
-      {
-        Disabled, Style {
+      { Disabled, Style {
           .mBackgroundColor = ComboBoxBackgroundDisabled,
           .mBorderColor = ComboBoxBorderBrushDisabled,
           .mColor = ComboBoxForegroundDisabled,
-        },
-      },
-      {
-        Hover, Style {
+      }},
+      { Hover, Style {
           .mBackgroundColor = ComboBoxBackgroundPointerOver,
           .mBorderColor = ComboBoxBorderBrushPointerOver,
           .mColor = ComboBoxForegroundPointerOver,
-        },
-      },
-      {
-        Active, Style {
+      }},
+      { Active, Style {
           .mBackgroundColor = ComboBoxBackgroundPressed,
           .mBorderColor = ComboBoxBorderBrushPressed,
           .mColor = ComboBoxForegroundPressed,
-        },
-      },
+      }},
     },
   };
   button->SetBuiltInStyles({styles});
