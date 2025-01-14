@@ -49,18 +49,19 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
 
 WidgetStyles ToggleSwitch::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
-  static const WidgetStyles ret {
-    .mBase = {
-      .mAlignSelf = YGAlignFlexStart,
-      .mColor = ToggleSwitchContentForeground,
-      .mFlexDirection = YGFlexDirectionRow,
-      .mMarginRight = ToggleSwitchPostContentMargin,
-    },
-    .mDisabled = {
-      .mColor = ToggleSwitchContentForegroundDisabled,
+  using enum Style::PseudoClass;
+  static const Style ret {
+    .mAlignSelf = YGAlignFlexStart,
+    .mColor = ToggleSwitchContentForeground,
+    .mFlexDirection = YGFlexDirectionRow,
+    .mMarginRight = ToggleSwitchPostContentMargin,
+    .mAnd = {
+      { Disabled, Style {
+        .mColor = ToggleSwitchContentForegroundDisabled,
+      }},
     },
   };
-  return ret;
+  return {ret};
 }
 Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
   const Style& style,

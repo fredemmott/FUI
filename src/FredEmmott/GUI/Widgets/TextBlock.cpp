@@ -78,18 +78,19 @@ void TextBlock::PaintOwnContent(
 }
 
 WidgetStyles TextBlock::GetBuiltInStyles() const {
-  static const WidgetStyles ret {
-    .mBase = {
-      .mColor = StaticTheme::TextFillColorPrimaryBrush,
-      .mFlexGrow = 0,
-      .mFlexShrink = 1,
-      .mFont = SystemFont::Body,
-    },
-    .mDisabled = {
-      .mColor = StaticTheme::TextFillColorDisabledBrush,
+  using enum Style::PseudoClass;
+  static const Style ret {
+    .mColor = StaticTheme::TextFillColorPrimaryBrush,
+    .mFlexGrow = 0,
+    .mFlexShrink = 1,
+    .mFont = SystemFont::Body,
+    .mAnd = {
+      { Disabled, Style {
+        .mColor = StaticTheme::TextFillColorDisabledBrush,
+      }},
     },
   };
-  return ret;
+  return {ret};
 }
 
 Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(

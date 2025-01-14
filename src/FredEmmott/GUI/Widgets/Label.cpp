@@ -50,16 +50,17 @@ void Label::PaintOwnContent(
 }
 
 WidgetStyles Label::GetBuiltInStyles() const {
-  static const WidgetStyles ret {
-    .mBase = {
-      .mColor = StaticTheme::TextFillColorPrimaryBrush,
-      .mFont = SystemFont::Body,
-    },
-    .mDisabled = {
-      .mColor = StaticTheme::TextFillColorDisabledBrush,
+  using enum Style::PseudoClass;
+  static const Style ret {
+    .mColor = StaticTheme::TextFillColorPrimaryBrush,
+    .mFont = SystemFont::Body,
+    .mAnd = {
+      { Disabled, Style {
+        .mColor = StaticTheme::TextFillColorDisabledBrush,
+      }},
     },
   };
-  return ret;
+  return {ret};
 }
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(
