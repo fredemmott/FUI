@@ -28,16 +28,6 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
     = (stateFlags & StateFlags::Disabled) != StateFlags::Default;
 
   auto style = merged.mBase;
-  if (isDisabled) {
-    style += merged.mDisabled;
-  } else {
-    if (isHovered) {
-      style += merged.mHover;
-    }
-    if (isActive) {
-      style += merged.mActive;
-    }
-  }
   bool haveChanges = false;
   do {
     haveChanges = false;
