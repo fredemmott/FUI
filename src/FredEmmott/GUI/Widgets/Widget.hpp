@@ -8,8 +8,7 @@
 #include <FredEmmott/GUI/Widgets/WidgetStyles.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
-
-#include "../yoga.hpp"
+#include <FredEmmott/GUI/yoga.hpp>
 
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
