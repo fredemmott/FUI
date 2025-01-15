@@ -3,19 +3,26 @@
 
 #include <core/SkRRect.h>
 
-#include "FredEmmott/GUI/detail/Widget/transitions.hpp"
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
+#include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/detail/Widget/transitions.hpp>
+#include <FredEmmott/GUI/detail/immediate_detail.hpp>
+
 #include "Widget.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
+namespace {
+static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
+}// namespace
+
 using namespace widget_detail;
 
 void Widget::ComputeStyles(const Style& inherited) {
-  Style merged = mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
-                                        : this->GetBuiltInStyles();
-  merged += inherited;
-  merged += mExplicitStyles;
+  Style style = GlobalBaselineStyle
+    + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
+                              : this->GetBuiltInStyles());
+  style += inherited;
+  style += mExplicitStyles;
 
   mDirectStateFlags &= ~StateFlags::Animating;
   const auto stateFlags = mDirectStateFlags | mInheritedStateFlags;
@@ -27,7 +34,6 @@ void Widget::ComputeStyles(const Style& inherited) {
   const bool isDisabled
     = (stateFlags & StateFlags::Disabled) != StateFlags::Default;
 
-  auto style = merged;
   bool haveChanges = false;
   do {
     haveChanges = false;
@@ -121,7 +127,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   mInheritedStyles = inherited;
   mComputedStyle = style;
 
-  const auto childStyles = merged.InheritableValues();
+  const auto childStyles = style.InheritableValues();
   for (auto&& child: this->GetDirectChildren()) {
     child->ComputeStyles(childStyles);
   }

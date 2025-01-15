@@ -86,6 +86,8 @@ struct Style {
   std::vector<std::tuple<Selector, Style>> mDescendants;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
+  [[nodiscard]]
+  static Style BuiltinBaseline();
 
   Style& operator+=(const Style& other) noexcept;
   Style operator+(const Style& other) const noexcept {

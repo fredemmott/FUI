@@ -4,7 +4,6 @@
 #include "Label.hpp"
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
-#include <FredEmmott/utility/lazy_init.hpp>
 
 using namespace FredEmmott::utility;
 
@@ -47,20 +46,6 @@ void Label::PaintOwnContent(
 
   canvas->drawString(
     mText.c_str(), rect.x(), rect.bottom() - metrics.fDescent, mFont, paint);
-}
-
-Style Label::GetBuiltInStyles() const {
-  using enum Style::PseudoClass;
-  static const Style ret {
-    .mColor = StaticTheme::TextFillColorPrimaryBrush,
-    .mFont = SystemFont::Body,
-    .mAnd = {
-      { Disabled, Style {
-        .mColor = StaticTheme::TextFillColorDisabledBrush,
-      }},
-    },
-  };
-  return ret;
 }
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(

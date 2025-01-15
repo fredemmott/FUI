@@ -9,7 +9,6 @@
 #include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
 #include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
 #include <format>
-#include <print>
 #include <ranges>
 
 #include "WidgetList.hpp"

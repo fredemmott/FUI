@@ -3,7 +3,10 @@
 
 #include "Style.hpp"
 
+#include <FredEmmott/GUI/assert.hpp>
 #include <mutex>
+
+#include "StaticTheme.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -86,6 +89,36 @@ Style Style::InheritableValues() const noexcept {
   FUI_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
   ret.mDescendants = mDescendants;
+  return ret;
+}
+
+Style Style::BuiltinBaseline() {
+  Style ret {
+    .mColor = StaticTheme::TextFillColorPrimaryBrush,
+    .mFont = SystemFont::Body,
+    .mAnd = {
+      { Style::PseudoClass::Disabled, Style {
+        .mColor = StaticTheme::TextFillColorDisabledBrush,
+      }},
+    },
+  };
+#define PREVENT_INHERITANCE(X) ret.m##X.mScope = StylePropertyScope::Self;
+  FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
+#undef PREVENT_INHERITANCE
+  for (auto& [selector, style]: ret.mAnd) {
+#define PREVENT_INHERITANCE(X) style.m##X.mScope = StylePropertyScope::Self;
+    FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
+    FUI_ASSERT(style.mAnd.empty());
+    FUI_ASSERT(style.mDescendants.empty());
+#undef PREVENT_INHERITANCE
+  }
+  for (auto& [selector, style]: ret.mDescendants) {
+#define PREVENT_INHERITANCE(X) style.m##X.mScope = StylePropertyScope::Self;
+    FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
+    FUI_ASSERT(style.mAnd.empty());
+    FUI_ASSERT(style.mDescendants.empty());
+#undef PREVENT_INHERITANCE
+  }
   return ret;
 }
 

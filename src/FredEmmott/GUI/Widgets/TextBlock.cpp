@@ -78,17 +78,9 @@ void TextBlock::PaintOwnContent(
 }
 
 Style TextBlock::GetBuiltInStyles() const {
-  using enum Style::PseudoClass;
   static const Style ret {
-    .mColor = StaticTheme::TextFillColorPrimaryBrush,
     .mFlexGrow = 0,
     .mFlexShrink = 1,
-    .mFont = SystemFont::Body,
-    .mAnd = {
-      { Disabled, Style {
-        .mColor = StaticTheme::TextFillColorDisabledBrush,
-      }},
-    },
   };
   return ret;
 }
