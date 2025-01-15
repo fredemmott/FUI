@@ -29,11 +29,7 @@ ToggleSwitch::ToggleSwitch(std::size_t id)
     mKnob.reset(new ToggleSwitchKnob({}));
     mFosterParent.reset(new Widget({}, {ToggleSwitchContentStyleClass}));
   });
-  mFosterParent->SetExplicitStyles({
-    .mBase = {
-      .mDisplay = YGDisplayContents,
-    },
-  });
+  mFosterParent->SetExplicitStyles({.mDisplay = YGDisplayContents});
 }
 
 bool ToggleSwitch::IsOn() const noexcept {
@@ -47,7 +43,7 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
   mKnob->SetIsOn(value);
 }
 
-WidgetStyles ToggleSwitch::GetBuiltInStyles() const {
+Style ToggleSwitch::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
   using enum Style::PseudoClass;
   static const Style ret {

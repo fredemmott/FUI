@@ -59,11 +59,11 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
   button->SetBuiltInStyles({styles});
 
   BeginWidget<Widget>(ID {"container"});
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mFlexGrow = 1,
-  }});
+  });
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->SetBuiltInStyles({{.mDisplay = YGDisplayContents}});
+  GetCurrentParentNode()->SetBuiltInStyles({.mDisplay = YGDisplayContents});
 };
 
 void EndComboBoxButton() {
@@ -81,19 +81,17 @@ void EndComboBoxButton() {
   // MarginRight of 14 is in the Xaml without an alias; MarginLeft
   // is not set in the XAML at all.
   GetCurrentNode()->SetExplicitStyles({
-    .mBase = {
-      .mAlignSelf = YGAlignFlexEnd,
-      .mFlexGrow = 0,
-      .mMarginLeft = 14,
-      .mMarginRight = 14,
-      .mTop = {
-        -2, FasterAnimation,
-      },
-      .mAnd = {
-        { Active, Style {
-          .mTop = 0,
-        }},
-      },
+    .mAlignSelf = YGAlignFlexEnd,
+    .mFlexGrow = 0,
+    .mMarginLeft = 14,
+    .mMarginRight = 14,
+    .mTop = {
+      -2, FasterAnimation,
+    },
+    .mAnd = {
+      { Active, Style {
+        .mTop = 0,
+      }},
     },
   });
 

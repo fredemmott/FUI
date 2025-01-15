@@ -19,7 +19,7 @@ class ToggleSwitch final : public Widget {
   ActivatedFlag mChanged;
 
  protected:
-  WidgetStyles GetBuiltInStyles() const override;
+  Style GetBuiltInStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
   Widget* GetFosterParent() const noexcept override {

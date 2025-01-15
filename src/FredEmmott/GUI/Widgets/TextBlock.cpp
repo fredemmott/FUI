@@ -77,7 +77,7 @@ void TextBlock::PaintOwnContent(
   mParagraph->paint(canvas, rect.x(), rect.y());
 }
 
-WidgetStyles TextBlock::GetBuiltInStyles() const {
+Style TextBlock::GetBuiltInStyles() const {
   using enum Style::PseudoClass;
   static const Style ret {
     .mColor = StaticTheme::TextFillColorPrimaryBrush,
@@ -90,7 +90,7 @@ WidgetStyles TextBlock::GetBuiltInStyles() const {
       }},
     },
   };
-  return {ret};
+  return ret;
 }
 
 Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(

@@ -5,7 +5,7 @@
 #include <skia/core/SkCanvas.h>
 
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
-#include <FredEmmott/GUI/Widgets/WidgetStyles.hpp>
+#include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
@@ -38,13 +38,13 @@ class Widget {
   bool IsDirectlyDisabled() const;
   void SetIsDirectlyDisabled(bool value);
 
-  void ComputeStyles(const WidgetStyles& inherited);
+  void ComputeStyles(const Style& inherited);
 
   /// User-provided styles
-  void SetExplicitStyles(const WidgetStyles& styles);
+  void SetExplicitStyles(const Style& styles);
   // For immediate API - fake a widget by replacing its built-in styles
-  void SetBuiltInStyles(const WidgetStyles& styles);
-  void SetAdditionalBuiltInStyles(const WidgetStyles& styles);
+  void SetBuiltInStyles(const Style& styles);
+  void SetAdditionalBuiltInStyles(const Style& styles);
   void Paint(SkCanvas* canvas) const;
 
   auto GetChildren() const noexcept {
@@ -82,7 +82,7 @@ class Widget {
   static constexpr SkScalar Spacing = 4;
 
   [[nodiscard]]
-  virtual WidgetStyles GetBuiltInStyles() const {
+  virtual Style GetBuiltInStyles() const {
     return {};
   }
 
@@ -125,10 +125,10 @@ class Widget {
 
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
-  WidgetStyles mExplicitStyles {};
-  std::optional<WidgetStyles> mReplacedBuiltInStyles;
+  Style mExplicitStyles {};
+  std::optional<Style> mReplacedBuiltInStyles;
 
-  WidgetStyles mInheritedStyles;
+  Style mInheritedStyles;
   Style mComputedStyle;
 
   std::vector<unique_ptr<Widget>> mManagedChildren;

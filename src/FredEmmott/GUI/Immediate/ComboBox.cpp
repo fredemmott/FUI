@@ -41,7 +41,7 @@ bool ComboBox(
     items.size());
   BeginWidget<ComboBoxWidget>(id);
   auto widget = GetCurrentParentNode<ComboBoxWidget>();
-  widget->SetBuiltInStyles({{.mDisplay = YGDisplayContents}});
+  widget->SetBuiltInStyles({.mDisplay = YGDisplayContents});
 
   if (ComboBoxButton("{}", items[*selectedIndex])) {
     widget->mIsPopupOpen = true;

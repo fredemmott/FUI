@@ -25,7 +25,7 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
   mIsOn = value;
 }
 
-WidgetStyles ToggleSwitchThumb::GetBuiltInStyles() const {
+Style ToggleSwitchThumb::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
 
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;
@@ -103,7 +103,7 @@ WidgetStyles ToggleSwitchThumb::GetBuiltInStyles() const {
       }},
     },
   };
-  return {baseStyles + (IsOn() ? onStyles : offStyles)};
+  return baseStyles + (IsOn() ? onStyles : offStyles);
 }
 
 }// namespace FredEmmott::GUI::Widgets

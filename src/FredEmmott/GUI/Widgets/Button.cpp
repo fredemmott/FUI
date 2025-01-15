@@ -17,7 +17,7 @@ const auto ButtonStyleClass = Style::Class::Make("Button");
 
 Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
 
-WidgetStyles Button::GetBuiltInStyles() const {
+Style Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;
 
   using enum Style::PseudoClass;
@@ -51,7 +51,7 @@ WidgetStyles Button::GetBuiltInStyles() const {
       }},
     },
   };
-  return {ret};
+  return ret;
 }
 
 Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {

@@ -18,7 +18,7 @@ class PopupWindow final : public Widget {
 
  protected:
   WidgetList GetDirectChildren() const noexcept override;
-  WidgetStyles GetBuiltInStyles() const override;
+  Style GetBuiltInStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
 

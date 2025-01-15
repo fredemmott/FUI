@@ -13,15 +13,13 @@ const auto CardStyleClass = Style::Class::Make("Card");
 
 Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {}
 
-WidgetStyles Card::GetBuiltInStyles() const {
+Style Card::GetBuiltInStyles() const {
   using namespace StaticTheme::Common;
-  static const WidgetStyles ret {
-    .mBase = {
-      .mBackgroundColor = CardBackgroundFillColorDefaultBrush,
-      .mBorderRadius = OverlayCornerRadius,
-      .mMargin = Spacing * 9,
-      .mPadding = Spacing * 4,
-    },
+  static const Style ret {
+    .mBackgroundColor = CardBackgroundFillColorDefaultBrush,
+    .mBorderRadius = OverlayCornerRadius,
+    .mMargin = Spacing * 9,
+    .mPadding = Spacing * 4,
   };
   return ret;
 }

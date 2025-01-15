@@ -34,7 +34,7 @@ void ToggleSwitchKnob::SetIsOn(bool value) noexcept {
   mThumb->SetIsOn(value);
 }
 
-WidgetStyles ToggleSwitchKnob::GetBuiltInStyles() const {
+Style ToggleSwitchKnob::GetBuiltInStyles() const {
   namespace Common = StaticTheme::Common;
   using namespace StaticTheme::ToggleSwitch;
   constexpr auto ColorAnimation
@@ -86,7 +86,7 @@ WidgetStyles ToggleSwitchKnob::GetBuiltInStyles() const {
       }},
     },
   };
-  return {baseStyles + (this->IsOn() ? onStyles : offStyles)};
+  return baseStyles + (this->IsOn() ? onStyles : offStyles);
 }
 
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {

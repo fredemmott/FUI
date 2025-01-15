@@ -59,7 +59,6 @@ add_executable(
   FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
   FredEmmott/GUI/Widgets/Widget.cpp
   FredEmmott/GUI/Widgets/Widget.hpp
-  FredEmmott/GUI/Widgets/WidgetStyles.cpp FredEmmott/GUI/Widgets/WidgetStyles.hpp
   FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
   FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp

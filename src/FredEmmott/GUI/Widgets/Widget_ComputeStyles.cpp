@@ -11,9 +11,9 @@
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
-void Widget::ComputeStyles(const WidgetStyles& inherited) {
-  WidgetStyles merged = mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
-                                               : this->GetBuiltInStyles();
+void Widget::ComputeStyles(const Style& inherited) {
+  Style merged = mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
+                                        : this->GetBuiltInStyles();
   merged += inherited;
   merged += mExplicitStyles;
 
@@ -27,7 +27,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   const bool isDisabled
     = (stateFlags & StateFlags::Disabled) != StateFlags::Default;
 
-  auto style = merged.mBase;
+  auto style = merged;
   bool haveChanges = false;
   do {
     haveChanges = false;
@@ -121,7 +121,7 @@ void Widget::ComputeStyles(const WidgetStyles& inherited) {
   mInheritedStyles = inherited;
   mComputedStyle = style;
 
-  const auto childStyles = merged.InheritableStyles();
+  const auto childStyles = merged.InheritableValues();
   for (auto&& child: this->GetDirectChildren()) {
     child->ComputeStyles(childStyles);
   }

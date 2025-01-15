@@ -155,7 +155,8 @@ WidgetList ScrollBar::GetDirectChildren() const noexcept {
     mSmallIncrement.get(),
   };
 }
-WidgetStyles ScrollBar::GetBuiltInStyles() const {
+
+Style ScrollBar::GetBuiltInStyles() const {
   return mBuiltinStyles;
 }
 
@@ -164,12 +165,10 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   StateFlags state) {
   const bool hovered = (state & StateFlags::Hovered) == StateFlags::Hovered;
 
-  const WidgetStyles smallChangeStyles {
-    .mBase = {
-      .mOpacity = {
-        (hovered ? 1.0f : 0.0f),
-        (hovered ? ExpandAnimation : ContractAnimation),
-      },
+  const Style smallChangeStyles {
+    .mOpacity = {
+      (hovered ? 1.0f : 0.0f),
+      (hovered ? ExpandAnimation : ContractAnimation),
     },
   };
   mSmallDecrement->SetExplicitStyles(smallChangeStyles);
@@ -177,19 +176,17 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
 
   if (mOrientation == Orientation::Horizontal) {
     mThumb->SetExplicitStyles({
-    .mBase = {
       .mHeight = {
            static_cast<float>(hovered ? ScrollBarSize
            : ScrollBarHorizontalThumbMinHeight), hovered ? ExpandAnimation : ContractAnimation,
-        },
-    },
-  });
+      },
+    });
   }
 
   return Widget::OnComputedStyleChange(style, state);
 }
 
-WidgetStyles ScrollBar::GetBuiltinStylesForOrientation() const {
+Style ScrollBar::GetBuiltinStylesForOrientation() const {
   using enum Style::PseudoClass;
   static const Style sBaseStyles {
     .mBackgroundColor = ScrollBarBackground,

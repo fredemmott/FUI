@@ -141,7 +141,7 @@ void Widget::SetIsDirectlyDisabled(bool value) {
   }
 }
 
-void Widget::SetExplicitStyles(const WidgetStyles& styles) {
+void Widget::SetExplicitStyles(const Style& styles) {
   if (styles == mExplicitStyles) {
     return;
   }
@@ -150,10 +150,10 @@ void Widget::SetExplicitStyles(const WidgetStyles& styles) {
   this->ComputeStyles(mInheritedStyles);
 }
 
-void Widget::SetBuiltInStyles(const WidgetStyles& styles) {
+void Widget::SetBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = styles;
 }
-void Widget::SetAdditionalBuiltInStyles(const WidgetStyles& styles) {
+void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
 }
 

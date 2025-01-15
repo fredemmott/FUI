@@ -20,7 +20,7 @@ class ToggleSwitchThumb final : public Widget {
 
  protected:
   bool mIsOn {false};
-  WidgetStyles GetBuiltInStyles() const override;
+  Style GetBuiltInStyles() const override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

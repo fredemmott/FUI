@@ -80,35 +80,33 @@ void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
 
   GetCurrentParentNode()->SetBuiltInStyles({buttonStyles});
   BeginHStackPanel();
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles({{.mGap = 0.0}});
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({.mGap = 0.0});
   BeginWidget<Widget>(ID {"pill"});
 
   const auto pillHeightAnimation = CubicBezierStyleTransition(
     ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
   const SkScalar height = isSelected ? ComboBoxItemPillHeight : 0;
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles(WidgetStyles {
-    .mBase = Style {
-      .mBackgroundColor = ComboBoxItemPillFillBrush,
-      .mBorderRadius = ComboBoxItemPillCornerRadius,
-      .mHeight = { height, pillHeightAnimation },
-      .mMarginLeft = 0.5,
-      .mMarginRight = 6,
-      .mMarginTop = 2.5,
-      .mTop = { 0, pillHeightAnimation },
-      .mWidth = ComboBoxItemPillWidth,
-      .mAnd = {
-        { Active, Style {
-          .mHeight = height * ComboBoxItemPillMinScale,
-          .mTop = (height - (height * ComboBoxItemPillMinScale)) / 2,
-        }},
-      },
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
+    .mBackgroundColor = ComboBoxItemPillFillBrush,
+    .mBorderRadius = ComboBoxItemPillCornerRadius,
+    .mHeight = { height, pillHeightAnimation },
+    .mMarginLeft = 0.5,
+    .mMarginRight = 6,
+    .mMarginTop = 2.5,
+    .mTop = { 0, pillHeightAnimation },
+    .mWidth = ComboBoxItemPillWidth,
+    .mAnd = {
+      { Active, Style {
+        .mHeight = height * ComboBoxItemPillMinScale,
+        .mTop = (height - (height * ComboBoxItemPillMinScale)) / 2,
+      }},
     },
   });
   EndWidget<Widget>();
   BeginWidget<Widget>(ID {"content"});
-  GetCurrentParentNode()->SetBuiltInStyles({{
+  GetCurrentParentNode()->SetBuiltInStyles({
     .mDisplay = YGDisplayContents,
-  }});
+  });
 }
 
 void EndComboBoxItem() {

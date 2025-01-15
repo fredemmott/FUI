@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/SystemFont.hpp>
-#include <FredEmmott/GUI/Widgets/WidgetStyles.hpp>
 
 #include "ID.hpp"
 
@@ -18,7 +18,7 @@ void FontIcon(
 
 struct FontIconStackedGlyph {
   std::string_view mGlyph;
-  Widgets::WidgetStyles mBase;
+  Style mStyle;
 };
 
 void FontIcon(

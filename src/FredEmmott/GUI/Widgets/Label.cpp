@@ -49,7 +49,7 @@ void Label::PaintOwnContent(
     mText.c_str(), rect.x(), rect.bottom() - metrics.fDescent, mFont, paint);
 }
 
-WidgetStyles Label::GetBuiltInStyles() const {
+Style Label::GetBuiltInStyles() const {
   using enum Style::PseudoClass;
   static const Style ret {
     .mColor = StaticTheme::TextFillColorPrimaryBrush,
@@ -60,7 +60,7 @@ WidgetStyles Label::GetBuiltInStyles() const {
       }},
     },
   };
-  return {ret};
+  return ret;
 }
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(

@@ -32,30 +32,28 @@ bool BeginComboBoxPopup(ID id) {
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles({{
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mBackgroundColor = ComboBoxDropDownBackground,
     .mBorderColor = ComboBoxDropDownBorderBrush,
     .mBorderRadius = OverlayCornerRadius,
     .mBorderWidth = ComboBoxDropdownBorderThickness,
     .mPadding = ComboBoxDropdownBorderPadding,
-  }});
+  });
   BeginVStackPanel();
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles( {
-    .mBase = {
-      .mBorderRadius = OverlayCornerRadius,
-      .mColor = ComboBoxDropDownForeground,
-      .mFlexGrow = 1.0,
-      .mGap = 0.0,
-      .mMarginBottom = -1.0,
-      .mMarginLeft = 0.0,
-      .mMarginRight = 0,
-      .mMarginTop = -0.5,
-      .mPaddingBottom = ComboBoxDropdownContentMarginBottom,
-      .mPaddingLeft = ComboBoxDropdownContentMarginLeft,
-      .mPaddingRight = ComboBoxDropdownContentMarginRight,
-      .mPaddingTop = ComboBoxDropdownContentMarginTop,
-      .mWidth = width,
-    },
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
+    .mBorderRadius = OverlayCornerRadius,
+    .mColor = ComboBoxDropDownForeground,
+    .mFlexGrow = 1.0,
+    .mGap = 0.0,
+    .mMarginBottom = -1.0,
+    .mMarginLeft = 0.0,
+    .mMarginRight = 0,
+    .mMarginTop = -0.5,
+    .mPaddingBottom = ComboBoxDropdownContentMarginBottom,
+    .mPaddingLeft = ComboBoxDropdownContentMarginLeft,
+    .mPaddingRight = ComboBoxDropdownContentMarginRight,
+    .mPaddingTop = ComboBoxDropdownContentMarginTop,
+    .mWidth = width,
   });
   return true;
 }

@@ -15,7 +15,7 @@ class Button final : public Widget {
   ActivatedFlag mClicked;
 
  protected:
-  WidgetStyles GetBuiltInStyles() const override;
+  Style GetBuiltInStyles() const override;
   EventHandlerResult OnClick(MouseEvent* e) override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;

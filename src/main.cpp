@@ -62,7 +62,7 @@ static void AppTick() {
   fuii::FontIcon("\ueb51");// Heart
   fuii::FontIcon("\ueb52");// HeartFill
   fuii::FontIcon({
-    {"\ueb52", {{.mColor = SK_ColorRED}}},
+    {"\ueb52", {.mColor = SK_ColorRED}},
     {"\ueb51"},
   });
   fuii::Label("After stack");

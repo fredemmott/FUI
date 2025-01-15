@@ -9,12 +9,7 @@
 namespace FredEmmott::GUI::Immediate {
 
 void FontIcon(std::string_view glyph, FontIconSize size, const ID id) {
-  using Widgets::WidgetStyles;
-
-  const WidgetStyles styles {
-    .mBase = {
-      .mFont = {ResolveGlyphFont(size), !important},
-    }};
+  const Style styles {.mFont = {ResolveGlyphFont(size), !important}};
   Label(glyph, id);
   immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(styles);
 }
@@ -23,12 +18,7 @@ void FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyphs,
   FontIconSize size,
   const ID id) {
-  using Widgets::WidgetStyles;
-
-  const WidgetStyles styles {
-    .mBase = {
-      .mFont = {ResolveGlyphFont(size), !important},
-    }};
+  const Style styles {.mFont = {ResolveGlyphFont(size), !important}};
 
   bool first = true;
   immediate_detail::BeginWidget<Widgets::Widget>(id);
@@ -38,7 +28,7 @@ void FontIcon(
     if (first) {
       first = false;
     } else {
-      thisStyle.mBase.mPosition = YGPositionTypeAbsolute;
+      thisStyle.mPosition = YGPositionTypeAbsolute;
     }
 
     Label(glyph, ID {count++});

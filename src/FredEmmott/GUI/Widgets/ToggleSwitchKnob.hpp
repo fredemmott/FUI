@@ -17,7 +17,7 @@ class ToggleSwitchKnob final : public Widget {
   void SetIsOn(bool) noexcept;
 
  protected:
-  WidgetStyles GetBuiltInStyles() const override;
+  Style GetBuiltInStyles() const override;
   WidgetList GetDirectChildren() const noexcept override;
 
  private:
