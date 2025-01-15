@@ -7,19 +7,18 @@
 
 namespace FredEmmott::GUI {
 
-namespace {
-std::mutex gClassMutex;
-std::vector<std::string> gClassNames;
-}// namespace
-
 Style::Class Style::Class::Make(std::string_view name) {
-  std::unique_lock lock(gClassMutex);
-  const auto it = std::ranges::find(gClassNames, name);
-  if (it != gClassNames.end()) {
-    return {static_cast<std::size_t>(it - std::ranges::begin(gClassNames))};
+  static std::mutex sClassMutex;
+  static std::vector<std::string> sClassNames;
+
+  std::unique_lock lock(sClassMutex);
+  const auto it = std::ranges::find(sClassNames, name);
+  if (it != sClassNames.end()) {
+    return {static_cast<std::size_t>(it - std::ranges::begin(sClassNames))};
   }
-  gClassNames.push_back(std::string(name));
-  return {static_cast<std::size_t>(gClassNames.size() - 1)};
+  sClassNames.push_back(std::string(name));
+  const auto id = static_cast<std::size_t>(sClassNames.size() - 1);
+  return {id};
 }
 
 Style& Style::operator+=(const Style& other) noexcept {
