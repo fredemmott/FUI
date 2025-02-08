@@ -8,6 +8,7 @@
 
 #include "Brush.hpp"
 #include "Font.hpp"
+#include "StyleClass.hpp"
 #include "StyleProperty.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -17,31 +18,13 @@ class Widget;
 namespace FredEmmott::GUI {
 
 struct Style {
-  class Class {
-    friend class std::hash<Class>;
-
-   public:
-    Class() = delete;
-    Class(const Class&) = default;
-    Class(Class&&) = default;
-    Class& operator=(const Class&) = default;
-    Class& operator=(Class&&) = default;
-
-    static Class Make(std::string_view name);
-
-    bool operator==(const Class&) const noexcept = default;
-
-   private:
-    Class(std::size_t id) : mID(id) {}
-    std::size_t mID {};
-  };
   enum class PseudoClass {
     Active,
     Disabled,
     Hover,
   };
-  using Selector = std::variant<PseudoClass, Class, const Widgets::Widget*>;
-  using ClassList = std::unordered_set<Class>;
+  using Selector
+    = std::variant<PseudoClass, StyleClass, const Widgets::Widget*>;
 
   StyleProperty<YGAlign> mAlignItems;
   StyleProperty<YGAlign> mAlignSelf;
@@ -99,8 +82,6 @@ struct Style {
   bool operator==(const Style& other) const noexcept = default;
 };
 
-Style::ClassList operator+(const Style::ClassList& lhs, Style::Class rhs);
-
 }// namespace FredEmmott::GUI
 
 #define FUI_STYLE_PROPERTIES(X) \
@@ -142,11 +123,3 @@ Style::ClassList operator+(const Style::ClassList& lhs, Style::Class rhs);
   X(TranslateX) \
   X(TranslateY) \
   X(Width)
-
-template <>
-struct std::hash<FredEmmott::GUI::Style::Class> {
-  std::size_t operator()(
-    const FredEmmott::GUI::Style::Class& c) const noexcept {
-    return std::hash<std::size_t> {}(c.mID);
-  }
-};

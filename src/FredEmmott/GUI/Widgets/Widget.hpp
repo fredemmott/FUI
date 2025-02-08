@@ -18,7 +18,7 @@ struct WidgetList;
 class Widget {
  public:
   Widget() = delete;
-  Widget(std::size_t id, const Style::ClassList& = {});
+  Widget(std::size_t id, const StyleClasses& = {});
   virtual ~Widget();
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
@@ -119,7 +119,7 @@ class Widget {
   struct StyleTransitions;
   unique_ptr<StyleTransitions> mStyleTransitions;
 
-  Style::ClassList mClassList;
+  StyleClasses mClassList;
   const std::size_t mID {};
   unique_ptr<YGNode> mYoga;
 

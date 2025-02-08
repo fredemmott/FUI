@@ -17,7 +17,7 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace {
 
-const auto ComboBoxWidgetStyleClass = Style::Class::Make("ComboBoxWidget");
+const auto ComboBoxWidgetStyleClass = StyleClass::Make("ComboBoxWidget");
 
 class ComboBoxWidget : public Widgets::Widget {
  public:

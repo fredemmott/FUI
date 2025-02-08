@@ -15,9 +15,9 @@ using namespace FredEmmott::utility;
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ToggleSwitchStyleClass = Style::Class::Make("ToggleSwitch");
+const auto ToggleSwitchStyleClass = StyleClass::Make("ToggleSwitch");
 const auto ToggleSwitchContentStyleClass
-  = Style::Class::Make("ToggleSwitchContent");
+  = StyleClass::Make("ToggleSwitchContent");
 }// namespace
 
 using namespace StaticTheme;

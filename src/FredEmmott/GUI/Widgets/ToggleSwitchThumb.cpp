@@ -14,8 +14,7 @@ using namespace FredEmmott::GUI::StaticTheme;
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ToggleSwitchThumbStyleClass
-  = Style::Class::Make("ToggleSwitchThumb");
+const auto ToggleSwitchThumbStyleClass = StyleClass::Make("ToggleSwitchThumb");
 }
 
 ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id)

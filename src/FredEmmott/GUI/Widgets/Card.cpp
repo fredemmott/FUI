@@ -8,7 +8,7 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto CardStyleClass = Style::Class::Make("Card");
+const auto CardStyleClass = StyleClass::Make("Card");
 }
 
 Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {}

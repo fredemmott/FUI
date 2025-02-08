@@ -219,7 +219,7 @@ bool Widget::MatchesStyleSelector(Style::Selector selector) const {
   if (const auto it = get_if<const Widget*>(&selector)) {
     return *it == this;
   }
-  if (const auto it = get_if<Style::Class>(&selector)) {
+  if (const auto it = get_if<StyleClass>(&selector)) {
     return mClassList.contains(*it);
   }
 #ifndef NDEBUG

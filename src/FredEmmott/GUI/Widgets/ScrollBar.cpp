@@ -15,20 +15,19 @@ using namespace StaticTheme::ScrollBar;
 
 namespace {
 
-const auto ScrollBarStyleClass = Style::Class::Make("ScrollBar");
-const auto VerticalScrollBarStyleClass
-  = Style::Class::Make("VerticalScrollBar");
+const auto ScrollBarStyleClass = StyleClass::Make("ScrollBar");
+const auto VerticalScrollBarStyleClass = StyleClass::Make("VerticalScrollBar");
 const auto HorizontalScrollBarStyleClass
-  = Style::Class::Make("HorizontalScrollBar");
+  = StyleClass::Make("HorizontalScrollBar");
 const auto SmallDecrementStyleClass
-  = Style::Class::Make("ScrollBarSmallDecrement");
+  = StyleClass::Make("ScrollBarSmallDecrement");
 const auto LargeDecrementStyleClass
-  = Style::Class::Make("ScrollBarLargeDecrement");
-const auto ThumbStyleClass = Style::Class::Make("ScrollBarThumb");
+  = StyleClass::Make("ScrollBarLargeDecrement");
+const auto ThumbStyleClass = StyleClass::Make("ScrollBarThumb");
 const auto LargeIncrementStyleClass
-  = Style::Class::Make("ScrollBarLargeIncrement");
+  = StyleClass::Make("ScrollBarLargeIncrement");
 const auto SmallIncrementStyleClass
-  = Style::Class::Make("ScrollBarSmallIncrement");
+  = StyleClass::Make("ScrollBarSmallIncrement");
 
 const auto ContractAnimation = CubicBezierStyleTransition(
   ScrollBarContractBeginTime,

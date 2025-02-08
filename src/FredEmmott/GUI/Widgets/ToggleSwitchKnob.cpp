@@ -15,7 +15,7 @@ using namespace FredEmmott::utility;
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ToggleSwitchKnobStyleClass = Style::Class::Make("ToggleSwitchKnob");
+const auto ToggleSwitchKnobStyleClass = StyleClass::Make("ToggleSwitchKnob");
 }
 
 using namespace widget_detail;

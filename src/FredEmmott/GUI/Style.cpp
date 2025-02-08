@@ -10,20 +10,6 @@
 
 namespace FredEmmott::GUI {
 
-Style::Class Style::Class::Make(std::string_view name) {
-  static std::mutex sClassMutex;
-  static std::vector<std::string> sClassNames;
-
-  std::unique_lock lock(sClassMutex);
-  const auto it = std::ranges::find(sClassNames, name);
-  if (it != sClassNames.end()) {
-    return {static_cast<std::size_t>(it - std::ranges::begin(sClassNames))};
-  }
-  sClassNames.push_back(std::string(name));
-  const auto id = static_cast<std::size_t>(sClassNames.size() - 1);
-  return {id};
-}
-
 Style& Style::operator+=(const Style& other) noexcept {
   /* Set the lhs to the rhs, if the rhs is set.
    * e.g. with:
@@ -119,12 +105,6 @@ Style Style::BuiltinBaseline() {
     FUI_ASSERT(style.mDescendants.empty());
 #undef PREVENT_INHERITANCE
   }
-  return ret;
-}
-
-Style::ClassList operator+(const Style::ClassList& lhs, Style::Class rhs) {
-  auto ret = lhs;
-  ret.emplace(rhs);
   return ret;
 }
 

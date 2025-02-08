@@ -6,8 +6,8 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto HorizontalStyleClass = Style::Class::Make("HorizontalStackPanel");
-const auto VerticalStyleClass = Style::Class::Make("VerticalStackPanel");
+const auto HorizontalStyleClass = StyleClass::Make("HorizontalStackPanel");
+const auto VerticalStyleClass = StyleClass::Make("VerticalStackPanel");
 
 const Style BaseStyles = {
   .mFlexGrow = 1,
