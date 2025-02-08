@@ -8,6 +8,7 @@
 
 #include "Brush.hpp"
 #include "Font.hpp"
+#include "PseudoClasses.hpp"
 #include "StyleClass.hpp"
 #include "StyleProperty.hpp"
 
@@ -18,13 +19,7 @@ class Widget;
 namespace FredEmmott::GUI {
 
 struct Style {
-  enum class PseudoClass {
-    Active,
-    Disabled,
-    Hover,
-  };
-  using Selector
-    = std::variant<PseudoClass, StyleClass, const Widgets::Widget*>;
+  using Selector = std::variant<StyleClass, const Widgets::Widget*>;
 
   StyleProperty<YGAlign> mAlignItems;
   StyleProperty<YGAlign> mAlignSelf;

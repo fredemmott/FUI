@@ -40,7 +40,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
   constexpr auto ColorAnimation
     = LinearStyleTransition(Common::ControlFasterAnimationDuration);
 
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style baseStyles {
     .mBackgroundColor = {std::nullopt, ColorAnimation},
     .mBorderColor = {std::nullopt, ColorAnimation},

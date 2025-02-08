@@ -139,7 +139,7 @@ class Widget {
   void SetManagedChildren(const std::vector<Widget*>& children);
 
   [[nodiscard]]
-  bool MatchesStyleSelector(Style::PseudoClass) const;
+  bool MatchesStylePseudoClass(StyleClass) const;
   [[nodiscard]]
   bool MatchesStyleSelector(Style::Selector) const;
 };

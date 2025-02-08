@@ -23,7 +23,7 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
 
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style styles {
     .mAlignSelf = YGAlignFlexStart,
     .mBackgroundColor = ComboBoxBackground,
@@ -72,7 +72,7 @@ void EndComboBoxButton() {
   EndWidget<Widget>();// container
 
   using namespace StaticTheme::Common;
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;
   constexpr auto FasterAnimation
     = CubicBezierStyleTransition(ControlFasterAnimationDuration, KeySpline);

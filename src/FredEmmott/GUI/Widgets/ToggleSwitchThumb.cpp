@@ -44,7 +44,7 @@ Style ToggleSwitchThumb::GetBuiltInStyles() const {
   constexpr auto hoverMargin = margin - ((hoverHeight - height) / 2);
   constexpr auto activeWidth = hoverHeight + (Spacing / 2);
 
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style baseStyles {
     .mBackgroundColor = { std::nullopt, ColorAnimation},
     .mBorderColor = { std::nullopt, ColorAnimation},

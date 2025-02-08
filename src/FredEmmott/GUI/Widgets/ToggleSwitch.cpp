@@ -45,7 +45,7 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
 
 Style ToggleSwitch::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style ret {
     .mAlignSelf = YGAlignFlexStart,
     .mColor = ToggleSwitchContentForeground,

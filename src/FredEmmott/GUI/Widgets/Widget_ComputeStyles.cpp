@@ -192,20 +192,18 @@ Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
   return ret;
 }
 
-bool Widget::MatchesStyleSelector(Style::PseudoClass selector) const {
-  using enum Style::PseudoClass;
-
+bool Widget::MatchesStylePseudoClass(const StyleClass it) const {
   const auto state = mDirectStateFlags | mInheritedStateFlags;
   if ((state & StateFlags::Disabled) != StateFlags::Default) {
-    return selector == Disabled;
+    return it == PseudoClasses::Disabled;
   }
 
-  if (selector == Hover) {
+  if (it == PseudoClasses::Hover) {
     return (state & (StateFlags::Hovered | StateFlags::Active))
       != StateFlags::Default;
   }
 
-  if (selector == Active) {
+  if (it == PseudoClasses::Active) {
     return (state & StateFlags::Active) != StateFlags::Default;
   }
 
@@ -213,14 +211,14 @@ bool Widget::MatchesStyleSelector(Style::PseudoClass selector) const {
 }
 
 bool Widget::MatchesStyleSelector(Style::Selector selector) const {
-  if (const auto it = get_if<Style::PseudoClass>(&selector)) {
-    return MatchesStyleSelector(*it);
-  }
   if (const auto it = get_if<const Widget*>(&selector)) {
     return *it == this;
   }
   if (const auto it = get_if<StyleClass>(&selector)) {
-    return mClassList.contains(*it);
+    if (mClassList.contains(*it)) {
+      return true;
+    }
+    return MatchesStylePseudoClass(*it);
   }
 #ifndef NDEBUG
   __debugbreak();

@@ -66,7 +66,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   const auto SmallPressedAnimation
     = LinearStyleTransition(std::chrono::milliseconds(16));
 
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style sSmallChangeStyles {
     .mColor = ScrollBarButtonArrowForeground,
     .mFont = {
@@ -186,7 +186,7 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
 }
 
 Style ScrollBar::GetBuiltinStylesForOrientation() const {
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style sBaseStyles {
     .mBackgroundColor = ScrollBarBackground,
     .mAnd = {

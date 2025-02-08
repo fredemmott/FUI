@@ -22,7 +22,7 @@ void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
     tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
   }
 
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   Style buttonStyles {
     .mBackgroundColor = ComboBoxItemBackground,
     .mBorderColor = ComboBoxItemBorderBrush,

@@ -83,7 +83,7 @@ Style Style::BuiltinBaseline() {
     .mColor = StaticTheme::TextFillColorPrimaryBrush,
     .mFont = SystemFont::Body,
     .mAnd = {
-      { Style::PseudoClass::Disabled, Style {
+      { PseudoClasses::Disabled, Style {
         .mColor = StaticTheme::TextFillColorDisabledBrush,
       }},
     },

@@ -20,7 +20,7 @@ Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
 Style Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;
 
-  using enum Style::PseudoClass;
+  using namespace PseudoClasses;
   static const Style ret {
     .mAlignSelf = YGAlignFlexStart,
     .mBackgroundColor = ButtonBackground,
