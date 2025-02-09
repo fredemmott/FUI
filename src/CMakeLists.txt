@@ -45,6 +45,7 @@ add_executable(
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
   FredEmmott/GUI/StyleProperty.hpp>
+  FredEmmott/GUI/StyleSheet.cpp FredEmmott/GUI/StyleSheet.hpp
   FredEmmott/GUI/StyleTransition.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp

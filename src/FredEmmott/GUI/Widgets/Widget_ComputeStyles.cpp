@@ -3,7 +3,7 @@
 
 #include <core/SkRRect.h>
 
-#include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/StyleSheet.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
@@ -210,20 +210,43 @@ bool Widget::MatchesStylePseudoClass(const StyleClass it) const {
   return false;
 }
 
+bool Widget::HasStyleClass(StyleClass it) const {
+  if (mClassList.contains(it)) {
+    return true;
+  }
+  return MatchesStylePseudoClass(it);
+}
+
 bool Widget::MatchesStyleSelector(Style::Selector selector) const {
   if (const auto it = get_if<const Widget*>(&selector)) {
     return *it == this;
   }
   if (const auto it = get_if<StyleClass>(&selector)) {
-    if (mClassList.contains(*it)) {
-      return true;
-    }
-    return MatchesStylePseudoClass(*it);
+    return HasStyleClass(*it);
   }
 #ifndef NDEBUG
   __debugbreak();
 #endif
   return false;
+}
+
+StyleSheet Widget::GetBuiltInStyleSheet() const {
+  const auto styles = this->GetBuiltInStyles();
+
+  StyleSheet sheet;
+  sheet.emplace_back(MakeSelector(this), styles);
+  for (auto&& [selector, it]: styles.mAnd) {
+    sheet.emplace_back(
+      MakeSelector(
+        this,
+        StyleSelectorComponent {
+          StyleSelectorCombinator::NestingSelector,
+          selector,
+        }),
+      it);
+  }
+
+  return sheet;
 }
 
 }// namespace FredEmmott::GUI::Widgets
