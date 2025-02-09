@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <bit>
 #include <string_view>
 #include <unordered_set>
 #include <utility>
@@ -23,8 +24,8 @@ class StyleClass {
   bool operator==(const StyleClass&) const noexcept = default;
 
  private:
-  explicit StyleClass(std::size_t id) : mID(id) {}
-  std::size_t mID {};
+  explicit StyleClass(std::string_view id) : mID(id) {}
+  std::string_view mID {};
 };
 using StyleClasses = std::unordered_set<StyleClass>;
 StyleClasses operator+(const StyleClasses&, StyleClass);
@@ -35,6 +36,6 @@ StyleClasses& operator+=(StyleClasses&, StyleClass);
 template <>
 struct std::hash<FredEmmott::GUI::StyleClass> {
   std::size_t operator()(const FredEmmott::GUI::StyleClass& c) const noexcept {
-    return std::hash<std::size_t> {}(c.mID);
+    return std::hash<uintptr_t> {}(std::bit_cast<uintptr_t>(c.mID.data()));
   }
 };
