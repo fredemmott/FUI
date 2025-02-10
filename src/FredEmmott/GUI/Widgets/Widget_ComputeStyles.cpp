@@ -17,12 +17,33 @@ static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
 using namespace widget_detail;
 
-void Widget::ComputeStyles(const Style& inherited) {
-  Style style = GlobalBaselineStyle
-    + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
-                              : this->GetBuiltInStyles());
-  style += inherited;
-  style += mExplicitStyles;
+void Widget::ComputeStyles(
+  const StyleSheet& inheritedSheet,
+  const std::vector<const Widget*>& ancestors,
+  const Style& inheritedStyle) {
+  auto selfAndAncestors = ancestors;
+  selfAndAncestors.push_back(this);
+
+  auto sheet = inheritedSheet;
+
+  {
+    Style style = GlobalBaselineStyle
+      + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
+                                : this->GetBuiltInStyles());
+    style += inheritedStyle;
+    style += mExplicitStyles;
+
+    const auto asSheet = this->ConvertLegacyStylesToStyleSheet(style);
+    sheet.reserve(sheet.size() + asSheet.size());
+    std::ranges::copy(asSheet, std::back_inserter(sheet));
+  }
+
+  Style style;
+  for (auto&& [selector, rules]: sheet) {
+    if (StyleSelectorMatches(selector, selfAndAncestors)) {
+      style += rules;
+    }
+  }
 
   mDirectStateFlags &= ~StateFlags::Animating;
   const auto stateFlags = mDirectStateFlags | mInheritedStateFlags;
@@ -33,30 +54,6 @@ void Widget::ComputeStyles(const Style& inherited) {
     = (stateFlags & StateFlags::Active) != StateFlags::Default;
   const bool isDisabled
     = (stateFlags & StateFlags::Disabled) != StateFlags::Default;
-
-  bool haveChanges = false;
-  do {
-    haveChanges = false;
-    for (auto it = style.mAnd.begin(); it != style.mAnd.end();
-         it = style.mAnd.erase(it)) {
-      const auto& [selector, rules] = *it;
-      if (this->MatchesStyleSelector(selector)) {
-        style += rules;
-        haveChanges = true;
-      }
-    }
-    for (auto it = style.mDescendants.begin();
-         it != style.mDescendants.end();) {
-      const auto& [selector, rules] = *it;
-      if (this->MatchesStyleSelector(selector)) {
-        style += rules;
-        haveChanges = true;
-        it = style.mDescendants.erase(it);
-      } else {
-        ++it;
-      }
-    }
-  } while (haveChanges);
 
   const auto flattenEdge = [&style]<class T>(T allEdges, T thisEdge) {
     auto& thisEdgeOpt = style.*thisEdge;
@@ -124,12 +121,11 @@ void Widget::ComputeStyles(const Style& inherited) {
     }
   }
 
-  mInheritedStyles = inherited;
   mComputedStyle = style;
 
   const auto childStyles = style.InheritableValues();
   for (auto&& child: this->GetDirectChildren()) {
-    child->ComputeStyles(childStyles);
+    child->ComputeStyles(sheet, selfAndAncestors, childStyles);
   }
 
   const auto yoga = this->GetLayoutNode();
@@ -217,22 +213,8 @@ bool Widget::HasStyleClass(StyleClass it) const {
   return MatchesStylePseudoClass(it);
 }
 
-bool Widget::MatchesStyleSelector(Style::Selector selector) const {
-  if (const auto it = get_if<const Widget*>(&selector)) {
-    return *it == this;
-  }
-  if (const auto it = get_if<StyleClass>(&selector)) {
-    return HasStyleClass(*it);
-  }
-#ifndef NDEBUG
-  __debugbreak();
-#endif
-  return false;
-}
-
-StyleSheet Widget::GetBuiltInStyleSheet() const {
-  const auto styles = this->GetBuiltInStyles();
-
+StyleSheet Widget::ConvertLegacyStylesToStyleSheet(
+  const FredEmmott::GUI::Style& styles) const {
   StyleSheet sheet;
   sheet.emplace_back(MakeSelector(this), styles);
   for (auto&& [selector, it]: styles.mAnd) {
