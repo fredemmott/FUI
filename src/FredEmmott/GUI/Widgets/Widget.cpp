@@ -151,7 +151,7 @@ void Widget::SetBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = styles;
 }
 void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
-  mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
+  mReplacedBuiltInStyles = this->GetBuiltInStyles_DEPRECATED() + styles;
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {

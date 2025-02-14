@@ -155,7 +155,7 @@ WidgetList ScrollBar::GetDirectChildren() const noexcept {
   };
 }
 
-Style ScrollBar::GetBuiltInStyles() const {
+Style ScrollBar::GetBuiltInStyles_DEPRECATED() const {
   return mBuiltinStyles;
 }
 

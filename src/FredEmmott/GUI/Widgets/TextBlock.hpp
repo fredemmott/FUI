@@ -23,7 +23,7 @@ class TextBlock final : public Widget {
  protected:
   void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
     const override;
-  Style GetBuiltInStyles() const override;
+  Style GetBuiltInStyles_DEPRECATED() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& base, StateFlags state)
     override;
 

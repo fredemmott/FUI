@@ -89,7 +89,7 @@ class Widget {
   static constexpr SkScalar Spacing = 4;
 
   [[nodiscard]]
-  virtual Style GetBuiltInStyles() const {
+  virtual Style GetBuiltInStyles_DEPRECATED() const {
     return {};
   }
 

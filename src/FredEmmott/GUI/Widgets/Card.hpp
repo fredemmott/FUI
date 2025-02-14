@@ -11,7 +11,7 @@ class Card final : public Widget {
   Card(std::size_t id);
 
  protected:
-  Style GetBuiltInStyles() const override;
+  Style GetBuiltInStyles_DEPRECATED() const override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

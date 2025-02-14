@@ -29,7 +29,7 @@ void Widget::ComputeStyles(
   {
     Style style = GlobalBaselineStyle
       + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
-                                : this->GetBuiltInStyles());
+                                : this->GetBuiltInStyles_DEPRECATED());
     style += inheritedStyle;
     style += mExplicitStyles;
 

@@ -13,7 +13,7 @@ WidgetList PopupWindow::GetDirectChildren() const noexcept {
   return WidgetList::MakeEmpty();
 }
 
-Style PopupWindow::GetBuiltInStyles() const {
+Style PopupWindow::GetBuiltInStyles_DEPRECATED() const {
   return {.mDisplay = YGDisplayNone};
 }
 
