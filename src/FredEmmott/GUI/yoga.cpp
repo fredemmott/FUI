@@ -1,9 +1,9 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include <thread>
-
 #include "yoga.hpp"
+
+#include <mutex>
 
 namespace FredEmmott::GUI {
 YGConfigRef GetYogaConfig() {
@@ -16,4 +16,4 @@ YGConfigRef GetYogaConfig() {
   });
   return sInstance.get();
 }
-}
+}// namespace FredEmmott::GUI
