@@ -33,7 +33,7 @@ set(
   CACHE STRING "Vcpkg toolchain file"
 )
 
-project(HelloSkia VERSION 0.0.1 LANGUAGES CXX)
+project(FUI VERSION 0.0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
