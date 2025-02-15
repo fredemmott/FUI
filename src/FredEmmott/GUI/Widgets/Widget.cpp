@@ -147,11 +147,18 @@ void Widget::SetExplicitStyles(const Style& styles) {
   mExplicitStyles = styles;
 }
 
-void Widget::SetBuiltInStyles(const Style& styles) {
-  mReplacedBuiltInStyles = styles;
+void Widget::ReplaceBuiltInStyleSheet(const StyleSheet& styles) {
+  mReplacedBuiltInStyleSheet = styles;
 }
-void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
-  mReplacedBuiltInStyles = this->GetBuiltInStyles_DEPRECATED() + styles;
+void Widget::AppendBuiltInStyleSheet(const StyleSheet& styles) {
+  auto sheet = this->GetBuiltInStyleSheet();
+  std::ranges::copy(styles, std::back_inserter(sheet));
+  mReplacedBuiltInStyleSheet = std::move(sheet);
+}
+void Widget::AppendBuiltInStyles(const Style& styles) {
+  auto sheet = this->GetBuiltInStyleSheet();
+  sheet.emplace_back(StyleSelector {this}, styles);
+  mReplacedBuiltInStyleSheet = std::move(sheet);
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
@@ -344,6 +351,26 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   }
 
   return result;
+}
+
+void Widget::AddStyleClass(const StyleClass& klass) {
+  mClassList.emplace(klass);
+}
+void Widget::ToggleStyleClass(
+  const StyleClass& klass,
+  std::optional<bool> value) {
+  bool enable = false;
+  if (value.has_value()) {
+    enable = *value;
+  } else {
+    enable = !mClassList.contains(klass);
+  }
+
+  if (enable) {
+    mClassList.emplace(klass);
+  } else if (mClassList.contains(klass)) {
+    mClassList.erase(klass);
+  }
 }
 
 }// namespace FredEmmott::GUI::Widgets

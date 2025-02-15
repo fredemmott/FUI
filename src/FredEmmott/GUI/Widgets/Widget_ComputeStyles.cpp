@@ -24,19 +24,15 @@ void Widget::ComputeStyles(
   auto selfAndAncestors = ancestors;
   selfAndAncestors.push_back(this);
 
-  auto sheet = inheritedSheet;
-
-  {
-    Style style = GlobalBaselineStyle
-      + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
-                                : this->GetBuiltInStyles_DEPRECATED());
-    style += inheritedStyle;
-    style += mExplicitStyles;
-
-    const auto asSheet = this->ConvertLegacyStylesToStyleSheet(style);
-    sheet.reserve(sheet.size() + asSheet.size());
-    std::ranges::copy(asSheet, std::back_inserter(sheet));
-  }
+  StyleSheet inheritableSheet = inheritedSheet;
+  inheritableSheet.append_range(inheritedSheet);
+  inheritableSheet.append_range(this->GetBuiltInStyleSheet());
+  StyleSheet sheet {
+    {StyleSelector {this}, GlobalBaselineStyle},
+  };
+  sheet.append_range(inheritableSheet);
+  sheet.emplace_back(this, inheritedStyle);
+  sheet.emplace_back(this, mExplicitStyles);
 
   Style style;
   for (auto&& [selector, rules]: sheet) {
@@ -125,7 +121,7 @@ void Widget::ComputeStyles(
 
   const auto childStyles = style.InheritableValues();
   for (auto&& child: this->GetDirectChildren()) {
-    child->ComputeStyles(sheet, selfAndAncestors, childStyles);
+    child->ComputeStyles(inheritableSheet, selfAndAncestors, childStyles);
   }
 
   const auto yoga = this->GetLayoutNode();
@@ -216,16 +212,11 @@ bool Widget::HasStyleClass(StyleClass it) const {
 StyleSheet Widget::ConvertLegacyStylesToStyleSheet(
   const FredEmmott::GUI::Style& styles) const {
   StyleSheet sheet;
-  sheet.emplace_back(MakeSelector(this), styles);
+  sheet.emplace_back(this, styles);
   for (auto&& [selector, it]: styles.mAnd) {
-    sheet.emplace_back(
-      MakeSelector(
-        this,
-        StyleSelectorComponent {
-          StyleSelectorCombinator::NestingSelector,
-          selector,
-        }),
-      it);
+    auto nested = StyleSelector {this};
+    nested.push_back(StyleSelectorCombinator::NestingSelector, selector);
+    sheet.emplace_back(nested, it);
   }
 
   return sheet;

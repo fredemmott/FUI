@@ -8,31 +8,43 @@
 
 namespace FredEmmott::GUI::Immediate {
 
+namespace {
+const auto FontIconStyleClass = StyleClass::Make("FontIcon");
+}
+
 void FontIcon(std::string_view glyph, FontIconSize size, const ID id) {
-  const Style styles {.mFont = {ResolveGlyphFont(size), !important}};
+  static const StyleSheet styles {{
+    FontIconStyleClass,
+    Style {
+      .mFont = {ResolveGlyphFont(size), !important},
+    },
+  }};
   Label(glyph, id);
-  immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(styles);
+
+  auto label = immediate_detail::GetCurrentNode();
+  label->AppendBuiltInStyleSheet(styles);
+  label->AddStyleClass(FontIconStyleClass);
 }
 
 void FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyphs,
   FontIconSize size,
   const ID id) {
-  const Style styles {.mFont = {ResolveGlyphFont(size), !important}};
-
   bool first = true;
   immediate_detail::BeginWidget<Widgets::Widget>(id);
   std::size_t count = 0;
   for (auto&& [glyph, style]: glyphs) {
-    auto thisStyle = styles + style;
+    FontIcon(glyph, size, ID {count++});
+    auto node = immediate_detail::GetCurrentNode();
     if (first) {
       first = false;
     } else {
-      thisStyle.mPosition = YGPositionTypeAbsolute;
+      node->AppendBuiltInStyleSheet({{
+        StyleSelector {node},
+        Style {.mPosition = YGPositionTypeAbsolute},
+      }});
     }
-
-    Label(glyph, ID {count++});
-    immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(thisStyle);
+    node->SetExplicitStyles(style);
   }
 
   immediate_detail::EndWidget<Widgets::Widget>();

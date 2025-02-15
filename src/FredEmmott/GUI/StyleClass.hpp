@@ -9,6 +9,8 @@
 
 namespace FredEmmott::GUI {
 
+class StyleSelector;
+
 class StyleClass {
   friend class std::hash<StyleClass>;
 
@@ -22,6 +24,10 @@ class StyleClass {
   static StyleClass Make(std::string_view name);
 
   bool operator==(const StyleClass&) const noexcept = default;
+
+  StyleSelector operator&(StyleClass) const noexcept;
+  StyleSelector operator,(StyleClass) const noexcept;
+  StyleSelector operator,(const StyleSelector&) const noexcept;
 
  private:
   explicit StyleClass(std::string_view id) : mID(id) {}

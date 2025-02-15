@@ -27,11 +27,6 @@ class ScrollBar final : public Widget {
  protected:
   [[nodiscard]]
   WidgetList GetDirectChildren() const noexcept override;
-  [[nodiscard]]
-  Style GetBuiltInStyles_DEPRECATED() const override;
-  [[nodiscard]]
-  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
-    override;
 
  private:
   Orientation mOrientation;
@@ -48,8 +43,6 @@ class ScrollBar final : public Widget {
   unique_ptr<Widget> mThumb;
   unique_ptr<Widget> mLargeIncrement;// Space below thumb
   unique_ptr<Label> mSmallIncrement;// Arrow
-
-  Style GetBuiltinStylesForOrientation() const;
 };
 
 }// namespace FredEmmott::GUI::Widgets
