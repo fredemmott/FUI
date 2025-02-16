@@ -39,10 +39,7 @@ class Widget {
   bool IsDirectlyDisabled() const;
   void SetIsDirectlyDisabled(bool value);
 
-  void ComputeStyles(
-    const StyleSheet&,
-    const std::vector<const Widget*>& ancestors,
-    const Style& inherited);
+  void ComputeStyles(const Style& inherited);
 
   /// User-provided styles
   void SetExplicitStyles(const Style& styles);
@@ -94,7 +91,7 @@ class Widget {
   }
 
   [[nodiscard]]
-  StyleSheet ConvertLegacyStylesToStyleSheet(const Style&) const;
+  StyleSheet GetBuiltInStyleSheet() const;
 
   [[nodiscard]]
   virtual ComputedStyleFlags OnComputedStyleChange(
@@ -138,6 +135,7 @@ class Widget {
   Style mExplicitStyles {};
   std::optional<Style> mReplacedBuiltInStyles;
 
+  Style mInheritedStyles;
   Style mComputedStyle;
 
   std::vector<unique_ptr<Widget>> mManagedChildren;
@@ -146,8 +144,11 @@ class Widget {
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent*);
   void SetManagedChildren(const std::vector<Widget*>& children);
+
   [[nodiscard]]
   bool MatchesStylePseudoClass(StyleClass) const;
+  [[nodiscard]]
+  bool MatchesStyleSelector(Style::Selector) const;
 };
 
 consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {
