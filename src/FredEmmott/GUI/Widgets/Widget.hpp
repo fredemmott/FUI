@@ -6,7 +6,6 @@
 
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/Style.hpp>
-#include <FredEmmott/GUI/StyleSheet.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
@@ -56,9 +55,6 @@ class Widget {
 
   void DispatchEvent(const Event*);
 
-  [[nodiscard]]
-  bool HasStyleClass(StyleClass) const;
-
  protected:
   enum class StateFlags {
     Default = 0,
@@ -89,9 +85,6 @@ class Widget {
   virtual Style GetBuiltInStyles() const {
     return {};
   }
-
-  [[nodiscard]]
-  StyleSheet GetBuiltInStyleSheet() const;
 
   [[nodiscard]]
   virtual ComputedStyleFlags OnComputedStyleChange(
