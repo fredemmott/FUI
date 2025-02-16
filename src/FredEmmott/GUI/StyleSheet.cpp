@@ -17,7 +17,6 @@ static bool StyleSelectorTokenMatches(
     return widget == *it;
   }
   __debugbreak();
-  std::unreachable();
 }
 
 static bool StyleSelectorMatches(
@@ -70,6 +69,6 @@ bool StyleSelectorMatches(
   if (widgetTrace.empty()) {
     return false;
   }
-  return StyleSelectorMatches(selector, std::span {widgetTrace});
+  return StyleSelectorMatches(std::span {selector}, std::span {widgetTrace});
 }
 }// namespace FredEmmott::GUI

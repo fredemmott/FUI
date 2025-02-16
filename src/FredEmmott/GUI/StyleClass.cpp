@@ -7,7 +7,6 @@
 #include <mutex>
 
 #include "StaticTheme.hpp"
-#include "StyleSheet.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -22,20 +21,6 @@ StyleClass StyleClass::Make(std::string_view name) {
   }
   sClassNames.emplace_back(std::string {name});
   return StyleClass {sClassNames.back()};
-}
-
-StyleSelector StyleClass::operator&(StyleClass rhs) const noexcept {
-  return (StyleSelector {*this}) & rhs;
-}
-
-StyleSelector StyleClass::operator,(StyleClass rhs) const noexcept {
-  return ((StyleSelector {*this}), rhs);
-}
-
-StyleSelector StyleClass::operator,(const StyleSelector& rhs) const noexcept {
-  StyleSelector ret {*this};
-  ret.append(rhs);
-  return ret;
 }
 
 StyleClasses& operator+=(StyleClasses& lhs, StyleClass rhs) {

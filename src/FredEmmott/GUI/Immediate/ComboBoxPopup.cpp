@@ -32,7 +32,7 @@ bool BeginComboBoxPopup(ID id) {
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->AppendBuiltInStyles({
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mBackgroundColor = ComboBoxDropDownBackground,
     .mBorderColor = ComboBoxDropDownBorderBrush,
     .mBorderRadius = OverlayCornerRadius,
@@ -40,7 +40,7 @@ bool BeginComboBoxPopup(ID id) {
     .mPadding = ComboBoxDropdownBorderPadding,
   });
   BeginVStackPanel();
-  GetCurrentParentNode()->AppendBuiltInStyles({
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mBorderRadius = OverlayCornerRadius,
     .mColor = ComboBoxDropDownForeground,
     .mFlexGrow = 1.0,

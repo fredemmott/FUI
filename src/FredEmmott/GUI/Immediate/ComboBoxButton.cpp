@@ -4,7 +4,7 @@
 #include "ComboBoxButton.hpp"
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
-#include <FredEmmott/GUI/detail/ComboBoxStyles.hpp>
+#include <FredEmmott/GUI/StaticTheme/ComboBox.hpp>
 
 #include "Button.hpp"
 #include "FontIcon.hpp"
@@ -21,15 +21,49 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
     *clicked = button->mClicked.TestAndClear();
   }
 
-  button->AddStyleClass(ComboBoxButtonStyleClass());
-  button->ReplaceBuiltInStyleSheet(ComboBoxButtonStyles());
+  using namespace StaticTheme::Common;
+  using namespace StaticTheme::ComboBox;
+  using namespace PseudoClasses;
+  static const Style styles {
+    .mAlignSelf = YGAlignFlexStart,
+    .mBackgroundColor = ComboBoxBackground,
+    .mBorderColor =ComboBoxBorderBrush,
+    .mBorderRadius = ControlCornerRadius,
+    .mBorderWidth = ComboBoxBorderThemeThickness,
+    .mColor = ComboBoxForeground,
+    .mFlexDirection = YGFlexDirectionRow,
+    .mFont = WidgetFont::ControlContent,
+    .mMinWidth = ComboBoxThemeMinWidth,
+    .mPaddingBottom = ComboBoxPaddingBottom,
+    .mPaddingLeft = ComboBoxPaddingLeft,
+    .mPaddingRight = ComboBoxPaddingRight,
+    .mPaddingTop = ComboBoxPaddingTop,
+    .mAnd = {
+      { Disabled, Style {
+          .mBackgroundColor = ComboBoxBackgroundDisabled,
+          .mBorderColor = ComboBoxBorderBrushDisabled,
+          .mColor = ComboBoxForegroundDisabled,
+      }},
+      { Hover, Style {
+          .mBackgroundColor = ComboBoxBackgroundPointerOver,
+          .mBorderColor = ComboBoxBorderBrushPointerOver,
+          .mColor = ComboBoxForegroundPointerOver,
+      }},
+      { Active, Style {
+          .mBackgroundColor = ComboBoxBackgroundPressed,
+          .mBorderColor = ComboBoxBorderBrushPressed,
+          .mColor = ComboBoxForegroundPressed,
+      }},
+    },
+  };
+  button->SetBuiltInStyles({styles});
 
   BeginWidget<Widget>(ID {"container"});
-  GetCurrentParentNode()->AppendBuiltInStyles({
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mFlexGrow = 1,
   });
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->AppendBuiltInStyles({.mDisplay = YGDisplayContents});
+  GetCurrentParentNode()->SetBuiltInStyles({.mDisplay = YGDisplayContents});
 };
 
 void EndComboBoxButton() {
@@ -46,25 +80,18 @@ void EndComboBoxButton() {
   FontIcon("\ue70d", FontIconSize::Body, ID {"glyph"});// ChevronDown
   // MarginRight of 14 is in the Xaml without an alias; MarginLeft
   // is not set in the XAML at all.
-  auto node = GetCurrentNode();
-  node->AppendBuiltInStyleSheet({
-    {
-      StyleSelector { node },
-      Style {
-        .mAlignSelf = YGAlignFlexEnd,
-        .mFlexGrow = 0,
-        .mMarginLeft = 14,
-        .mMarginRight = 14,
-        .mTop = {
-          -2, FasterAnimation,
-          },
-      },
+  GetCurrentNode()->SetExplicitStyles({
+    .mAlignSelf = YGAlignFlexEnd,
+    .mFlexGrow = 0,
+    .mMarginLeft = 14,
+    .mMarginRight = 14,
+    .mTop = {
+      -2, FasterAnimation,
     },
-    {
-      StyleSelector { node } & PseudoClasses::Active,
-      Style {
+    .mAnd = {
+      { Active, Style {
         .mTop = 0,
-      }
+      }},
     },
   });
 

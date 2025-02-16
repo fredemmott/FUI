@@ -39,9 +39,6 @@ class Widget {
   bool IsDirectlyDisabled() const;
   void SetIsDirectlyDisabled(bool value);
 
-  void AddStyleClass(const StyleClass&);
-  void ToggleStyleClass(const StyleClass&, std::optional<bool> value);
-
   void ComputeStyles(
     const StyleSheet&,
     const std::vector<const Widget*>& ancestors,
@@ -50,9 +47,8 @@ class Widget {
   /// User-provided styles
   void SetExplicitStyles(const Style& styles);
   // For immediate API - fake a widget by replacing its built-in styles
-  void ReplaceBuiltInStyleSheet(const StyleSheet&);
-  void AppendBuiltInStyleSheet(const StyleSheet&);
-  void AppendBuiltInStyles(const Style&);
+  void SetBuiltInStyles(const Style& styles);
+  void SetAdditionalBuiltInStyles(const Style& styles);
   void Paint(SkCanvas* canvas) const;
 
   auto GetChildren() const noexcept {
@@ -95,14 +91,6 @@ class Widget {
   [[nodiscard]]
   virtual Style GetBuiltInStyles_DEPRECATED() const {
     return {};
-  }
-  [[nodiscard]]
-  virtual StyleSheet GetBuiltInStyleSheet() const {
-    if (mReplacedBuiltInStyleSheet) {
-      return *mReplacedBuiltInStyleSheet;
-    } else {
-      return ConvertLegacyStylesToStyleSheet(GetBuiltInStyles_DEPRECATED());
-    }
   }
 
   [[nodiscard]]
@@ -148,7 +136,7 @@ class Widget {
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
   Style mExplicitStyles {};
-  std::optional<StyleSheet> mReplacedBuiltInStyleSheet;
+  std::optional<Style> mReplacedBuiltInStyles;
 
   Style mComputedStyle;
 
