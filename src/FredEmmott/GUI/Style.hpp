@@ -61,7 +61,6 @@ struct Style {
   StyleProperty<SkScalar> mWidth;
 
   std::vector<std::tuple<Selector, Style>> mAnd;
-  std::vector<std::tuple<Selector, Style>> mDescendants;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
   [[nodiscard]]

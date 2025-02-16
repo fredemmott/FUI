@@ -45,17 +45,6 @@ void Widget::ComputeStyles(const Style& inherited) {
         haveChanges = true;
       }
     }
-    for (auto it = style.mDescendants.begin();
-         it != style.mDescendants.end();) {
-      const auto& [selector, rules] = *it;
-      if (this->MatchesStyleSelector(selector)) {
-        style += rules;
-        haveChanges = true;
-        it = style.mDescendants.erase(it);
-      } else {
-        ++it;
-      }
-    }
   } while (haveChanges);
 
   const auto flattenEdge = [&style]<class T>(T allEdges, T thisEdge) {

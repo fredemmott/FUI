@@ -13,7 +13,7 @@ class Label;
 class ScrollBar final : public Widget {
  public:
   ScrollBar(std::size_t id, Orientation);
-  ~ScrollBar();
+  ~ScrollBar() final;
 
   void SetMinimum(float value);
   [[nodiscard]] float GetMinimum() const;
@@ -21,8 +21,8 @@ class ScrollBar final : public Widget {
   [[nodiscard]] float GetMaximum() const;
   void SetValue(float value);
   [[nodiscard]] float GetValue() const;
-  void SetThumbHeight(float value);
-  [[nodiscard]] float GetThumbHeight() const;
+  void SetThumbSize(float value);
+  [[nodiscard]] float GetThumbSize() const;
 
  protected:
   [[nodiscard]]
@@ -39,15 +39,20 @@ class ScrollBar final : public Widget {
   float mMinimum {0.0f};
   float mMaximum {1.0f};
   float mValue {0.0f};
-  float mThumbHeight {0.0f};
+  float mThumbSize {0.0f};
 
   Style mBuiltinStyles;
 
   unique_ptr<Label> mSmallDecrement;// Arrow
-  unique_ptr<Widget> mLargeDecrement;// Space above thumb
-  unique_ptr<Widget> mThumb;
-  unique_ptr<Widget> mLargeIncrement;// Space below thumb
+  unique_ptr<Widget> mTrack;
   unique_ptr<Label> mSmallIncrement;// Arrow
+
+  // These are within the track
+  Widget* mLargeDecrement {nullptr};// Space above thumb
+  Widget* mThumb {nullptr};
+  Widget* mLargeIncrement {nullptr};// Space below thumb
+
+  void UpdateLayout();
 
   Style GetBuiltinStylesForOrientation() const;
 };

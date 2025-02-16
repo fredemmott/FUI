@@ -44,7 +44,6 @@ Style& Style::operator+=(const Style& other) noexcept {
   FUI_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
   mAnd.append_range(other.mAnd);
-  mDescendants.append_range(other.mDescendants);
 
   return *this;
 }
@@ -74,7 +73,6 @@ Style Style::InheritableValues() const noexcept {
 #define COPY_IF_INHERITABLE(X) copyIfInheritable(&Style::m##X);
   FUI_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
-  ret.mDescendants = mDescendants;
   return ret;
 }
 
@@ -95,14 +93,6 @@ Style Style::BuiltinBaseline() {
 #define PREVENT_INHERITANCE(X) style.m##X.mScope = StylePropertyScope::Self;
     FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
     FUI_ASSERT(style.mAnd.empty());
-    FUI_ASSERT(style.mDescendants.empty());
-#undef PREVENT_INHERITANCE
-  }
-  for (auto& [selector, style]: ret.mDescendants) {
-#define PREVENT_INHERITANCE(X) style.m##X.mScope = StylePropertyScope::Self;
-    FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
-    FUI_ASSERT(style.mAnd.empty());
-    FUI_ASSERT(style.mDescendants.empty());
 #undef PREVENT_INHERITANCE
   }
   return ret;

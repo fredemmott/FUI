@@ -16,9 +16,7 @@ using namespace StaticTheme::ScrollBar;
 namespace {
 
 const auto ScrollBarStyleClass = StyleClass::Make("ScrollBar");
-const auto VerticalScrollBarStyleClass = StyleClass::Make("VerticalScrollBar");
-const auto HorizontalScrollBarStyleClass
-  = StyleClass::Make("HorizontalScrollBar");
+const auto ScrollBarTrackStyleClass = StyleClass::Make("ScrollBarTrack");
 const auto SmallDecrementStyleClass
   = StyleClass::Make("ScrollBarSmallDecrement");
 const auto LargeDecrementStyleClass
@@ -41,11 +39,7 @@ const auto ExpandAnimation = CubicBezierStyleTransition(
 }// namespace
 
 ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
-  : Widget(
-      id,
-      {ScrollBarStyleClass,
-       (orientation == Orientation::Horizontal ? HorizontalScrollBarStyleClass
-                                               : VerticalScrollBarStyleClass)}),
+  : Widget(id, {ScrollBarStyleClass}),
     mOrientation(orientation),
     mBuiltinStyles(GetBuiltinStylesForOrientation()) {
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
@@ -56,10 +50,20 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
 
   this->ChangeDirectChildren([this] {
     mSmallDecrement.reset(new Label(0, {SmallDecrementStyleClass}));
-    mLargeDecrement.reset(new Widget(0, {LargeDecrementStyleClass}));
-    mThumb.reset(new Widget(0, {ThumbStyleClass}));
-    mLargeIncrement.reset(new Widget(0, {LargeIncrementStyleClass}));
+    mTrack.reset(new Widget(0, {ScrollBarTrackStyleClass}));
     mSmallIncrement.reset(new Label(0, {SmallIncrementStyleClass}));
+  });
+
+  mLargeDecrement = new Widget(0, {LargeDecrementStyleClass});
+  mThumb = new Widget(0, {ThumbStyleClass});
+  mLargeIncrement = new Widget(0, {LargeIncrementStyleClass});
+  mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
+  mTrack->SetBuiltInStyles({
+    .mDisplay = YGDisplayFlex,
+    .mFlexDirection = (orientation == Orientation::Horizontal)
+      ? YGFlexDirectionRow
+      : YGFlexDirectionColumn,
+    .mFlexGrow = 1,
   });
 
   // Hardcoded in XAML
@@ -141,6 +145,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   }
 
   mThumb->SetBuiltInStyles({thumbStyles});
+  this->UpdateLayout();
 }
 
 ScrollBar::~ScrollBar() = default;
@@ -148,9 +153,7 @@ ScrollBar::~ScrollBar() = default;
 WidgetList ScrollBar::GetDirectChildren() const noexcept {
   return {
     mSmallDecrement.get(),
-    mLargeDecrement.get(),
-    mThumb.get(),
-    mLargeIncrement.get(),
+    mTrack.get(),
     mSmallIncrement.get(),
   };
 }
@@ -208,6 +211,50 @@ Style ScrollBar::GetBuiltinStylesForOrientation() const {
   } else {
     return {sVerticalStyles};
   }
+}
+
+void ScrollBar::UpdateLayout() {
+  mLargeDecrement->SetExplicitStyles({
+    .mFlexGrow = mValue - mMinimum,
+  });
+  mThumb->SetExplicitStyles({
+    .mFlexGrow = mThumbSize,
+  });
+  mLargeIncrement->SetExplicitStyles({
+    .mFlexGrow = mMaximum - mValue,
+  });
+}
+
+void ScrollBar::SetMinimum(float value) {
+  mMinimum = value;
+  this->UpdateLayout();
+}
+
+float ScrollBar::GetMinimum() const {
+  return mMinimum;
+}
+
+void ScrollBar::SetMaximum(float value) {
+  mMaximum = value;
+  this->UpdateLayout();
+}
+
+float ScrollBar::GetValue() const {
+  return mValue;
+}
+
+void ScrollBar::SetValue(float value) {
+  mValue = value;
+  this->UpdateLayout();
+}
+
+float ScrollBar::GetThumbSize() const {
+  return mThumbSize;
+}
+
+void ScrollBar::SetThumbSize(float value) {
+  mThumbSize = value;
+  this->UpdateLayout();
 }
 
 }// namespace FredEmmott::GUI::Widgets
