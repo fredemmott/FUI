@@ -24,7 +24,7 @@ void ToggleSwitchThumb::SetIsOn(bool value) noexcept {
   mIsOn = value;
 }
 
-Style ToggleSwitchThumb::GetBuiltInStyles_DEPRECATED() const {
+Style ToggleSwitchThumb::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
 
   constexpr auto KeySpline = ControlFastOutSlowInKeySpline;

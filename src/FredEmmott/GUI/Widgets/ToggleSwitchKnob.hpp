@@ -17,7 +17,7 @@ class ToggleSwitchKnob final : public Widget {
   void SetIsOn(bool) noexcept;
 
  protected:
-  Style GetBuiltInStyles_DEPRECATED() const override;
+  Style GetBuiltInStyles() const override;
   WidgetList GetDirectChildren() const noexcept override;
 
  private:

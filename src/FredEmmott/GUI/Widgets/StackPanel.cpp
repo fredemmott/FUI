@@ -30,7 +30,7 @@ StackPanel::StackPanel(std::size_t id, Orientation orientation)
                                               : VerticalStyleClass}),
     mOrientation(orientation) {}
 
-Style StackPanel::GetBuiltInStyles_DEPRECATED() const {
+Style StackPanel::GetBuiltInStyles() const {
   return {
     (mOrientation == Orientation::Horizontal) ? HorizontalStyles
                                               : VerticalStyles};

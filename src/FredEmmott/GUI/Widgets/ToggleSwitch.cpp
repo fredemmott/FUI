@@ -43,7 +43,7 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
   mKnob->SetIsOn(value);
 }
 
-Style ToggleSwitch::GetBuiltInStyles_DEPRECATED() const {
+Style ToggleSwitch::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
   using namespace PseudoClasses;
   static const Style ret {

@@ -17,7 +17,7 @@ const auto ButtonStyleClass = StyleClass::Make("Button");
 
 Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
 
-Style Button::GetBuiltInStyles_DEPRECATED() const {
+Style Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;
 
   using namespace PseudoClasses;

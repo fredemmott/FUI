@@ -28,7 +28,7 @@ class ScrollBar final : public Widget {
   [[nodiscard]]
   WidgetList GetDirectChildren() const noexcept override;
   [[nodiscard]]
-  Style GetBuiltInStyles_DEPRECATED() const override;
+  Style GetBuiltInStyles() const override;
   [[nodiscard]]
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;

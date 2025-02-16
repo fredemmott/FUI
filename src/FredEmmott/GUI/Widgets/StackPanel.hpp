@@ -13,7 +13,7 @@ class StackPanel final : public Widget {
   StackPanel(std::size_t id, Orientation);
 
  protected:
-  Style GetBuiltInStyles_DEPRECATED() const override;
+  Style GetBuiltInStyles() const override;
   Orientation mOrientation;
 };
 

@@ -77,7 +77,7 @@ void TextBlock::PaintOwnContent(
   mParagraph->paint(canvas, rect.x(), rect.y());
 }
 
-Style TextBlock::GetBuiltInStyles_DEPRECATED() const {
+Style TextBlock::GetBuiltInStyles() const {
   static const Style ret {
     .mFlexGrow = 0,
     .mFlexShrink = 1,

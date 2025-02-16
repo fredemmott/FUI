@@ -13,7 +13,7 @@ const auto CardStyleClass = StyleClass::Make("Card");
 
 Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {}
 
-Style Card::GetBuiltInStyles_DEPRECATED() const {
+Style Card::GetBuiltInStyles() const {
   using namespace StaticTheme::Common;
   static const Style ret {
     .mBackgroundColor = CardBackgroundFillColorDefaultBrush,
