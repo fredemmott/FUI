@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #include "Win32Direct3D12GaneshWindow.hpp"
 
+#include <Windowsx.h>
 #include <dwmapi.h>
 #include <skia/core/SkCanvas.h>
 #include <skia/core/SkColor.h>
@@ -39,8 +40,8 @@ std::wstring GetDefaultWindowClassName() {
 MouseEvent MakeMouseEvent(WPARAM wParam, LPARAM lParam, float dpiScale) {
   MouseEvent ret;
   ret.mWindowPoint = {
-    LOWORD(lParam) / dpiScale,
-    HIWORD(lParam) / dpiScale,
+    GET_X_LPARAM(lParam) / dpiScale,
+    GET_Y_LPARAM(lParam) / dpiScale,
   };
 
   if (wParam & MK_LBUTTON) {
@@ -826,12 +827,14 @@ Win32Direct3D12GaneshWindow::WindowProc(
       for (auto&& child: mChildren) {
         gInstances.at(child)->mExitCode = 0;
       }
+      SetCapture(mHwnd.get());
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_LBUTTONUP: {
+      ReleaseCapture();
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
       mFUIRoot.DispatchEvent(&e);

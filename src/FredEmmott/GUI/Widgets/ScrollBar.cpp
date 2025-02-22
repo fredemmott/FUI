@@ -5,9 +5,11 @@
 
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>
 #include <FredEmmott/GUI/SystemFont.hpp>
-#include <FredEmmott/GUI/Widgets/WidgetList.hpp>
 
+#include "FredEmmott/GUI/Immediate/Button.hpp"
 #include "Label.hpp"
+#include "ScrollBarThumb.hpp"
+#include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -21,7 +23,6 @@ const auto SmallDecrementStyleClass
   = StyleClass::Make("ScrollBarSmallDecrement");
 const auto LargeDecrementStyleClass
   = StyleClass::Make("ScrollBarLargeDecrement");
-const auto ThumbStyleClass = StyleClass::Make("ScrollBarThumb");
 const auto LargeIncrementStyleClass
   = StyleClass::Make("ScrollBarLargeIncrement");
 const auto SmallIncrementStyleClass
@@ -55,7 +56,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   });
 
   mLargeDecrement = new Widget(0, {LargeDecrementStyleClass});
-  mThumb = new Widget(0, {ThumbStyleClass});
+  mThumb = new ScrollBarThumb(0);
   mLargeIncrement = new Widget(0, {LargeIncrementStyleClass});
   mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
   mTrack->SetBuiltInStyles({
@@ -65,6 +66,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
       : YGFlexDirectionColumn,
     .mFlexGrow = 1,
   });
+  mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
 
   // Hardcoded in XAML
   const auto SmallPressedAnimation
@@ -223,6 +225,34 @@ void ScrollBar::UpdateLayout() {
   mLargeIncrement->SetExplicitStyles({
     .mFlexGrow = mMaximum - mValue,
   });
+}
+
+void ScrollBar::OnThumbDrag(SkPoint* deltaXY) {
+  const auto rangeV = mMaximum - mMinimum;
+  if (rangeV < std::numeric_limits<float>::epsilon()) {
+    return;
+  }
+
+  const auto measureFun = (mOrientation == Orientation::Horizontal)
+    ? &YGNodeLayoutGetWidth
+    : &YGNodeLayoutGetHeight;
+  const auto rangePixels = measureFun(mLargeDecrement->GetLayoutNode())
+    + measureFun(mLargeIncrement->GetLayoutNode());
+
+  const auto deltaPtr
+    = (mOrientation == Orientation::Horizontal) ? &SkPoint::fX : &SkPoint::fY;
+  const auto deltaPixels = std::invoke(deltaPtr, deltaXY);
+  const auto deltaV = deltaPixels / rangePixels;
+
+  const auto rawValue = mValue + deltaV;
+  const auto clampedValue = std::clamp(rawValue, mMinimum, mMaximum);
+
+  if (rawValue != clampedValue) {
+    const auto fixPx = (clampedValue - rawValue) * rangePixels;
+    std::invoke(deltaPtr, deltaXY) += fixPx;
+  }
+
+  this->SetValue(std::clamp(clampedValue, mMinimum, mMaximum));
 }
 
 void ScrollBar::SetMinimum(float value) {

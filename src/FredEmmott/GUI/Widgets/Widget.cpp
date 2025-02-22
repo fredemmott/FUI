@@ -15,6 +15,12 @@ using namespace widget_detail;
 
 namespace {
 
+struct MouseCapture {
+  Widget* mWidget {nullptr};
+  SkPoint mOffset {};
+};
+std::optional<MouseCapture> gMouseCapture;
+
 void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
   if (!style.mBackgroundColor) {
     return;
@@ -103,7 +109,9 @@ void Widget::ChangeDirectChildren(const std::function<void()>& mutator) {
   YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
 }
 
-Widget::~Widget() = default;
+Widget::~Widget() {
+  this->EndMouseCapture();
+}
 
 bool Widget::IsDisabled() const {
   return ((mDirectStateFlags | mInheritedStateFlags) & StateFlags::Disabled)
@@ -230,7 +238,12 @@ void Widget::SetChildren(const std::vector<Widget*>& children) {
 }
 void Widget::DispatchEvent(const Event* e) {
   if (const auto it = dynamic_cast<const MouseEvent*>(e)) {
-    (void)this->DispatchMouseEvent(*it);
+    if (gMouseCapture) {
+      auto translated = it->WithOffset(gMouseCapture->mOffset);
+      (void)gMouseCapture->mWidget->DispatchMouseEvent(translated);
+    } else {
+      (void)this->DispatchMouseEvent(*it);
+    }
     return;
   }
   // whut?
@@ -240,7 +253,7 @@ void Widget::DispatchEvent(const Event* e) {
 Widget::EventHandlerResult Widget::DispatchMouseEvent(
   const MouseEvent& parentEvent) {
   auto event = parentEvent;
-  ;
+
   const auto layout = this->GetLayoutNode();
   const auto display = YGNodeStyleGetDisplay(layout);
   if (display != YGDisplayContents) {
@@ -249,43 +262,29 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
       -YGNodeLayoutGetTop(layout),
     });
   }
+  mMouseOffset = event.mOffset;
+
   const auto w = YGNodeLayoutGetWidth(layout);
   const auto h = YGNodeLayoutGetHeight(layout);
 
   const auto [x, y] = event.GetPosition();
 
-  if (x < 0 || y < 0 || x > w || y > h) {
+  if (
+    (x < 0 || y < 0 || x > w || y > h)
+    && !(gMouseCapture && gMouseCapture->mWidget == this)) {
     mDirectStateFlags &= ~StateFlags::Hovered;
 
     if (display != YGDisplayContents) {
-      static constexpr auto invalid
-        = -std::numeric_limits<SkScalar>::infinity();
-      event.mWindowPoint = {-invalid, -invalid};
+      event.mWindowPoint
+        = {SK_ScalarNegativeInfinity, SK_ScalarNegativeInfinity};
       event.mOffset = {};
     }
   } else {
     mDirectStateFlags |= StateFlags::Hovered;
   }
 
-  bool isClick = false;
-
-  if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
-    if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
-      mDirectStateFlags |= StateFlags::Active;
-    } else {
-      mDirectStateFlags &= ~StateFlags::Active;
-    }
-  } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
-               event.mDetail)) {
-    constexpr auto flags = StateFlags::Hovered | StateFlags::Active;
-    if ((mDirectStateFlags & flags) == flags) {
-      isClick = true;
-    }
-    mDirectStateFlags &= ~StateFlags::Active;
-  }
-
-  auto result = EventHandlerResult::Default;
   // Always propagate unconditionally to allow correct internal states
+  auto result = EventHandlerResult::Default;
   for (auto&& child: this->GetDirectChildren()) {
     if (
       child->DispatchMouseEvent(event) == EventHandlerResult::StopPropagation) {
@@ -297,11 +296,61 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
     return result;
   }
 
-  if (isClick && !this->IsDisabled()) {
-    result = this->OnClick(event);
+  if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
+    result = this->OnMouseButtonPress(event);
+  } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
+               event.mDetail)) {
+    result = this->OnMouseButtonRelease(event);
+  } else {
+    result = this->OnMouseMove(event);
   }
 
   return result;
+}
+
+Widget::EventHandlerResult Widget::OnMouseMove(const MouseEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnMouseButtonPress(const MouseEvent& event) {
+  if (this->IsDisabled()) {
+    return EventHandlerResult::Default;
+  }
+  if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
+    mDirectStateFlags |= StateFlags::Active;
+  } else {
+    mDirectStateFlags &= ~StateFlags::Active;
+  }
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnMouseButtonRelease(
+  const MouseEvent& event) {
+  if (this->IsDisabled()) {
+    return EventHandlerResult::Default;
+  }
+  constexpr auto Flags = StateFlags::Hovered | StateFlags::Active;
+  const auto isClick = (mDirectStateFlags & Flags) == Flags;
+  mDirectStateFlags &= ~StateFlags::Active;
+  if (isClick) {
+    return this->OnClick(event);
+  }
+
+  return EventHandlerResult::Default;
+}
+
+void Widget::StartMouseCapture() {
+  gMouseCapture = MouseCapture {this, mMouseOffset};
+}
+
+void Widget::EndMouseCapture() {
+  if (!gMouseCapture) {
+    return;
+  }
+  if (gMouseCapture->mWidget != this) {
+    return;
+  }
+  gMouseCapture = {};
 }
 
 }// namespace FredEmmott::GUI::Widgets

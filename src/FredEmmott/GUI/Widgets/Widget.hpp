@@ -99,6 +99,13 @@ class Widget {
     return EventHandlerResult::Default;
   }
 
+  [[nodiscard]]
+  virtual EventHandlerResult OnMouseButtonPress(const MouseEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnMouseButtonRelease(const MouseEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnMouseMove(const MouseEvent&);
+
   [[nodiscard]] auto GetExplicitStyles() const noexcept {
     return mExplicitStyles;
   }
@@ -114,6 +121,9 @@ class Widget {
 
   virtual WidgetList GetDirectChildren() const noexcept;
   void ChangeDirectChildren(const std::function<void()>& mutator);
+
+  void StartMouseCapture();
+  void EndMouseCapture();
 
  private:
   struct StyleTransitions;
@@ -133,6 +143,8 @@ class Widget {
 
   std::vector<unique_ptr<Widget>> mManagedChildren;
   std::vector<Widget*> mManagedChildrenCacheForGetChildren;
+
+  SkPoint mMouseOffset {};
 
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent&);

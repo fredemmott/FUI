@@ -16,6 +16,11 @@ struct MouseEvent final : Event {
   SkPoint mOffset {};
   MouseButtons mButtons {};
 
+  [[nodiscard]]
+  bool IsValid() const {
+    return mWindowPoint.x() >= 0 && mWindowPoint.y() >= 0;
+  }
+
   SkPoint GetPosition() const {
     return mWindowPoint + mOffset;
   }

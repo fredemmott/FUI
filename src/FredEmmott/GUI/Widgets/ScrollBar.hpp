@@ -9,11 +9,12 @@
 namespace FredEmmott::GUI::Widgets {
 
 class Label;
+class ScrollBarThumb;
 
 class ScrollBar final : public Widget {
  public:
   ScrollBar(std::size_t id, Orientation);
-  ~ScrollBar() final;
+  ~ScrollBar() override;
 
   void SetMinimum(float value);
   [[nodiscard]] float GetMinimum() const;
@@ -49,12 +50,14 @@ class ScrollBar final : public Widget {
 
   // These are within the track
   Widget* mLargeDecrement {nullptr};// Space above thumb
-  Widget* mThumb {nullptr};
+  ScrollBarThumb* mThumb {nullptr};
   Widget* mLargeIncrement {nullptr};// Space below thumb
 
   void UpdateLayout();
 
   Style GetBuiltinStylesForOrientation() const;
+
+  void OnThumbDrag(SkPoint* delta);
 };
 
 }// namespace FredEmmott::GUI::Widgets
