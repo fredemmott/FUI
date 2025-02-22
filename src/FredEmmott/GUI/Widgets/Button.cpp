@@ -54,7 +54,7 @@ Style Button::GetBuiltInStyles() const {
   return ret;
 }
 
-Widget::EventHandlerResult Button::OnClick(MouseEvent* e) {
+Widget::EventHandlerResult Button::OnClick(const MouseEvent& e) {
   mClicked.Set();
   return EventHandlerResult::StopPropagation;
 }

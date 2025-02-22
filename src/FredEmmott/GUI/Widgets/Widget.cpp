@@ -6,9 +6,6 @@
 
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
-#include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
-#include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
-#include <format>
 #include <ranges>
 
 #include "WidgetList.hpp"
@@ -233,59 +230,29 @@ void Widget::SetChildren(const std::vector<Widget*>& children) {
 }
 void Widget::DispatchEvent(const Event* e) {
   if (const auto it = dynamic_cast<const MouseEvent*>(e)) {
-    (void)this->DispatchMouseEvent(it);
+    (void)this->DispatchMouseEvent(*it);
     return;
   }
   // whut?
   __debugbreak();
 }
 
-Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
-  auto point = e->mPoint;
-  auto& [x, y] = point;
-
+Widget::EventHandlerResult Widget::DispatchMouseEvent(
+  const MouseEvent& parentEvent) {
+  auto event = parentEvent;
+  ;
   const auto layout = this->GetLayoutNode();
   const auto display = YGNodeStyleGetDisplay(layout);
   if (display != YGDisplayContents) {
-    x -= YGNodeLayoutGetLeft(layout);
-    y -= YGNodeLayoutGetTop(layout);
+    event = event.WithOffset({
+      -YGNodeLayoutGetLeft(layout),
+      -YGNodeLayoutGetTop(layout),
+    });
   }
   const auto w = YGNodeLayoutGetWidth(layout);
   const auto h = YGNodeLayoutGetHeight(layout);
 
-  unique_ptr<MouseEvent> translated;
-  const auto Translate
-    = [&translated, point]<std::derived_from<MouseEvent> T>(const T* event) {
-        translated.reset(new T(*event));
-        translated->mPoint = point;
-        return static_cast<const T&>(*translated);
-      };
-
-  enum class EventKind {
-    Unknown,
-    Move,
-    ButtonPress,
-    ButtonRelease,
-  };
-  auto kind = EventKind::Unknown;
-
-  if (const auto it = dynamic_cast<const MouseMoveEvent*>(e)) {
-    kind = EventKind::Move;
-    Translate(it);
-  } else if (const auto it = dynamic_cast<const MouseButtonPressEvent*>(e)) {
-    kind = EventKind::ButtonPress;
-    Translate(it);
-  } else if (const auto it = dynamic_cast<const MouseButtonReleaseEvent*>(e)) {
-    kind = EventKind::ButtonRelease;
-    Translate(it);
-  }
-
-  if (!translated) {
-#ifndef NDEBUG
-    __debugbreak();
-#endif
-    return EventHandlerResult::Default;
-  }
+  const auto [x, y] = event.GetPosition();
 
   if (x < 0 || y < 0 || x > w || y > h) {
     mDirectStateFlags &= ~StateFlags::Hovered;
@@ -293,7 +260,8 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
     if (display != YGDisplayContents) {
       static constexpr auto invalid
         = -std::numeric_limits<SkScalar>::infinity();
-      translated->mPoint = {-invalid, -invalid};
+      event.mWindowPoint = {-invalid, -invalid};
+      event.mOffset = {};
     }
   } else {
     mDirectStateFlags |= StateFlags::Hovered;
@@ -301,38 +269,26 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
 
   bool isClick = false;
 
-  switch (kind) {
-    case EventKind::Unknown:
-#ifndef NDEBUG
-      __debugbreak();
-#endif
-      break;
-    case EventKind::Move:
-      break;
-    case EventKind::ButtonPress: {
-      if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
-        mDirectStateFlags |= StateFlags::Active;
-      } else {
-        mDirectStateFlags &= ~StateFlags::Active;
-      }
-      break;
-    }
-    case EventKind::ButtonRelease: {
-      constexpr auto flags = StateFlags::Hovered | StateFlags::Active;
-      if ((mDirectStateFlags & flags) == flags) {
-        isClick = true;
-      }
+  if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
+    if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
+      mDirectStateFlags |= StateFlags::Active;
+    } else {
       mDirectStateFlags &= ~StateFlags::Active;
-      break;
     }
+  } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
+               event.mDetail)) {
+    constexpr auto flags = StateFlags::Hovered | StateFlags::Active;
+    if ((mDirectStateFlags & flags) == flags) {
+      isClick = true;
+    }
+    mDirectStateFlags &= ~StateFlags::Active;
   }
 
   auto result = EventHandlerResult::Default;
   // Always propagate unconditionally to allow correct internal states
   for (auto&& child: this->GetDirectChildren()) {
     if (
-      child->DispatchMouseEvent(translated.get())
-      == EventHandlerResult::StopPropagation) {
+      child->DispatchMouseEvent(event) == EventHandlerResult::StopPropagation) {
       result = EventHandlerResult::StopPropagation;
     }
   }
@@ -342,7 +298,7 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(const MouseEvent* e) {
   }
 
   if (isClick && !this->IsDisabled()) {
-    result = this->OnClick(translated.get());
+    result = this->OnClick(event);
   }
 
   return result;

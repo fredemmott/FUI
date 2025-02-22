@@ -7,7 +7,7 @@
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
-#include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
+#include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
 
 namespace FredEmmott::GUI::Widgets {
@@ -95,7 +95,7 @@ class Widget {
     const {}
 
   [[nodiscard]]
-  virtual EventHandlerResult OnClick(MouseEvent* event) {
+  virtual EventHandlerResult OnClick(const MouseEvent& event) {
     return EventHandlerResult::Default;
   }
 
@@ -135,7 +135,7 @@ class Widget {
   std::vector<Widget*> mManagedChildrenCacheForGetChildren;
 
   [[nodiscard]]
-  EventHandlerResult DispatchMouseEvent(const MouseEvent*);
+  EventHandlerResult DispatchMouseEvent(const MouseEvent&);
   void SetManagedChildren(const std::vector<Widget*>& children);
 
   [[nodiscard]]

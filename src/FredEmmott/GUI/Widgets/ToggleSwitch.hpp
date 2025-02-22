@@ -26,7 +26,7 @@ class ToggleSwitch final : public Widget {
     return mFosterParent.get();
   }
 
-  EventHandlerResult OnClick(MouseEvent* event) override;
+  EventHandlerResult OnClick(const MouseEvent& event) override;
 
  private:
   unique_ptr<ToggleSwitchKnob> mKnob;

@@ -18,9 +18,7 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
-#include <FredEmmott/GUI/events/MouseButtonPressEvent.hpp>
-#include <FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp>
-#include <FredEmmott/GUI/events/MouseMoveEvent.hpp>
+#include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -38,31 +36,30 @@ std::wstring GetDefaultWindowClassName() {
     std::filesystem::path(thisExe.get()).filename().wstring());
 }
 
-void PopulateMouseEvent(
-  MouseEvent* e,
-  WPARAM wParam,
-  LPARAM lParam,
-  float dpiScale) {
-  e->mPoint = {
+MouseEvent MakeMouseEvent(WPARAM wParam, LPARAM lParam, float dpiScale) {
+  MouseEvent ret;
+  ret.mWindowPoint = {
     LOWORD(lParam) / dpiScale,
     HIWORD(lParam) / dpiScale,
   };
 
   if (wParam & MK_LBUTTON) {
-    e->mButtons |= MouseButton::Left;
+    ret.mButtons |= MouseButton::Left;
   }
   if (wParam & MK_MBUTTON) {
-    e->mButtons |= MouseButton::Middle;
+    ret.mButtons |= MouseButton::Middle;
   }
   if (wParam & MK_RBUTTON) {
-    e->mButtons |= MouseButton::Right;
+    ret.mButtons |= MouseButton::Right;
   }
   if (wParam & MK_XBUTTON1) {
-    e->mButtons |= MouseButton::X1;
+    ret.mButtons |= MouseButton::X1;
   }
   if (wParam & MK_XBUTTON2) {
-    e->mButtons |= MouseButton::X2;
+    ret.mButtons |= MouseButton::X2;
   }
+
+  return ret;
 }
 
 void ThrowHResult(
@@ -814,14 +811,13 @@ Win32Direct3D12GaneshWindow::WindowProc(
     }
     case WM_MOUSEMOVE: {
       TrackMouseEvent();
-      MouseMoveEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MOUSELEAVE: {
-      MouseMoveEvent e;
-      e.mPoint = {-1, -1};
+      MouseEvent e;
+      e.mWindowPoint = {-1, -1};
       mFUIRoot.DispatchEvent(&e);
       mTrackingMouseEvents = false;
       break;
@@ -830,68 +826,64 @@ Win32Direct3D12GaneshWindow::WindowProc(
       for (auto&& child: mChildren) {
         gInstances.at(child)->mExitCode = 0;
       }
-      MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = MouseButton::Left;
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_LBUTTONUP: {
-      MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = MouseButton::Left;
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MBUTTONDOWN: {
-      MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = MouseButton::Middle;
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Middle};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_MBUTTONUP: {
-      MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = MouseButton::Middle;
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Middle};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_RBUTTONDOWN: {
-      MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = MouseButton::Right;
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Right};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_RBUTTONUP: {
-      MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
-      e.mChangedButtons = MouseButton::Right;
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Right};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_XBUTTONDOWN: {
-      MouseButtonPressEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
+      MouseButtons pressed {};
       if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
-        e.mChangedButtons |= MouseButton::X1;
+        pressed |= MouseButton::X1;
       }
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
-        e.mChangedButtons |= MouseButton::X2;
+        pressed |= MouseButton::X2;
       }
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonPressEvent {pressed};
       mFUIRoot.DispatchEvent(&e);
       break;
     }
     case WM_XBUTTONUP: {
-      MouseButtonReleaseEvent e;
-      PopulateMouseEvent(&e, wParam, lParam, mDPIScale);
+      MouseButtons released {};
       if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
-        e.mChangedButtons |= MouseButton::X1;
+        released |= MouseButton::X1;
       }
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
-        e.mChangedButtons |= MouseButton::X2;
+        released |= MouseButton::X2;
       }
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::ButtonReleaseEvent {released};
       mFUIRoot.DispatchEvent(&e);
       break;
     }

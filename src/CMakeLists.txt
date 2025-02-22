@@ -71,10 +71,7 @@ add_executable(
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/events/Event.hpp
   FredEmmott/GUI/events/MouseButton.hpp
-  FredEmmott/GUI/events/MouseButtonPressEvent.hpp
-  FredEmmott/GUI/events/MouseButtonReleaseEvent.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
-  FredEmmott/GUI/events/MouseMoveEvent.hpp
   FredEmmott/GUI/yoga.cpp FredEmmott/GUI/yoga.hpp
   FredEmmott/memory.hpp
   FredEmmott/memory/memory_detail.hpp

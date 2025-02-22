@@ -67,7 +67,7 @@ Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
     | InheritableActiveState | InheritableHoverState;
 }
 
-Widget::EventHandlerResult ToggleSwitch::OnClick(MouseEvent* event) {
+Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent& event) {
   this->SetIsOn(!this->IsOn());
   // This is used to detect user-triggered changes, not any change
   mChanged.Set();
