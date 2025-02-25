@@ -8,6 +8,7 @@
 
 #include "FredEmmott/GUI/Immediate/Button.hpp"
 #include "Label.hpp"
+#include "ScrollBarButton.hpp"
 #include "ScrollBarThumb.hpp"
 #include "WidgetList.hpp"
 
@@ -19,14 +20,6 @@ namespace {
 
 const auto ScrollBarStyleClass = StyleClass::Make("ScrollBar");
 const auto ScrollBarTrackStyleClass = StyleClass::Make("ScrollBarTrack");
-const auto SmallDecrementStyleClass
-  = StyleClass::Make("ScrollBarSmallDecrement");
-const auto LargeDecrementStyleClass
-  = StyleClass::Make("ScrollBarLargeDecrement");
-const auto LargeIncrementStyleClass
-  = StyleClass::Make("ScrollBarLargeIncrement");
-const auto SmallIncrementStyleClass
-  = StyleClass::Make("ScrollBarSmallIncrement");
 
 const auto ContractAnimation = CubicBezierStyleTransition(
   ScrollBarContractBeginTime,
@@ -49,15 +42,32 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   constexpr auto upGlyph = "\ueddb";
   constexpr auto downGlyph = "\ueddc";
 
+  // FIXME: callbacks
   this->ChangeDirectChildren([this] {
-    mSmallDecrement.reset(new Label(0, {SmallDecrementStyleClass}));
+    mSmallDecrement.reset(new ScrollBarButton(
+      nullptr,
+      std::bind_front(
+        &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallDecrement),
+      0));
     mTrack.reset(new Widget(0, {ScrollBarTrackStyleClass}));
-    mSmallIncrement.reset(new Label(0, {SmallIncrementStyleClass}));
+    mSmallIncrement.reset(new ScrollBarButton(
+      nullptr,
+      std::bind_front(
+        &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallIncrement),
+      0));
   });
 
-  mLargeDecrement = new Widget(0, {LargeDecrementStyleClass});
+  mLargeDecrement = new ScrollBarButton(
+    nullptr,
+    std::bind_front(
+      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement),
+    0);
   mThumb = new ScrollBarThumb(0);
-  mLargeIncrement = new Widget(0, {LargeIncrementStyleClass});
+  mLargeIncrement = new ScrollBarButton(
+    nullptr,
+    std::bind_front(
+      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeIncrement),
+    0);
   mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
   mTrack->SetBuiltInStyles({
     .mDisplay = YGDisplayFlex,
@@ -69,7 +79,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
 
   // Hardcoded in XAML
-  const auto SmallPressedAnimation
+  constexpr auto SmallPressedAnimation
     = LinearStyleTransition(std::chrono::milliseconds(16));
 
   using namespace PseudoClasses;
@@ -215,6 +225,11 @@ Style ScrollBar::GetBuiltinStylesForOrientation() const {
   }
 }
 
+void ScrollBar::ScrollBarButtonTick(ButtonTickKind kind) {
+  OutputDebugStringA(
+    std::format("Scroll bar button tick: {}\n", std::to_underlying(kind))
+      .c_str());
+}
 void ScrollBar::UpdateLayout() {
   mLargeDecrement->SetExplicitStyles({
     .mFlexGrow = mValue - mMinimum,

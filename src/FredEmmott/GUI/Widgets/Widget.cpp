@@ -250,6 +250,12 @@ void Widget::DispatchEvent(const Event* e) {
   __debugbreak();
 }
 
+void Widget::BeforeFrame() {
+  for (auto&& child: this->GetDirectChildren()) {
+    child->BeforeFrame();
+  }
+}
+
 Widget::EventHandlerResult Widget::DispatchMouseEvent(
   const MouseEvent& parentEvent) {
   auto event = parentEvent;

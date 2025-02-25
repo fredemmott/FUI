@@ -29,7 +29,7 @@ class Widget {
     return mID;
   }
 
-  FrameRateRequirement GetFrameRateRequirement() const noexcept;
+  virtual FrameRateRequirement GetFrameRateRequirement() const noexcept;
 
   /// Whether this widget is disabled, including by a parent
   [[nodiscard]]
@@ -38,6 +38,7 @@ class Widget {
   bool IsDirectlyDisabled() const;
   void SetIsDirectlyDisabled(bool value);
 
+  virtual void BeforeFrame();
   void ComputeStyles(const Style& inherited);
 
   /// User-provided styles

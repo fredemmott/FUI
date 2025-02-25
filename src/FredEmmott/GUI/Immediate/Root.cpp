@@ -56,6 +56,7 @@ void Root::EndFrame() {
     YGNodeSetChildren(mYogaRoot.get(), &node, 1);
   }
 
+  mWidget->BeforeFrame();
   mWidget->ComputeStyles({});
 }
 

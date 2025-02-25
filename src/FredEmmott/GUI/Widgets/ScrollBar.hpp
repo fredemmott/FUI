@@ -9,6 +9,7 @@
 namespace FredEmmott::GUI::Widgets {
 
 class Label;
+class ScrollBarButton;
 class ScrollBarThumb;
 
 class ScrollBar final : public Widget {
@@ -44,14 +45,23 @@ class ScrollBar final : public Widget {
 
   Style mBuiltinStyles;
 
-  unique_ptr<Label> mSmallDecrement;// Arrow
+  unique_ptr<ScrollBarButton> mSmallDecrement;// Arrow
   unique_ptr<Widget> mTrack;
-  unique_ptr<Label> mSmallIncrement;// Arrow
+  unique_ptr<ScrollBarButton> mSmallIncrement;// Arrow
 
   // These are within the track
-  Widget* mLargeDecrement {nullptr};// Space above thumb
+  ScrollBarButton* mLargeDecrement {nullptr};// Space above thumb
   ScrollBarThumb* mThumb {nullptr};
-  Widget* mLargeIncrement {nullptr};// Space below thumb
+  ScrollBarButton* mLargeIncrement {nullptr};// Space below thumb
+
+  enum class ButtonTickKind {
+    SmallDecrement,
+    LargeDecrement,
+    LargeIncrement,
+    SmallIncrement,
+  };
+
+  void ScrollBarButtonTick(ButtonTickKind);
 
   void UpdateLayout();
 
