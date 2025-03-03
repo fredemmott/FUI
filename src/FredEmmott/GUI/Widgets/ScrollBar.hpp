@@ -54,6 +54,9 @@ class ScrollBar final : public Widget {
   ScrollBarThumb* mThumb {nullptr};
   ScrollBarButton* mLargeIncrement {nullptr};// Space below thumb
 
+  std::optional<float> mLargeDecrementMin;
+  std::optional<float> mLargeIncrementMax;
+
   enum class ButtonTickKind {
     SmallDecrement,
     LargeDecrement,
@@ -62,6 +65,7 @@ class ScrollBar final : public Widget {
   };
 
   void ScrollBarButtonTick(ButtonTickKind);
+  void ScrollBarButtonDown(ButtonTickKind, const SkPoint&);
 
   void UpdateLayout();
 

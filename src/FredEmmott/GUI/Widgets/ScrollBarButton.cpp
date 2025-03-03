@@ -103,7 +103,7 @@ Widget::EventHandlerResult ScrollBarButton::OnMouseButtonPress(
   }
   this->StartMouseCapture();
   if (mPressCallback) {
-    mPressCallback(e.mWindowPoint);
+    mPressCallback(e.GetPosition());
   }
   if (mTickCallback) {
     mTickCallback();

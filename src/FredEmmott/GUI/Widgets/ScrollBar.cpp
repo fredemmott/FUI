@@ -58,13 +58,15 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   });
 
   mLargeDecrement = new ScrollBarButton(
-    nullptr,
+    std::bind_front(
+      &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeDecrement),
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement),
     0);
   mThumb = new ScrollBarThumb(0);
   mLargeIncrement = new ScrollBarButton(
-    nullptr,
+    std::bind_front(
+      &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeIncrement),
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeIncrement),
     0);
@@ -226,9 +228,79 @@ Style ScrollBar::GetBuiltinStylesForOrientation() const {
 }
 
 void ScrollBar::ScrollBarButtonTick(ButtonTickKind kind) {
-  OutputDebugStringA(
-    std::format("Scroll bar button tick: {}\n", std::to_underlying(kind))
-      .c_str());
+  const float min = (kind == ButtonTickKind::LargeDecrement)
+    ? mLargeDecrementMin.value()
+    : mMinimum;
+  const float max = (kind == ButtonTickKind::LargeIncrement)
+    ? mLargeIncrementMax.value()
+    : mMaximum;
+
+  float base = mThumbSize;
+  if (base < std::numeric_limits<float>::epsilon()) {
+    const auto measureFunc = (mOrientation == Orientation::Horizontal)
+      ? &YGNodeLayoutGetWidth
+      : &YGNodeLayoutGetHeight;
+    const auto trackLen = measureFunc(mTrack->GetLayoutNode());
+    const auto thumbLen = measureFunc(mThumb->GetLayoutNode());
+    base = (thumbLen / trackLen) * (mMaximum - mMinimum);
+  }
+
+  float delta {};
+  switch (kind) {
+    case ButtonTickKind::SmallDecrement:
+      delta = -base / 4;
+      break;
+    case ButtonTickKind::SmallIncrement:
+      delta = base / 4;
+      break;
+    case ButtonTickKind::LargeDecrement:
+      delta = -base;
+      break;
+    case ButtonTickKind::LargeIncrement:
+      delta = base;
+      break;
+  }
+  const float clamped = std::clamp(mValue + delta, min, max);
+  this->SetValue(clamped);
+}
+
+void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const SkPoint& point) {
+  const auto measureFun = (mOrientation == Orientation::Horizontal)
+    ? &YGNodeLayoutGetWidth
+    : &YGNodeLayoutGetHeight;
+  const auto pointGetter
+    = (mOrientation == Orientation::Horizontal) ? &SkPoint::fX : &SkPoint::fY;
+  float rangeV {};
+
+  Widget* button {nullptr};
+  switch (kind) {
+    case ButtonTickKind::LargeDecrement:
+      button = mLargeDecrement;
+      rangeV = mValue - mMinimum;
+      break;
+    case ButtonTickKind::LargeIncrement:
+      button = mLargeIncrement;
+      rangeV = mMaximum - mValue;
+      break;
+    default:
+      __debugbreak();
+      return;
+  }
+
+  const auto rangePixels = measureFun(button->GetLayoutNode());
+  const auto deltaPixels = std::invoke(pointGetter, &point);
+  const auto deltaV = (rangeV * deltaPixels) / rangePixels;
+
+  switch (kind) {
+    case ButtonTickKind::LargeDecrement:
+      mLargeDecrementMin = mMinimum + deltaV;
+      break;
+    case ButtonTickKind::LargeIncrement:
+      mLargeIncrementMax = mValue + deltaV;
+      break;
+    default:
+      std::unreachable();
+  }
 }
 void ScrollBar::UpdateLayout() {
   mLargeDecrement->SetExplicitStyles({
