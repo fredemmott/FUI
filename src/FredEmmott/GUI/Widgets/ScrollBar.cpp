@@ -197,6 +197,13 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
            : ScrollBarHorizontalThumbMinHeight), hovered ? ExpandAnimation : ContractAnimation,
       },
     });
+  } else {
+    mThumb->SetExplicitStyles({
+      .mWidth = {
+           static_cast<float>(hovered ? ScrollBarSize
+           : ScrollBarVerticalThumbMinWidth), hovered ? ExpandAnimation : ContractAnimation,
+      },
+    });
   }
 
   return Widget::OnComputedStyleChange(style, state);
