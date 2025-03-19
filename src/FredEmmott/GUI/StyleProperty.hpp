@@ -53,8 +53,10 @@ class BaseStyleProperty : private std::optional<T> {
     requires SupportsTransitions
     : std::optional<T>(value),
       mTransition(transition) {
-    if (std::same_as<T, SkScalar> && YGFloatIsUndefined(value)) {
-      static_cast<std::optional<T>&>(*this) = std::nullopt;
+    if constexpr (std::same_as<T, SkScalar>) {
+      if (YGFloatIsUndefined(value)) {
+        static_cast<std::optional<T>&>(*this) = std::nullopt;
+      }
     }
   }
 

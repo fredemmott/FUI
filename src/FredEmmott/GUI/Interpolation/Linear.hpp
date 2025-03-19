@@ -4,6 +4,10 @@
 
 #include <FredEmmott/GUI/Brush.hpp>
 
+namespace FredEmmott::GUI {
+class Font;
+}
+
 namespace FredEmmott::GUI::Interpolation {
 
 template <class T>
@@ -46,6 +50,9 @@ Linear(const Color& startRef, const Color& endRef, float ratio) noexcept {
  * the start brush if ratio is < 0.5, and the end brush otherwise
  */
 Brush Linear(const Brush& startRef, const Brush& endRef, float ratio);
+
+// Linear interpolation between two `Font`s
+Font Linear(const Font& startRef, const Font& endRef, float ratio);
 
 /// A type where we are able to linearly interpolate between two values.
 template <class T>
