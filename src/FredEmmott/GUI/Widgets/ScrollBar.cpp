@@ -77,6 +77,10 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
       ? YGFlexDirectionRow
       : YGFlexDirectionColumn,
     .mFlexGrow = 1,
+    .mMarginBottom = (orientation == Orientation::Horizontal) ? 0 : 2.0f,
+    .mMarginLeft = (orientation == Orientation::Horizontal) ? 2.0f : 0,
+    .mMarginRight = (orientation == Orientation::Horizontal) ? 2.0f : 0,
+    .mMarginTop = (orientation == Orientation::Horizontal) ? 0 : 2.0f,
   });
   mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
 
@@ -94,7 +98,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
     .mOpacity = 0,
     .mScaleX = { 1, SmallPressedAnimation },
     .mScaleY = { 1, SmallPressedAnimation },
-    .mTop = (orientation == Orientation::Vertical) ? 0 : -3.0f,
+    .mTop = {0, SmallPressedAnimation},
     .mTranslateX = {0, SmallPressedAnimation},
     .mTranslateY = {0, SmallPressedAnimation},
     .mAnd = {
@@ -187,6 +191,7 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
       (hovered ? 1.0f : 0.0f),
       (hovered ? ExpandAnimation : ContractAnimation),
     },
+    .mTop = (mOrientation == Orientation::Vertical) ? 0 : -3.0f,
   };
   mSmallDecrement->SetExplicitStyles(smallChangeStyles);
   mSmallIncrement->SetExplicitStyles(smallChangeStyles);
