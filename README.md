@@ -19,7 +19,7 @@ This repository currently targets:
 - Dawn is an implementation of WebGPU, and in turn supports D3D12, Metal, and Vulkan; D3D11 and OpenGL are in progress
 - Ganesh's OpenGL support can be used in combination with ANGLE, which is an implementation of OpenGL ES. ANGLE in turn supports Direct3D 9, Direct3D 11, OpenGL, Vulkan, and Metal
 
-This repostory currently includes examples for:
+This repository currently includes examples for:
 
 - Win32-Ganesh-D3D12
 
@@ -30,7 +30,7 @@ This repostory currently includes examples for:
 - Create the Skia context from your D3D12 device/queue with `GrDirectContext::makeDirect3D()`; `.fMemoryAllocator` in the input struct can be `nullptr`
 - to import your swapchain buffers, with `SkSurfaces::WrapBackendRenderTarget()`
 - the `SkSurface`s for the swapchain buffers should have their lifetime managed like the backing `ID3D12Resource`'s - i.e. you need to wait on fences etc before freeing them. Skia does not keep them alive for you
-- Skia uses your command queue ,but uses its own internal command list
+- Skia uses your command queue, but uses its own internal command list
 - if you want a resource barrier on completion - e.g. to `_PRESENT` - use `context->flush(pSurface, SkSurfaces::BackendSurfaceAccess::kPresent, flushInfo)` then `context->submit()` - `flushAndSubmit()`  does not support this. Otherwise you need to queue up another command list that waits on a fence for skia to finish, then transitions
 - if you transition the resource outside of Skia (e.g. integrating with other D3D12 code), you need to call `SkSurfaces::GetBackendRenderTarget(pSurface, ...)` then call `setD3DResourceState(D3D12_RESOURCE_STATE_...)` on the return value. This *does not* transition the resource - it just tells Skia that you've done that elsewhere
 - wrap ID3D12 fences in a `GrD3DFenceInfo`, then create a `GrBackendSemaphore` and call `initDirect3D`
@@ -49,5 +49,5 @@ You can then build like any other CMake project; for example, from a Visual Stud
 Create-Directory build
 cd build
 cmake ..
-cmake --build .. --config Debug --parallel
+cmake --build . --config Debug --parallel
 ```
