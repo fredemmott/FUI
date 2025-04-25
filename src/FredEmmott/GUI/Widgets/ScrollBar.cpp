@@ -94,6 +94,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
     .mOpacity = 0,
     .mScaleX = { 1, SmallPressedAnimation },
     .mScaleY = { 1, SmallPressedAnimation },
+    .mTop = (orientation == Orientation::Vertical) ? 0 : -3.0f,
     .mTranslateX = {0, SmallPressedAnimation},
     .mTranslateY = {0, SmallPressedAnimation},
     .mAnd = {
