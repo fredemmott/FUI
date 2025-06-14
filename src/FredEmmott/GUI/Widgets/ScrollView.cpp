@@ -15,17 +15,17 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     mVerticalScrollBar.reset(new ScrollBar(2, Orientation::Vertical));
   });
 
-  using namespace StaticTheme::ScrollBar;
+  using StaticTheme::ScrollBar::ScrollBarSize;
 
   mContent->SetBuiltInStyles({
-    .mMarginBottom = ScrollBarHorizontalThumbMinHeight + 4,
-    .mMarginRight = ScrollBarVerticalThumbMinWidth + 4,
+    .mMarginBottom = ScrollBarSize,
+    .mMarginRight = ScrollBarSize,
     .mOverflow = YGOverflowScroll,
-    .mPosition = YGPositionTypeRelative,
+    .mPosition = YGPositionTypeAbsolute,
   });
   mVerticalScrollBar->SetAdditionalBuiltInStyles({
-    .mBottom = ScrollBarHorizontalThumbMinHeight + 4,
-    .mPosition = YGPositionTypeRelative,
+    .mBottom = ScrollBarSize,
+    .mPosition = YGPositionTypeAbsolute,
     .mRight = 0,
     .mTop = 0,
   });
@@ -34,7 +34,7 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     .mFlexGrow = 1,
     .mLeft = 0.f,
     .mPosition = YGPositionTypeAbsolute,
-    .mRight = ScrollBarVerticalThumbMinWidth + 4,
+    .mRight = ScrollBarSize,
   });
 }
 
