@@ -9,15 +9,17 @@ namespace FredEmmott::GUI::Widgets {
 
 class ScrollView final : public Widget {
  public:
-  ScrollView(std::size_t id, const StyleClasses& classes = {});
+  explicit ScrollView(std::size_t id, const StyleClasses& classes = {});
   ~ScrollView() override;
 
  protected:
   [[nodiscard]]
   WidgetList GetDirectChildren() const noexcept override;
+  Widget* GetFosterParent() const noexcept override;
+
+  unique_ptr<Widget> mContent;
 
   unique_ptr<ScrollBar> mHorizontalScrollBar;
-  unique_ptr<Widget> mContainer;
   unique_ptr<ScrollBar> mVerticalScrollBar;
 };
 }// namespace FredEmmott::GUI::Widgets

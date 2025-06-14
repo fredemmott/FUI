@@ -17,6 +17,11 @@ struct default_t<SkScalar> {
   static constexpr SkScalar value {YGUndefined};
 };
 
+template <>
+struct default_t<YGOverflow> {
+  static constexpr YGOverflow value {YGOverflowVisible};
+};
+
 template <class T>
 constexpr auto default_v = default_t<T>::value;
 

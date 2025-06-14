@@ -46,6 +46,7 @@ struct Style {
   StyleProperty<SkScalar> mMinHeight;
   StyleProperty<SkScalar> mMinWidth;
   StyleProperty<SkScalar, 1.0f> mOpacity;
+  StyleProperty<YGOverflow> mOverflow;
   StyleProperty<SkScalar> mPadding;
   StyleProperty<SkScalar> mPaddingBottom;
   StyleProperty<SkScalar> mPaddingLeft;
@@ -104,6 +105,7 @@ struct Style {
   X(MinHeight) \
   X(MinWidth) \
   X(Opacity) \
+  X(Overflow) \
   X(Padding) \
   X(PaddingBottom) \
   X(PaddingLeft) \
