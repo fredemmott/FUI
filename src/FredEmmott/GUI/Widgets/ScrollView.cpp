@@ -23,13 +23,13 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     .mOverflow = YGOverflowScroll,
     .mPosition = YGPositionTypeRelative,
   });
-  mVerticalScrollBar->SetBuiltInStyles({
+  mVerticalScrollBar->SetAdditionalBuiltInStyles({
     .mBottom = ScrollBarHorizontalThumbMinHeight + 4,
     .mPosition = YGPositionTypeRelative,
     .mRight = 0,
-    .mLeft = 0,
+    .mTop = 0,
   });
-  mHorizontalScrollBar->SetBuiltInStyles({
+  mHorizontalScrollBar->SetAdditionalBuiltInStyles({
     .mBottom = 0.f,
     .mFlexGrow = 1,
     .mLeft = 0.f,
