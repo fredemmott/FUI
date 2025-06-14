@@ -18,7 +18,7 @@ struct WidgetList;
 class Widget {
  public:
   Widget() = delete;
-  Widget(std::size_t id, const StyleClasses& = {});
+  explicit Widget(std::size_t id, const StyleClasses& = {});
   virtual ~Widget();
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {

@@ -3,6 +3,7 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/Widgets/ScrollBar.hpp>
+#include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <print>
 
 namespace fui = FredEmmott::GUI;
@@ -76,6 +77,20 @@ static void AppTick() {
     "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.");
+
+  fuii::immediate_detail::BeginWidget<fui::Widgets::ScrollView>(
+    fuii::ID {"scrollView"});
+  fuii::BeginCard();
+  fuii::immediate_detail::GetCurrentParentNode()->SetExplicitStyles(
+    fui::Style {
+      .mBackgroundColor = SK_ColorCYAN,
+      .mColor = SK_ColorBLACK,
+      .mHeight = 768.f,
+      .mWidth = 1024.f,
+    });
+  fuii::TextBlock("Test 1024x768");
+  fuii::EndCard();
+  fuii::immediate_detail::EndWidget<fui::Widgets::ScrollView>();
 
   fuii::immediate_detail::
     BeginWidget<fui::Widgets::ScrollBar, fui::Orientation::Horizontal>(
