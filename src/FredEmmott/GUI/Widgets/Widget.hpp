@@ -94,6 +94,7 @@ class Widget {
 
   virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
     const {}
+  virtual void PaintChildren(SkCanvas* canvas) const;
 
   [[nodiscard]]
   virtual EventHandlerResult OnClick(const MouseEvent& event) {

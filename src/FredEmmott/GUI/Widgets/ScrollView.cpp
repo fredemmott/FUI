@@ -52,4 +52,24 @@ Widget* ScrollView::GetFosterParent() const noexcept {
   return mContent.get();
 }
 
+Style ScrollView::GetBuiltInStyles() const {
+  return {
+    .mFlexBasis = 64,
+    .mFlexGrow = 1,
+  };
+}
+void ScrollView::PaintChildren(SkCanvas* canvas) const {
+  const auto node = this->GetLayoutNode();
+  const auto w = YGNodeLayoutGetWidth(node);
+  const auto h = YGNodeLayoutGetHeight(node);
+
+  canvas->save();
+  canvas->clipIRect(SkIRect::MakeWH(w, h));
+  mContent->Paint(canvas);
+  canvas->restore();
+
+  mHorizontalScrollBar->Paint(canvas);
+  mVerticalScrollBar->Paint(canvas);
+}
+
 }// namespace FredEmmott::GUI::Widgets

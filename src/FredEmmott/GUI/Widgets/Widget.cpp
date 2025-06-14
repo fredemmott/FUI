@@ -214,7 +214,10 @@ void Widget::Paint(SkCanvas* canvas) const {
   PaintBackground(canvas, rect, style);
   PaintBorder(yoga, canvas, rect, style);
   this->PaintOwnContent(canvas, rect, style);
+  this->PaintChildren(canvas);
+}
 
+void Widget::PaintChildren(SkCanvas* canvas) const {
   const auto children = this->GetDirectChildren();
   if (children.empty()) {
     return;
