@@ -89,7 +89,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
     = LinearStyleTransition(std::chrono::milliseconds(16));
 
   using namespace PseudoClasses;
-  static const Style sSmallChangeStyles {
+  const Style SmallChangeStyles {
     .mColor = ScrollBarButtonArrowForeground,
     .mFont = {
       ResolveGlyphFont(SystemFont::Body).WithSizeInPixels(ScrollBarButtonArrowIconFontSize),
@@ -115,8 +115,8 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
     },
   };
 
-  mSmallDecrement->SetBuiltInStyles({sSmallChangeStyles});
-  mSmallIncrement->SetBuiltInStyles({sSmallChangeStyles});
+  mSmallDecrement->SetBuiltInStyles({SmallChangeStyles});
+  mSmallIncrement->SetBuiltInStyles({SmallChangeStyles});
 
   static const Style sLargeChangeStyles {
     .mFlexGrow = 1,
