@@ -187,6 +187,7 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   const bool hovered = (state & StateFlags::Hovered) == StateFlags::Hovered;
 
   const Style smallChangeStyles {
+    .mLeft = (mOrientation == Orientation::Horizontal) ? 0 : 3.0f,
     .mOpacity = {
       (hovered ? 1.0f : 0.0f),
       (hovered ? ExpandAnimation : ContractAnimation),
