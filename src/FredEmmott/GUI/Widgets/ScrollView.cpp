@@ -58,19 +58,28 @@ Style ScrollView::GetBuiltInStyles() const {
     .mFlexGrow = 1,
   };
 }
-void ScrollView::PaintChildren(SkCanvas* canvas) const {
+void ScrollView::BeforeFrame() {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
-
   const auto contentNode = mContent->GetLayoutNode();
   const auto cw = YGNodeLayoutGetWidth(contentNode);
   const auto ch = YGNodeLayoutGetHeight(contentNode);
 
-  mHorizontalScrollBar->SetThumbSize(w);
-  mHorizontalScrollBar->SetMaximum(cw);
-  mVerticalScrollBar->SetThumbSize(h);
-  mVerticalScrollBar->SetMaximum(ch);
+  if (w > 0 && h > 0 && cw > 0 && ch > 0) {
+    mHorizontalScrollBar->SetThumbSize(w);
+    mHorizontalScrollBar->SetMaximum(cw);
+    mVerticalScrollBar->SetThumbSize(h);
+    mVerticalScrollBar->SetMaximum(ch);
+  }
+
+  Widget::BeforeFrame();
+}
+
+void ScrollView::PaintChildren(SkCanvas* canvas) const {
+  const auto node = this->GetLayoutNode();
+  const auto w = YGNodeLayoutGetWidth(node);
+  const auto h = YGNodeLayoutGetHeight(node);
 
   canvas->save();
   canvas->clipRect(SkRect::MakeWH(w, h));

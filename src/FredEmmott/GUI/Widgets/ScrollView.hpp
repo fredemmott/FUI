@@ -17,6 +17,7 @@ class ScrollView final : public Widget {
   WidgetList GetDirectChildren() const noexcept override;
   Widget* GetFosterParent() const noexcept override;
   Style GetBuiltInStyles() const override;
+  void BeforeFrame() override;
   void PaintChildren(SkCanvas* canvas) const override;
 
   unique_ptr<Widget> mContent;
