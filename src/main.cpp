@@ -95,6 +95,10 @@ static void AppTick() {
   fuii::immediate_detail::
     BeginWidget<fui::Widgets::ScrollBar, fui::Orientation::Horizontal>(
       fuii::ID {"scrollBar"});
+  auto sb
+    = fuii::immediate_detail::GetCurrentParentNode<fui::Widgets::ScrollBar>();
+  sb->SetMaximum(1024);
+  sb->SetThumbSize(512);
   fuii::immediate_detail::EndWidget<fui::Widgets::ScrollBar>();
 
   fuii::EndDisabled();

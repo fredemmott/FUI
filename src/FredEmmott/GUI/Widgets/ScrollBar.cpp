@@ -343,17 +343,18 @@ void ScrollBar::OnThumbDrag(SkPoint* deltaXY) {
   const auto deltaPtr
     = (mOrientation == Orientation::Horizontal) ? &SkPoint::fX : &SkPoint::fY;
   const auto deltaPixels = std::invoke(deltaPtr, deltaXY);
-  const auto deltaV = deltaPixels / rangePixels;
+  const auto valuePerPixel = rangeV / rangePixels;
+  const auto deltaV = deltaPixels * valuePerPixel;
 
   const auto rawValue = mValue + deltaV;
   const auto clampedValue = std::clamp(rawValue, mMinimum, mMaximum);
 
   if (rawValue != clampedValue) {
-    const auto fixPx = (clampedValue - rawValue) * rangePixels;
+    const auto fixPx = (clampedValue - rawValue) / valuePerPixel;
     std::invoke(deltaPtr, deltaXY) += fixPx;
   }
 
-  this->SetValue(std::clamp(clampedValue, mMinimum, mMaximum));
+  this->SetValue(clampedValue);
 }
 
 void ScrollBar::SetMinimum(float value) {
