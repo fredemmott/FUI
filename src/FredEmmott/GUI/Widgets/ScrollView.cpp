@@ -71,6 +71,14 @@ void ScrollView::BeforeFrame() {
     = (w > 0 && cw > 0) && (w - cw < std::numeric_limits<float>::epsilon());
   const auto showVScroll
     = (h > 0 && ch > 0) && (h - ch < std::numeric_limits<float>::epsilon());
+  mHorizontalScrollBar->AddExplicitStyles(
+    Style {
+      .mDisplay = showHScroll ? YGDisplayFlex : YGDisplayNone,
+    });
+  mVerticalScrollBar->AddExplicitStyles(
+    Style {
+      .mDisplay = showVScroll ? YGDisplayFlex : YGDisplayNone,
+    });
 
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
