@@ -40,6 +40,28 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
 
 ScrollView::~ScrollView() = default;
 
+ScrollView::ScrollBarVisibility ScrollView::GetHorizontalScrollBarVisibility()
+  const noexcept {
+  return mHorizontalScrollBarVisibility;
+}
+
+ScrollView::ScrollBarVisibility ScrollView::GetVerticalScrollBarVisibility()
+  const noexcept {
+  return mVerticalScrollBarVisibility;
+}
+
+ScrollView& ScrollView::SetHorizontalScrollBarVisibility(
+  const ScrollBarVisibility value) noexcept {
+  mHorizontalScrollBarVisibility = value;
+  return *this;
+}
+
+ScrollView& ScrollView::SetVerticalScrollBarVisibility(
+  const ScrollBarVisibility value) noexcept {
+  mVerticalScrollBarVisibility = value;
+  return *this;
+}
+
 WidgetList ScrollView::GetDirectChildren() const noexcept {
   return {
     mVerticalScrollBar.get(),
@@ -67,10 +89,10 @@ void ScrollView::BeforeFrame() {
   const auto cw = YGNodeLayoutGetWidth(contentNode);
   const auto ch = YGNodeLayoutGetHeight(contentNode);
 
-  const auto showHScroll
-    = (w > 0 && cw > 0) && (w - cw < std::numeric_limits<float>::epsilon());
-  const auto showVScroll
-    = (h > 0 && ch > 0) && (h - ch < std::numeric_limits<float>::epsilon());
+  const bool showHScroll
+    = IsScrollBarVisible(mHorizontalScrollBarVisibility, cw, w);
+  const bool showVScroll
+    = IsScrollBarVisible(mVerticalScrollBarVisibility, ch, h);
   mHorizontalScrollBar->AddExplicitStyles(
     Style {
       .mDisplay = showHScroll ? YGDisplayFlex : YGDisplayNone,
@@ -111,6 +133,25 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
 
   mHorizontalScrollBar->Paint(canvas);
   mVerticalScrollBar->Paint(canvas);
+}
+
+bool ScrollView::IsScrollBarVisible(
+  const ScrollBarVisibility visibility,
+  const float content,
+  const float container) noexcept {
+  if (visibility == ScrollBarVisibility::Visible) {
+    return true;
+  }
+  if (visibility == ScrollBarVisibility::Hidden) {
+    return false;
+  }
+
+  constexpr auto eps = std::numeric_limits<float>::epsilon();
+  if (content <= eps || container <= eps) {
+    return false;
+  }
+
+  return (content - container) > eps;
 }
 
 }// namespace FredEmmott::GUI::Widgets

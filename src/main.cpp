@@ -80,14 +80,21 @@ static void AppTick() {
 
   fuii::immediate_detail::BeginWidget<fui::Widgets::ScrollView>(
     fuii::ID {"scrollView"});
+  auto sv
+    = fuii::immediate_detail::GetCurrentParentNode<fui::Widgets::ScrollView>();
+  sv->SetHorizontalScrollBarVisibility(
+    fui::Widgets::ScrollView::ScrollBarVisibility::Auto);
+  sv->SetVerticalScrollBarVisibility(
+    fui::Widgets::ScrollView::ScrollBarVisibility::Auto);
   fuii::BeginCard();
-  fuii::immediate_detail::GetCurrentParentNode()->ReplaceExplicitStyles(
-    fui::Style {
-      .mBackgroundColor = SK_ColorCYAN,
-      .mColor = SK_ColorBLACK,
-      .mHeight = 768.f,
-      .mWidth = 1024.f,
-    });
+  fuii::immediate_detail::GetCurrentParentNode<fui::Widgets::Card>()
+    ->ReplaceExplicitStyles(
+      fui::Style {
+        .mBackgroundColor = SK_ColorCYAN,
+        .mColor = SK_ColorBLACK,
+        .mHeight = 768.f,
+        .mWidth = 1024.f,
+      });
   fuii::TextBlock("Test 1024x768");
   fuii::EndCard();
   fuii::immediate_detail::EndWidget<fui::Widgets::ScrollView>();
