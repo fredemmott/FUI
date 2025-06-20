@@ -43,6 +43,8 @@ struct Style {
   StyleProperty<SkScalar> mMarginLeft;
   StyleProperty<SkScalar> mMarginRight;
   StyleProperty<SkScalar> mMarginTop;
+  StyleProperty<SkScalar> mMaxHeight;
+  StyleProperty<SkScalar> mMaxWidth;
   StyleProperty<SkScalar> mMinHeight;
   StyleProperty<SkScalar> mMinWidth;
   StyleProperty<SkScalar, 1.0f> mOpacity;
@@ -102,6 +104,8 @@ struct Style {
   X(MarginLeft) \
   X(MarginRight) \
   X(MarginTop) \
+  X(MaxHeight) \
+  X(MaxWidth) \
   X(MinHeight) \
   X(MinWidth) \
   X(Opacity) \
