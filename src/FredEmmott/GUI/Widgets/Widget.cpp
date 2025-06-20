@@ -145,12 +145,17 @@ void Widget::SetIsDirectlyDisabled(bool value) {
   }
 }
 
-void Widget::SetExplicitStyles(const Style& styles) {
+void Widget::ReplaceExplicitStyles(const Style& styles) {
   if (styles == mExplicitStyles) {
     return;
   }
   mExplicitStyles = styles;
 
+  this->ComputeStyles(mInheritedStyles);
+}
+
+void Widget::AddExplicitStyles(const Style& styles) {
+  mExplicitStyles += styles;
   this->ComputeStyles(mInheritedStyles);
 }
 

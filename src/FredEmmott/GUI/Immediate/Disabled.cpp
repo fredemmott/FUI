@@ -12,7 +12,7 @@ void BeginDisabled(const bool isDisabled, const ID id) {
   using namespace immediate_detail;
   BeginWidget<Widgets::Widget>(id);
   auto widget = GetCurrentParentNode();
-  widget->SetExplicitStyles(baseStyles);
+  widget->ReplaceExplicitStyles(baseStyles);
   widget->SetIsDirectlyDisabled(isDisabled);
 }
 

@@ -81,7 +81,7 @@ static void AppTick() {
   fuii::immediate_detail::BeginWidget<fui::Widgets::ScrollView>(
     fuii::ID {"scrollView"});
   fuii::BeginCard();
-  fuii::immediate_detail::GetCurrentParentNode()->SetExplicitStyles(
+  fuii::immediate_detail::GetCurrentParentNode()->ReplaceExplicitStyles(
     fui::Style {
       .mBackgroundColor = SK_ColorCYAN,
       .mColor = SK_ColorBLACK,

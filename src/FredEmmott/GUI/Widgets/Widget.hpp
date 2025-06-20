@@ -42,7 +42,8 @@ class Widget {
   void ComputeStyles(const Style& inherited);
 
   /// User-provided styles
-  void SetExplicitStyles(const Style& styles);
+  void ReplaceExplicitStyles(const Style& styles);
+  void AddExplicitStyles(const Style& styles);
   // For immediate API - fake a widget by replacing its built-in styles
   void SetBuiltInStyles(const Style& styles);
   void SetAdditionalBuiltInStyles(const Style& styles);

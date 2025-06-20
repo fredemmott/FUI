@@ -194,18 +194,18 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
     },
     .mTop = (mOrientation == Orientation::Vertical) ? 0 : -3.0f,
   };
-  mSmallDecrement->SetExplicitStyles(smallChangeStyles);
-  mSmallIncrement->SetExplicitStyles(smallChangeStyles);
+  mSmallDecrement->ReplaceExplicitStyles(smallChangeStyles);
+  mSmallIncrement->ReplaceExplicitStyles(smallChangeStyles);
 
   if (mOrientation == Orientation::Horizontal) {
-    mThumb->SetExplicitStyles({
+    mThumb->AddExplicitStyles({
       .mHeight = {
            static_cast<float>(hovered ? ScrollBarSize
            : ScrollBarHorizontalThumbMinHeight), hovered ? ExpandAnimation : ContractAnimation,
       },
     });
   } else {
-    mThumb->SetExplicitStyles({
+    mThumb->AddExplicitStyles({
       .mWidth = {
            static_cast<float>(hovered ? ScrollBarSize
            : ScrollBarVerticalThumbMinWidth), hovered ? ExpandAnimation : ContractAnimation,
@@ -317,13 +317,13 @@ void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const SkPoint& point) {
   }
 }
 void ScrollBar::UpdateLayout() {
-  mLargeDecrement->SetExplicitStyles({
+  mLargeDecrement->ReplaceExplicitStyles({
     .mFlexGrow = mValue - mMinimum,
   });
-  mThumb->SetExplicitStyles({
+  mThumb->AddExplicitStyles({
     .mFlexGrow = mThumbSize,
   });
-  mLargeIncrement->SetExplicitStyles({
+  mLargeIncrement->ReplaceExplicitStyles({
     .mFlexGrow = mMaximum - mValue,
   });
 }

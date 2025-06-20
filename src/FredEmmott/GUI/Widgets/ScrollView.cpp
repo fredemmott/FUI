@@ -42,9 +42,9 @@ ScrollView::~ScrollView() = default;
 
 WidgetList ScrollView::GetDirectChildren() const noexcept {
   return {
-    mContent.get(),
     mVerticalScrollBar.get(),
     mHorizontalScrollBar.get(),
+    mContent.get(),
   };
 }
 
@@ -63,8 +63,17 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
 
+  const auto contentNode = mContent->GetLayoutNode();
+  const auto cw = YGNodeLayoutGetWidth(contentNode);
+  const auto ch = YGNodeLayoutGetHeight(contentNode);
+
+  mHorizontalScrollBar->SetThumbSize(w);
+  mHorizontalScrollBar->SetMaximum(cw);
+  mVerticalScrollBar->SetThumbSize(h);
+  mVerticalScrollBar->SetMaximum(ch);
+
   canvas->save();
-  canvas->clipIRect(SkIRect::MakeWH(w, h));
+  canvas->clipRect(SkRect::MakeWH(w, h));
   mContent->Paint(canvas);
   canvas->restore();
 

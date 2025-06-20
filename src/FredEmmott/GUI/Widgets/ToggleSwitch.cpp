@@ -29,7 +29,7 @@ ToggleSwitch::ToggleSwitch(std::size_t id)
     mKnob.reset(new ToggleSwitchKnob({}));
     mFosterParent.reset(new Widget({}, {ToggleSwitchContentStyleClass}));
   });
-  mFosterParent->SetExplicitStyles({.mDisplay = YGDisplayContents});
+  mFosterParent->ReplaceExplicitStyles({.mDisplay = YGDisplayContents});
 }
 
 bool ToggleSwitch::IsOn() const noexcept {
