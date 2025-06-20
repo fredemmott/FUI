@@ -58,6 +58,7 @@ Style ScrollView::GetBuiltInStyles() const {
     .mFlexGrow = 1,
   };
 }
+
 void ScrollView::BeforeFrame() {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
@@ -66,11 +67,23 @@ void ScrollView::BeforeFrame() {
   const auto cw = YGNodeLayoutGetWidth(contentNode);
   const auto ch = YGNodeLayoutGetHeight(contentNode);
 
-  if (w > 0 && h > 0 && cw > 0 && ch > 0) {
+  const auto showHScroll
+    = (w > 0 && cw > 0) && (w - cw < std::numeric_limits<float>::epsilon());
+  const auto showVScroll
+    = (h > 0 && ch > 0) && (h - ch < std::numeric_limits<float>::epsilon());
+
+  if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
-    mHorizontalScrollBar->SetMaximum(cw);
+    mHorizontalScrollBar->SetMaximum(cw - w);
+  } else {
+    mHorizontalScrollBar->SetValue(0);
+  }
+
+  if (showVScroll) {
     mVerticalScrollBar->SetThumbSize(h);
-    mVerticalScrollBar->SetMaximum(ch);
+    mVerticalScrollBar->SetMaximum(ch - h);
+  } else {
+    mVerticalScrollBar->SetValue(0);
   }
 
   Widget::BeforeFrame();
