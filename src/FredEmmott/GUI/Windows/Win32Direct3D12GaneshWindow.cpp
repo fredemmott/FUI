@@ -823,6 +823,21 @@ Win32Direct3D12GaneshWindow::WindowProc(
       mTrackingMouseEvents = false;
       break;
     }
+    case WM_MOUSEWHEEL: {
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::VerticalWheelEvent {
+        static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
+      };
+      mFUIRoot.DispatchEvent(&e);
+      break;
+    }
+    case WM_MOUSEHWHEEL: {
+      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::HorizontalWheelEvent {
+        static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
+      };
+      mFUIRoot.DispatchEvent(&e);
+    }
     case WM_LBUTTONDOWN: {
       for (auto&& child: mChildren) {
         gInstances.at(child)->mExitCode = 0;

@@ -38,7 +38,19 @@ struct MouseEvent final : Event {
   struct ButtonReleaseEvent {
     MouseButtons mReleasedButtons {};
   };
-  std::variant<MoveEvent, ButtonPressEvent, ButtonReleaseEvent> mDetail {};
+  struct HorizontalWheelEvent {
+    float mDelta {};
+  };
+  struct VerticalWheelEvent {
+    float mDelta {};
+  };
+  std::variant<
+    MoveEvent,
+    ButtonPressEvent,
+    ButtonReleaseEvent,
+    HorizontalWheelEvent,
+    VerticalWheelEvent>
+    mDetail {};
 };
 
 }// namespace FredEmmott::GUI
