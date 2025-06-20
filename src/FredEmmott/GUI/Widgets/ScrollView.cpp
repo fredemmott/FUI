@@ -83,6 +83,8 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
 
   canvas->save();
   canvas->clipRect(SkRect::MakeWH(w, h));
+  canvas->translate(
+    -mHorizontalScrollBar->GetValue(), -mVerticalScrollBar->GetValue());
   mContent->Paint(canvas);
   canvas->restore();
 
