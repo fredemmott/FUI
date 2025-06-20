@@ -184,10 +184,15 @@ void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
 void Widget::Paint(SkCanvas* canvas) const {
   const auto& style = mComputedStyle;
 
+  if (style.mDisplay == YGDisplayNone) {
+    return;
+  }
+
   const auto opacity = style.mOpacity.value_or_default();
   if (opacity <= std::numeric_limits<float>::epsilon()) {
     return;
-  } else if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
+  }
+  if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
     canvas->save();
   } else {
     canvas->saveLayerAlphaf(nullptr, opacity);
@@ -300,6 +305,9 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
   // Always propagate unconditionally to allow correct internal states
   auto result = EventHandlerResult::Default;
   for (auto&& child: this->GetDirectChildren()) {
+    if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
+      continue;
+    }
     if (
       child->DispatchMouseEvent(event) == EventHandlerResult::StopPropagation) {
       result = EventHandlerResult::StopPropagation;
