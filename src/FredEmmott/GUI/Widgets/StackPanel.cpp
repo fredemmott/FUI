@@ -10,7 +10,7 @@ const auto HorizontalStyleClass = StyleClass::Make("HorizontalStackPanel");
 const auto VerticalStyleClass = StyleClass::Make("VerticalStackPanel");
 
 const Style BaseStyles = {
-  .mFlexGrow = 1,
+  .mFlexGrow = 0,
   .mGap = 16,
 };
 const auto HorizontalStyles = BaseStyles
