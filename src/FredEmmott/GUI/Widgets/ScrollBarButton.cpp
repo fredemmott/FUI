@@ -5,56 +5,13 @@
 
 #include <Windows.h>
 
+#include "FredEmmott/GUI/SystemSettings.hpp"
 #include "Label.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
 const auto ScrollBarButtonStyleClass = StyleClass::Make("ScrollBarButton");
-
-std::chrono::steady_clock::duration GetRepeatDelay() {
-  static std::optional<std::chrono::steady_clock::duration> sRet;
-  if (sRet) {
-    return *sRet;
-  }
-
-  int value {};
-  SystemParametersInfoW(SPI_GETKEYBOARDDELAY, 0, &value, 0);
-
-  // '3' is approximately 1 second (1hz)
-  // '0' is approximately 250ms (4hz)
-
-  constexpr auto Min = std::chrono::milliseconds(250);
-  constexpr auto Ratio = (std::chrono::seconds(1) - Min) / 3;
-
-  sRet = Min + (value * Ratio);
-
-  return *sRet;
-}
-
-std::chrono::steady_clock::duration GetRepeatInterval() {
-  static std::optional<std::chrono::steady_clock::duration> sRet;
-  if (sRet) {
-    return *sRet;
-  }
-
-  DWORD value {};
-  SystemParametersInfoW(SPI_GETKEYBOARDSPEED, 0, &value, 0);
-
-  // 31 is approximately 30hz
-  // 0 is approximately 2.5hz
-
-  constexpr auto MinHz = 2.5;
-  constexpr auto MaxHz = 30;
-  constexpr auto MinTime = std::chrono::milliseconds(1000) / MaxHz;
-  constexpr auto MaxTime = std::chrono::milliseconds(1000) / MinHz;
-  constexpr auto Ratio = (MaxTime - MinTime) / 31;
-
-  sRet = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-    MaxTime - (value * Ratio));
-
-  return *sRet;
-}
 
 }// namespace
 
@@ -92,7 +49,7 @@ void ScrollBarButton::Tick() {
   const auto now = std::chrono::steady_clock::now();
   while (now > mNextTick.value()) {
     tick();
-    *mNextTick += GetRepeatInterval();
+    *mNextTick += SystemSettings::Get().GetKeyboardRepeatInterval();
   }
 }
 
@@ -108,7 +65,8 @@ Widget::EventHandlerResult ScrollBarButton::OnMouseButtonPress(
   if (mTickCallback) {
     mTickCallback();
   }
-  mNextTick = std::chrono::steady_clock::now() + GetRepeatDelay();
+  mNextTick = std::chrono::steady_clock::now()
+    + SystemSettings::Get().GetKeyboardRepeatDelay();
   return EventHandlerResult::StopPropagation;
 }
 

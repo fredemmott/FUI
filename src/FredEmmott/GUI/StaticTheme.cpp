@@ -8,6 +8,7 @@
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 
 #include "Color.hpp"
+#include "SystemSettings.hpp"
 #include "SystemTheme.hpp"
 
 using namespace winrt::Windows::UI::ViewManagement;
@@ -27,15 +28,11 @@ Theme GetCurrent() {
   gThemeKind = []() {
     using enum Theme;
 
-    HIGHCONTRAST contrast {sizeof(HIGHCONTRAST)};
-    if (SystemParametersInfo(
-          SPI_GETHIGHCONTRAST, sizeof(contrast), &contrast, 0)) {
-      if ((contrast.dwFlags & HCF_HIGHCONTRASTON) == HCF_HIGHCONTRASTON) {
-        return HighContrast;
-      }
+    if (SystemSettings::Get().GetHighContrast()) {
+      return HighContrast;
     }
 
-    // Microsoft's recommend approach for detecting dark mode...
+    // Microsoft's recommended approach for detecting dark mode...
     UISettings settings;
     auto [a, r, g, b] = settings.GetColorValue(UIColorType::Foreground);
     const bool isForegroundLight = ((5 * r) + (2 * g) + b) > (8 * 128);

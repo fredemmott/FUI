@@ -7,27 +7,10 @@
 #include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetList.hpp>
 
+#include "FredEmmott/GUI/SystemSettings.hpp"
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 
 namespace FredEmmott::GUI::Widgets {
-
-static UINT LinesPerVerticalScroll() {
-  static UINT sRet {};
-  static std::once_flag sOnce;
-  std::call_once(sOnce, [ret = &sRet]() {
-    SystemParametersInfoW(SPI_GETWHEELSCROLLLINES, 0, ret, 0);
-  });
-  return sRet;
-}
-
-static UINT CharsPerHorizontalScroll() {
-  static UINT sRet {};
-  static std::once_flag sOnce;
-  std::call_once(sOnce, [ret = &sRet]() {
-    SystemParametersInfoW(SPI_GETWHEELSCROLLCHARS, 0, ret, 0);
-  });
-  return sRet;
-}
 
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   : Widget(id, classes) {
@@ -194,7 +177,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   }
 
   const auto delta = std::get<MouseEvent::VerticalWheelEvent>(e.mDetail).mDelta;
-  const auto lines = delta * LinesPerVerticalScroll();
+  const auto lines = delta * SystemSettings::Get().GetMouseWheelScrollLines();
   const auto pixels
     = lines * SystemFont::Resolve(SystemFont::Body).GetFontSizeInPixels();
 
