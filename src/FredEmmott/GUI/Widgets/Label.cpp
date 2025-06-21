@@ -65,7 +65,7 @@ YGSize Label::Measure(
   YGMeasureMode widthMode,
   float height,
   YGMeasureMode heightMode) {
-  const auto self = static_cast<Label*>(YGNodeGetContext(node));
+  const auto self = static_cast<Label*>(FromYogaNode(node));
 
   const auto& font = self->mFont;
   const auto& text = self->mText;

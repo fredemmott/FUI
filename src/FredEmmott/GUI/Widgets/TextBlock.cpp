@@ -102,7 +102,7 @@ YGSize TextBlock::Measure(
   YGMeasureMode widthMode,
   float height,
   YGMeasureMode heightMode) {
-  const auto self = static_cast<TextBlock*>(YGNodeGetContext(node));
+  const auto self = static_cast<TextBlock*>(FromYogaNode(node));
 
   if (widthMode == YGMeasureModeUndefined) {
     return {YGUndefined, YGUndefined};

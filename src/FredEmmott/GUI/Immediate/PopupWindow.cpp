@@ -47,10 +47,18 @@ bool BeginPopupWindow(const ID id) {
   window->SetParent(tWindow->GetNativeHandle());
   if (previous && !window->GetNativeHandle()) {
     SkIPoint position {};
-    for (auto node = previous->GetLayoutNode(); node;
-         node = YGNodeGetParent(node)) {
+    for (auto node = previous->GetLayoutNode(); node;) {
       position.fX += YGNodeLayoutGetLeft(node);
       position.fY += YGNodeLayoutGetTop(node);
+      auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
+      const auto tree = std::get_if<DetachedYogaTree>(ctx);
+      if (tree) {
+        node = tree->mRealParent;
+        position.fX -= tree->mOffset.fX;
+        position.fY -= tree->mOffset.fY;
+      } else {
+        node = YGNodeGetParent(node);
+      }
     }
     position = tWindow->CanvasPointToNativePoint(position);
     window->SetInitialPosition(position);

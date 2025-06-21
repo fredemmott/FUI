@@ -18,4 +18,11 @@ struct constant_t {
   static constexpr auto value {V};
 };
 
+struct DetachedYogaTree {
+  YGNode* mRealParent {nullptr};
+  SkPoint mOffset {};
+};
+
+using YogaContext = std::variant<Widget*, DetachedYogaTree>;
+
 }// namespace FredEmmott::GUI::Widgets::widget_detail

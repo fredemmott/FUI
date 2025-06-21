@@ -5,6 +5,8 @@
 #include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetList.hpp>
 
+#include "FredEmmott/GUI/detail/widget_detail.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
@@ -21,6 +23,14 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     mContentYoga.reset(YGNodeNew());
     YGNodeStyleSetOverflow(mContentYoga.get(), YGOverflowScroll);
     YGNodeSetChildren(mContentYoga.get(), &child, 1);
+
+    YGNodeSetContext(
+      mContentYoga.get(),
+      new widget_detail::YogaContext {
+        widget_detail::DetachedYogaTree {
+          .mRealParent = this->GetLayoutNode(),
+        },
+      });
   }
   {
     mScrollBarsYoga.reset(YGNodeNew());
@@ -49,7 +59,12 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   });
 }
 
-ScrollView::~ScrollView() = default;
+ScrollView::~ScrollView() {
+  const auto ctx = static_cast<widget_detail::YogaContext*>(
+    YGNodeGetContext(mContentYoga.get()));
+  YGNodeSetContext(mContentYoga.get(), nullptr);
+  delete ctx;
+}
 
 ScrollView::ScrollBarVisibility ScrollView::GetHorizontalScrollBarVisibility()
   const noexcept {
@@ -132,10 +147,16 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
   YGNodeCalculateLayout(mContentYoga.get(), w, h, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
-  mContent->ScrollTo({
+  const SkPoint offset {
     mHorizontalScrollBar.get()->GetValue(),
     mVerticalScrollBar.get()->GetValue(),
-  });
+  };
+  mContent->ScrollTo(offset);
+  std::get<widget_detail::DetachedYogaTree>(
+    *static_cast<widget_detail::YogaContext*>(
+      YGNodeGetContext(mContentYoga.get())))
+    .mOffset
+    = offset;
 
   canvas->save();
   canvas->clipRect(SkRect::MakeWH(w, h));
@@ -170,7 +191,7 @@ YGSize ScrollView::Measure(
   YGMeasureMode widthMode,
   float height,
   YGMeasureMode heightMode) {
-  auto& self = *static_cast<ScrollView*>(YGNodeGetContext(node));
+  auto& self = *static_cast<ScrollView*>(FromYogaNode(node));
 
   auto root = self.mContentYoga.get();
   if (height == 0) {

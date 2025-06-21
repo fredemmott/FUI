@@ -21,6 +21,10 @@ class Widget {
   explicit Widget(std::size_t id, const StyleClasses& = {});
   virtual ~Widget();
 
+  // Can return nullptr
+  [[nodiscard]]
+  static Widget* FromYogaNode(YGNodeConstRef);
+
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
     return mYoga.get();
   }

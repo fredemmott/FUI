@@ -87,7 +87,7 @@ Widget::Widget(std::size_t id, const StyleClasses& classes)
   : mClassList(classes),
     mID(id),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
-  YGNodeSetContext(mYoga.get(), this);
+  YGNodeSetContext(mYoga.get(), new YogaContext {this});
   mStyleTransitions.reset(new StyleTransitions());
 }
 
@@ -109,8 +109,19 @@ void Widget::ChangeDirectChildren(const std::function<void()>& mutator) {
   YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
 }
 
+Widget* Widget::FromYogaNode(YGNodeConstRef node) {
+  const auto it
+    = std::get_if<Widget*>(static_cast<YogaContext*>(YGNodeGetContext(node)));
+  return it ? *it : nullptr;
+}
+
 Widget::~Widget() {
   this->EndMouseCapture();
+
+  const auto yogaContext
+    = static_cast<YogaContext*>(YGNodeGetContext(mYoga.get()));
+  YGNodeSetContext(mYoga.get(), nullptr);
+  delete yogaContext;
 }
 
 bool Widget::IsDisabled() const {
