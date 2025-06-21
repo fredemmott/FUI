@@ -207,8 +207,10 @@ void Widget::Paint(SkCanvas* canvas) const {
 
   const auto yoga = this->GetLayoutNode();
   canvas->translate(
-    YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default(),
-    YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default());
+    YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default()
+      - mScrollOffset.fX,
+    YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default()
+      - mScrollOffset.fY);
   auto rect
     = SkRect::MakeWH(YGNodeLayoutGetWidth(yoga), YGNodeLayoutGetHeight(yoga));
 
@@ -283,8 +285,8 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
   const auto display = YGNodeStyleGetDisplay(layout);
   if (display != YGDisplayContents) {
     event = event.WithOffset({
-      -YGNodeLayoutGetLeft(layout),
-      -YGNodeLayoutGetTop(layout),
+      mScrollOffset.fX - YGNodeLayoutGetLeft(layout),
+      mScrollOffset.fY - YGNodeLayoutGetTop(layout),
     });
   }
   mMouseOffset = event.mOffset;
@@ -379,6 +381,10 @@ void Widget::EndMouseCapture() {
     return;
   }
   gMouseCapture = {};
+}
+
+void Widget::ScrollTo(const SkPoint& offset) {
+  mScrollOffset = offset;
 }
 
 }// namespace FredEmmott::GUI::Widgets
