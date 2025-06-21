@@ -56,7 +56,8 @@ void Root::EndFrame() {
     YGNodeSetChildren(mYogaRoot.get(), &node, 1);
   }
 
-  mWidget->BeforeFrame();
+  mWidget->Tick();
+  mWidget->UpdateLayout();
   mWidget->ComputeStyles({});
 }
 
@@ -93,6 +94,10 @@ bool Root::CanFit(float width, float height) const {
 }
 
 SkSize Root::GetInitialSize() const {
+  if (mWidget) {
+    mWidget->UpdateLayout();
+    mWidget->ComputeStyles({});
+  }
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
   // This works as for things with a variable width (e.g. wrappable text), we

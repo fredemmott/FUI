@@ -30,8 +30,7 @@ class ScrollView final : public Widget {
   [[nodiscard]]
   WidgetList GetDirectChildren() const noexcept override;
   Widget* GetFosterParent() const noexcept override;
-  Style GetBuiltInStyles() const override;
-  void BeforeFrame() override;
+  void UpdateLayout() override;
   void PaintChildren(SkCanvas* canvas) const override;
 
   [[nodiscard]]
@@ -40,8 +39,17 @@ class ScrollView final : public Widget {
     float content,
     float container) noexcept;
 
-  unique_ptr<Widget> mContent;
+  static YGSize Measure(
+    YGNodeConstRef node,
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode);
 
+  unique_ptr<Widget> mContent;
+  unique_ptr<YGNode> mContentYoga;
+
+  unique_ptr<YGNode> mScrollBarsYoga;
   unique_ptr<ScrollBar> mHorizontalScrollBar;
   unique_ptr<ScrollBar> mVerticalScrollBar;
 

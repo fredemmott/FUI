@@ -10,27 +10,38 @@ namespace FredEmmott::GUI::Widgets {
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   : Widget(id, classes) {
   this->ChangeDirectChildren([this] {
-    mContent.reset(new Widget(0));
-    mHorizontalScrollBar.reset(new ScrollBar(1, Orientation::Horizontal));
-    mVerticalScrollBar.reset(new ScrollBar(2, Orientation::Vertical));
+    mHorizontalScrollBar.reset(new ScrollBar(0, Orientation::Horizontal));
+    mVerticalScrollBar.reset(new ScrollBar(1, Orientation::Vertical));
+    mContent.reset(new Widget(2));
   });
+  YGNodeRemoveAllChildren(this->GetLayoutNode());
+  YGNodeSetMeasureFunc(this->GetLayoutNode(), &ScrollView::Measure);
+  {
+    const auto child = mContent->GetLayoutNode();
+    mContentYoga.reset(YGNodeNew());
+    YGNodeStyleSetOverflow(mContentYoga.get(), YGOverflowScroll);
+    YGNodeSetChildren(mContentYoga.get(), &child, 1);
+  }
+  {
+    mScrollBarsYoga.reset(YGNodeNew());
+    const std::array scrollbars {
+      mHorizontalScrollBar->GetLayoutNode(),
+      mVerticalScrollBar->GetLayoutNode(),
+    };
+    YGNodeSetChildren(
+      mScrollBarsYoga.get(), scrollbars.data(), scrollbars.size());
+  }
 
   using StaticTheme::ScrollBar::ScrollBarSize;
 
-  mContent->SetBuiltInStyles({
-    .mMarginBottom = ScrollBarSize,
-    .mMarginRight = ScrollBarSize,
-    .mOverflow = YGOverflowScroll,
-    .mPosition = YGPositionTypeAbsolute,
-  });
   mVerticalScrollBar->SetAdditionalBuiltInStyles({
     .mBottom = ScrollBarSize,
     .mPosition = YGPositionTypeAbsolute,
-    .mRight = 0,
+    .mRight = 4,
     .mTop = 0,
   });
   mHorizontalScrollBar->SetAdditionalBuiltInStyles({
-    .mBottom = 0.f,
+    .mBottom = 4,
     .mFlexGrow = 1,
     .mLeft = 0.f,
     .mPosition = YGPositionTypeAbsolute,
@@ -74,20 +85,15 @@ Widget* ScrollView::GetFosterParent() const noexcept {
   return mContent.get();
 }
 
-Style ScrollView::GetBuiltInStyles() const {
-  return {
-    .mFlexBasis = 64,
-    .mFlexGrow = 1,
-  };
-}
-
-void ScrollView::BeforeFrame() {
+void ScrollView::UpdateLayout() {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
-  const auto contentNode = mContent->GetLayoutNode();
-  const auto cw = YGNodeLayoutGetWidth(contentNode);
-  const auto ch = YGNodeLayoutGetHeight(contentNode);
+  YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
+  YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
+
+  const auto cw = YGNodeLayoutGetWidth(mContentYoga.get());
+  const auto ch = YGNodeLayoutGetHeight(mContentYoga.get());
 
   const bool showHScroll
     = IsScrollBarVisible(mHorizontalScrollBarVisibility, cw, w);
@@ -116,13 +122,15 @@ void ScrollView::BeforeFrame() {
     mVerticalScrollBar->SetValue(0);
   }
 
-  Widget::BeforeFrame();
+  Widget::UpdateLayout();
 }
 
 void ScrollView::PaintChildren(SkCanvas* canvas) const {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
+  YGNodeCalculateLayout(mContentYoga.get(), w, h, YGDirectionLTR);
+  YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
   canvas->save();
   canvas->clipRect(SkRect::MakeWH(w, h));
@@ -152,6 +160,23 @@ bool ScrollView::IsScrollBarVisible(
   }
 
   return (content - container) > eps;
+}
+YGSize ScrollView::Measure(
+  YGNodeConstRef node,
+  float width,
+  YGMeasureMode widthMode,
+  float height,
+  YGMeasureMode heightMode) {
+  auto& self = *static_cast<ScrollView*>(YGNodeGetContext(node));
+
+  auto root = self.mContentYoga.get();
+  if (height == 0) {
+    height = YGUndefined;
+  }
+  YGNodeCalculateLayout(root, width, height, YGDirectionLTR);
+  width = YGNodeLayoutGetWidth(root);
+  height = YGNodeLayoutGetHeight(root);
+  return {width, height};
 }
 
 }// namespace FredEmmott::GUI::Widgets

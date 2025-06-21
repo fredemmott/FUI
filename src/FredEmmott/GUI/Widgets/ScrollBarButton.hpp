@@ -27,7 +27,7 @@ class ScrollBarButton final : public Widget {
 
   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
 
-  void BeforeFrame() override;
+  void Tick() override;
 
  protected:
   EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;

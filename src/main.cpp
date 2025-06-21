@@ -10,6 +10,16 @@ namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
 
 static void AppTick() {
+  constexpr bool UseScrollView = true;
+  if constexpr (UseScrollView) {
+    fuii::immediate_detail::BeginWidget<fui::Widgets::ScrollView>(
+      fuii::ID {"scrollView"});
+    auto sv = fuii::immediate_detail::GetCurrentParentNode<
+      fui::Widgets::ScrollView>();
+    sv->SetVerticalScrollBarVisibility(
+      fui::Widgets::ScrollView::ScrollBarVisibility::Auto);
+  }
+
   fuii::BeginCard();
   fuii::BeginVStackPanel();
   fuii::Label("Disable all widgets");
@@ -77,32 +87,13 @@ static void AppTick() {
     "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.");
-
-  fuii::immediate_detail::BeginWidget<fui::Widgets::ScrollView>(
-    fuii::ID {"scrollView"});
-  auto sv
-    = fuii::immediate_detail::GetCurrentParentNode<fui::Widgets::ScrollView>();
-  sv->SetHorizontalScrollBarVisibility(
-    fui::Widgets::ScrollView::ScrollBarVisibility::Auto);
-  sv->SetVerticalScrollBarVisibility(
-    fui::Widgets::ScrollView::ScrollBarVisibility::Auto);
-  fuii::BeginCard();
-  fuii::immediate_detail::GetCurrentParentNode<fui::Widgets::Card>()
-    ->ReplaceExplicitStyles(
-      fui::Style {
-        .mBackgroundColor = SK_ColorCYAN,
-        .mColor = SK_ColorBLACK,
-        .mHeight = 768.f,
-        .mWidth = 1024.f,
-      });
-  fuii::TextBlock("Test 1024x768");
-  fuii::EndCard();
-  fuii::immediate_detail::EndWidget<fui::Widgets::ScrollView>();
-
   fuii::EndDisabled();
 
   fuii::EndStackPanel();
   fuii::EndCard();
+  if constexpr (UseScrollView) {
+    fuii::immediate_detail::EndWidget<fui::Widgets::ScrollView>();
+  }
 }
 
 int WINAPI wWinMain(

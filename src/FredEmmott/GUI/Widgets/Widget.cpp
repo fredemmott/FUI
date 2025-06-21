@@ -263,9 +263,15 @@ void Widget::DispatchEvent(const Event* e) {
   __debugbreak();
 }
 
-void Widget::BeforeFrame() {
+void Widget::Tick() {
   for (auto&& child: this->GetDirectChildren()) {
-    child->BeforeFrame();
+    child->Tick();
+  }
+}
+
+void Widget::UpdateLayout() {
+  for (auto&& child: this->GetDirectChildren()) {
+    child->UpdateLayout();
   }
 }
 

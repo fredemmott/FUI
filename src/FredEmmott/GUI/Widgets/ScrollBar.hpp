@@ -67,7 +67,7 @@ class ScrollBar final : public Widget {
   void ScrollBarButtonTick(ButtonTickKind);
   void ScrollBarButtonDown(ButtonTickKind, const SkPoint&);
 
-  void UpdateLayout();
+  void UpdateLayout() override;
 
   Style GetBuiltinStylesForOrientation() const;
 

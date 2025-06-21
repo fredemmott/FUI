@@ -80,7 +80,7 @@ FrameRateRequirement ScrollBarButton::GetFrameRateRequirement() const noexcept {
   }
   return Widget::GetFrameRateRequirement();
 }
-void ScrollBarButton::BeforeFrame() {
+void ScrollBarButton::Tick() {
   if (!mNextTick) {
     return;
   }

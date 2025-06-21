@@ -38,7 +38,9 @@ class Widget {
   bool IsDirectlyDisabled() const;
   void SetIsDirectlyDisabled(bool value);
 
-  virtual void BeforeFrame();
+  // A periodic event at an undefined interval; use for animations etc
+  virtual void Tick();
+  virtual void UpdateLayout();
   void ComputeStyles(const Style& inherited);
 
   /// User-provided styles
