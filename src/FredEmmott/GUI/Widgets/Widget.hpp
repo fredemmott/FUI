@@ -115,6 +115,10 @@ class Widget {
   virtual EventHandlerResult OnMouseButtonRelease(const MouseEvent&);
   [[nodiscard]]
   virtual EventHandlerResult OnMouseMove(const MouseEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnMouseVerticalWheel(const MouseEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnMouseHorizontalWheel(const MouseEvent&);
 
   [[nodiscard]] auto GetExplicitStyles() const noexcept {
     return mExplicitStyles;

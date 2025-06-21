@@ -342,14 +342,30 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
   } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
                event.mDetail)) {
     result = this->OnMouseButtonRelease(event);
-  } else {
+  } else if (std::holds_alternative<MouseEvent::MoveEvent>(event.mDetail)) {
     result = this->OnMouseMove(event);
+  } else if (std::holds_alternative<MouseEvent::VerticalWheelEvent>(
+               event.mDetail)) {
+    result = this->OnMouseVerticalWheel(event);
+#ifndef NDEBUG
+  } else {
+    OutputDebugStringA("Unhandled mouse event type\n");
+    __debugbreak();
+#endif
   }
 
   return result;
 }
 
 Widget::EventHandlerResult Widget::OnMouseMove(const MouseEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnMouseVerticalWheel(const MouseEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnMouseHorizontalWheel(const MouseEvent&) {
   return EventHandlerResult::Default;
 }
 

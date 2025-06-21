@@ -371,6 +371,10 @@ void ScrollBar::SetMaximum(float value) {
   this->UpdateLayout();
 }
 
+float ScrollBar::GetMaximum() const {
+  return mMaximum;
+}
+
 float ScrollBar::GetValue() const {
   return mValue;
 }

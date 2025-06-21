@@ -32,6 +32,7 @@ class ScrollView final : public Widget {
   Widget* GetFosterParent() const noexcept override;
   void UpdateLayout() override;
   void PaintChildren(SkCanvas* canvas) const override;
+  EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
 
   [[nodiscard]]
   static bool IsScrollBarVisible(

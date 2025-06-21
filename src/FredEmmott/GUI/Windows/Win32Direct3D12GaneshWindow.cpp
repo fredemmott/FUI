@@ -826,7 +826,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
     case WM_MOUSEWHEEL: {
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::VerticalWheelEvent {
-        static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
+        -static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
       };
       mFUIRoot.DispatchEvent(&e);
       break;

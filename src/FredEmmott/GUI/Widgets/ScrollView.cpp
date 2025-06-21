@@ -1,6 +1,8 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include <Windows.h>
+
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>
 #include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetList.hpp>
@@ -8,6 +10,24 @@
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 
 namespace FredEmmott::GUI::Widgets {
+
+static UINT LinesPerVerticalScroll() {
+  static UINT sRet {};
+  static std::once_flag sOnce;
+  std::call_once(sOnce, [ret = &sRet]() {
+    SystemParametersInfoW(SPI_GETWHEELSCROLLLINES, 0, ret, 0);
+  });
+  return sRet;
+}
+
+static UINT CharsPerHorizontalScroll() {
+  static UINT sRet {};
+  static std::once_flag sOnce;
+  std::call_once(sOnce, [ret = &sRet]() {
+    SystemParametersInfoW(SPI_GETWHEELSCROLLCHARS, 0, ret, 0);
+  });
+  return sRet;
+}
 
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   : Widget(id, classes) {
@@ -167,6 +187,24 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
   mVerticalScrollBar->Paint(canvas);
 }
 
+Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
+  const MouseEvent& e) {
+  if (Widget::OnMouseVerticalWheel(e) == EventHandlerResult::StopPropagation) {
+    return EventHandlerResult::StopPropagation;
+  }
+
+  const auto delta = std::get<MouseEvent::VerticalWheelEvent>(e.mDetail).mDelta;
+  const auto lines = delta * LinesPerVerticalScroll();
+  const auto pixels
+    = lines * SystemFont::Resolve(SystemFont::Body).GetFontSizeInPixels();
+
+  const auto scrollBar = mVerticalScrollBar.get();
+  const auto value = std::clamp<float>(
+    scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
+  scrollBar->SetValue(value);
+  return EventHandlerResult::StopPropagation;
+}
+
 bool ScrollView::IsScrollBarVisible(
   const ScrollBarVisibility visibility,
   const float content,
@@ -188,12 +226,12 @@ bool ScrollView::IsScrollBarVisible(
 YGSize ScrollView::Measure(
   YGNodeConstRef node,
   float width,
-  YGMeasureMode widthMode,
+  [[maybe_unused]] YGMeasureMode widthMode,
   float height,
-  YGMeasureMode heightMode) {
-  auto& self = *static_cast<ScrollView*>(FromYogaNode(node));
+  [[maybe_unused]] YGMeasureMode heightMode) {
+  const auto& self = *static_cast<ScrollView*>(FromYogaNode(node));
 
-  auto root = self.mContentYoga.get();
+  const auto root = self.mContentYoga.get();
   if (height == 0) {
     height = YGUndefined;
   }
