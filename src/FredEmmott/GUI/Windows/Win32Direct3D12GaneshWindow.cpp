@@ -17,6 +17,7 @@
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/SystemSettings.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
@@ -721,6 +722,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
     case WM_SETTINGCHANGE:
       StaticTheme::Refresh();
       this->AdjustToWindowsTheme();
+      SystemSettings::Get().ClearWin32(static_cast<UINT>(wParam));
       break;
     case WM_GETMINMAXINFO: {
       if (!mDPI) {

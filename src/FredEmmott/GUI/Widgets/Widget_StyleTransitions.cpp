@@ -1,6 +1,7 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include <FredEmmott/GUI/SystemSettings.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/widget_detail.hpp>
@@ -109,6 +110,9 @@ void Widget::StyleTransitions::Apply(
 }
 
 void Widget::StyleTransitions::Apply(const Style& oldStyle, Style* newStyle) {
+  if (!SystemSettings::Get().GetAnimationsEnabled()) {
+    return;
+  }
   const auto now = std::chrono::steady_clock::now();
 
 #define APPLY_TRANSITION(X) \

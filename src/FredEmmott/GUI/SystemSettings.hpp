@@ -11,18 +11,38 @@
 namespace FredEmmott::GUI {
 
 // TODO (C++26): replace with members and reflection
+// X(RETURN_TYPE, NAME, WIN32_TYPE, WIN32_GET, WIN32_SET)
 #define FUI_ENUM_SYSTEM_SETTINGS(X) \
-  X(uint32_t, MouseWheelScrollChars, UINT, SPI_GETWHEELSCROLLCHARS) \
-  X(uint32_t, MouseWheelScrollLines, UINT, SPI_GETWHEELSCROLLLINES) \
-  X(bool, HighContrast, HIGHCONTRASTW, SPI_GETHIGHCONTRAST) \
+  X(bool, \
+    AnimationsEnabled, \
+    BOOL, \
+    SPI_GETCLIENTAREAANIMATION, \
+    SPI_SETCLIENTAREAANIMATION) \
+  X(bool, \
+    HighContrast, \
+    HIGHCONTRASTW, \
+    SPI_GETHIGHCONTRAST, \
+    SPI_SETHIGHCONTRAST) \
   X(std::chrono::steady_clock::duration, \
     KeyboardRepeatDelay, \
     INT, \
-    SPI_GETKEYBOARDDELAY) \
+    SPI_GETKEYBOARDDELAY, \
+    SPI_SETKEYBOARDDELAY) \
   X(std::chrono::steady_clock::duration, \
     KeyboardRepeatInterval, \
     DWORD, \
-    SPI_GETKEYBOARDSPEED)
+    SPI_GETKEYBOARDSPEED, \
+    SPI_SETKEYBOARDSPEED) \
+  X(uint32_t, \
+    MouseWheelScrollChars, \
+    UINT, \
+    SPI_GETWHEELSCROLLCHARS, \
+    SPI_SETWHEELSCROLLCHARS) \
+  X(uint32_t, \
+    MouseWheelScrollLines, \
+    UINT, \
+    SPI_GETWHEELSCROLLLINES, \
+    SPI_SETWHEELSCROLLLINES)
 
 class SystemSettings {
  public:
@@ -31,7 +51,7 @@ class SystemSettings {
   static SystemSettings& Get();
 
 #define FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER( \
-  RETURN_TYPE, NAME, WIN32_TYPE, WIN32_KEY) \
+  RETURN_TYPE, NAME, WIN32_TYPE, WIN32_GET, WIN32_SET) \
   RETURN_TYPE Get##NAME() const;
   FUI_ENUM_SYSTEM_SETTINGS(FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER);
 #undef FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER
@@ -43,7 +63,7 @@ class SystemSettings {
 
  private:
 #define FUI_DECLARE_WINDOWS_SYSTEM_SETTING_STORAGE( \
-  RETURN_TYPE, NAME, WIN32_TYPE, WIN32_KEY) \
+  RETURN_TYPE, NAME, WIN32_TYPE, WIN32_GET, WIN32_SET) \
   mutable std::optional<RETURN_TYPE> m##NAME;
   FUI_ENUM_SYSTEM_SETTINGS(FUI_DECLARE_WINDOWS_SYSTEM_SETTING_STORAGE);
 #undef FUI_DECLARE_WINDOWS_SYSTEM_SETTING_STORAGE

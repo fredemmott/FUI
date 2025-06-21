@@ -78,8 +78,9 @@ SystemSettings& SystemSettings::Get() {
 
 void SystemSettings::ClearWin32(const UINT key) {
   switch (key) {
-#define F(RETURN_TYPE, NAME, WIN32_TYPE, WIN32_KEY) \
-  case WIN32_KEY: \
+#define F(RETURN_TYPE, NAME, WIN32_TYPE, WIN32_GET, WIN32_SET) \
+  case WIN32_GET: \
+  case WIN32_SET: /* for WM_SETTINGCHANGE message */ \
     m##NAME.reset(); \
     return;
     FUI_ENUM_SYSTEM_SETTINGS(F);
@@ -90,9 +91,9 @@ void SystemSettings::ClearWin32(const UINT key) {
   }
 }
 
-#define DEFINE_GETTER(RETURN_TYPE, NAME, WIN32_TYPE, WIN32_KEY) \
+#define DEFINE_GETTER(RETURN_TYPE, NAME, WIN32_TYPE, WIN32_GET, WIN32_SET) \
   RETURN_TYPE SystemSettings::Get##NAME() const { \
-    return GetSetting<WIN32_TYPE, WIN32_KEY>(m##NAME); \
+    return GetSetting<WIN32_TYPE, WIN32_GET>(m##NAME); \
   }
 FUI_ENUM_SYSTEM_SETTINGS(DEFINE_GETTER);
 #undef DEFINE_GETTER
