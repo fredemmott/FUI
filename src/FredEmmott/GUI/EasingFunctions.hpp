@@ -21,22 +21,97 @@ struct Linear {
 
 struct CubicBezier {
   CubicBezier() = delete;
-  constexpr CubicBezier(float p0, float p1, float p2, float p3)
-    : p0(p0), p1(p1), p2(p2), p3(p3) {
+  constexpr CubicBezier(float x1, float y1, float x2, float y2)
+    : x1(x1),
+      y1(y1),
+      x2(x2),
+      y2(y2) {
+    if consteval {
+      mSamples.emplace(CreateSamples(x1, x2));
+    }
   }
 
   explicit constexpr CubicBezier(auto points) {
-    std::tie(p0, p1, p2, p3) = points;
+    std::tie(x1, y1, x2, y2) = points;
+    if consteval {
+      mSamples.emplace(CreateSamples(x1, x2));
+    }
   }
 
-  constexpr float operator()(float t) const {
-    return Interpolation::CubicBezier(p0, p1, p2, p3, t);
+  constexpr float operator()(const float x) const {
+    if (!mSamples) {
+      // mutable in `const` method as it's a cache
+      mSamples = CreateSamples(x1, x2);
+    }
+
+    // Find t for x
+    float low = 0;
+    float high = 1;
+    if (x < mSamples->front().mX) {
+      high = mSamples->front().mT;
+    } else if (x > mSamples->back().mX) {
+      low = mSamples->back().mT;
+    } else {
+      uint8_t lowIdx = 0;
+      uint8_t highIdx = std::size(*mSamples) - 1;
+      while (lowIdx < highIdx) {
+        uint8_t mid = (highIdx + lowIdx) / 2;
+        const auto& sample = mSamples->at(mid);
+        if (x < sample.mX) {
+          highIdx = mid;
+          high = sample.mT;
+        } else {
+          lowIdx = mid + 1;
+          low = sample.mT;
+        }
+      }
+    }
+
+    float t = (high + low) / 2;
+    float approximateX = Interpolation::CubicBezier(x1, x2, t);
+    for (uint8_t rounds = 0; rounds < 8 && std::abs(x - approximateX) > 1e-5f;
+         ++rounds) {
+      ++rounds;
+      if (x > approximateX) {
+        low = t;
+      } else {
+        high = t;
+      }
+      t = (high + low) / 2;
+      approximateX = Interpolation::CubicBezier(x1, x2, t);
+    }
+
+    // Calculate y given t
+    return Interpolation::CubicBezier(y1, y2, t);
   }
 
   constexpr bool operator==(const CubicBezier&) const noexcept = default;
 
  private:
-  float p0, p1, p2, p3;
+  // as 1 / 11 == 0.09, which is < 0.1, this means we will always have a
+  // looked-up (t, x) tuple with x within 0.1 of the desired x
+  static constexpr size_t SampleCount = 11;
+  struct Sample {
+    float mT {};
+    float mX {};
+    constexpr bool operator==(const Sample&) const noexcept = default;
+  };
+  using Samples = std::array<Sample, SampleCount>;
+  mutable std::optional<Samples> mSamples {};
+
+  float x1, y1, x2, y2;
+
+  static constexpr Samples CreateSamples(const float x1, const float x2) {
+    Samples samples;
+    for (std::ptrdiff_t i = 0; i < SampleCount; ++i) {
+      const auto t = (i + 1.f) / (SampleCount + 1);
+      samples[i] = {
+        .mT = t,
+        .mX = Interpolation::CubicBezier(x1, x2, t),
+      };
+    }
+    return samples;
+  }
 };
 
 /// The CSS 'ease' transition
@@ -71,8 +146,7 @@ class EasingFunction {
 
   EasingFunction() = delete;
   constexpr EasingFunction(const std::convertible_to<variant_t> auto& func)
-    : mFunction(func) {
-  }
+    : mFunction(func) {}
 
   /// Evaluating the easing function, mapping [0..1] to [0..1]
   constexpr float operator()(float t) const {

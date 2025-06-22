@@ -31,39 +31,39 @@ constexpr StyleTransition LinearStyleTransition(
 constexpr StyleTransition CubicBezierStyleTransition(
   const StyleTransition::Duration delay,
   const StyleTransition::Duration duration,
-  float p0,
-  float p1,
-  float p2,
-  float p3) {
-  return {delay, duration, EasingFunctions::CubicBezier {p0, p1, p2, p3}};
+  float x1,
+  float y1,
+  float x2,
+  float y2) {
+  return {delay, duration, EasingFunctions::CubicBezier {x1, y1, x2, y2}};
 };
 
 constexpr StyleTransition CubicBezierStyleTransition(
   const StyleTransition::Duration duration,
-  float p0,
-  float p1,
-  float p2,
-  float p3) {
+  float x1,
+  float y1,
+  float x2,
+  float y2) {
   return {
     StyleTransition::Duration::zero(),
     duration,
-    EasingFunctions::CubicBezier {p0, p1, p2, p3}};
+    EasingFunctions::CubicBezier {x1, y1, x2, y2}};
 };
 
 constexpr StyleTransition CubicBezierStyleTransition(
   const StyleTransition::Duration delay,
   const StyleTransition::Duration duration,
-  const auto& fourPoints) {
-  const auto [p0, p1, p2, p3] = fourPoints;
-  return CubicBezierStyleTransition(delay, duration, p0, p1, p2, p3);
+  const auto& x1y1x2y2) {
+  const auto [x1, y1, x2, y2] = x1y1x2y2;
+  return CubicBezierStyleTransition(delay, duration, x1, y1, x2, y2);
 };
 
 constexpr StyleTransition CubicBezierStyleTransition(
   const StyleTransition::Duration duration,
-  const auto& fourPoints) {
-  const auto [p0, p1, p2, p3] = fourPoints;
+  const auto& x1y1x2y2) {
+  const auto [x1, y1, x2, y2] = x1y1x2y2;
   return CubicBezierStyleTransition(
-    StyleTransition::Duration::zero(), duration, p0, p1, p2, p3);
+    StyleTransition::Duration::zero(), duration, x1, y1, x2, y2);
 };
 
 }// namespace FredEmmott::GUI
