@@ -12,12 +12,17 @@
 
 namespace FredEmmott::GUI::Widgets {
 
+namespace {
+const auto ScrollViewStyleClass = StyleClass::Make("ScrollView");
+const auto ContentStyleClass = StyleClass::Make("ScrollView_Content");
+}// namespace
+
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
-  : Widget(id, classes) {
+  : Widget(id, classes + ScrollViewStyleClass) {
   this->ChangeDirectChildren([this] {
     mHorizontalScrollBar.reset(new ScrollBar(0, Orientation::Horizontal));
     mVerticalScrollBar.reset(new ScrollBar(1, Orientation::Vertical));
-    mContent.reset(new Widget(2));
+    mContent.reset(new Widget(2, {ContentStyleClass}));
   });
   YGNodeRemoveAllChildren(this->GetLayoutNode());
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &ScrollView::Measure);
@@ -31,7 +36,8 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
       mContentYoga.get(),
       new widget_detail::YogaContext {
         widget_detail::DetachedYogaTree {
-          .mRealParent = this->GetLayoutNode(),
+          .mLogicalParent = this,
+          .mFosterParent = mContent.get(),
         },
       });
   }
@@ -47,6 +53,13 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
 
   using StaticTheme::ScrollBar::ScrollBarSize;
 
+  constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
+    std::chrono::milliseconds(100),
+    StaticTheme::Common::ControlFastOutSlowInKeySpline);
+  mContent->SetBuiltInStyles({
+    .mTranslateX = {0, SmoothScrollingAnimation},
+    .mTranslateY = {0, SmoothScrollingAnimation},
+  });
   mVerticalScrollBar->SetAdditionalBuiltInStyles({
     .mBottom = ScrollBarSize,
     .mPosition = YGPositionTypeAbsolute,
@@ -150,17 +163,6 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
   YGNodeCalculateLayout(mContentYoga.get(), w, h, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
-  const SkPoint offset {
-    mHorizontalScrollBar.get()->GetValue(),
-    mVerticalScrollBar.get()->GetValue(),
-  };
-  mContent->ScrollTo(offset);
-  std::get<widget_detail::DetachedYogaTree>(
-    *static_cast<widget_detail::YogaContext*>(
-      YGNodeGetContext(mContentYoga.get())))
-    .mOffset
-    = offset;
-
   canvas->save();
   canvas->clipRect(SkRect::MakeWH(w, h));
   mContent->Paint(canvas);
@@ -185,6 +187,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   const auto value = std::clamp<float>(
     scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
   scrollBar->SetValue(value);
+  mContent->AddExplicitStyles(Style {.mTranslateY = -value});
   return EventHandlerResult::StopPropagation;
 }
 

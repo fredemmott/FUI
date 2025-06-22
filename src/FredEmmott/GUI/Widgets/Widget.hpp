@@ -62,7 +62,10 @@ class Widget {
   void SetChildren(const std::vector<Widget*>& children);
 
   void DispatchEvent(const Event*);
-  void ScrollTo(const SkPoint& point);
+
+  const Style& GetComputedStyle() const {
+    return mComputedStyle;
+  }
 
  protected:
   enum class StateFlags {
@@ -159,7 +162,6 @@ class Widget {
   std::vector<Widget*> mManagedChildrenCacheForGetChildren;
 
   SkPoint mMouseOffset {};
-  SkPoint mScrollOffset {};
 
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent&);

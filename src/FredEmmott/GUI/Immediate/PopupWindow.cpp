@@ -50,12 +50,22 @@ bool BeginPopupWindow(const ID id) {
     for (auto node = previous->GetLayoutNode(); node;) {
       position.fX += YGNodeLayoutGetLeft(node);
       position.fY += YGNodeLayoutGetTop(node);
-      auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
-      const auto tree = std::get_if<DetachedYogaTree>(ctx);
-      if (tree) {
-        node = tree->mRealParent;
-        position.fX -= tree->mOffset.fX;
-        position.fY -= tree->mOffset.fY;
+
+      const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
+      const Widget* widget = nullptr;
+
+      if (auto tree = std::get_if<DetachedYogaTree>(ctx)) {
+        widget = tree->mLogicalParent;
+      } else if (auto widgetp = std::get_if<Widget*>(ctx)) {
+        widget = *widgetp;
+      } else if (ctx) {
+        __debugbreak();
+      }
+      if (widget) {
+        const auto& style = widget->GetComputedStyle();
+        position.fX += style.mTranslateX.value_or(0);
+        position.fY += style.mTranslateY.value_or(0);
+        node = YGNodeGetParent(widget->GetLayoutNode());
       } else {
         node = YGNodeGetParent(node);
       }

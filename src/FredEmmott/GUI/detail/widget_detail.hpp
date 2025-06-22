@@ -19,8 +19,8 @@ struct constant_t {
 };
 
 struct DetachedYogaTree {
-  YGNode* mRealParent {nullptr};
-  SkPoint mOffset {};
+  Widget* mLogicalParent {nullptr};
+  Widget* mFosterParent {nullptr};
 };
 
 using YogaContext = std::variant<Widget*, DetachedYogaTree>;
