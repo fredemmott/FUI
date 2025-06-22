@@ -22,26 +22,23 @@ struct Linear {
 struct CubicBezier {
   CubicBezier() = delete;
   constexpr CubicBezier(float x1, float y1, float x2, float y2)
-    : x1(x1),
-      y1(y1),
-      x2(x2),
-      y2(y2) {
-    if consteval {
-      mSamples.emplace(CreateSamples(x1, x2));
-    }
+    : mX1(x1),
+      mY1(y1),
+      mX2(x2),
+      mY2(y2) {
+    Initialize();
   }
 
-  explicit constexpr CubicBezier(auto points) {
-    std::tie(x1, y1, x2, y2) = points;
-    if consteval {
-      mSamples.emplace(CreateSamples(x1, x2));
-    }
+  template <class T>
+  explicit constexpr CubicBezier(T&& points) {
+    std::tie(mX1, mY1, mX2, mY2) = std::forward<T>(points);
+    Initialize();
   }
 
   constexpr float operator()(const float x) const {
     if (!mSamples) {
       // mutable in `const` method as it's a cache
-      mSamples = CreateSamples(x1, x2);
+      mSamples = CreateSamples(mX1, mX2);
     }
 
     // Find t for x
@@ -68,26 +65,52 @@ struct CubicBezier {
     }
 
     float t = (high + low) / 2;
-    float approximateX = Interpolation::CubicBezier(x1, x2, t);
-    for (uint8_t rounds = 0; rounds < 8 && std::abs(x - approximateX) > 1e-5f;
-         ++rounds) {
-      ++rounds;
+    auto [approximateX, slope] = GetXValueAndSlope(t);
+    for (uint8_t i = 0; i < 8 && std::abs(x - approximateX) > XAccuracy; ++i) {
       if (x > approximateX) {
         low = t;
       } else {
         high = t;
       }
-      t = (high + low) / 2;
-      approximateX = Interpolation::CubicBezier(x1, x2, t);
+      if (slope < 1e-6) {
+        // Binary search
+        t = (high + low) / 2;
+      } else {
+        // Newton's method
+        t -= (approximateX - x) / slope;
+      }
+      std::tie(approximateX, slope) = GetXValueAndSlope(t);
     }
 
     // Calculate y given t
-    return Interpolation::CubicBezier(y1, y2, t);
+    return GetYValue_ILoveWin32(t);
   }
 
   constexpr bool operator==(const CubicBezier&) const noexcept = default;
 
  private:
+  constexpr void Initialize() {
+    if consteval {
+      mSamples.emplace(CreateSamples(mX1, mX2));
+    }
+
+    const auto v3x1 = 3 * mX1;
+    const auto v3x2 = 3 * mX2;
+    const auto v6x1 = 6 * mX1;
+
+    mXC1 = 1 - v3x2 + v3x1;
+    mXC2 = v3x2 - v6x1;
+    mXC3 = v3x1;
+
+    const auto v3y1 = 3 * mY1;
+    const auto v3y2 = 3 * mY2;
+    const auto v6y1 = 6 * mY1;
+    mYC1 = 1 - v3y2 + v3y1;
+    mYC2 = v3y2 - v6y1;
+    mYC3 = v3y1;
+  }
+
+  static constexpr float XAccuracy = 1e-6;
   // as 1 / 11 == 0.09, which is < 0.1, this means we will always have a
   // looked-up (t, x) tuple with x within 0.1 of the desired x
   static constexpr size_t SampleCount = 11;
@@ -99,7 +122,9 @@ struct CubicBezier {
   using Samples = std::array<Sample, SampleCount>;
   mutable std::optional<Samples> mSamples {};
 
-  float x1, y1, x2, y2;
+  float mX1, mY1, mX2, mY2;
+  float mXC1, mXC2, mXC3;
+  float mYC1, mYC2, mYC3;
 
   static constexpr Samples CreateSamples(const float x1, const float x2) {
     Samples samples;
@@ -111,6 +136,23 @@ struct CubicBezier {
       };
     }
     return samples;
+  }
+
+  // Horner method to calculate both at the same time, using pre-computed
+  // and shared coefficients
+  constexpr std::tuple<float, float> GetXValueAndSlope(const float t) const {
+    const auto c1t = mXC1 * t;
+    const auto value = (((c1t + mXC2) * t) + mXC3) * t;
+    const auto slope = (3 * c1t * t) + (2 * mXC2 * t) + mXC3;
+    return {value, slope};
+  }
+
+  // wingdi.h defines a macro called `GetYValue`, so we can't use that as a
+  // function name
+  constexpr float GetYValue_ILoveWin32(const float t) const {
+    const auto c1t = mYC1 * t;
+    const auto value = (((c1t + mYC2) * t) + mYC3) * t;
+    return value;
   }
 };
 
