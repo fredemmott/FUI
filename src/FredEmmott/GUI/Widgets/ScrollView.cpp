@@ -53,8 +53,9 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
 
   using StaticTheme::ScrollBar::ScrollBarSize;
 
-  constexpr auto SmoothScrollingAnimation
-    = LinearStyleTransition(std::chrono::milliseconds(100));
+  constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
+    std::chrono::milliseconds(100),
+    StaticTheme::Common::ControlFastOutSlowInKeySpline);
   mContent->SetBuiltInStyles({
     .mTranslateX = {0, SmoothScrollingAnimation},
     .mTranslateY = {0, SmoothScrollingAnimation},
