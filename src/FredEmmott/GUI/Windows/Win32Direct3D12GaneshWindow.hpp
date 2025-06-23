@@ -17,6 +17,8 @@
 #include <expected>
 #include <optional>
 
+#include "FredEmmott/GUI/Point.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 class Widget;
 }
@@ -32,7 +34,7 @@ struct WindowOptions {
    * You may also want CW_USEDEFAULT.
    */
   SkISize mInitialSize {};
-  SkIPoint mInitialPosition {CW_USEDEFAULT, CW_USEDEFAULT};
+  NativePoint mInitialPosition {CW_USEDEFAULT, CW_USEDEFAULT};
 
   std::string mClass;
   HWND mParentWindow {nullptr};
@@ -70,9 +72,9 @@ class Win32Direct3D12GaneshWindow final {
   }
 
   void SetParent(HWND);
-  void SetInitialPositionInNativeCoords(const SkIPoint& native);
+  void SetInitialPositionInNativeCoords(const NativePoint& native);
 
-  SkIPoint CanvasPointToNativePoint(const SkPoint& canvas) const;
+  NativePoint CanvasPointToNativePoint(const Point& canvas) const;
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();

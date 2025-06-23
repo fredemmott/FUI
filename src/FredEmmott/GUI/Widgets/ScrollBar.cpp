@@ -278,12 +278,12 @@ void ScrollBar::ScrollBarButtonTick(ButtonTickKind kind) {
   this->SetValue(clamped);
 }
 
-void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const SkPoint& point) {
+void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const Point& point) {
   const auto measureFun = (mOrientation == Orientation::Horizontal)
     ? &YGNodeLayoutGetWidth
     : &YGNodeLayoutGetHeight;
   const auto pointGetter
-    = (mOrientation == Orientation::Horizontal) ? &SkPoint::fX : &SkPoint::fY;
+    = (mOrientation == Orientation::Horizontal) ? &Point::mX : &Point::mY;
   float rangeV {};
 
   Widget* button {nullptr};
@@ -328,7 +328,7 @@ void ScrollBar::UpdateLayout() {
   });
 }
 
-void ScrollBar::OnThumbDrag(SkPoint* deltaXY) {
+void ScrollBar::OnThumbDrag(Point* deltaXY) {
   const auto rangeV = mMaximum - mMinimum;
   if (rangeV < std::numeric_limits<float>::epsilon()) {
     return;
@@ -341,7 +341,7 @@ void ScrollBar::OnThumbDrag(SkPoint* deltaXY) {
     + measureFun(mLargeIncrement->GetLayoutNode());
 
   const auto deltaPtr
-    = (mOrientation == Orientation::Horizontal) ? &SkPoint::fX : &SkPoint::fY;
+    = (mOrientation == Orientation::Horizontal) ? &Point::mX : &Point::mY;
   const auto deltaPixels = std::invoke(deltaPtr, deltaXY);
   const auto valuePerPixel = rangeV / rangePixels;
   const auto deltaV = deltaPixels * valuePerPixel;

@@ -5,6 +5,7 @@
 #include <skia/core/SkCanvas.h>
 
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
+#include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
@@ -121,7 +122,7 @@ class Widget {
     return mComputedStyle;
   }
 
-  SkPoint GetTopLeftInCanvasCoords() const;
+  Point GetTopLeftCanvasPoint() const;
 
  protected:
   enum class StateFlags {
@@ -219,7 +220,7 @@ class Widget {
 
   std::unordered_map<std::type_index, std::unique_ptr<Context>> mContexts;
 
-  SkPoint mMouseOffset {};
+  Point mMouseOffset {};
 
   [[nodiscard]]
   EventHandlerResult DispatchMouseEvent(const MouseEvent&);

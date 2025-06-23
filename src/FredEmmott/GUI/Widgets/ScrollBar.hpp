@@ -65,13 +65,13 @@ class ScrollBar final : public Widget {
   };
 
   void ScrollBarButtonTick(ButtonTickKind);
-  void ScrollBarButtonDown(ButtonTickKind, const SkPoint&);
+  void ScrollBarButtonDown(ButtonTickKind, const Point&);
 
   void UpdateLayout() override;
 
   Style GetBuiltinStylesForOrientation() const;
 
-  void OnThumbDrag(SkPoint* delta);
+  void OnThumbDrag(Point* delta);
 };
 
 }// namespace FredEmmott::GUI::Widgets

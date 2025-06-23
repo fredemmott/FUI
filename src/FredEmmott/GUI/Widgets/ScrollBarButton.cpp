@@ -16,7 +16,7 @@ const auto ScrollBarButtonStyleClass = StyleClass::Make("ScrollBarButton");
 }// namespace
 
 ScrollBarButton::ScrollBarButton(
-  std::function<void(const SkPoint&)> pressCallback,
+  std::function<void(const Point&)> pressCallback,
   std::function<void()> tickCallback,
   std::size_t id)
   : Widget(id, {ScrollBarButtonStyleClass}),

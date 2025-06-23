@@ -10,10 +10,10 @@ namespace FredEmmott::GUI::Widgets {
 
 class ScrollBarThumb final : public Widget {
  public:
-  ScrollBarThumb(std::size_t id);
+  explicit ScrollBarThumb(std::size_t id);
   virtual ~ScrollBarThumb() override;
 
-  void OnDrag(std::function<void(SkPoint*)> callback);
+  void OnDrag(std::function<void(Point*)> callback);
 
  protected:
   EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;
@@ -21,8 +21,8 @@ class ScrollBarThumb final : public Widget {
   EventHandlerResult OnMouseMove(const MouseEvent&) override;
 
  private:
-  std::function<void(SkPoint*)> mOnDragCallback;
-  std::optional<SkPoint> mDragStart {};
+  std::function<void(Point*)> mOnDragCallback;
+  std::optional<Point> mDragStart {};
 };
 
 }// namespace FredEmmott::GUI::Widgets

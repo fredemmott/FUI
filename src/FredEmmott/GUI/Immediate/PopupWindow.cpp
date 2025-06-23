@@ -50,7 +50,7 @@ bool BeginPopupWindow(const ID id) {
       anchor = (*ctx)->mAnchor;
     }
     window->SetInitialPositionInNativeCoords(
-      tWindow->CanvasPointToNativePoint(anchor->GetTopLeftInCanvasCoords()));
+      tWindow->CanvasPointToNativePoint(anchor->GetTopLeftCanvasPoint()));
   }
 
   tPopupStack.emplace_back(

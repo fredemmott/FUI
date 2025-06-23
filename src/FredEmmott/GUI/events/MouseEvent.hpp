@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkPoint.h>
-
+#include <FredEmmott/GUI/Point.hpp>
 #include <variant>
 
 #include "Event.hpp"
@@ -12,20 +11,20 @@
 namespace FredEmmott::GUI {
 
 struct MouseEvent final : Event {
-  SkPoint mWindowPoint {};
-  SkPoint mOffset {};
+  Point mWindowPoint {};
+  Point mOffset {};
   MouseButtons mButtons {};
 
   [[nodiscard]]
   bool IsValid() const {
-    return mWindowPoint.x() >= 0 && mWindowPoint.y() >= 0;
+    return mWindowPoint.mX >= 0 && mWindowPoint.mY >= 0;
   }
 
-  SkPoint GetPosition() const {
+  Point GetPosition() const {
     return mWindowPoint + mOffset;
   }
 
-  MouseEvent WithOffset(const SkPoint& offset) const {
+  MouseEvent WithOffset(const Point& offset) const {
     MouseEvent ret {*this};
     ret.mOffset += offset;
     return ret;

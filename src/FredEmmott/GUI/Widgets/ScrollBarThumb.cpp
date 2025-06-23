@@ -21,7 +21,7 @@ Widget::EventHandlerResult ScrollBarThumb::OnMouseButtonPress(
   return EventHandlerResult::StopPropagation;
 }
 
-void ScrollBarThumb::OnDrag(std::function<void(SkPoint*)> callback) {
+void ScrollBarThumb::OnDrag(std::function<void(Point*)> callback) {
   mOnDragCallback = callback;
 }
 
@@ -31,7 +31,7 @@ ScrollBarThumb::EventHandlerResult ScrollBarThumb::OnMouseMove(
     return EventHandlerResult::Default;
   }
 
-  SkPoint delta {e.mWindowPoint - *mDragStart};
+  Point delta {e.mWindowPoint - *mDragStart};
   if (mOnDragCallback) {
     mOnDragCallback(&delta);
   }

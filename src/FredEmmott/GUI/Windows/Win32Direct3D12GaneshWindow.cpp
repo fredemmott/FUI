@@ -279,8 +279,8 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     className.c_str(),
     title.c_str(),
     mOptions.mWindowStyle,
-    mOptions.mInitialPosition.fX,
-    mOptions.mInitialPosition.fY,
+    mOptions.mInitialPosition.mX,
+    mOptions.mInitialPosition.mY,
     mOptions.mInitialSize.fWidth,
     mOptions.mInitialSize.fHeight,
     mParentHwnd,
@@ -328,20 +328,20 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     }
     YGNodeCalculateLayout(
       root,
-      (clientRect.right - clientRect.left) / mDPIScale,
-      (clientRect.bottom - clientRect.top) / mDPIScale,
+      static_cast<float>(clientRect.right - clientRect.left) / mDPIScale,
+      static_cast<float>(clientRect.bottom - clientRect.top) / mDPIScale,
       YGDirectionLTR);
-    const auto canvas = mOffsetToChild->GetTopLeftInCanvasCoords();
+    const auto canvas = mOffsetToChild->GetTopLeftCanvasPoint();
     const auto native = CanvasPointToNativePoint(canvas);
     const auto nativeOrigin = mOptions.mInitialPosition;
-    FUI_ASSERT(nativeOrigin.fX != CW_USEDEFAULT);
-    FUI_ASSERT(nativeOrigin.fY != CW_USEDEFAULT);
+    FUI_ASSERT(nativeOrigin.mX != CW_USEDEFAULT);
+    FUI_ASSERT(nativeOrigin.mY != CW_USEDEFAULT);
 
     SetWindowPos(
       mHwnd.get(),
       nullptr,
-      (2 * nativeOrigin.fX) - native.fX,
-      (2 * nativeOrigin.fY) - native.fY,
+      (2 * nativeOrigin.mX) - native.mX,
+      (2 * nativeOrigin.mY) - native.mY,
       0,
       0,
       SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
@@ -583,10 +583,10 @@ void Win32Direct3D12GaneshWindow::OffsetPositionToDescendant(
     return;
   }
   FUI_ASSERT(
-    mOptions.mInitialPosition.fX != CW_USEDEFAULT,
+    mOptions.mInitialPosition.mX != CW_USEDEFAULT,
     "Can't align a child element if an initial position is not specified");
   FUI_ASSERT(
-    mOptions.mInitialPosition.fY != CW_USEDEFAULT,
+    mOptions.mInitialPosition.mY != CW_USEDEFAULT,
     "Can't align a child element if an initial position is not specified");
   mOffsetToChild = child;
 }
@@ -600,18 +600,18 @@ void Win32Direct3D12GaneshWindow::SetParent(HWND value) {
 }
 
 void Win32Direct3D12GaneshWindow::SetInitialPositionInNativeCoords(
-  const SkIPoint& native) {
+  const NativePoint& native) {
   FUI_ASSERT(!mHwnd, "Initial position must be set before window is created");
   mOptions.mInitialPosition = native;
 }
 
-SkIPoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
-  const SkPoint& canvas) const {
+NativePoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
+  const Point& canvas) const {
   FUI_ASSERT(mDPI && mHwnd);
 
-  SkIPoint native {
-    static_cast<int>(std::round(canvas.fX * mDPIScale)),
-    static_cast<int>(std::round(canvas.fY * mDPIScale)),
+  NativePoint native {
+    static_cast<int>(std::round(canvas.mX * mDPIScale)),
+    static_cast<int>(std::round(canvas.mY * mDPIScale)),
   };
 
   // Adjust an all-zero rect to get padding
@@ -619,12 +619,12 @@ SkIPoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
   AdjustWindowRectEx(
     &rect, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
   // The top and left padding will both be <= 0
-  native.fX -= rect.left;
-  native.fY -= rect.top;
+  native.mX -= rect.left;
+  native.mY -= rect.top;
 
   GetWindowRect(mHwnd.get(), &rect);
-  native.fX += rect.left;
-  native.fY += rect.top;
+  native.mX += rect.left;
+  native.mY += rect.top;
 
   return native;
 }

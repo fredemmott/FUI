@@ -4,6 +4,7 @@
 
 #include <core/SkRRect.h>
 
+#include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <ranges>
@@ -17,7 +18,7 @@ namespace {
 
 struct MouseCapture {
   Widget* mWidget {nullptr};
-  SkPoint mOffset {};
+  Point mOffset {};
 };
 std::optional<MouseCapture> gMouseCapture;
 
@@ -408,11 +409,11 @@ void Widget::EndMouseCapture() {
   gMouseCapture = {};
 }
 
-SkPoint Widget::GetTopLeftInCanvasCoords() const {
-  SkPoint position {};
+Point Widget::GetTopLeftCanvasPoint() const {
+  Point position {};
   for (auto yoga = this->GetLayoutNode(); yoga;) {
-    position.fX += YGNodeLayoutGetLeft(yoga);
-    position.fY += YGNodeLayoutGetTop(yoga);
+    position.mX += YGNodeLayoutGetLeft(yoga);
+    position.mY += YGNodeLayoutGetTop(yoga);
 
     const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
     const Widget* widget = nullptr;
@@ -426,8 +427,8 @@ SkPoint Widget::GetTopLeftInCanvasCoords() const {
     }
     if (widget) {
       const auto& style = widget->GetComputedStyle();
-      position.fX += style.mTranslateX.value_or(0);
-      position.fY += style.mTranslateY.value_or(0);
+      position.mX += style.mTranslateX.value_or(0);
+      position.mY += style.mTranslateY.value_or(0);
       yoga = YGNodeGetParent(widget->GetLayoutNode());
     } else {
       yoga = YGNodeGetParent(yoga);

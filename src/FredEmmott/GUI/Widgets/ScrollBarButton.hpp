@@ -18,7 +18,7 @@ class ScrollBarButton final : public Widget {
    *   down.
    */
   ScrollBarButton(
-    std::function<void(const SkPoint&)> pressCallback,
+    std::function<void(const Point&)> pressCallback,
     std::function<void()> tickCallback,
     std::size_t id);
   ~ScrollBarButton() override;
@@ -35,7 +35,7 @@ class ScrollBarButton final : public Widget {
 
  private:
   std::optional<std::chrono::steady_clock::time_point> mNextTick;
-  std::function<void(const SkPoint&)> mPressCallback;
+  std::function<void(const Point&)> mPressCallback;
   std::function<void()> mTickCallback;
 };
 

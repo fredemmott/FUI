@@ -10,6 +10,7 @@ add_executable(
   main.cpp
 
   FredEmmott/GUI.hpp
+  FredEmmott/GUI/config.hpp
   FredEmmott/GUI/ActivatedFlag.hpp
   FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Color.hpp
@@ -35,6 +36,7 @@ add_executable(
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
   FredEmmott/GUI/Orientation.hpp
+  FredEmmott/GUI/Point.hpp
   FredEmmott/GUI/PseudoClasses.cpp FredEmmott/GUI/PseudoClasses.hpp
   FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
