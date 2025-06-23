@@ -106,7 +106,7 @@ class Win32Direct3D12GaneshWindow final {
   Widgets::Widget* mOffsetToChild {nullptr};
   ActivatedFlag mPendingResize;
   bool mTrackingMouseEvents = false;
-  SkIPoint mPosition {};
+  NativePoint mPosition {};
   int mMinimumWidth {};
 
   FredEmmott::GUI::Immediate::Root mFUIRoot;

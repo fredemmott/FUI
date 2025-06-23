@@ -813,8 +813,9 @@ Win32Direct3D12GaneshWindow::WindowProc(
       GetWindowRect(hwnd, &mNCRect);
       const auto x = LOWORD(lParam);
       const auto y = HIWORD(lParam);
-      const auto dx = x - mPosition.fX;
-      const auto dy = y - mPosition.fY;
+      const auto dx = x - mPosition.mX;
+      const auto dy = y - mPosition.mY;
+      mPosition = {x, y};
       for (auto&& child: mChildren) {
         RECT rect {};
         GetWindowRect(child, &rect);
