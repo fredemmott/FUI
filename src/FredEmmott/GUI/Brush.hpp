@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkPaint.h>
-
+#include <FredEmmott/GUI/config.hpp>
 #include <stdexcept>
 #include <variant>
 
@@ -12,6 +11,10 @@
 #include "SolidColorBrush.hpp"
 #include "StaticTheme/Resource.hpp"
 #include "StaticTheme/Theme.hpp"
+
+#ifdef FUI_ENABLE_SKIA
+#include <skia/core/SkPaint.h>
+#endif
 
 namespace FredEmmott::GUI {
 
@@ -22,31 +25,14 @@ class Brush final {
   Brush() = delete;
   constexpr Brush(const Brush&) = default;
   constexpr Brush(const std::convertible_to<Color> auto& color)
-    : mBrush(SolidColorBrush {Color {color}}) {
-  }
+    : mBrush(SolidColorBrush {Color {color}}) {}
 
-  constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {
-  }
+  constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {}
 
   Brush(StaticThemeBrush brush) : mBrush(brush) {
     if (!brush) [[unlikely]] {
       throw std::logic_error("Static resource brushes must be a valid pointer");
     }
-  }
-
-  [[nodiscard]] SkPaint GetPaint(const SkRect& rect) const {
-    if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
-      SkPaint paint;
-      paint.setColor(*it);
-      return paint;
-    }
-    if (const auto it = get_if<LinearGradientBrush>(&mBrush)) {
-      return it->GetPaint(rect);
-    }
-    if (const auto it = get_if<StaticThemeBrush>(&mBrush)) {
-      return (*it)->Resolve().GetPaint(rect);
-    }
-    std::unreachable();
   }
 
   /** If this is a SolidColorBrush, returns the backing color.
@@ -63,6 +49,9 @@ class Brush final {
 
   constexpr bool operator==(const Brush&) const noexcept = default;
 
+#ifdef FUI_ENABLE_SKIA
+  [[nodiscard]] SkPaint GetSkiaPaint(const SkRect& rect) const;
+#endif
  private:
   // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
   // wanting more than just LinearGradientBrush, but it's worth special-casing

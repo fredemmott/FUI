@@ -2,18 +2,21 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkPaint.h>
-#include <skia/core/SkRect.h>
-#include <skia/core/SkShader.h>
-
+#include <FredEmmott/GUI/Point.hpp>
+#include <FredEmmott/GUI/config.hpp>
 #include <concepts>
 #include <vector>
 
+#ifdef FUI_ENABLE_SKIA
+#include <skia/core/SkPaint.h>
+#include <skia/core/SkShader.h>
+#endif
+
 namespace FredEmmott::GUI {
 struct ScaleTransform {
-  SkPoint mOrigin {0, 0};
-  SkScalar mScaleX {1};
-  SkScalar mScaleY {1};
+  Point mOrigin {0, 0};
+  float mScaleX {1};
+  float mScaleY {1};
   bool operator==(const ScaleTransform&) const noexcept = default;
 };
 
@@ -24,12 +27,13 @@ class LinearGradientBrush final {
     RelativeToBoundingBox,
   };
   struct Stop {
-    SkScalar mOffset {};
+    float mOffset {};
     SkColor mColor {};
 
-    Stop(SkScalar offset, const std::convertible_to<SkColor> auto& color)
-      : mOffset(offset), mColor(color) {
-    }
+    Stop(float offset, const std::convertible_to<SkColor> auto& color)
+      : mOffset(offset),
+        mColor(color) {}
+    constexpr bool operator==(const Stop&) const noexcept = default;
   };
   using ScaleTransform = ScaleTransform;
 
@@ -37,18 +41,28 @@ class LinearGradientBrush final {
 
   LinearGradientBrush(
     MappingMode mode,
-    SkPoint start,
-    SkPoint end,
+    const Point& start,
+    const Point& end,
     const std::vector<Stop>& stops,
     ScaleTransform scaleTransform = {});
 
-  [[nodiscard]] SkPaint GetPaint(const SkRect&) const;
-
   bool operator==(const LinearGradientBrush&) const = default;
 
+#ifdef FUI_ENABLE_SKIA
+  [[nodiscard]] SkPaint GetSkiaPaint(const SkRect&) const;
+#endif
  private:
-  sk_sp<SkShader> mShader;
   MappingMode mMappingMode;
+  Point mStart;
+  Point mEnd;
+  std::vector<Stop> mStops;
+  ScaleTransform mScaleTransform {};
+
+#ifdef FUI_ENABLE_SKIA
+  sk_sp<SkShader> mSkiaShader;
+
+  void InitializeSkiaShader();
+#endif
 };
 
 }// namespace FredEmmott::GUI

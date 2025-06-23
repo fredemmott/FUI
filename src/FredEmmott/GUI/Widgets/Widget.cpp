@@ -27,7 +27,7 @@ void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
     return;
   }
 
-  auto paint = style.mBackgroundColor->GetPaint(rect);
+  auto paint = style.mBackgroundColor->GetSkiaPaint(rect);
 
   if (!style.mBorderRadius) {
     canvas->drawRect(rect, paint);
@@ -69,7 +69,7 @@ void PaintBorder(
   }
   const auto borderRect = contentRect.makeInset(top / 2.0, top / 2.0);
 
-  auto paint = style.mBorderColor->GetPaint(contentRect);
+  auto paint = style.mBorderColor->GetSkiaPaint(contentRect);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(top);
 

@@ -28,8 +28,8 @@ void GetLinearGradientBrush(
   std::vector<std::string> args {
     std::format(
       "LinearGradientBrush::MappingMode::{}", it.Attribute("MappingMode")),
-    std::format("/* start = */ SkPoint {{ {} }}", it.Attribute("StartPoint")),
-    std::format("/* end = */ SkPoint {{ {} }}", it.Attribute("EndPoint")),
+    std::format("/* start = */ Point {{ {} }}", it.Attribute("StartPoint")),
+    std::format("/* end = */ Point {{ {} }}", it.Attribute("EndPoint")),
     std::format(
       "/* stops = */ {{ {} }}",
       std::ranges::to<std::string>(std::views::join_with(stops, ','))),

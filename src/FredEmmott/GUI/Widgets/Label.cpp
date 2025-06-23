@@ -38,7 +38,7 @@ void Label::PaintOwnContent(
   }
 #endif
 
-  auto paint = style.mColor->GetPaint(rect);
+  auto paint = style.mColor->GetSkiaPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
 
   SkFontMetrics metrics {};

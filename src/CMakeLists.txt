@@ -13,6 +13,7 @@ add_executable(
   FredEmmott/GUI/config.hpp
   FredEmmott/GUI/ActivatedFlag.hpp
   FredEmmott/GUI/Brush.hpp
+  FredEmmott/GUI/Brush_Skia.cpp
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
@@ -86,6 +87,11 @@ add_executable(
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
   FredEmmott/GUI/Immediate/ID.hpp
+)
+target_sources(
+  HelloSkia-Win32-Ganesh-D3D12
+  PRIVATE
+  FredEmmott/GUI/LinearGradientBrush_Skia.cpp
 )
 target_link_libraries(
   HelloSkia-Win32-Ganesh-D3D12

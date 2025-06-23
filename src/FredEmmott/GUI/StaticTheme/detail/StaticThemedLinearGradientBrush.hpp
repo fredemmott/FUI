@@ -2,42 +2,47 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkScalar.h>
-#include <skia/core/SkPoint.h>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/LinearGradientBrush.hpp>
+#include <FredEmmott/GUI/Point.hpp>
 
 namespace FredEmmott::GUI::StaticTheme {
 
 struct StaticThemedLinearGradientBrush {
   struct Stop {
-    SkScalar mOffset;
+    float mOffset;
     Color mColor;
   };
   StaticThemedLinearGradientBrush() = delete;
   StaticThemedLinearGradientBrush(
     LinearGradientBrush::MappingMode mode,
-    SkPoint start,
-    SkPoint end,
+    const Point& start,
+    const Point& end,
     const std::vector<Stop>& stops,
     ScaleTransform scaleTransform = {})
-    : mMappingMode(mode), mStart(start), mEnd(end), mStops(stops), mScaleTransform(scaleTransform) {
-    }
-  template<StaticTheme::Theme TTheme>
+    : mMappingMode(mode),
+      mStart(start),
+      mEnd(end),
+      mStops(stops),
+      mScaleTransform(scaleTransform) {}
+  template <StaticTheme::Theme TTheme>
   auto Resolve() const {
     std::vector<LinearGradientBrush::Stop> stops;
     stops.reserve(mStops.size());
     for (auto&& stop: mStops) {
-      stops.push_back({stop.mOffset, stop.mColor.ResolveForStaticTheme<TTheme>()});
+      stops.push_back(
+        {stop.mOffset, stop.mColor.ResolveForStaticTheme<TTheme>()});
     }
-    return LinearGradientBrush { mMappingMode, mStart, mEnd, stops, mScaleTransform };
+    return LinearGradientBrush {
+      mMappingMode, mStart, mEnd, stops, mScaleTransform};
   }
+
  private:
   LinearGradientBrush::MappingMode mMappingMode;
-  SkPoint mStart;
-  SkPoint mEnd;
+  Point mStart;
+  Point mEnd;
   std::vector<Stop> mStops;
   ScaleTransform mScaleTransform;
 };
 
-}
+}// namespace FredEmmott::GUI::StaticTheme
