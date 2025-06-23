@@ -13,6 +13,7 @@
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>
 #include <FredEmmott/GUI/Immediate/PopupWindow.hpp>
+#include <FredEmmott/GUI/Immediate/ScrollView.hpp>
 #include <FredEmmott/GUI/Immediate/StackPanel.hpp>
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>

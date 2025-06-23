@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 #include <FredEmmott/GUI.hpp>
-#include <FredEmmott/GUI/Widgets/ScrollBar.hpp>
-#include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <print>
 
 namespace fui = FredEmmott::GUI;
@@ -12,12 +10,7 @@ namespace fuii = fui::Immediate;
 static void AppTick() {
   constexpr bool UseScrollView = true;
   if constexpr (UseScrollView) {
-    fuii::immediate_detail::BeginWidget<fui::Widgets::ScrollView>(
-      fuii::ID {"scrollView"});
-    auto sv = fuii::immediate_detail::GetCurrentParentNode<
-      fui::Widgets::ScrollView>();
-    sv->SetVerticalScrollBarVisibility(
-      fui::Widgets::ScrollView::ScrollBarVisibility::Auto);
+    fuii::BeginVScrollView();
   }
 
   fuii::BeginCard();
@@ -92,7 +85,7 @@ static void AppTick() {
   fuii::EndStackPanel();
   fuii::EndCard();
   if constexpr (UseScrollView) {
-    fuii::immediate_detail::EndWidget<fui::Widgets::ScrollView>();
+    fuii::EndVScrollView();
   }
 }
 
