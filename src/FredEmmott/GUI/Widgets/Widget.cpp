@@ -22,7 +22,7 @@ struct MouseCapture {
 };
 std::optional<MouseCapture> gMouseCapture;
 
-void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
+void PaintBackground(SkCanvas* canvas, const Rect& rect, const Style& style) {
   if (!style.mBackgroundColor) {
     return;
   }
@@ -39,7 +39,7 @@ void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
   if (style.mBorderWidth && style.mBorderColor) {
     radius -= style.mBorderWidth.value();
     const auto inset = style.mBorderWidth.value() - 0.5f;
-    rrect.inset(inset, inset);
+    rrect.Inset(inset, inset);
   }
 
   paint.setAntiAlias(true);
@@ -49,7 +49,7 @@ void PaintBackground(SkCanvas* canvas, const SkRect& rect, const Style& style) {
 void PaintBorder(
   YGNodeConstRef yoga,
   SkCanvas* canvas,
-  const SkRect& contentRect,
+  const Rect& contentRect,
   const Style& style) {
   if (!(style.mBorderColor)) {
     return;
@@ -67,7 +67,7 @@ void PaintBorder(
   if (top == 0) {
     return;
   }
-  const auto borderRect = contentRect.makeInset(top / 2.0, top / 2.0);
+  const auto borderRect = contentRect.WithInset(top / 2.0, top / 2.0);
 
   auto paint = style.mBorderColor->GetSkiaPaint(contentRect);
   paint.setStyle(SkPaint::kStroke_Style);
@@ -221,16 +221,19 @@ void Widget::Paint(SkCanvas* canvas) const {
   canvas->translate(
     YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default(),
     YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default());
-  auto rect
-    = SkRect::MakeWH(YGNodeLayoutGetWidth(yoga), YGNodeLayoutGetHeight(yoga));
+  Rect rect {
+    .mSize = {
+      YGNodeLayoutGetWidth(yoga),
+      YGNodeLayoutGetHeight(yoga),
+    }};
 
   const auto scaleY = style.mScaleY.value_or_default();
   if (
     scaleY + std::numeric_limits<float>::epsilon() < 1.0f
     || scaleY > 1.0f + std::numeric_limits<float>::epsilon()) {
     canvas->scale(1.0f, scaleY);
-    canvas->translate(0, (rect.height() * (1.0f - scaleY) / 2.0f));
-    rect = SkRect::MakeWH(rect.width(), rect.height() * scaleY);
+    canvas->translate(0, (rect.GetHeight() * (1.0f - scaleY) / 2.0f));
+    rect.mSize = {rect.GetWidth(), rect.GetHeight()};
   }
 
   PaintBackground(canvas, rect, style);

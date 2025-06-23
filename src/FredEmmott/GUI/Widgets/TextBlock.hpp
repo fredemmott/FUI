@@ -21,7 +21,7 @@ class TextBlock final : public Widget {
   void SetText(std::string_view);
 
  protected:
-  void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
+  void PaintOwnContent(SkCanvas*, const Rect&, const Style& style)
     const override;
   Style GetBuiltInStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& base, StateFlags state)

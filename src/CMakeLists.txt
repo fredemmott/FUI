@@ -39,6 +39,7 @@ add_executable(
   FredEmmott/GUI/Orientation.hpp
   FredEmmott/GUI/Point.hpp
   FredEmmott/GUI/PseudoClasses.cpp FredEmmott/GUI/PseudoClasses.hpp
+  FredEmmott/GUI/Rect.hpp
   FredEmmott/GUI/Size.hpp
   FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp

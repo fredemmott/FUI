@@ -62,7 +62,7 @@ void TextBlock::SetText(std::string_view text) {
 
 void TextBlock::PaintOwnContent(
   SkCanvas* canvas,
-  const SkRect& rect,
+  const Rect& rect,
   const Style& style) const {
 #ifndef NDEBUG
   if (style.mFont != mFont) [[unlikely]] {
@@ -74,7 +74,7 @@ void TextBlock::PaintOwnContent(
   auto paint = style.mColor->GetSkiaPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   mParagraph->updateForegroundPaint(0, mText.size(), paint);
-  mParagraph->paint(canvas, rect.x(), rect.y());
+  mParagraph->paint(canvas, rect.GetLeft(), rect.GetTop());
 }
 
 Style TextBlock::GetBuiltInStyles() const {

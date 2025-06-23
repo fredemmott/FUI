@@ -29,7 +29,7 @@ void Label::SetText(std::string_view text) {
 
 void Label::PaintOwnContent(
   SkCanvas* canvas,
-  const SkRect& rect,
+  const Rect& rect,
   const Style& style) const {
 #ifndef NDEBUG
   if (style.mFont != mFont) [[unlikely]] {
@@ -45,7 +45,11 @@ void Label::PaintOwnContent(
   mFont.GetMetricsInPixels(&metrics);
 
   canvas->drawString(
-    mText.c_str(), rect.x(), rect.bottom() - metrics.fDescent, mFont, paint);
+    mText.c_str(),
+    rect.GetLeft(),
+    rect.GetBottom() - metrics.fDescent,
+    mFont,
+    paint);
 }
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(

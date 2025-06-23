@@ -72,7 +72,7 @@ void Root::Paint(SkCanvas* canvas, const Size& size) {
     return;
   }
   canvas->save();
-  canvas->clipRect(SkRect::MakeXYWH(0, 0, size.mWidth, size.mHeight));
+  canvas->clipRect(Rect {.mSize = {size.mWidth, size.mHeight}});
 
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);

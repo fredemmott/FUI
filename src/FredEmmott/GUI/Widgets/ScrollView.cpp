@@ -166,7 +166,7 @@ void ScrollView::PaintChildren(SkCanvas* canvas) const {
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
   canvas->save();
-  canvas->clipRect(SkRect::MakeWH(w, h));
+  canvas->clipRect(Rect {.mSize = {w, h}});
   mContent->Paint(canvas);
   canvas->restore();
 

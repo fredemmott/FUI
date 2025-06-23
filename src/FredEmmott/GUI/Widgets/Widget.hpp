@@ -6,6 +6,7 @@
 
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/Point.hpp>
+#include <FredEmmott/GUI/Rect.hpp>
 #include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
@@ -160,7 +161,7 @@ class Widget {
     const Style& style,
     StateFlags state);
 
-  virtual void PaintOwnContent(SkCanvas*, const SkRect&, const Style& style)
+  virtual void PaintOwnContent(SkCanvas*, const Rect&, const Style& style)
     const {}
   virtual void PaintChildren(SkCanvas* canvas) const;
 
