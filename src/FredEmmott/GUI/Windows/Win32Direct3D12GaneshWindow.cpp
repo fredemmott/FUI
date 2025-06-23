@@ -318,23 +318,30 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
       calculatedInitialSize.fWidth,
       calculatedInitialSize.fHeight,
       SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+    GetClientRect(mHwnd.get(), &clientRect);
   }
 
   if (mOffsetToChild) {
+    auto root = mOffsetToChild->GetLayoutNode();
+    while (const auto node = YGNodeGetParent(root)) {
+      root = node;
+    }
+    YGNodeCalculateLayout(
+      root,
+      (clientRect.right - clientRect.left) / mDPIScale,
+      (clientRect.bottom - clientRect.top) / mDPIScale,
+      YGDirectionLTR);
     const auto canvas = mOffsetToChild->GetTopLeftInCanvasCoords();
     const auto native = CanvasPointToNativePoint(canvas);
-    const auto nativeOrigin = CanvasPointToNativePoint({});
-
-    const auto target = SkIPoint {
-      (2 * nativeOrigin.fX) - native.fX,
-      (2 * nativeOrigin.fY) - native.fY,
-    };
+    const auto nativeOrigin = mOptions.mInitialPosition;
+    FUI_ASSERT(nativeOrigin.fX != CW_USEDEFAULT);
+    FUI_ASSERT(nativeOrigin.fY != CW_USEDEFAULT);
 
     SetWindowPos(
       mHwnd.get(),
       nullptr,
-      target.fX,
-      target.fY,
+      (2 * nativeOrigin.fX) - native.fX,
+      (2 * nativeOrigin.fY) - native.fY,
       0,
       0,
       SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
@@ -575,6 +582,12 @@ void Win32Direct3D12GaneshWindow::OffsetPositionToDescendant(
   if (mHwnd) {
     return;
   }
+  FUI_ASSERT(
+    mOptions.mInitialPosition.fX != CW_USEDEFAULT,
+    "Can't align a child element if an initial position is not specified");
+  FUI_ASSERT(
+    mOptions.mInitialPosition.fY != CW_USEDEFAULT,
+    "Can't align a child element if an initial position is not specified");
   mOffsetToChild = child;
 }
 
