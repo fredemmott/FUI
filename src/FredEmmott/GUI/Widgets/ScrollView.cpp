@@ -144,6 +144,7 @@ void ScrollView::UpdateLayout() {
     mHorizontalScrollBar->SetMaximum(cw - w);
   } else {
     mHorizontalScrollBar->SetValue(0);
+    mHorizontalScrollBar->SetMaximum(0);
   }
 
   if (showVScroll) {
@@ -151,6 +152,7 @@ void ScrollView::UpdateLayout() {
     mVerticalScrollBar->SetMaximum(ch - h);
   } else {
     mVerticalScrollBar->SetValue(0);
+    mVerticalScrollBar->SetMaximum(0);
   }
 
   Widget::UpdateLayout();
