@@ -46,32 +46,8 @@ bool BeginPopupWindow(const ID id) {
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
   window->SetParent(tWindow->GetNativeHandle());
   if (previous && !window->GetNativeHandle()) {
-    SkIPoint position {};
-    for (auto node = previous->GetLayoutNode(); node;) {
-      position.fX += YGNodeLayoutGetLeft(node);
-      position.fY += YGNodeLayoutGetTop(node);
-
-      const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
-      const Widget* widget = nullptr;
-
-      if (auto tree = std::get_if<DetachedYogaTree>(ctx)) {
-        widget = tree->mLogicalParent;
-      } else if (auto widgetp = std::get_if<Widget*>(ctx)) {
-        widget = *widgetp;
-      } else if (ctx) {
-        __debugbreak();
-      }
-      if (widget) {
-        const auto& style = widget->GetComputedStyle();
-        position.fX += style.mTranslateX.value_or(0);
-        position.fY += style.mTranslateY.value_or(0);
-        node = YGNodeGetParent(widget->GetLayoutNode());
-      } else {
-        node = YGNodeGetParent(node);
-      }
-    }
-    position = tWindow->CanvasPointToNativePoint(position);
-    window->SetInitialPosition(position);
+    window->SetInitialPositionInNativeCoords(
+      tWindow->CanvasPointToNativePoint(previous->GetTopLeftInCanvasCoords()));
   }
 
   tPopupStack.emplace_back(

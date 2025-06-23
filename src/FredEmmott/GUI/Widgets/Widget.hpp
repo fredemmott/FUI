@@ -67,6 +67,8 @@ class Widget {
     return mComputedStyle;
   }
 
+  SkPoint GetTopLeftInCanvasCoords() const;
+
  protected:
   enum class StateFlags {
     Default = 0,

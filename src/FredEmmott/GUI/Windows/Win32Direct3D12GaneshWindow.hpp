@@ -70,9 +70,9 @@ class Win32Direct3D12GaneshWindow final {
   }
 
   void SetParent(HWND);
-  void SetInitialPosition(const SkIPoint& nativeTopLeft);
+  void SetInitialPositionInNativeCoords(const SkIPoint& native);
 
-  SkIPoint CanvasPointToNativePoint(const SkIPoint& point);
+  SkIPoint CanvasPointToNativePoint(const SkPoint& canvas) const;
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();

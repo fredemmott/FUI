@@ -408,4 +408,32 @@ void Widget::EndMouseCapture() {
   gMouseCapture = {};
 }
 
+SkPoint Widget::GetTopLeftInCanvasCoords() const {
+  SkPoint position {};
+  for (auto yoga = this->GetLayoutNode(); yoga;) {
+    position.fX += YGNodeLayoutGetLeft(yoga);
+    position.fY += YGNodeLayoutGetTop(yoga);
+
+    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
+    const Widget* widget = nullptr;
+
+    if (auto tree = std::get_if<DetachedYogaTree>(ctx)) {
+      widget = tree->mLogicalParent;
+    } else if (auto widgetp = std::get_if<Widget*>(ctx)) {
+      widget = *widgetp;
+    } else if (ctx) {
+      __debugbreak();
+    }
+    if (widget) {
+      const auto& style = widget->GetComputedStyle();
+      position.fX += style.mTranslateX.value_or(0);
+      position.fY += style.mTranslateY.value_or(0);
+      yoga = YGNodeGetParent(widget->GetLayoutNode());
+    } else {
+      yoga = YGNodeGetParent(yoga);
+    }
+  }
+  return position;
+}
+
 }// namespace FredEmmott::GUI::Widgets

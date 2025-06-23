@@ -321,18 +321,20 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
   }
 
   if (mOffsetToChild) {
-    SkIPoint offset {};
-    for (auto node = mOffsetToChild->GetLayoutNode(); node;
-         node = YGNodeGetParent(node)) {
-      offset.fX += YGNodeLayoutGetLeft(node);
-      offset.fY += YGNodeLayoutGetTop(node);
-    }
-    offset = CanvasPointToNativePoint({-offset.fX, -offset.fY});
+    const auto canvas = mOffsetToChild->GetTopLeftInCanvasCoords();
+    const auto native = CanvasPointToNativePoint(canvas);
+    const auto nativeOrigin = CanvasPointToNativePoint({});
+
+    const auto target = SkIPoint {
+      (2 * nativeOrigin.fX) - native.fX,
+      (2 * nativeOrigin.fY) - native.fY,
+    };
+
     SetWindowPos(
       mHwnd.get(),
       nullptr,
-      offset.fX,
-      offset.fY,
+      target.fX,
+      target.fY,
       0,
       0,
       SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
@@ -584,32 +586,34 @@ void Win32Direct3D12GaneshWindow::SetParent(HWND value) {
   FUI_ASSERT(!(value && mHwnd), "Parent must be set before window is created");
 }
 
-void Win32Direct3D12GaneshWindow::SetInitialPosition(const SkIPoint& topLeft) {
+void Win32Direct3D12GaneshWindow::SetInitialPositionInNativeCoords(
+  const SkIPoint& native) {
   FUI_ASSERT(!mHwnd, "Initial position must be set before window is created");
-  mOptions.mInitialPosition = topLeft;
+  mOptions.mInitialPosition = native;
 }
 
 SkIPoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
-  const SkIPoint& point) {
+  const SkPoint& canvas) const {
   FUI_ASSERT(mDPI && mHwnd);
 
-  SkIPoint ret = point;
-  ret.fX *= mDPIScale;
-  ret.fY *= mDPIScale;
+  SkIPoint native {
+    static_cast<int>(std::round(canvas.fX * mDPIScale)),
+    static_cast<int>(std::round(canvas.fY * mDPIScale)),
+  };
 
   // Adjust an all-zero rect to get padding
   RECT rect {};
   AdjustWindowRectEx(
     &rect, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
-  // Top and left padding will be <= 0
-  ret.fX -= rect.left;
-  ret.fY -= rect.top;
+  // The top and left padding will both be <= 0
+  native.fX -= rect.left;
+  native.fY -= rect.top;
 
   GetWindowRect(mHwnd.get(), &rect);
-  ret.fX += rect.left;
-  ret.fY += rect.top;
+  native.fX += rect.left;
+  native.fY += rect.top;
 
-  return ret;
+  return native;
 }
 
 std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
