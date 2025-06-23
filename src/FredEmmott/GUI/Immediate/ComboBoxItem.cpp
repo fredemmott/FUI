@@ -17,10 +17,6 @@ void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
   using namespace StaticTheme::ComboBox;
   BeginButton(clicked, id);
   const bool isSelected = initiallySelected || (clicked && *clicked);
-  if (isSelected) {
-    FUI_ASSERT(tWindow);
-    tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
-  }
 
   using namespace PseudoClasses;
   Style buttonStyles {
@@ -104,9 +100,11 @@ void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
   });
   EndWidget<Widget>();
   BeginWidget<Widget>(ID {"content"});
-  GetCurrentParentNode()->SetBuiltInStyles({
-    .mDisplay = YGDisplayContents,
-  });
+
+  if (isSelected) {
+    FUI_ASSERT(tWindow);
+    tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
+  }
 }
 
 void EndComboBoxItem() {

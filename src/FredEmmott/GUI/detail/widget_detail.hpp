@@ -23,6 +23,16 @@ struct DetachedYogaTree {
   Widget* mFosterParent {nullptr};
 };
 
+class PopupAnchorContext final : public Context {
+ public:
+  PopupAnchorContext() = delete;
+  ~PopupAnchorContext() override = default;
+
+  explicit PopupAnchorContext(Widget* anchor) : mAnchor(anchor) {}
+  Widget* const mAnchor {nullptr};
+};
+static_assert(context<PopupAnchorContext>);
+
 using YogaContext = std::variant<Widget*, DetachedYogaTree>;
 
 }// namespace FredEmmott::GUI::Widgets::widget_detail

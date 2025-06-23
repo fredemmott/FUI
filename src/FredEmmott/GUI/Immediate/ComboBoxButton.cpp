@@ -62,8 +62,13 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mFlexGrow = 1,
   });
+  button->SetContextIfUnset([]() {
+    return std::make_unique<PopupAnchorContext>(GetCurrentParentNode());
+  });
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->SetBuiltInStyles({.mDisplay = YGDisplayContents});
+  GetCurrentParentNode()->SetBuiltInStyles({
+    .mDisplay = YGDisplayContents,
+  });
 };
 
 void EndComboBoxButton() {

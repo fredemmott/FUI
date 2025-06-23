@@ -40,14 +40,17 @@ void PopParentContext() {
 }// namespace
 
 bool BeginPopupWindow(const ID id) {
-  auto previous = GetCurrentNode();
+  auto anchor = GetCurrentNode();
 
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
   window->SetParent(tWindow->GetNativeHandle());
-  if (previous && !window->GetNativeHandle()) {
+  if (anchor && !window->GetNativeHandle()) {
+    if (const auto ctx = anchor->GetContext<PopupAnchorContext>()) {
+      anchor = (*ctx)->mAnchor;
+    }
     window->SetInitialPositionInNativeCoords(
-      tWindow->CanvasPointToNativePoint(previous->GetTopLeftInCanvasCoords()));
+      tWindow->CanvasPointToNativePoint(anchor->GetTopLeftInCanvasCoords()));
   }
 
   tPopupStack.emplace_back(
