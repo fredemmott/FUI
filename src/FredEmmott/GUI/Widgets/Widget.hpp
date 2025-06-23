@@ -38,6 +38,11 @@ concept context = std::derived_from<T, Context>;
 class Widget {
  public:
   Widget() = delete;
+  Widget(const Widget&) = delete;
+  Widget(Widget&&) = delete;
+  Widget& operator=(const Widget&) = delete;
+  Widget& operator=(Widget&&) = delete;
+
   explicit Widget(std::size_t id, const StyleClasses& = {});
   virtual ~Widget();
 
