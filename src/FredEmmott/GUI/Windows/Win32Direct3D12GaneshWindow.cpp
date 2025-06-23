@@ -281,8 +281,8 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
     mOptions.mWindowStyle,
     mOptions.mInitialPosition.mX,
     mOptions.mInitialPosition.mY,
-    mOptions.mInitialSize.fWidth,
-    mOptions.mInitialSize.fHeight,
+    0,
+    0,
     mParentHwnd,
     nullptr,
     mInstanceHandle,
@@ -302,24 +302,18 @@ void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
   this->SetDPI(GetDpiForWindow(mHwnd.get()));
 
   gInstances.emplace(mHwnd.get(), this);
+  const auto calculatedInitialSize = this->CalculateInitialWindowSize();
+  mMinimumWidth = calculatedInitialSize.cx;
+  SetWindowPos(
+    mHwnd.get(),
+    nullptr,
+    0,
+    0,
+    calculatedInitialSize.cx,
+    calculatedInitialSize.cy,
+    SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
   RECT clientRect {};
   GetClientRect(mHwnd.get(), &clientRect);
-  const auto calculatedInitialSize = this->CalculateInitialWindowSize();
-  mMinimumWidth = calculatedInitialSize.fWidth;
-  if (!mFUIRoot.CanFit(
-        SkSize::Make(
-          std::floor((clientRect.right - clientRect.left) / mDPIScale),
-          std::floor((clientRect.bottom - clientRect.top) / mDPIScale)))) {
-    SetWindowPos(
-      mHwnd.get(),
-      nullptr,
-      0,
-      0,
-      calculatedInitialSize.fWidth,
-      calculatedInitialSize.fHeight,
-      SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
-    GetClientRect(mHwnd.get(), &clientRect);
-  }
 
   if (mOffsetToChild) {
     auto root = mOffsetToChild->GetLayoutNode();
@@ -401,8 +395,8 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
   CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
 
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
-    .Width = static_cast<UINT>(mClientSize.fWidth),
-    .Height = static_cast<UINT>(mClientSize.fHeight),
+    .Width = static_cast<UINT>(mClientSize.cx),
+    .Height = static_cast<UINT>(mClientSize.cy),
     .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
     .SampleDesc = {1, 0},
     .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
@@ -490,7 +484,7 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
 void Win32Direct3D12GaneshWindow::ResizeSwapchain() {
   this->CleanupFrameContexts();
   CheckHResult(mSwapChain->ResizeBuffers(
-    0, mClientSize.fWidth, mClientSize.fHeight, DXGI_FORMAT_UNKNOWN, 0));
+    0, mClientSize.cx, mClientSize.cy, DXGI_FORMAT_UNKNOWN, 0));
   this->CreateRenderTargets();
 }
 
@@ -501,7 +495,7 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
 
   RECT clientRect {};
   GetClientRect(mHwnd.get(), &clientRect);
-  SkISize clientSize = {
+  SIZE clientSize = {
     clientRect.right - clientRect.left,
     clientRect.bottom - clientRect.top,
   };
@@ -527,9 +521,9 @@ void Win32Direct3D12GaneshWindow::Paint() {
   canvas->resetMatrix();
   canvas->scale(mDPIScale, mDPIScale);
 
-  const SkSize size {
-    std::floor(mClientSize.fWidth / mDPIScale),
-    std::floor(mClientSize.fHeight / mDPIScale),
+  const Size size {
+    std::floor(static_cast<float>(mClientSize.cx) / mDPIScale),
+    std::floor(static_cast<float>(mClientSize.cy) / mDPIScale),
   };
 
   canvas->clear(
@@ -758,7 +752,7 @@ Win32Direct3D12GaneshWindow::WindowProc(
       }
       const auto w = LOWORD(lParam);
       const auto h = HIWORD(lParam);
-      if (w == mClientSize.fWidth && h == mClientSize.fHeight) {
+      if (w == mClientSize.cx && h == mClientSize.cy) {
         break;
       }
       mPendingResize.Set();
@@ -777,18 +771,18 @@ Win32Direct3D12GaneshWindow::WindowProc(
         &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
       padding.left = -padding.left;
       padding.top = -padding.top;
-      const auto contentSize = SkISize {
+      const auto contentSize = SIZE {
         (rect.right - padding.right) - (rect.left + padding.left),
         (rect.bottom - padding.bottom) - (rect.top + padding.top),
       };
       if (mFUIRoot.CanFit(
-            std::floor(contentSize.fWidth / mDPIScale),
-            std::floor(contentSize.fHeight / mDPIScale))) {
+            std::floor(contentSize.cx / mDPIScale),
+            std::floor(contentSize.cy / mDPIScale))) {
         mPendingResize.Set();
         break;
       }
       const auto height = std::ceil(
-        mFUIRoot.GetHeightForWidth(std::floor(contentSize.fWidth / mDPIScale))
+        mFUIRoot.GetHeightForWidth(std::floor(contentSize.cx / mDPIScale))
         * mDPIScale);
       if (rect.top == mNCRect.top) {
         rect.bottom = rect.top + padding.top + height + padding.bottom;
@@ -949,14 +943,14 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
 
   mFrameIndex = 0;
 }
-SkISize Win32Direct3D12GaneshWindow::CalculateInitialWindowSize() const {
+SIZE Win32Direct3D12GaneshWindow::CalculateInitialWindowSize() const {
   const auto contentSizeInDIPs = mFUIRoot.GetInitialSize();
 
   RECT rect {
     0,
     0,
-    std::lround(std::ceil(contentSizeInDIPs.fWidth * mDPIScale)),
-    std::lround(std::ceil(contentSizeInDIPs.fHeight * mDPIScale)),
+    std::lround(std::ceil(contentSizeInDIPs.mWidth * mDPIScale)),
+    std::lround(std::ceil(contentSizeInDIPs.mHeight * mDPIScale)),
   };
   AdjustWindowRectEx(
     &rect,

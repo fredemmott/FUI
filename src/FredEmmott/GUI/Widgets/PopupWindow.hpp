@@ -28,7 +28,6 @@ class PopupWindow final : public Widget {
     GetModuleHandleW(nullptr),
     SW_SHOWNA,
     {
-      .mInitialSize = {CW_USEDEFAULT, CW_USEDEFAULT},
       .mWindowStyle = WS_POPUP | WS_BORDER,
       .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_NOACTIVATE,
       .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,

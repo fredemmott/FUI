@@ -28,12 +28,6 @@ namespace FredEmmott::GUI {
 struct WindowOptions {
   std::string mTitle;
 
-  /** Initial window size
-   *
-   * 0 = computed minimum width for content
-   * You may also want CW_USEDEFAULT.
-   */
-  SkISize mInitialSize {};
   NativePoint mInitialPosition {CW_USEDEFAULT, CW_USEDEFAULT};
 
   std::string mClass;
@@ -102,7 +96,7 @@ class Win32Direct3D12GaneshWindow final {
   float mDPIScale = {1.0f};
   std::optional<DWORD> mDPI;
   RECT mNCRect {};
-  SkISize mClientSize {};
+  SIZE mClientSize {};
   Widgets::Widget* mOffsetToChild {nullptr};
   ActivatedFlag mPendingResize;
   bool mTrackingMouseEvents = false;
@@ -156,7 +150,8 @@ class Win32Direct3D12GaneshWindow final {
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
-  SkISize CalculateInitialWindowSize() const;
+  [[nodiscard]]
+  SIZE CalculateInitialWindowSize() const;
   void ResizeIfNeeded();
   void Paint();
 

@@ -3,9 +3,9 @@
 #pragma once
 
 #include <skia/core/SkCanvas.h>
-#include <skia/core/SkSize.h>
 
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
+#include <FredEmmott/GUI/Size.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
 #include <optional>
@@ -22,13 +22,13 @@ class Root final {
   ~Root();
   void BeginFrame();
   void EndFrame();
-  void Paint(SkCanvas*, SkSize);
+  void Paint(SkCanvas*, const Size&);
 
   [[nodiscard]]
-  bool CanFit(const SkSize&) const;
+  bool CanFit(const Size&) const;
   [[nodiscard]]
   bool CanFit(float width, float height) const;
-  SkSize GetInitialSize() const;
+  Size GetInitialSize() const;
 
   float GetHeightForWidth(float) const;
   FrameRateRequirement GetFrameRateRequirement() const;

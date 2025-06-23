@@ -10,7 +10,6 @@ add_executable(
   main.cpp
 
   FredEmmott/GUI.hpp
-  FredEmmott/GUI/config.hpp
   FredEmmott/GUI/ActivatedFlag.hpp
   FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Brush_Skia.cpp
@@ -19,14 +18,15 @@ add_executable(
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/FrameRateRequirement.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
+  FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/ComboBox.cpp FredEmmott/GUI/Immediate/ComboBox.hpp
   FredEmmott/GUI/Immediate/ComboBoxButton.cpp FredEmmott/GUI/Immediate/ComboBoxButton.hpp
-  FredEmmott/GUI/Immediate/ComboBoxPopup.cpp FredEmmott/GUI/Immediate/ComboBoxPopup.hpp
   FredEmmott/GUI/Immediate/ComboBoxItem.cpp FredEmmott/GUI/Immediate/ComboBoxItem.hpp
-  FredEmmott/GUI/Immediate/Card.hpp
+  FredEmmott/GUI/Immediate/ComboBoxPopup.cpp FredEmmott/GUI/Immediate/ComboBoxPopup.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.cpp FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
+  FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
@@ -39,6 +39,7 @@ add_executable(
   FredEmmott/GUI/Orientation.hpp
   FredEmmott/GUI/Point.hpp
   FredEmmott/GUI/PseudoClasses.cpp FredEmmott/GUI/PseudoClasses.hpp
+  FredEmmott/GUI/Size.hpp
   FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
   FredEmmott/GUI/StaticTheme/Resource.hpp
@@ -49,8 +50,8 @@ add_executable(
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
   FredEmmott/GUI/StyleProperty.hpp>
   FredEmmott/GUI/StyleTransition.hpp
-  FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
+  FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
   FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
@@ -71,6 +72,7 @@ add_executable(
   FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
   FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
+  FredEmmott/GUI/config.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
@@ -86,7 +88,6 @@ add_executable(
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
-  FredEmmott/GUI/Immediate/ID.hpp
 )
 target_sources(
   HelloSkia-Win32-Ganesh-D3D12

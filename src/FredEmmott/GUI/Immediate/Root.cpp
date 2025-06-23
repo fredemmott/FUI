@@ -67,21 +67,21 @@ void Root::DispatchEvent(const Event* e) {
   }
 }
 
-void Root::Paint(SkCanvas* canvas, SkSize size) {
+void Root::Paint(SkCanvas* canvas, const Size& size) {
   if (!mWidget) {
     return;
   }
   canvas->save();
-  canvas->clipRect(SkRect::MakeXYWH(0, 0, size.width(), size.height()));
+  canvas->clipRect(SkRect::MakeXYWH(0, 0, size.mWidth, size.mHeight));
 
   auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, size.fWidth, size.fHeight, YGDirectionLTR);
+  YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
   mWidget->Paint(canvas);
 
   canvas->restore();
 }
-bool Root::CanFit(const SkSize& size) const {
-  return CanFit(size.width(), size.height());
+bool Root::CanFit(const Size& size) const {
+  return CanFit(size.mWidth, size.mHeight);
 }
 
 bool Root::CanFit(float width, float height) const {
@@ -93,7 +93,7 @@ bool Root::CanFit(float width, float height) const {
   return true;
 }
 
-SkSize Root::GetInitialSize() const {
+Size Root::GetInitialSize() const {
   if (mWidget) {
     mWidget->UpdateLayout();
     mWidget->ComputeStyles({});
@@ -107,7 +107,7 @@ SkSize Root::GetInitialSize() const {
   // text as a single line), that unfortunately is interpreted as having a
   // definite size, as Yoga does not currently support measure funcs providing
   // minimum values.
-  return SkSize {
+  return Size {
     YGNodeLayoutGetWidth(yoga),
     YGNodeLayoutGetHeight(yoga),
   };
