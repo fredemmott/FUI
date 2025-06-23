@@ -9,11 +9,31 @@
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
+#include <typeindex>
 
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
 
 struct WidgetList;
+
+/** Subclass to attach arbitrary data to a widget.
+ *
+ * @see `Widget::SetContextIfUnset()`
+ * @see `Widget::GetContext()`
+ */
+class Context {
+ public:
+  Context(const Context&) = delete;
+  Context(Context&&) = delete;
+  Context& operator=(const Context&) = delete;
+  Context& operator=(Context&&) = delete;
+
+  Context() = default;
+  virtual ~Context() = default;
+};
+
+template <class T>
+concept context = std::derived_from<T, Context>;
 
 class Widget {
  public:
@@ -31,6 +51,35 @@ class Widget {
 
   std::size_t GetID() const noexcept {
     return mID;
+  }
+
+  /** Attach user-supplied data, derived from the `Context` class.
+   *
+   * Retrieve with `GetContext()`
+   */
+  template <
+    std::invocable F,
+    context T = typename std::invoke_result_t<F>::element_type>
+    requires std::same_as<std::invoke_result_t<F>, std::unique_ptr<T>>
+  void SetContextIfUnset(F&& f) {
+    const auto key = std::type_index(typeid(T));
+    if (mContexts.contains(key)) {
+      return;
+    }
+    mContexts.emplace(key, std::invoke(std::forward<F>(f)));
+  }
+
+  /** Retrieve user-supplied data, derived from the `Context` class.
+   *
+   * Set with `SetContextIfUnset()`
+   */
+  template <context T>
+  std::optional<T*> GetContext() {
+    const auto key = std::type_index(typeid(T));
+    if (!mContexts.contains(key)) {
+      return std::nullopt;
+    }
+    return static_cast<T*>(mContexts.at(key).get());
   }
 
   virtual FrameRateRequirement GetFrameRateRequirement() const noexcept;
@@ -162,6 +211,8 @@ class Widget {
 
   std::vector<unique_ptr<Widget>> mManagedChildren;
   std::vector<Widget*> mManagedChildrenCacheForGetChildren;
+
+  std::unordered_map<std::type_index, std::unique_ptr<Context>> mContexts;
 
   SkPoint mMouseOffset {};
 
