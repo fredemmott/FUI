@@ -6,7 +6,6 @@ add_library(
   GUI.hpp
   GUI/ActivatedFlag.hpp
   GUI/Brush.hpp
-  GUI/Brush_Skia.cpp
   GUI/Color.hpp
   GUI/EasingFunctions.hpp
   GUI/Font.cpp GUI/Font.hpp
@@ -114,6 +113,7 @@ if(ENABLE_SKIA)
   target_sources(
     fredemmott-gui
     PRIVATE
+    GUI/Brush_Skia.cpp
     GUI/LinearGradientBrush_Skia.cpp
     GUI/SystemFont_Skia.cpp
   )
