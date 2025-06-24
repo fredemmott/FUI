@@ -486,7 +486,7 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
     auto& frame = mFrames[i];
     CheckHResult(
       mSwapChain->GetBuffer(i, IID_PPV_ARGS(frame.mRenderTarget.put())));
-    frame.mRenderTarget->SetName(L"HelloSkia RenderTarget");
+    frame.mRenderTarget->SetName(L"FredEmmott::GUI Skia RenderTarget");
     frame.mRenderTargetView = rtvStart;
     frame.mRenderTargetView.ptr += i * rtvStep;
     mD3DDevice->CreateRenderTargetView(
@@ -520,6 +520,7 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
 
 void Win32Direct3D12GaneshWindow::ResizeSwapchain() {
   this->CleanupFrameContexts();
+  mFrameIndex = 0;
   CheckHResult(mSwapChain->ResizeBuffers(
     0, mClientSize.cx, mClientSize.cy, DXGI_FORMAT_UNKNOWN, 0));
   this->CreateRenderTargets();
@@ -978,8 +979,6 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
     frame.mRenderTargetView = {};
     frame.mFenceValue = {};
   }
-
-  mFrameIndex = 0;
 }
 
 std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>
