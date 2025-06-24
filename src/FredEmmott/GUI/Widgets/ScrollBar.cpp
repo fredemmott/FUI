@@ -92,7 +92,7 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   const Style SmallChangeStyles {
     .mColor = ScrollBarButtonArrowForeground,
     .mFont = {
-      ResolveGlyphFont(SystemFont::Body).WithSizeInPixels(ScrollBarButtonArrowIconFontSize),
+      ResolveGlyphFont(SystemFont::Body).WithSize(ScrollBarButtonArrowIconFontSize),
       !important,
     },
     .mOpacity = 0,

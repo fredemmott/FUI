@@ -57,8 +57,8 @@ void Root::EndFrame() {
   }
 
   mWidget->Tick();
-  mWidget->UpdateLayout();
   mWidget->ComputeStyles({});
+  mWidget->UpdateLayout();
 }
 
 void Root::DispatchEvent(const Event* e) {

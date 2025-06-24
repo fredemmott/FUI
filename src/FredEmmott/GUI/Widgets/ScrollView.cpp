@@ -183,7 +183,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   const auto delta = std::get<MouseEvent::VerticalWheelEvent>(e.mDetail).mDelta;
   const auto lines = delta * SystemSettings::Get().GetMouseWheelScrollLines();
   const auto pixels
-    = lines * SystemFont::Resolve(SystemFont::Body).GetFontSizeInPixels();
+    = lines * SystemFont::Resolve(SystemFont::Body).GetMetrics().mSize;
 
   const auto scrollBar = mVerticalScrollBar.get();
   const auto value = std::clamp<float>(

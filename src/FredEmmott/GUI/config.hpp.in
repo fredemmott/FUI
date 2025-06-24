@@ -5,10 +5,10 @@
 #cmakedefine FUI_ENABLE_SKIA
 #cmakedefine FUI_ENABLE_DIRECT2D
 
-namespace FredEmmott::GUI {
+namespace FredEmmott::GUI::Config {
 #ifndef NDEBUG
 constexpr bool Debug = true;
 #else
 constexpr bool Debug = false;
 #endif
-}// namespace FredEmmott::GUI
+}// namespace FredEmmott::GUI::Config

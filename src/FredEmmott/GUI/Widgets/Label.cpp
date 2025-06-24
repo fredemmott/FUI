@@ -41,13 +41,12 @@ void Label::PaintOwnContent(
   auto paint = style.mColor->GetSkiaPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
 
-  SkFontMetrics metrics {};
-  mFont.GetMetricsInPixels(&metrics);
+  const auto metrics = mFont.GetMetrics();
 
   canvas->drawString(
     mText.c_str(),
     rect.GetLeft(),
-    rect.GetBottom() - metrics.fDescent,
+    rect.GetBottom() - metrics.mDescent,
     mFont,
     paint);
 }
@@ -74,12 +73,9 @@ YGSize Label::Measure(
   const auto& font = self->mFont;
   const auto& text = self->mText;
 
-  SkFontMetrics metrics {};
-  font.GetMetricsInPixels(&metrics);
-
   return {
-    font->measureText(text.data(), text.size(), SkTextEncoding::kUTF8),
-    font.GetFontSizeInPixels(),
+    font.MeasureTextWidth(text),
+    font.GetMetrics().mSize,
   };
 }
 

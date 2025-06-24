@@ -11,13 +11,12 @@
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
-namespace {
-static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
-}// namespace
 
 using namespace widget_detail;
 
 void Widget::ComputeStyles(const Style& inherited) {
+  static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
+
   Style style = GlobalBaselineStyle
     + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
                               : this->GetBuiltInStyles());

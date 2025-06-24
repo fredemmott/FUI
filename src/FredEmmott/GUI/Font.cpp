@@ -3,47 +3,57 @@
 
 #include "Font.hpp"
 
+#include "Immediate/TextBlock.hpp"
 #include "detail/font_detail.hpp"
 
 using namespace FredEmmott::GUI::font_detail;
 
 namespace FredEmmott::GUI {
 
-Font::Font(const SkFont& f) : mFont(f), mMetricsInPixels(f) {
-}
-
-SkScalar Font::GetMetricsInPixels(SkFontMetrics* metrics) const {
-  if (metrics != nullptr) {
-    *metrics = mMetricsInPixels.mMetrics;
+#ifdef FUI_ENABLE_SKIA
+Font::Font(const SkFont& font) : mFont(font) {
+  if (font == SkFont {}) {
+    mFont = std::monostate {};
+    return;
   }
-  return mMetricsInPixels.mLineSpacing;
-}
 
-SkScalar Font::GetSpacingInPixels() const {
-  return mMetricsInPixels.mLineSpacing;
-}
-
-Font::MetricsInPixels::MetricsInPixels(const SkFont& font) {
-  SkFontMetrics points {};
-  mLineSpacing = PointsToPixels(font.getMetrics(&points));
+  SkFontMetrics pt {};
+  const auto lineSpacingPt = PointsToPixels(font.getMetrics(&pt));
   mMetrics = {
-    .fFlags = points.fFlags,
-    .fTop = PointsToPixels(points.fTop),
-    .fAscent = PointsToPixels(points.fAscent),
-    .fDescent = PointsToPixels(points.fDescent),
-    .fBottom = PointsToPixels(points.fBottom),
-    .fLeading = PointsToPixels(points.fLeading),
-    .fAvgCharWidth = PointsToPixels(points.fAvgCharWidth),
-    .fMaxCharWidth = PointsToPixels(points.fMaxCharWidth),
-    .fXMin = PointsToPixels(points.fXMin),
-    .fXMax = PointsToPixels(points.fXMax),
-    .fXHeight = PointsToPixels(points.fXHeight),
-    .fCapHeight = PointsToPixels(points.fCapHeight),
-    .fUnderlineThickness = PointsToPixels(points.fUnderlineThickness),
-    .fUnderlinePosition = PointsToPixels(points.fUnderlinePosition),
-    .fStrikeoutThickness = PointsToPixels(points.fStrikeoutThickness),
-    .fStrikeoutPosition = PointsToPixels(points.fStrikeoutPosition),
+    .mSize = PointsToPixels(font.getSize()),
+    .mLineSpacing = PointsToPixels(lineSpacingPt),
+    .mDescent = PointsToPixels(pt.fDescent),
   };
+}
+#endif
+
+Font Font::WithSize(float pixels) const noexcept {
+#ifdef FUI_ENABLE_SKIA
+  if (const auto it = std::get_if<SkFont>(&mFont)) {
+    auto ret = *it;
+    ret.setSize(PixelsToPoints(pixels));
+    return Font(ret);
+  }
+#endif
+  return Font {};
+}
+
+float Font::MeasureTextWidth(const std::string_view text) const noexcept {
+#ifdef FUI_ENABLE_SKIA
+  if (const auto it = std::get_if<SkFont>(&mFont)) {
+    return PointsToPixels(
+      it->measureText(text.data(), text.size(), SkTextEncoding::kUTF8));
+  }
+#endif
+  if constexpr (Config::Debug) {
+    __debugbreak();
+  }
+  return std::numeric_limits<float>::quiet_NaN();
+}
+
+Font::operator SkFont() const noexcept {
+  const auto it = std::get_if<SkFont>(&mFont);
+  return it ? (*it) : SkFont {};
 }
 
 }// namespace FredEmmott::GUI

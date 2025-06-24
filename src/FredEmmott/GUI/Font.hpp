@@ -2,62 +2,62 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkFont.h>
-#include <skia/core/SkFontMetrics.h>
-
+#include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/font_detail.hpp>
+#include <optional>
+#include <string_view>
+#include <variant>
 
 #include "SystemFont.hpp"
 #include "WidgetFont.hpp"
+
+#ifdef FUI_ENABLE_SKIA
+#include <skia/core/SkFont.h>
+#include <skia/core/SkFontMetrics.h>
+#endif
 
 namespace FredEmmott::GUI {
 
 class Font {
  public:
-  Font() : Font(SkFont {}) {}
-
+  struct Metrics {
+    float mSize {};
+    float mLineSpacing {};
+    float mDescent {};
+    constexpr bool operator==(const Metrics&) const noexcept = default;
+  };
+  Font() {}
   Font(SystemFont::Usage usage) : Font(Resolve(usage)) {}
   Font(WidgetFont::Usage usage) : Font(Resolve(usage)) {}
 
+  [[nodiscard]]
+  const Metrics& GetMetrics() const noexcept {
+    return mMetrics;
+  }
+
+  [[nodiscard]]
+  Font WithSize(float pixels) const noexcept;
+
+  [[nodiscard]]
+  float MeasureTextWidth(std::string_view) const noexcept;
+
+#ifdef FUI_ENABLE_SKIA
   Font(const SkFont& f);
+  operator SkFont() const noexcept;
+#endif
 
-  SkScalar GetMetricsInPixels(SkFontMetrics* metrics) const;
-  SkScalar GetSpacingInPixels() const;
-
-  operator SkFont() const noexcept {
-    return mFont;
-  }
-
-  auto operator->() const noexcept {
-    return &mFont;
-  }
-
-  bool operator==(const Font& other) const noexcept {
+  constexpr bool operator==(const Font& other) const noexcept {
     return mFont == other.mFont;
   }
 
-  SkScalar GetFontSizeInPixels(this const auto& self) noexcept {
-    return font_detail::PointsToPixels(self->getSize());
-  }
-
-  Font WithSizeInPixels(float pixels) const noexcept {
-    auto ret = mFont;
-    ret.setSize(font_detail::PixelsToPoints(pixels));
-    return ret;
-  }
-
  private:
-  struct MetricsInPixels {
-    MetricsInPixels() = delete;
-    MetricsInPixels(const SkFont&);
-
-    SkScalar mSize {};
-    SkScalar mLineSpacing {};
-    SkFontMetrics mMetrics {};
-  };
-
-  SkFont mFont;
-  MetricsInPixels mMetricsInPixels;
+  Metrics mMetrics;
+  std::variant<
+#ifdef FUI_ENABLE_SKIA
+    SkFont,
+#endif
+    std::monostate>
+    mFont {std::monostate {}};
 };
 
 }// namespace FredEmmott::GUI

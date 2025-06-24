@@ -4,6 +4,7 @@
 #include "TextBlock.hpp"
 
 #include <Windows.h>
+#include <skia/core/SkFont.h>
 #include <skia/core/SkFontMgr.h>
 #include <skia/modules/skparagraph/include/ParagraphBuilder.h>
 #include <skia/modules/skunicode/include/SkUnicode_icu.h>
@@ -38,10 +39,11 @@ void TextBlock::UpdateParagraph() {
   using namespace skia::textlayout;
 
   SkString familyName;
-  mFont->getTypeface()->getFamilyName(&familyName);
+  const auto font = SkFont {mFont};
+  font.getTypeface()->getFamilyName(&familyName);
   TextStyle textStyle;
   textStyle.setFontFamilies({familyName});
-  textStyle.setFontSize(mFont->getSize());
+  textStyle.setFontSize(font.getSize());
   ParagraphStyle paragraphStyle;
   paragraphStyle.setTextStyle(textStyle);
   auto builder = skia::textlayout::ParagraphBuilder::make(

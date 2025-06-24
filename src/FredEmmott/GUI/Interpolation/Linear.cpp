@@ -17,12 +17,12 @@ Brush Linear(const Brush& startRef, const Brush& endRef, float ratio) {
 }
 
 Font Linear(const Font& startRef, const Font& endRef, float ratio) {
-  const auto start = startRef.GetFontSizeInPixels();
-  const auto end = startRef.GetFontSizeInPixels();
+  const auto start = startRef.GetMetrics().mSize;
+  const auto end = endRef.GetMetrics().mSize;
   if (std::abs(start - end) < std::numeric_limits<float>::epsilon() * start) {
     return endRef;
   }
-  return endRef.WithSizeInPixels(Linear(start, end, ratio));
+  return endRef.WithSize(Linear(start, end, ratio));
 }
 
 }// namespace FredEmmott::GUI::Interpolation
