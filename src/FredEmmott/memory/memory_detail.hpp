@@ -7,10 +7,12 @@
 
 namespace FredEmmott::Memory::extensions {
 
-template<class T>
-struct deleter : std::default_delete<T> {};
+template <class T>
+struct deleter {
+  deleter() = delete;
+};
 
-}
+}// namespace FredEmmott::Memory::extensions
 
 namespace FredEmmott::Memory::memory_detail {
 template <class T, void (*TCallback)(T*)>
@@ -22,14 +24,21 @@ struct callback_delete {
 
 template <class T, auto TDeleter>
 struct deleter_type {
+  using type = std::default_delete<T>;
+};
+
+template <class T, std::invocable auto TDeleter>
+struct deleter_type<T, TDeleter> {
   using type = callback_delete<T, TDeleter>;
 };
 
 template <class T>
+  requires std::invocable<extensions::deleter<T>, T*>
 struct deleter_type<T, nullptr> {
   using type = ::FredEmmott::Memory::extensions::deleter<T>;
 };
 
 template <class T, auto TDeleter>
 using deleter_type_t = typename deleter_type<T, TDeleter>::type;
+
 }// namespace FredEmmott::Memory::memory_detail

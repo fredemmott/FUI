@@ -8,7 +8,7 @@ namespace FredEmmott::Memory {
 
 /** An `std::unique_ptr` taking a `void(T*)` deleter function.
  *
- * If `nullptr` is provided, `std::default_delete<T{}>()` will be used.
+ * If `nullptr` is provided, `std::default_delete<{}>{}` will be used.
  */
 template <class T, auto TDeleter = nullptr>
 using unique_ptr
@@ -21,11 +21,9 @@ using unique_ptr
 template <class T, auto TDeleter = nullptr>
 struct shared_ptr : std::shared_ptr<T> {
   explicit shared_ptr() = delete;
-  explicit shared_ptr(nullptr_t) : std::shared_ptr<T>(nullptr) {
-  }
+  explicit shared_ptr(nullptr_t) : std::shared_ptr<T>(nullptr) {}
   explicit shared_ptr(T* ptr)
-    : std::shared_ptr<T>(ptr, memory_detail::deleter_type_t<T, TDeleter> {}) {
-  }
+    : std::shared_ptr<T>(ptr, memory_detail::deleter_type_t<T, TDeleter> {}) {}
 };
 }// namespace FredEmmott::Memory
 

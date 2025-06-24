@@ -66,6 +66,7 @@ add_library(
   GUI/Widgets/Widget.hpp
   GUI/Widgets/Widget_ComputeStyles.cpp
   GUI/Widgets/Widget_StyleTransitions.cpp
+  GUI/Windows/Win32Window.cpp GUI/Windows/Win32Window.hpp
   GUI/Windows/Win32Direct3D12GaneshWindow.cpp GUI/Windows/Win32Direct3D12GaneshWindow.hpp
   GUI/detail/font_detail.hpp
   GUI/detail/immediate/Widget.hpp
@@ -111,6 +112,7 @@ target_include_directories(
 )
 
 if(ENABLE_SKIA)
+  include(skia)
   target_sources(
     fredemmott-gui
     PRIVATE
