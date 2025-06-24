@@ -33,6 +33,7 @@ add_library(
   GUI/Point.hpp
   GUI/PseudoClasses.cpp GUI/PseudoClasses.hpp
   GUI/Rect.hpp
+  GUI/Renderer.hpp
   GUI/Size.hpp
   GUI/SolidColorBrush.hpp
   GUI/StaticTheme.cpp GUI/StaticTheme.hpp
@@ -115,6 +116,7 @@ if(ENABLE_SKIA)
     PRIVATE
     GUI/Brush_Skia.cpp
     GUI/LinearGradientBrush_Skia.cpp
+    GUI/SkiaRenderer.cpp GUI/SkiaRenderer.hpp
     GUI/SystemFont_Skia.cpp
   )
   target_link_libraries(

@@ -28,7 +28,7 @@ void Label::SetText(std::string_view text) {
 }
 
 void Label::PaintOwnContent(
-  SkCanvas* canvas,
+  Renderer* renderer,
   const Rect& rect,
   const Style& style) const {
 #ifndef NDEBUG
@@ -38,17 +38,13 @@ void Label::PaintOwnContent(
   }
 #endif
 
-  auto paint = style.mColor->GetSkiaPaint(rect);
-  paint.setStyle(SkPaint::Style::kFill_Style);
-
   const auto metrics = mFont.GetMetrics();
-
-  canvas->drawString(
-    mText.c_str(),
+  const Point baseline {
     rect.GetLeft(),
     rect.GetBottom() - metrics.mDescent,
-    mFont,
-    paint);
+  };
+
+  renderer->DrawText(style.mColor.value(), rect, mFont, mText, baseline);
 }
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(

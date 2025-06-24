@@ -15,6 +15,7 @@
 #include <FredEmmott/utility/lazy_init.hpp>
 
 #include "FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp"
+#include "FredEmmott/GUI/SkiaRenderer.hpp"
 
 using namespace FredEmmott::utility;
 
@@ -63,7 +64,7 @@ void TextBlock::SetText(std::string_view text) {
 }
 
 void TextBlock::PaintOwnContent(
-  SkCanvas* canvas,
+  Renderer* renderer,
   const Rect& rect,
   const Style& style) const {
 #ifndef NDEBUG
@@ -72,6 +73,8 @@ void TextBlock::PaintOwnContent(
       "Stylesheet font does not match mFont; computed style not updated");
   }
 #endif
+  auto canvas = skia_canvas_cast(renderer);
+  FUI_ASSERT(canvas, "TextBlock currently only supports Skia");
 
   auto paint = style.mColor->GetSkiaPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);

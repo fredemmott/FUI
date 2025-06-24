@@ -22,15 +22,15 @@ struct MouseCapture {
 };
 std::optional<MouseCapture> gMouseCapture;
 
-void PaintBackground(SkCanvas* canvas, const Rect& rect, const Style& style) {
+void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
   if (!style.mBackgroundColor) {
     return;
   }
 
-  auto paint = style.mBackgroundColor->GetSkiaPaint(rect);
+  auto brush = *style.mBackgroundColor;
 
   if (!style.mBorderRadius) {
-    canvas->drawRect(rect, paint);
+    renderer->FillRect(brush, rect);
     return;
   }
 
@@ -42,13 +42,12 @@ void PaintBackground(SkCanvas* canvas, const Rect& rect, const Style& style) {
     rrect.Inset(inset, inset);
   }
 
-  paint.setAntiAlias(true);
-  canvas->drawRoundRect(rrect, radius, radius, paint);
+  renderer->FillRoundedRect(brush, rrect, radius);
 }
 
 void PaintBorder(
   YGNodeConstRef yoga,
-  SkCanvas* canvas,
+  Renderer* renderer,
   const Rect& contentRect,
   const Style& style) {
   if (!(style.mBorderColor)) {
@@ -69,18 +68,15 @@ void PaintBorder(
   }
   const auto borderRect = contentRect.WithInset(top / 2.0, top / 2.0);
 
-  auto paint = style.mBorderColor->GetSkiaPaint(contentRect);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(top);
+  auto brush = *style.mBorderColor;
 
   if (!style.mBorderRadius) {
-    canvas->drawRect(borderRect, paint);
+    renderer->FillRect(brush, borderRect);
     return;
   }
 
   auto radius = style.mBorderRadius.value();
-  paint.setAntiAlias(true);
-  canvas->drawRoundRect(borderRect, radius, radius, paint);
+  renderer->FillRoundedRect(brush, borderRect, radius);
 }
 }// namespace
 
@@ -193,7 +189,7 @@ void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
   mManagedChildrenCacheForGetChildren = children;
 }
 
-void Widget::Paint(SkCanvas* canvas) const {
+void Widget::Paint(Renderer* renderer) const {
   const auto& style = mComputedStyle;
 
   if (style.mDisplay == YGDisplayNone) {
@@ -204,21 +200,10 @@ void Widget::Paint(SkCanvas* canvas) const {
   if (opacity <= std::numeric_limits<float>::epsilon()) {
     return;
   }
-  if (opacity + std::numeric_limits<float>::epsilon() >= 1.0f) {
-    canvas->save();
-  } else {
-    canvas->saveLayerAlphaf(nullptr, opacity);
-  }
-  struct scope_exit_t {
-    SkCanvas* mCanvas {nullptr};
-    ~scope_exit_t() {
-      mCanvas->restore();
-    }
-  };
-  const scope_exit_t restore {canvas};
 
+  const auto layer = renderer->ScopedLayer(opacity);
   const auto yoga = this->GetLayoutNode();
-  canvas->translate(
+  renderer->Translate(
     YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default(),
     YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default());
   Rect rect {
@@ -231,25 +216,25 @@ void Widget::Paint(SkCanvas* canvas) const {
   if (
     scaleY + std::numeric_limits<float>::epsilon() < 1.0f
     || scaleY > 1.0f + std::numeric_limits<float>::epsilon()) {
-    canvas->scale(1.0f, scaleY);
-    canvas->translate(0, (rect.GetHeight() * (1.0f - scaleY) / 2.0f));
+    renderer->Scale(1.0f, scaleY);
+    renderer->Translate(0, (rect.GetHeight() * (1.0f - scaleY) / 2.0f));
     rect.mSize = {rect.GetWidth(), rect.GetHeight()};
   }
 
-  PaintBackground(canvas, rect, style);
-  PaintBorder(yoga, canvas, rect, style);
-  this->PaintOwnContent(canvas, rect, style);
-  this->PaintChildren(canvas);
+  PaintBackground(renderer, rect, style);
+  PaintBorder(yoga, renderer, rect, style);
+  this->PaintOwnContent(renderer, rect, style);
+  this->PaintChildren(renderer);
 }
 
-void Widget::PaintChildren(SkCanvas* canvas) const {
+void Widget::PaintChildren(Renderer* renderer) const {
   const auto children = this->GetDirectChildren();
   if (children.empty()) {
     return;
   }
 
   for (auto&& child: children) {
-    child->Paint(canvas);
+    child->Paint(renderer);
   }
 }
 

@@ -158,20 +158,21 @@ void ScrollView::UpdateLayout() {
   Widget::UpdateLayout();
 }
 
-void ScrollView::PaintChildren(SkCanvas* canvas) const {
+void ScrollView::PaintChildren(Renderer* renderer) const {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
   YGNodeCalculateLayout(mContentYoga.get(), w, h, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
-  canvas->save();
-  canvas->clipRect(Rect {.mSize = {w, h}});
-  mContent->Paint(canvas);
-  canvas->restore();
+  {
+    const auto layer = renderer->ScopedLayer();
+    renderer->ClipTo(Rect {.mSize = {w, h}});
+    mContent->Paint(renderer);
+  }
 
-  mHorizontalScrollBar->Paint(canvas);
-  mVerticalScrollBar->Paint(canvas);
+  mHorizontalScrollBar->Paint(renderer);
+  mVerticalScrollBar->Paint(renderer);
 }
 
 Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(

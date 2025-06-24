@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkCanvas.h>
-
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/Rect.hpp>
+#include <FredEmmott/GUI/Renderer.hpp>
 #include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
@@ -109,7 +108,7 @@ class Widget {
   // For immediate API - fake a widget by replacing its built-in styles
   void SetBuiltInStyles(const Style& styles);
   void SetAdditionalBuiltInStyles(const Style& styles);
-  void Paint(SkCanvas* canvas) const;
+  void Paint(Renderer* renderer) const;
 
   auto GetChildren() const noexcept {
     const auto foster = this->GetFosterParent();
@@ -161,9 +160,9 @@ class Widget {
     const Style& style,
     StateFlags state);
 
-  virtual void PaintOwnContent(SkCanvas*, const Rect&, const Style& style)
+  virtual void PaintOwnContent(Renderer*, const Rect&, const Style& style)
     const {}
-  virtual void PaintChildren(SkCanvas* canvas) const;
+  virtual void PaintChildren(Renderer* canvas) const;
 
   [[nodiscard]]
   virtual EventHandlerResult OnClick(const MouseEvent& event) {

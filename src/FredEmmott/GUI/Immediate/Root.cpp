@@ -67,18 +67,16 @@ void Root::DispatchEvent(const Event* e) {
   }
 }
 
-void Root::Paint(SkCanvas* canvas, const Size& size) {
+void Root::Paint(Renderer* renderer, const Size& size) {
   if (!mWidget) {
     return;
   }
-  canvas->save();
-  canvas->clipRect(Rect {.mSize = {size.mWidth, size.mHeight}});
+  const auto layer = renderer->ScopedLayer();
+  renderer->ClipTo(Rect {.mSize = {size.mWidth, size.mHeight}});
 
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
-  mWidget->Paint(canvas);
-
-  canvas->restore();
+  mWidget->Paint(renderer);
 }
 bool Root::CanFit(const Size& size) const {
   return CanFit(size.mWidth, size.mHeight);

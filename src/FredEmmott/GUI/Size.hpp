@@ -8,7 +8,7 @@
 
 namespace FredEmmott::GUI {
 template <class T>
-  requires(std::integral<T> || std::floating_point<T>)
+  requires(std::unsigned_integral<T> || std::floating_point<T>)
 struct BasicSize {
   T mWidth {};
   T mHeight {};

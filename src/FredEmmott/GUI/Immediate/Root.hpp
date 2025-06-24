@@ -5,6 +5,7 @@
 #include <skia/core/SkCanvas.h>
 
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
+#include <FredEmmott/GUI/Renderer.hpp>
 #include <FredEmmott/GUI/Size.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
@@ -22,7 +23,7 @@ class Root final {
   ~Root();
   void BeginFrame();
   void EndFrame();
-  void Paint(SkCanvas*, const Size&);
+  void Paint(Renderer*, const Size&);
 
   [[nodiscard]]
   bool CanFit(const Size&) const;

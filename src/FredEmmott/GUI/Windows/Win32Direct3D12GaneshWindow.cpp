@@ -28,6 +28,8 @@
 #include <source_location>
 #include <thread>
 
+#include "FredEmmott/GUI/SkiaRenderer.hpp"
+
 namespace FredEmmott::GUI {
 namespace {
 
@@ -517,19 +519,22 @@ void Win32Direct3D12GaneshWindow::Paint() {
     WaitForSingleObject(mFenceEvent.get(), INFINITE);
   }
 
-  SkCanvas* canvas = frame.mSkSurface->getCanvas();
-  canvas->resetMatrix();
-  canvas->scale(mDPIScale, mDPIScale);
-
   const Size size {
     std::floor(static_cast<float>(mClientSize.cx) / mDPIScale),
     std::floor(static_cast<float>(mClientSize.cy) / mDPIScale),
   };
 
-  canvas->clear(
-    mHaveSystemBackdrop ? Colors::Transparent
-                        : Color {StaticTheme::SolidBackgroundFillColorBase});
-  mFUIRoot.Paint(canvas, size);
+  {
+    SkiaRenderer skiaRenderer {frame.mSkSurface->getCanvas()};
+    auto& renderer = static_cast<Renderer&>(skiaRenderer);
+
+    auto layer = renderer.ScopedLayer();
+    renderer.Clear(
+      mHaveSystemBackdrop ? Colors::Transparent
+                          : Color {StaticTheme::SolidBackgroundFillColorBase});
+    renderer.Scale(mDPIScale);
+    mFUIRoot.Paint(&renderer, size);
+  }
 
   GrD3DFenceInfo fenceInfo {};
   fenceInfo.fFence.retain(mD3DFence.get());

@@ -18,7 +18,7 @@ class Label final : public Widget {
   void SetText(std::string_view);
 
  protected:
-  void PaintOwnContent(SkCanvas*, const Rect&, const Style& style)
+  void PaintOwnContent(Renderer*, const Rect&, const Style& style)
     const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& base, StateFlags state)
     override;
