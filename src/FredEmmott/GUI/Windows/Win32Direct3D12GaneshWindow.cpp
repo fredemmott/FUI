@@ -162,6 +162,7 @@ class Win32Direct3D12GaneshWindow::FramePainter : public BasicFramePainter {
       mRenderer(window->mFrames.at(frameIndex).mSkSurface->getCanvas()) {
     mWindow->BeforePaintFrame(frameIndex);
   }
+
   ~FramePainter() override {
     mWindow->AfterPaintFrame(mFrameIndex);
   }
@@ -550,14 +551,16 @@ void Win32Direct3D12GaneshWindow::Paint() {
     std::floor(static_cast<float>(mClientSize.cy) / mDPIScale),
   };
 
-  const auto painter = this->GetFramePainter(mFrameIndex);
-  const auto renderer = painter->GetRenderer();
-  const auto layer = renderer->ScopedLayer();
-  renderer->Clear(
-    mHaveSystemBackdrop ? Colors::Transparent
-                        : Color {StaticTheme::SolidBackgroundFillColorBase});
-  renderer->Scale(mDPIScale);
-  mFUIRoot.Paint(renderer, size);
+  {
+    const auto painter = this->GetFramePainter(mFrameIndex);
+    const auto renderer = painter->GetRenderer();
+    const auto layer = renderer->ScopedLayer();
+    renderer->Clear(
+      mHaveSystemBackdrop ? Colors::Transparent
+                          : Color {StaticTheme::SolidBackgroundFillColorBase});
+    renderer->Scale(mDPIScale);
+    mFUIRoot.Paint(renderer, size);
+  }
 
   mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
 }
