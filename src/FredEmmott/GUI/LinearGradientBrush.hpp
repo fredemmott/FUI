@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/config.hpp>
 #include <concepts>
@@ -28,9 +29,10 @@ class LinearGradientBrush final {
   };
   struct Stop {
     float mOffset {};
-    SkColor mColor {};
+    Color mColor;
 
-    Stop(float offset, const std::convertible_to<SkColor> auto& color)
+    Stop() = delete;
+    constexpr Stop(float offset, const Color& color)
       : mOffset(offset),
         mColor(color) {}
     constexpr bool operator==(const Stop&) const noexcept = default;

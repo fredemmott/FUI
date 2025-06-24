@@ -527,7 +527,7 @@ void Win32Direct3D12GaneshWindow::Paint() {
   };
 
   canvas->clear(
-    mHaveSystemBackdrop ? Color {SK_ColorTRANSPARENT}
+    mHaveSystemBackdrop ? Colors::Transparent
                         : Color {StaticTheme::SolidBackgroundFillColorBase});
   mFUIRoot.Paint(canvas, size);
 

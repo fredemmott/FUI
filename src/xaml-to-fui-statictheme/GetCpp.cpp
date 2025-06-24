@@ -33,8 +33,8 @@ const {TYPE}* Theme::Get{NAME}() {{
     R"EOF(
 #include "{COMPONENT}.hpp"
 
-#include <skia/core/SkColor.h>
 #include <FredEmmott/GUI/Brush.hpp>
+#include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/SystemTheme.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp>

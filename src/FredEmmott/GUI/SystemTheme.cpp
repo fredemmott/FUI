@@ -19,10 +19,10 @@ namespace FredEmmott::GUI::SystemTheme {
 struct Store {
   Store();
   void Populate();
-  void Populate(SkColor*, UIColorType) const;
-  void Populate(SkColor*, int) const;
+  void Populate(Color::Constant*, UIColorType) const;
+  void Populate(Color::Constant*, int) const;
 
-#define DECLARE_USAGE_VARIABLE(X, IMPL) SkColor m##X {};
+#define DECLARE_USAGE_VARIABLE(X, IMPL) Color::Constant m##X {};
   FUI_SYSTEM_COLOR_USAGES(DECLARE_USAGE_VARIABLE)
 #undef DECLARE_USAGE_VARIABLE
 
@@ -41,14 +41,15 @@ void Store::Populate() {
 #undef POPULATE_COLOR
 }
 
-void Store::Populate(SkColor* p, const UIColorType type) const {
-  auto [a, r, g, b] = mUISettings.GetColorValue(type);
-  *p = SkColorSetARGB(a, r, g, b);
+void Store::Populate(Color::Constant* p, const UIColorType type) const {
+  const auto [a, r, g, b] = mUISettings.GetColorValue(type);
+  *p = Color::Constant::FromARGB32(a, r, g, b);
 }
 
-void Store::Populate(SkColor* p, int sysColor) const {
+void Store::Populate(Color::Constant* p, int sysColor) const {
   const auto color = GetSysColor(sysColor);
-  *p = SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
+  *p = Color::Constant::FromARGB32(
+    0xff, GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
 static Store gStore;

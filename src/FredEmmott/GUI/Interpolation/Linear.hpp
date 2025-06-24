@@ -29,19 +29,13 @@ constexpr T Linear(T start, T end, float ratio) noexcept {
   return start + ((end - start) * ratio);
 }
 
-// Not constexpr becuse SkColor4f From/To SkColor aren't constexpr
-inline Color
-Linear(const Color& startRef, const Color& endRef, float ratio) noexcept {
+constexpr Color
+Linear(const Color& startRef, const Color& endRef, const float ratio) noexcept {
   constexpr auto& f = Linear<float>;
-  const auto start = SkColor4f::FromColor(startRef);
-  const auto end = SkColor4f::FromColor(endRef);
-  return SkColor4f {
-    .fR = f(start.fR, end.fR, ratio),
-    .fG = f(start.fG, end.fG, ratio),
-    .fB = f(start.fB, end.fB, ratio),
-    .fA = f(start.fA, end.fA, ratio),
-  }
-    .toSkColor();
+  const auto [r0, g0, b0, a0] = startRef.GetRGBAFTuple();
+  const auto [r1, g1, b1, a1] = endRef.GetRGBAFTuple();
+  return Color::Constant::FromRGBA128F(
+    f(r0, r1, ratio), f(g0, g1, ratio), f(b0, b1, ratio), f(a0, a1, ratio));
 }
 
 /** Linear interpolation between two `Brush`es.
@@ -60,7 +54,7 @@ concept lerpable = requires(const T& a, const T& b) {
   { Linear(a, b, 0.5) } -> std::convertible_to<T>;
 };
 
-static_assert(lerpable<SkScalar>);
+static_assert(lerpable<float>);
 static_assert(lerpable<Color>);
 static_assert(lerpable<Brush>);
 

@@ -5,6 +5,7 @@
 
 #include <format>
 #include <regex>
+
 #include "GetHexColorValue.hpp"
 
 std::string ResolveColorReference(std::string_view value) {
@@ -39,17 +40,13 @@ std::string ResolveColorReference(std::string_view value) {
   }
 
   if (value == "LightGray") {
-    return "SK_ColorLTGRAY";
+    return "Colors::LightGray";
   }
 
   static const std::regex NamedColor(
     "^[A-Z][a-zA-Z]+$", std::regex_constants::extended);
   if (std::regex_match(value.begin(), value.end(), NamedColor)) {
-    auto upperValue = std::string(value);
-    std::ranges::transform(upperValue, upperValue.begin(), [](unsigned char c) {
-      return std::toupper(c);
-    });
-    return std::format("SK_Color{}", upperValue);
+    return std::format("Colors::{}", value);
   }
 
   throw std::runtime_error {

@@ -13,9 +13,26 @@ T* widget_cast(Widget* const p) {
   return dynamic_cast<T*>(p);
 }
 
+/** A compile-time constant.
+ *
+ * If `V` is invocable, it will be invoked, and the result will be used as the
+ * value. This is a workaround for C++20 requirement that non-type template
+ * parameter structs are structural types, in particular that they have no
+ * private members.
+ */
 template <auto V>
 struct constant_t {
-  static constexpr auto value {V};
+ private:
+  static consteval auto GetValue() {
+    if constexpr (std::invocable<decltype(V)>) {
+      return std::invoke(V);
+    } else {
+      return V;
+    }
+  }
+
+ public:
+  static constexpr auto value = GetValue();
 };
 
 struct DetachedYogaTree {

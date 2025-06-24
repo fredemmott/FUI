@@ -1,7 +1,8 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include <include/core/SkMatrix.h>
+#include <skia/core/SkMatrix.h>
+#include <skia/core/SkRect.h>
 #include <skia/effects/SkGradientShader.h>
 
 #include "LinearGradientBrush.hpp"

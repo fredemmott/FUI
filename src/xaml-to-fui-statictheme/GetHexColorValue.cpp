@@ -14,13 +14,13 @@ std::string GetHexColorValue(std::string_view hex) {
   switch (hex.size()) {
     case 7:
       return std::format(
-        "SkColorSetRGB(0x{}, 0x{}, 0x{})",
+        "Color::Constant::FromARGB32(0xFF, 0x{}, 0x{}, 0x{})",
         hex.substr(1, 2),
         hex.substr(3, 2),
         hex.substr(5, 2));
     case 9:
       return std::format(
-        "SkColorSetARGB(0x{}, 0x{}, 0x{}, 0x{})",
+        "Color::Constant::FromARGB32(0x{}, 0x{}, 0x{}, 0x{})",
         hex.substr(1, 2),
         hex.substr(3, 2),
         hex.substr(5, 2),
