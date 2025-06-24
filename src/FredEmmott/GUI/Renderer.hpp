@@ -57,7 +57,8 @@ class Renderer {
   }
 
   virtual void FillRect(const Brush& brush, const Rect& rect) = 0;
-  virtual void StrokeRect(const Brush& brush, const Rect& rect, float thickness)
+  virtual void
+  StrokeRect(const Brush& brush, const Rect& rect, float thickness = 0)
     = 0;
 
   virtual void
@@ -67,7 +68,7 @@ class Renderer {
     const Brush& brush,
     const Rect& rect,
     float radius,
-    float thickness)
+    float thickness = 0)
     = 0;
 
   virtual void DrawText(

@@ -71,12 +71,12 @@ void PaintBorder(
   auto brush = *style.mBorderColor;
 
   if (!style.mBorderRadius) {
-    renderer->FillRect(brush, borderRect);
+    renderer->StrokeRect(brush, borderRect);
     return;
   }
 
   auto radius = style.mBorderRadius.value();
-  renderer->FillRoundedRect(brush, borderRect, radius);
+  renderer->StrokeRoundedRect(brush, borderRect, radius);
 }
 }// namespace
 
