@@ -16,7 +16,7 @@ namespace {
 template <class T>
 struct transition_default_value_t : constant_t<std::nullopt> {};
 template <>
-struct transition_default_value_t<SkScalar> : constant_t<0> {};
+struct transition_default_value_t<float> : constant_t<0> {};
 template <>
 struct transition_default_value_t<Brush>
   : constant_t<[] constexpr { return Colors::Transparent; }> {};

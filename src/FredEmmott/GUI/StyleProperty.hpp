@@ -53,7 +53,7 @@ class BaseStyleProperty : private std::optional<T> {
     requires SupportsTransitions
     : std::optional<T>(value),
       mTransition(transition) {
-    if constexpr (std::same_as<T, SkScalar>) {
+    if constexpr (std::same_as<T, float>) {
       if (YGFloatIsUndefined(value)) {
         static_cast<std::optional<T>&>(*this) = std::nullopt;
       }
@@ -63,13 +63,13 @@ class BaseStyleProperty : private std::optional<T> {
   BaseStyleProperty(
     std::nullopt_t,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
-    requires SupportsTransitions && std::same_as<T, SkScalar>
+    requires SupportsTransitions && std::same_as<T, float>
     : mTransition(transition) {}
 
   BaseStyleProperty(
     std::nullopt_t,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
-    requires SupportsTransitions && (!std::same_as<T, SkScalar>)
+    requires SupportsTransitions && (!std::same_as<T, float>)
     : mTransition(transition) {}
 
   template <class U>

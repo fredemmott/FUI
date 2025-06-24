@@ -31,7 +31,7 @@ class TextBlock final : public Widget {
   std::unique_ptr<skia::textlayout::Paragraph> mParagraph;
   std::string mText;
   Font mFont;
-  SkScalar mMeasuredHeight {};
+  float mMeasuredHeight {};
 
   static YGSize Measure(
     YGNodeConstRef node,

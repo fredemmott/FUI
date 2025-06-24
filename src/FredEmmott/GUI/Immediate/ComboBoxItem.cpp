@@ -81,7 +81,7 @@ void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
 
   const auto pillHeightAnimation = CubicBezierStyleTransition(
     ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
-  const SkScalar height = isSelected ? ComboBoxItemPillHeight : 0;
+  const float height = isSelected ? ComboBoxItemPillHeight : 0;
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({
     .mBackgroundColor = ComboBoxItemPillFillBrush,
     .mBorderRadius = ComboBoxItemPillCornerRadius,

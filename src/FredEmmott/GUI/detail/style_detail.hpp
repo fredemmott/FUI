@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkScalar.h>
 #include <yoga/yoga.h>
 
 namespace FredEmmott::GUI::style_detail {
@@ -13,8 +12,8 @@ struct default_t {
 };
 
 template <>
-struct default_t<SkScalar> {
-  static constexpr SkScalar value {YGUndefined};
+struct default_t<float> {
+  static constexpr float value {YGUndefined};
 };
 
 template <>

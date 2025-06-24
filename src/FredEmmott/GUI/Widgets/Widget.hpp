@@ -148,7 +148,7 @@ class Widget {
     utility::type_tag_t<ComputedStyleFlags>);
 
   // Base spacing unit - see https://fluent2.microsoft.design/layout
-  static constexpr SkScalar Spacing = 4;
+  static constexpr float Spacing = 4;
 
   [[nodiscard]]
   virtual Style GetBuiltInStyles() const {
