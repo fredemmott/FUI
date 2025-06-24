@@ -32,7 +32,7 @@ namespace {
 std::wstring GetDefaultWindowClassName() {
   const auto thisExe = wil::QueryFullProcessImageNameW(GetCurrentProcess(), 0);
   return std::format(
-    L"FUI Window - {}",
+    L"FredEmmott::GUI (FUI) Window - {}",
     std::filesystem::path(thisExe.get()).filename().wstring());
 }
 
