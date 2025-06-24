@@ -54,7 +54,6 @@ class Win32Direct3D12GaneshWindow final {
     HINSTANCE instance,
     int showCommand,
     const Options& options = {});
-  void TrackMouseEvent();
   ~Win32Direct3D12GaneshWindow();
 
   void SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE);
@@ -144,8 +143,11 @@ class Win32Direct3D12GaneshWindow final {
   void AdjustToWindowsTheme();
   void InitializeWindow();
   void CreateNativeWindow();
+  void InitializeGraphicsAPI();
   void InitializeD3D();
   void InitializeSkia();
+  void InitializeDirectComposition();
+  IUnknown* GetDirectCompositionTargetDevice() const;
 
   void CreateRenderTargets();
   void CleanupFrameContexts();
@@ -153,6 +155,19 @@ class Win32Direct3D12GaneshWindow final {
   SIZE CalculateInitialWindowSize() const;
   void ResizeIfNeeded();
   void Paint();
+  void TrackMouseEvent();
+
+  class BasicFramePainter {
+   public:
+    virtual ~BasicFramePainter() = default;
+    virtual Renderer* GetRenderer() noexcept = 0;
+  };
+  std::unique_ptr<BasicFramePainter> GetFramePainter(uint8_t mFrameIndex);
+  class FramePainter;
+  friend class FramePainter;
+
+  void BeforePaintFrame(uint8_t frameIndex);
+  void AfterPaintFrame(uint8_t frameIndex);
 
   LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -13,6 +13,7 @@
 #include <wil/win32_helpers.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
+#include <FredEmmott/GUI/SkiaRenderer.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/SystemSettings.hpp>
 #include <FredEmmott/GUI/assert.hpp>
@@ -24,8 +25,6 @@
 #include <print>
 #include <source_location>
 #include <thread>
-
-#include "FredEmmott/GUI/SkiaRenderer.hpp"
 
 namespace FredEmmott::GUI {
 namespace {
@@ -154,6 +153,29 @@ thread_local decltype(Win32Direct3D12GaneshWindow::gInstances)
 thread_local Win32Direct3D12GaneshWindow*
   Win32Direct3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
 
+class Win32Direct3D12GaneshWindow::FramePainter : public BasicFramePainter {
+ public:
+  FramePainter() = delete;
+  FramePainter(Win32Direct3D12GaneshWindow* window, uint8_t frameIndex)
+    : mWindow(window),
+      mFrameIndex(frameIndex),
+      mRenderer(window->mFrames.at(frameIndex).mSkSurface->getCanvas()) {
+    mWindow->BeforePaintFrame(frameIndex);
+  }
+  ~FramePainter() override {
+    mWindow->AfterPaintFrame(mFrameIndex);
+  }
+
+  Renderer* GetRenderer() noexcept override {
+    return &mRenderer;
+  }
+
+ private:
+  Win32Direct3D12GaneshWindow* mWindow {nullptr};
+  uint8_t mFrameIndex {};
+  SkiaRenderer mRenderer;
+};
+
 struct Win32Direct3D12GaneshWindow::SharedResources {
   wil::com_ptr<IDXGIFactory4> mDXGIFactory;
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
@@ -220,10 +242,15 @@ void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
     sizeof(backdropType)));
 }
 
-void Win32Direct3D12GaneshWindow::InitializeWindow() {
-  this->CreateNativeWindow();
+void Win32Direct3D12GaneshWindow::InitializeGraphicsAPI() {
   this->InitializeD3D();
   this->InitializeSkia();
+}
+
+void Win32Direct3D12GaneshWindow::InitializeWindow() {
+  this->CreateNativeWindow();
+  this->InitializeGraphicsAPI();
+  this->InitializeDirectComposition();
   this->CreateRenderTargets();
 
   this->AdjustToWindowsTheme();
@@ -386,29 +413,6 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
     CheckHResult(
       mD3DDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mD3DSRVHeap.put())));
   }
-
-  CheckHResult(
-    DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
-  CheckHResult(mCompositionDevice->CreateTargetForHwnd(
-    mHwnd.get(), true, mCompositionTarget.put()));
-  CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
-
-  DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
-    .Width = static_cast<UINT>(mClientSize.cx),
-    .Height = static_cast<UINT>(mClientSize.cy),
-    .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-    .SampleDesc = {1, 0},
-    .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-    .BufferCount = SwapChainLength,
-    .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-    .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
-  };
-
-  CheckHResult(mSharedResources->mDXGIFactory->CreateSwapChainForComposition(
-    mD3DCommandQueue.get(), &swapChainDesc, nullptr, mSwapChain.put()));
-  mCompositionVisual->SetContent(mSwapChain.get());
-  mCompositionTarget->SetRoot(mCompositionVisual.get());
-  mCompositionDevice->Commit();
 }
 
 void Win32Direct3D12GaneshWindow::InitializeSkia() {
@@ -438,6 +442,39 @@ void Win32Direct3D12GaneshWindow::SetSystemBackdropType(
   FUI_ASSERT(
     !mHwnd, "Can't set system backdrop type after creating the window");
   mOptions.mSystemBackdrop = type;
+}
+
+IUnknown* Win32Direct3D12GaneshWindow::GetDirectCompositionTargetDevice()
+  const {
+  return mD3DCommandQueue.get();
+}
+
+void Win32Direct3D12GaneshWindow::InitializeDirectComposition() {
+  CheckHResult(
+    DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
+  CheckHResult(mCompositionDevice->CreateTargetForHwnd(
+    mHwnd.get(), true, mCompositionTarget.put()));
+  CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
+
+  DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
+    .Width = static_cast<UINT>(mClientSize.cx),
+    .Height = static_cast<UINT>(mClientSize.cy),
+    .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+    .SampleDesc = {1, 0},
+    .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
+    .BufferCount = SwapChainLength,
+    .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+    .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
+  };
+
+  CheckHResult(mSharedResources->mDXGIFactory->CreateSwapChainForComposition(
+    this->GetDirectCompositionTargetDevice(),
+    &swapChainDesc,
+    nullptr,
+    mSwapChain.put()));
+  mCompositionVisual->SetContent(mSwapChain.get());
+  mCompositionTarget->SetRoot(mCompositionVisual.get());
+  mCompositionDevice->Commit();
 }
 
 void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
@@ -508,30 +545,25 @@ void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
 void Win32Direct3D12GaneshWindow::Paint() {
   this->ResizeIfNeeded();
 
-  auto& frame = mFrames.at(mFrameIndex);
-  mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
-
-  if (frame.mFenceValue) {
-    mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
-    WaitForSingleObject(mFenceEvent.get(), INFINITE);
-  }
-
   const Size size {
     std::floor(static_cast<float>(mClientSize.cx) / mDPIScale),
     std::floor(static_cast<float>(mClientSize.cy) / mDPIScale),
   };
 
-  {
-    SkiaRenderer skiaRenderer {frame.mSkSurface->getCanvas()};
-    auto& renderer = static_cast<Renderer&>(skiaRenderer);
+  const auto painter = this->GetFramePainter(mFrameIndex);
+  const auto renderer = painter->GetRenderer();
+  const auto layer = renderer->ScopedLayer();
+  renderer->Clear(
+    mHaveSystemBackdrop ? Colors::Transparent
+                        : Color {StaticTheme::SolidBackgroundFillColorBase});
+  renderer->Scale(mDPIScale);
+  mFUIRoot.Paint(renderer, size);
 
-    auto layer = renderer.ScopedLayer();
-    renderer.Clear(
-      mHaveSystemBackdrop ? Colors::Transparent
-                          : Color {StaticTheme::SolidBackgroundFillColorBase});
-    renderer.Scale(mDPIScale);
-    mFUIRoot.Paint(&renderer, size);
-  }
+  mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
+}
+
+void Win32Direct3D12GaneshWindow::AfterPaintFrame(uint8_t frameIndex) {
+  auto& frame = mFrames.at(frameIndex);
 
   GrD3DFenceInfo fenceInfo {};
   fenceInfo.fFence.retain(mD3DFence.get());
@@ -551,6 +583,7 @@ void Win32Direct3D12GaneshWindow::Paint() {
 
   CheckHResult(mSwapChain->Present(0, 0));
 }
+
 void Win32Direct3D12GaneshWindow::EndFrame() {
   using namespace Immediate::immediate_detail;
   mFUIRoot.EndFrame();
@@ -945,6 +978,24 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
 
   mFrameIndex = 0;
 }
+
+std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>
+Win32Direct3D12GaneshWindow::GetFramePainter(uint8_t mFrameIndex) {
+  return std::unique_ptr<BasicFramePainter> {
+    new FramePainter(this, mFrameIndex)};
+}
+
+void Win32Direct3D12GaneshWindow::BeforePaintFrame(uint8_t frameIndex) {
+  const auto& frame = mFrames.at(frameIndex);
+
+  if (!frame.mFenceValue) {
+    return;
+  }
+
+  mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
+  WaitForSingleObject(mFenceEvent.get(), INFINITE);
+}
+
 SIZE Win32Direct3D12GaneshWindow::CalculateInitialWindowSize() const {
   const auto contentSizeInDIPs = mFUIRoot.GetInitialSize();
 
