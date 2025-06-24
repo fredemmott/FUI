@@ -4,7 +4,6 @@
 #pragma once
 
 #include <Windows.h>
-#include <core/SkCanvas.h>
 #include <d3d12.h>
 #include <dcomp.h>
 #include <dwmapi.h>

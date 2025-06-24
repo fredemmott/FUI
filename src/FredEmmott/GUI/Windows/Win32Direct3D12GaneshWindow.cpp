@@ -4,10 +4,7 @@
 
 #include <Windowsx.h>
 #include <dwmapi.h>
-#include <skia/core/SkCanvas.h>
-#include <skia/core/SkColor.h>
 #include <skia/core/SkColorSpace.h>
-#include <skia/core/SkImageInfo.h>
 #include <skia/gpu/GrBackendSemaphore.h>
 #include <skia/gpu/GrBackendSurface.h>
 #include <skia/gpu/GrDirectContext.h>
