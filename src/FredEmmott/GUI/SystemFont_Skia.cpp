@@ -11,29 +11,7 @@
 
 using namespace FredEmmott::GUI::font_detail;
 
-#define FUI_SYSTEM_FONT_USAGES(X) \
-  X(Caption) \
-  X(Body) \
-  X(BodyStrong) \
-  X(BodyLarge) \
-  X(Subtitle) \
-  X(Title) \
-  X(TitleLarge) \
-  X(Display)
-
 namespace {
-// Values from
-// https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
-enum class Height : uint16_t {
-  Caption = 16,
-  Body = 20,
-  BodyStrong = 20,
-  BodyLarge = 24,
-  Subtitle = 28,
-  Title = 36,
-  TitleLarge = 52,
-  Display = 92,
-};
 
 const auto gManager = SkFontMgr_New_DirectWrite();
 

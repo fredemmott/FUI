@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(ENABLE_SKIA "Build with support for Skia" ON)
+if(ENABLE_SKIA)
+  list(APPEND VCPKG_MANIFEST_FEATURES "skia")
+endif()
+option(ENABLE_DIRECT2D "Build with support for Direct2D+DirectWrite+D3D11" ON)
+if (ENABLE_DIRECT2D)
+  list(APPEND VCPKG_MANIFEST_FEATURES "direct2d")
+endif()
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

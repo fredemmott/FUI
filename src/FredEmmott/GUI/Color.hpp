@@ -4,6 +4,7 @@
 
 #include <FredEmmott/GUI/config.hpp>
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <cmath>
 #include <source_location>

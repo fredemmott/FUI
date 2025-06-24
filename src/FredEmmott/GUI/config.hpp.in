@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#define FUI_ENABLE_SKIA
+#cmakedefine FUI_ENABLE_SKIA
+#cmakedefine FUI_ENABLE_DIRECT2D
 
 namespace FredEmmott::GUI {
 #ifndef NDEBUG

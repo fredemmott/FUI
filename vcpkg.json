@@ -3,12 +3,6 @@
   "supports": "windows & static",
   "dependencies": [
     "wil",
-    {
-      "name": "skia",
-      "features": [
-        "direct3d"
-      ]
-    },
     "yoga",
     "fmt",
     "tinyxml"
@@ -17,5 +11,21 @@
     "overlay-ports": [
       "third-party/vcpkg-overlay"
     ]
+  },
+  "features": {
+    "skia": {
+      "description": "Enable support for Skia",
+      "dependencies": [
+        {
+          "name": "skia",
+          "features": [
+            "direct3d"
+          ]
+        }
+      ]
+    },
+    "direct2d": {
+      "description": "Enable support for Direct2D+DirectWrite+D3D11"
+    }
   }
 }
