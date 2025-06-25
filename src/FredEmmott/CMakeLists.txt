@@ -67,7 +67,6 @@ add_library(
   GUI/Widgets/Widget_ComputeStyles.cpp
   GUI/Widgets/Widget_StyleTransitions.cpp
   GUI/Windows/Win32Window.cpp GUI/Windows/Win32Window.hpp
-  GUI/Windows/Win32Direct3D12GaneshWindow.cpp GUI/Windows/Win32Direct3D12GaneshWindow.hpp
   GUI/Window.cpp GUI/Window.hpp
   GUI/detail/font_detail.hpp
   GUI/detail/immediate/Widget.hpp
@@ -122,6 +121,7 @@ if(ENABLE_SKIA)
     GUI/SkiaRenderer.cpp GUI/SkiaRenderer.hpp
     GUI/SystemFont_Skia.cpp
     GUI/Widgets/TextBlock_Skia.cpp
+    GUI/Windows/Win32Direct3D12GaneshWindow.cpp GUI/Windows/Win32Direct3D12GaneshWindow.hpp
   )
   target_link_libraries(
     fredemmott-gui
