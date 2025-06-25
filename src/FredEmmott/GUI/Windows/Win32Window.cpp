@@ -12,8 +12,13 @@
 #include <FredEmmott/GUI/SystemSettings.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/assert.hpp>
+#include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
+
+#ifdef FUI_ENABLE_SKIA
+#include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
+#endif
 
 namespace FredEmmott::GUI {
 namespace {
@@ -144,6 +149,17 @@ Win32Window::Win32Window(
     CheckHResult(CreateDXGIFactory2(flags, IID_PPV_ARGS(mDXGIFactory.put())));
     mOptions.mDXGIFactory = mDXGIFactory.get();
   }
+}
+
+unique_ptr<Win32Window> Win32Window::CreateAny(
+  HINSTANCE hinstance,
+  int showCommand,
+  const Options& options) {
+#ifdef FUI_ENABLE_SKIA
+  return std::make_unique<Win32Direct3D12GaneshWindow>(
+    hinstance, showCommand, options);
+#endif
+  return nullptr;
 }
 
 void Win32Window::TrackMouseEvent() {

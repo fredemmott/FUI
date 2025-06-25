@@ -4,7 +4,7 @@
 #include <FredEmmott/GUI.hpp>
 #include <print>
 
-#include "FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp"
+#include "FredEmmott/GUI/Windows/Win32Window.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -99,7 +99,8 @@ int WINAPI wWinMain(
   CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-  fui::Win32Direct3D12GaneshWindow window(hInstance, nCmdShow, {"FUI Demo"});
+  const auto window
+    = fui::Win32Window::CreateAny(hInstance, nCmdShow, {"FUI Demo"});
   while (true) {
     // Variable FPS - wait for whichever is sooner:
     // - input
@@ -107,15 +108,15 @@ int WINAPI wWinMain(
     //
     // The default target FPS varies; it is '0 fps - input only' usually, but
     // is 60FPS when an animation is active.
-    window.WaitFrame();
+    window->WaitFrame();
 
-    const auto ok = window.BeginFrame();
+    const auto ok = window->BeginFrame();
     if (!ok) {
       return ok.error();
     }
 
     AppTick();
 
-    window.EndFrame();
+    window->EndFrame();
   }
 }

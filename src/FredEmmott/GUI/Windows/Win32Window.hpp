@@ -10,10 +10,10 @@
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <chrono>
-#include <expected>
 #include <optional>
 
 #include "FredEmmott/GUI/Point.hpp"
+#include "FredEmmott/memory.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 class Widget;
@@ -52,7 +52,10 @@ class Win32Window : public Window {
     int showCommand,
     const Options& options = {});
 
-  virtual ~Win32Window();
+  static unique_ptr<Win32Window>
+  CreateAny(HINSTANCE hinstance, int showCommand, const Options& options = {});
+
+  ~Win32Window() override;
 
   void SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE);
 
