@@ -5,6 +5,7 @@
 #include <Windows.h>
 
 #include <FredEmmott/GUI/Point.hpp>
+#include <FredEmmott/GUI/detail/renderer_detail.hpp>
 #include <chrono>
 #include <expected>
 #include <memory>
@@ -31,7 +32,7 @@ class Window {
       return mValue != nullptr;
     }
   };
-  Window(uint8_t swapChainLength);
+  Window(renderer_detail::RenderAPI, uint8_t swapChainLength);
   virtual ~Window() = default;
 
   virtual std::unique_ptr<Window> CreatePopup() const = 0;

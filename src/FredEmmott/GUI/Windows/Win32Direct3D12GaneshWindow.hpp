@@ -12,7 +12,10 @@
 namespace FredEmmott::GUI {
 class Win32Direct3D12GaneshWindow final : public Win32Window {
  public:
-  using Win32Window::Win32Window;
+  Win32Direct3D12GaneshWindow(
+    HINSTANCE instance,
+    UINT showCommand,
+    const Options& options = {});
   ~Win32Direct3D12GaneshWindow() override;
 
  protected:

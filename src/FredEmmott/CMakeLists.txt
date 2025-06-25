@@ -71,6 +71,7 @@ add_library(
   GUI/detail/font_detail.hpp
   GUI/detail/immediate/Widget.hpp
   GUI/detail/immediate_detail.cpp GUI/detail/immediate_detail.hpp
+  GUI/detail/renderer_detail.cpp GUI/detail/renderer_detail.hpp
   GUI/detail/style_detail.hpp
   GUI/detail/widget_detail.hpp
   GUI/events/Event.hpp

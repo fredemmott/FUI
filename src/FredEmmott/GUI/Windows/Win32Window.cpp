@@ -132,10 +132,11 @@ void Win32Window::InitializeWindow() {
 }
 
 Win32Window::Win32Window(
+  renderer_detail::RenderAPI renderApi,
   HINSTANCE hInstance,
   int nCmdShow,
   const Options& options)
-  : Window(SwapChainLength),
+  : Window(renderApi, SwapChainLength),
     mInstanceHandle(hInstance),
     mShowCommand(nCmdShow),
     mOptions(options) {

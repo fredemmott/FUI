@@ -9,7 +9,12 @@
 
 namespace FredEmmott::GUI {
 
-Window::Window(uint8_t swapChainLength) : mSwapChainLength(swapChainLength) {}
+Window::Window(
+  const renderer_detail::RenderAPI renderAPI,
+  const uint8_t swapChainLength)
+  : mSwapChainLength(swapChainLength) {
+  renderer_detail::SetRenderAPI(renderAPI);
+}
 
 std::expected<void, int> Window::BeginFrame() {
   // We may have failed since the last window message without it being directly

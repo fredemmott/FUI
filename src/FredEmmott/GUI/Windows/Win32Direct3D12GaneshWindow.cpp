@@ -209,6 +209,16 @@ void Win32Direct3D12GaneshWindow::InitializeSkia() {
   mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
 }
 
+Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
+  HINSTANCE instance,
+  UINT showCommand,
+  const Options& options)
+  : Win32Window(
+      renderer_detail::RenderAPI::Skia,
+      instance,
+      showCommand,
+      options) {}
+
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
   this->CleanupFrameContexts();
 }

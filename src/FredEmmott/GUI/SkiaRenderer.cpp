@@ -3,12 +3,16 @@
 
 #include "SkiaRenderer.hpp"
 
+#include <FredEmmott/GUI/detail/renderer_detail.hpp>
+
 #include "assert.hpp"
 
 namespace FredEmmott::GUI {
 
 SkiaRenderer::SkiaRenderer(SkCanvas* canvas) : mCanvas(canvas) {
   FUI_ASSERT(canvas != nullptr);
+  FUI_ASSERT(
+    renderer_detail::GetRenderAPI() == renderer_detail::RenderAPI::Skia);
 }
 
 SkiaRenderer::~SkiaRenderer() {

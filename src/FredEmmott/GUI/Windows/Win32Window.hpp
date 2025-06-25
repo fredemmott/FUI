@@ -47,11 +47,6 @@ class Win32Window : public Window {
   Win32Window& operator=(const Win32Window&) = delete;
   Win32Window& operator=(Win32Window&&) = delete;
 
-  explicit Win32Window(
-    HINSTANCE instance,
-    int showCommand,
-    const Options& options = {});
-
   static unique_ptr<Win32Window>
   CreateAny(HINSTANCE hinstance, int showCommand, const Options& options = {});
 
@@ -74,6 +69,12 @@ class Win32Window : public Window {
 
  protected:
   static constexpr UINT SwapChainLength = 3;
+
+  explicit Win32Window(
+    renderer_detail::RenderAPI renderApi,
+    HINSTANCE instance,
+    int showCommand,
+    const Options& options);
 
   void InitializeWindow() final;
   void ResizeIfNeeded() final;
