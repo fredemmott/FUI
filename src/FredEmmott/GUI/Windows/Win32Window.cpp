@@ -13,6 +13,7 @@
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
+#include <FredEmmott/GUI/detail/win32_detail.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
 
@@ -21,6 +22,8 @@
 #endif
 
 namespace FredEmmott::GUI {
+using namespace win32_detail;
+
 namespace {
 std::wstring GetDefaultWindowClassName() {
   const auto thisExe = wil::QueryFullProcessImageNameW(GetCurrentProcess(), 0);
@@ -53,32 +56,6 @@ MouseEvent MakeMouseEvent(WPARAM wParam, LPARAM lParam, float dpiScale) {
   }
 
   return ret;
-}
-
-void ThrowHResult(
-  const HRESULT ret,
-  const std::source_location& caller = std::source_location::current()) {
-  const std::error_code ec {ret, std::system_category()};
-
-  const auto msg = std::format(
-    "HRESULT failed: {:#010x} @ {} - {}:{}:{} - {}\n",
-    std::bit_cast<uint32_t>(ret),
-    caller.function_name(),
-    caller.file_name(),
-    caller.line(),
-    caller.column(),
-    ec.message());
-  OutputDebugStringA(msg.c_str());
-  throw std::system_error(ec);
-}
-
-void CheckHResult(
-  const HRESULT ret,
-  const std::source_location& caller = std::source_location::current()) {
-  if (SUCCEEDED(ret)) [[likely]] {
-    return;
-  }
-  ThrowHResult(ret, caller);
 }
 
 std::wstring Utf8ToWide(std::string_view s) {

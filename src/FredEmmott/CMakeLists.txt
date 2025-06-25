@@ -74,6 +74,7 @@ add_library(
   GUI/detail/renderer_detail.cpp GUI/detail/renderer_detail.hpp
   GUI/detail/style_detail.hpp
   GUI/detail/widget_detail.hpp
+  GUI/detail/win32_detail.cpp GUI/detail/win32_detail.hpp
   GUI/events/Event.hpp
   GUI/events/MouseButton.hpp
   GUI/events/MouseEvent.hpp

@@ -1,0 +1,32 @@
+// Copyright 2025 Fred Emmott <fred@fredemmott.com>
+// SPDX-License-Identifier: MIT
+
+#include "win32_detail.hpp"
+
+#include <bit>
+#include <format>
+#include <system_error>
+
+namespace FredEmmott::GUI::win32_detail {
+void ThrowHResult(const HRESULT ret, const std::source_location& caller) {
+  const std::error_code ec {ret, std::system_category()};
+
+  const auto msg = std::format(
+    "HRESULT failed: {:#010x} @ {} - {}:{}:{} - {}\n",
+    std::bit_cast<uint32_t>(ret),
+    caller.function_name(),
+    caller.file_name(),
+    caller.line(),
+    caller.column(),
+    ec.message());
+  OutputDebugStringA(msg.c_str());
+  throw std::system_error(ec, msg);
+}
+
+void CheckHResult(const HRESULT ret, const std::source_location& caller) {
+  if (SUCCEEDED(ret)) [[likely]] {
+    return;
+  }
+  ThrowHResult(ret, caller);
+}
+}// namespace FredEmmott::GUI::win32_detail

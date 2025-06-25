@@ -16,40 +16,15 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/SystemSettings.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <FredEmmott/GUI/detail/win32_detail.hpp>
 #include <chrono>
 #include <filesystem>
-#include <format>
 #include <print>
-#include <source_location>
 #include <thread>
 
 namespace FredEmmott::GUI {
 namespace {
-void ThrowHResult(
-  const HRESULT ret,
-  const std::source_location& caller = std::source_location::current()) {
-  const std::error_code ec {ret, std::system_category()};
-
-  const auto msg = std::format(
-    "HRESULT failed: {:#010x} @ {} - {}:{}:{} - {}\n",
-    std::bit_cast<uint32_t>(ret),
-    caller.function_name(),
-    caller.file_name(),
-    caller.line(),
-    caller.column(),
-    ec.message());
-  OutputDebugStringA(msg.c_str());
-  throw std::system_error(ec);
-}
-
-void CheckHResult(
-  const HRESULT ret,
-  const std::source_location& caller = std::source_location::current()) {
-  if (SUCCEEDED(ret)) [[likely]] {
-    return;
-  }
-  ThrowHResult(ret, caller);
-}
+using namespace win32_detail;
 
 void ConfigureD3DDebugLayer(const wil::com_ptr<ID3D12Device>& device) {
 #ifndef NDEBUG
