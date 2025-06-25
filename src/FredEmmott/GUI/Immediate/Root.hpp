@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <skia/core/SkCanvas.h>
-
 #include <FredEmmott/GUI/FrameRateRequirement.hpp>
 #include <FredEmmott/GUI/Renderer.hpp>
 #include <FredEmmott/GUI/Size.hpp>
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
-#include <optional>
 
 namespace FredEmmott::GUI::Widgets {
 class Widget;

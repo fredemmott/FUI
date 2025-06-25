@@ -55,9 +55,11 @@ float Font::MeasureTextWidth(const std::string_view text) const noexcept {
   return std::numeric_limits<float>::quiet_NaN();
 }
 
+#ifdef FUI_ENABLE_SKIA
 Font::operator SkFont() const noexcept {
   const auto it = std::get_if<SkFont>(&mFont);
   return it ? (*it) : SkFont {};
 }
+#endif
 
 }// namespace FredEmmott::GUI
