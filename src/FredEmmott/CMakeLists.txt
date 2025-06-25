@@ -103,6 +103,8 @@ target_compile_definitions(
   PUBLIC
   UNICODE=1
   _UNICODE=1
+  PRIVATE
+  NOMINMAX=1
 )
 target_include_directories(
   fredemmott-gui
@@ -130,5 +132,14 @@ if(ENABLE_SKIA)
     PRIVATE
     unofficial::skia::modules::skunicode_icu
     unofficial::skia::modules::skparagraph
+  )
+endif()
+
+if(ENABLE_DIRECT2D)
+  target_link_libraries(
+    fredemmott-gui
+    PRIVATE
+    # System
+    DXGI
   )
 endif()

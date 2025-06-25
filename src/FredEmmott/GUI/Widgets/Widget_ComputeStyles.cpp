@@ -1,8 +1,6 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include <core/SkRRect.h>
-
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>

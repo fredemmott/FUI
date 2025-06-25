@@ -118,6 +118,17 @@ class Color final {
 #endif
     }
 
+    constexpr bool operator==(const Constant& other) const noexcept {
+#ifdef FUI_ENABLE_SKIA
+      return mSkia == other.mSkia;
+#elifdef FUI_ENABLE_DIRECT2D
+      return memcmp(&mD2D, &other.mD2D, sizeof(mD2D)) == 0;
+#else
+      static_assert(false, "No backends enabled for Colors")
+#endif
+      std::unreachable();
+    }
+
 #ifdef FUI_ENABLE_SKIA
     constexpr operator SkColor() const noexcept {
       return mSkia;

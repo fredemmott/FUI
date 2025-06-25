@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 #include "Widget.hpp"
 
-#include <core/SkRRect.h>
-
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
@@ -300,8 +298,10 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
     mDirectStateFlags &= ~StateFlags::Hovered;
 
     if (display != YGDisplayContents) {
-      event.mWindowPoint
-        = {SK_ScalarNegativeInfinity, SK_ScalarNegativeInfinity};
+      event.mWindowPoint = {
+        -std::numeric_limits<float>::infinity(),
+        -std::numeric_limits<float>::infinity(),
+      };
       event.mOffset = {};
     }
   } else {
