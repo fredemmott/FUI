@@ -13,7 +13,7 @@ class PopupWindow final : public Widget {
   PopupWindow(std::size_t id);
 
   Window* GetWindow() {
-    return &mWindow;
+    return mWindow.get();
   }
 
  protected:
@@ -24,13 +24,6 @@ class PopupWindow final : public Widget {
 
  private:
   unique_ptr<Widget> mRootWidget;
-  Window mWindow {
-    GetModuleHandleW(nullptr),
-    SW_SHOWNA,
-    {
-      .mWindowStyle = WS_POPUP | WS_BORDER,
-      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_NOACTIVATE,
-      .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
-    }};
+  unique_ptr<Window> mWindow;
 };
 }// namespace FredEmmott::GUI::Widgets

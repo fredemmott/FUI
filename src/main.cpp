@@ -4,6 +4,8 @@
 #include <FredEmmott/GUI.hpp>
 #include <print>
 
+#include "FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp"
+
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
 
@@ -97,7 +99,7 @@ int WINAPI wWinMain(
   CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-  fui::Window window(hInstance, nCmdShow, {"FUI Demo"});
+  fui::Win32Direct3D12GaneshWindow window(hInstance, nCmdShow, {"FUI Demo"});
   while (true) {
     // Variable FPS - wait for whichever is sooner:
     // - input

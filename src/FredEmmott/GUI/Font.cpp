@@ -6,6 +6,10 @@
 #include "Immediate/TextBlock.hpp"
 #include "detail/font_detail.hpp"
 
+#ifdef FUI_ENABLE_SKIA
+#include <skia/core/SkFontTypes.h>
+#endif
+
 using namespace FredEmmott::GUI::font_detail;
 
 namespace FredEmmott::GUI {

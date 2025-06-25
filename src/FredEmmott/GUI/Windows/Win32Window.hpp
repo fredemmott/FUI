@@ -8,15 +8,16 @@
 
 #include <FredEmmott/GUI/ActivatedFlag.hpp>
 #include <FredEmmott/GUI/Immediate/Root.hpp>
+#include <FredEmmott/GUI/Window.hpp>
 #include <chrono>
 #include <expected>
 #include <optional>
 
+#include "FredEmmott/GUI/Point.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 class Widget;
 }
-
-#include "FredEmmott/GUI/Point.hpp"
 
 namespace FredEmmott::GUI {
 struct WindowOptions {
@@ -32,9 +33,11 @@ struct WindowOptions {
     WS_EX_APPWINDOW | WS_EX_CLIENTEDGE | WS_EX_NOREDIRECTIONBITMAP};
 
   DWM_SYSTEMBACKDROP_TYPE mSystemBackdrop {DWMSBT_MAINWINDOW};
+
+  IDXGIFactory* mDXGIFactory {nullptr};
 };
 
-class Win32Window {
+class Win32Window : public Window {
  public:
   using Options = WindowOptions;
 
@@ -54,41 +57,42 @@ class Win32Window {
   void SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE);
 
   [[nodiscard]]
-  HWND GetNativeHandle() const noexcept {
-    return mHwnd ? mHwnd.get() : nullptr;
+  NativeHandle GetNativeHandle() const noexcept final {
+    return {mHwnd ? mHwnd.get() : nullptr};
   }
 
-  void SetParent(HWND);
+  void SetParent(NativeHandle) final;
+  void SetInitialPositionInNativeCoords(const NativePoint& native) final;
+  void OffsetPositionToDescendant(Widgets::Widget* child) final;
 
-  void SetInitialPositionInNativeCoords(const NativePoint& native);
+  NativePoint CanvasPointToNativePoint(const Point& canvas) const final;
 
-  NativePoint CanvasPointToNativePoint(const Point& canvas) const;
-
-  [[nodiscard]]
-  std::expected<void, int> BeginFrame();
-  void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
-  void EndFrame();
-
-  FrameRateRequirement GetFrameRateRequirement() const;
-
-  void OffsetPositionToDescendant(Widgets::Widget* child);
+  std::unique_ptr<Window> CreatePopup() const final;
 
  protected:
-  class BasicFramePainter {
-   public:
-    virtual ~BasicFramePainter() = default;
-
-    virtual Renderer* GetRenderer() noexcept = 0;
-  };
   static constexpr UINT SwapChainLength = 3;
 
-  virtual std::unique_ptr<BasicFramePainter> GetFramePainter(
-    uint8_t mFrameIndex)
+  void InitializeWindow() final;
+  void ResizeIfNeeded() final;
+  Size GetClientAreaSize() const final;
+  float GetDPIScale() const final;
+  Color GetClearColor() const final;
+
+  virtual std::unique_ptr<Win32Window>
+  CreatePopup(HINSTANCE instance, int showCommand, const Options& options) const
     = 0;
   virtual void InitializeGraphicsAPI() = 0;
   virtual IUnknown* GetDirectCompositionTargetDevice() const = 0;
   virtual void CreateRenderTargets() = 0;
   virtual void CleanupFrameContexts() = 0;
+
+  auto GetDXGIFactory() const noexcept {
+    return mDXGIFactory.get();
+  }
+
+  auto GetSwapChain() const noexcept {
+    return mSwapChain.get();
+  }
 
  private:
   HINSTANCE mInstanceHandle {nullptr};
@@ -96,8 +100,6 @@ class Win32Window {
   Options mOptions {};
   static thread_local std::unordered_map<HWND, Win32Window*> gInstances;
   static thread_local Win32Window* gInstanceCreatingWindow;
-
-  std::optional<int> mExitCode;
 
   HWND mParentHwnd {nullptr};
   wil::unique_hwnd mHwnd;
@@ -113,25 +115,20 @@ class Win32Window {
   NativePoint mPosition {};
   int mMinimumWidth {};
 
-  Immediate::Root mFUIRoot;
+  wil::com_ptr<IDXGIFactory4> mDXGIFactory;
+  wil::com_ptr<IDXGISwapChain1> mSwapChain;
 
   wil::com_ptr<IDCompositionDevice> mCompositionDevice;
   wil::com_ptr<IDCompositionTarget> mCompositionTarget;
   wil::com_ptr<IDCompositionVisual> mCompositionVisual;
   bool mHaveSystemBackdrop {false};
 
-  std::chrono::steady_clock::time_point mBeginFrameTime;
-  uint8_t mFrameIndex {};// Used to index into mFrames; reset when buffer reset
-
-  void ResizeIfNeeded();
   void ResizeSwapchain();
   void AdjustToWindowsTheme();
-  void InitializeWindow();
   void CreateNativeWindow();
   void InitializeDirectComposition();
   [[nodiscard]]
   SIZE CalculateInitialWindowSize() const;
-  void Paint();
   void TrackMouseEvent();
   void SetDPI(WORD newDPI);
 

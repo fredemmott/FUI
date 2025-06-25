@@ -4,6 +4,7 @@
 #pragma once
 
 #include <d3d12.h>
+#include <skia/core/SkSurface.h>
 #include <skia/gpu/GrDirectContext.h>
 
 #include "Win32Window.hpp"
@@ -11,6 +12,7 @@
 namespace FredEmmott::GUI {
 class Win32Direct3D12GaneshWindow final : public Win32Window {
  public:
+  using Win32Window::Win32Window;
   ~Win32Direct3D12GaneshWindow() override;
 
  protected:
@@ -18,6 +20,10 @@ class Win32Direct3D12GaneshWindow final : public Win32Window {
   IUnknown* GetDirectCompositionTargetDevice() const override;
   void CreateRenderTargets() override;
   void CleanupFrameContexts() override;
+  std::unique_ptr<Win32Window> CreatePopup(
+    HINSTANCE instance,
+    int showCommand,
+    const Options& options) const override;
 
  private:
   struct SharedResources;
@@ -29,7 +35,6 @@ class Win32Direct3D12GaneshWindow final : public Win32Window {
   wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
   wil::com_ptr<ID3D12DescriptorHeap> mD3DRTVHeap;
   wil::com_ptr<ID3D12DescriptorHeap> mD3DSRVHeap;
-  wil::com_ptr<IDXGISwapChain1> mSwapChain;
 
   wil::com_ptr<ID3D12Fence> mD3DFence;
   wil::unique_handle mFenceEvent {CreateEventW(nullptr, FALSE, FALSE, nullptr)};

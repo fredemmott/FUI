@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/StaticTheme/ComboBox.hpp>
 
 #include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
+#include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "PopupWindow.hpp"
 #include "StackPanel.hpp"
 
@@ -27,7 +28,8 @@ bool BeginComboBoxPopup(ID id) {
     return false;
   }
   if (tWindow && !tWindow->GetNativeHandle()) {
-    tWindow->SetSystemBackdropType(DWMSBT_NONE);
+    const auto win32 = static_cast<Win32Window*>(tWindow);
+    win32->SetSystemBackdropType(DWMSBT_NONE);
   }
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 

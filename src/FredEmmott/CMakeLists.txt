@@ -68,6 +68,7 @@ add_library(
   GUI/Widgets/Widget_StyleTransitions.cpp
   GUI/Windows/Win32Window.cpp GUI/Windows/Win32Window.hpp
   GUI/Windows/Win32Direct3D12GaneshWindow.cpp GUI/Windows/Win32Direct3D12GaneshWindow.hpp
+  GUI/Window.cpp GUI/Window.hpp
   GUI/detail/font_detail.hpp
   GUI/detail/immediate/Widget.hpp
   GUI/detail/immediate_detail.cpp GUI/detail/immediate_detail.hpp

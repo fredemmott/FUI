@@ -28,40 +28,6 @@
 
 namespace FredEmmott::GUI {
 namespace {
-
-std::wstring GetDefaultWindowClassName() {
-  const auto thisExe = wil::QueryFullProcessImageNameW(GetCurrentProcess(), 0);
-  return std::format(
-    L"FredEmmott::GUI (FUI) Window - {}",
-    std::filesystem::path(thisExe.get()).filename().wstring());
-}
-
-MouseEvent MakeMouseEvent(WPARAM wParam, LPARAM lParam, float dpiScale) {
-  MouseEvent ret;
-  ret.mWindowPoint = {
-    GET_X_LPARAM(lParam) / dpiScale,
-    GET_Y_LPARAM(lParam) / dpiScale,
-  };
-
-  if (wParam & MK_LBUTTON) {
-    ret.mButtons |= MouseButton::Left;
-  }
-  if (wParam & MK_MBUTTON) {
-    ret.mButtons |= MouseButton::Middle;
-  }
-  if (wParam & MK_RBUTTON) {
-    ret.mButtons |= MouseButton::Right;
-  }
-  if (wParam & MK_XBUTTON1) {
-    ret.mButtons |= MouseButton::X1;
-  }
-  if (wParam & MK_XBUTTON2) {
-    ret.mButtons |= MouseButton::X2;
-  }
-
-  return ret;
-}
-
 void ThrowHResult(
   const HRESULT ret,
   const std::source_location& caller = std::source_location::current()) {
@@ -86,24 +52,6 @@ void CheckHResult(
     return;
   }
   ThrowHResult(ret, caller);
-}
-
-std::wstring Utf8ToWide(std::string_view s) {
-  const auto retCharCount = MultiByteToWideChar(
-    CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s.size(), nullptr, 0);
-  std::wstring ret;
-  ret.resize(retCharCount);
-  MultiByteToWideChar(
-    CP_UTF8,
-    MB_ERR_INVALID_CHARS,
-    s.data(),
-    s.size(),
-    ret.data(),
-    retCharCount);
-  if (const auto i = ret.find_last_of(L'\0'); i != std::wstring::npos) {
-    ret.erase(i);
-  }
-  return ret;
 }
 
 void ConfigureD3DDebugLayer(const wil::com_ptr<ID3D12Device>& device) {
@@ -145,15 +93,10 @@ void ConfigureD3DDebugLayer(const wil::com_ptr<ID3D12Device>& device) {
   CheckHResult(infoQueue->PushStorageFilter(&filter));
 #endif
 }
-
 }// namespace
 
-thread_local decltype(Win32Direct3D12GaneshWindow::gInstances)
-  Win32Direct3D12GaneshWindow::gInstances {};
-thread_local Win32Direct3D12GaneshWindow*
-  Win32Direct3D12GaneshWindow::gInstanceCreatingWindow {nullptr};
-
-class Win32Direct3D12GaneshWindow::FramePainter : public BasicFramePainter {
+class Win32Direct3D12GaneshWindow::FramePainter final
+  : public BasicFramePainter {
  public:
   FramePainter() = delete;
   FramePainter(Win32Direct3D12GaneshWindow* window, uint8_t frameIndex)
@@ -178,18 +121,17 @@ class Win32Direct3D12GaneshWindow::FramePainter : public BasicFramePainter {
 };
 
 struct Win32Direct3D12GaneshWindow::SharedResources {
-  wil::com_ptr<IDXGIFactory4> mDXGIFactory;
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;
   wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
 
-  static std::shared_ptr<SharedResources> Get();
+  static std::shared_ptr<SharedResources> Get(IDXGIFactory4* dxgiFactory);
 };
 std::weak_ptr<Win32Direct3D12GaneshWindow::SharedResources>
   Win32Direct3D12GaneshWindow::gSharedResources;
 
 std::shared_ptr<Win32Direct3D12GaneshWindow::SharedResources>
-Win32Direct3D12GaneshWindow::SharedResources::Get() {
+Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
   if (auto ret = gSharedResources.lock()) {
     return ret;
   }
@@ -204,16 +146,7 @@ Win32Direct3D12GaneshWindow::SharedResources::Get() {
   }
 #endif
 
-  {
-    UINT flags = 0;
-#ifndef NDEBUG
-    flags |= DXGI_CREATE_FACTORY_DEBUG;
-#endif
-    CheckHResult(
-      CreateDXGIFactory2(flags, IID_PPV_ARGS(ret->mDXGIFactory.put())));
-  }
-
-  CheckHResult(ret->mDXGIFactory->EnumAdapters1(0, ret->mDXGIAdapter.put()));
+  CheckHResult(dxgiFactory->EnumAdapters1(0, ret->mDXGIAdapter.put()));
 
   D3D_FEATURE_LEVEL featureLevel {D3D_FEATURE_LEVEL_11_0};
   CheckHResult(D3D12CreateDevice(
@@ -226,159 +159,13 @@ Win32Direct3D12GaneshWindow::SharedResources::Get() {
   return ret;
 }
 
-void Win32Direct3D12GaneshWindow::AdjustToWindowsTheme() {
-  BOOL darkMode {StaticTheme::GetCurrent() == StaticTheme::Theme::Dark};
-  // Support building with the Windows 10 SDK
-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-  DwmSetWindowAttribute(
-    mHwnd.get(), DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
-
-  DWM_SYSTEMBACKDROP_TYPE backdropType {mOptions.mSystemBackdrop};
-  mHaveSystemBackdrop = SUCCEEDED(DwmSetWindowAttribute(
-    mHwnd.get(),
-    DWMWA_SYSTEMBACKDROP_TYPE,
-    &backdropType,
-    sizeof(backdropType)));
-}
-
 void Win32Direct3D12GaneshWindow::InitializeGraphicsAPI() {
   this->InitializeD3D();
   this->InitializeSkia();
 }
 
-void Win32Direct3D12GaneshWindow::InitializeWindow() {
-  this->CreateNativeWindow();
-  this->InitializeGraphicsAPI();
-  this->InitializeDirectComposition();
-  this->CreateRenderTargets();
-
-  this->AdjustToWindowsTheme();
-
-  ShowWindow(mHwnd.get(), mShowCommand);
-}
-
-Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
-  HINSTANCE hInstance,
-  int nCmdShow,
-  const Options& options)
-  : mInstanceHandle(hInstance),
-    mShowCommand(nCmdShow),
-    mOptions(options) {}
-
-void Win32Direct3D12GaneshWindow::TrackMouseEvent() {
-  if (mTrackingMouseEvents) {
-    return;
-  }
-  TRACKMOUSEEVENT tme {
-    .cbSize = sizeof(tme),
-    .dwFlags = TME_LEAVE,
-    .hwndTrack = mHwnd.get(),
-    .dwHoverTime = HOVER_DEFAULT,
-  };
-  ::TrackMouseEvent(&tme);
-  mTrackingMouseEvents = true;
-}
-void Win32Direct3D12GaneshWindow::CreateNativeWindow() {
-  const std::wstring className = mOptions.mClass.empty()
-    ? GetDefaultWindowClassName()
-    : Utf8ToWide(mOptions.mClass);
-
-  const WNDCLASSW wc {
-    .style = CS_HREDRAW | CS_VREDRAW,
-    .lpfnWndProc = &StaticWindowProc,
-    .hInstance = mInstanceHandle,
-    .lpszClassName = className.c_str(),
-  };
-  if (!RegisterClassW(&wc)) {
-    if (const auto error = GetLastError();
-        error != ERROR_CLASS_ALREADY_EXISTS) {
-      ThrowHResult(HRESULT_FROM_WIN32(error));
-    }
-  }
-
-  gInstanceCreatingWindow = this;
-  const std::wstring title
-    = mOptions.mTitle.empty() ? L"FUI Window" : Utf8ToWide(mOptions.mTitle);
-  mHwnd.reset(CreateWindowExW(
-    mOptions.mWindowExStyle,
-    className.c_str(),
-    title.c_str(),
-    mOptions.mWindowStyle,
-    mOptions.mInitialPosition.mX,
-    mOptions.mInitialPosition.mY,
-    0,
-    0,
-    mParentHwnd,
-    nullptr,
-    mInstanceHandle,
-    nullptr));
-  gInstanceCreatingWindow = nullptr;
-  if (!mHwnd) {
-    CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
-    return;
-  }
-
-  if (mParentHwnd) {
-    gInstances.at(mParentHwnd)->mChildren.push_back(mHwnd.get());
-  }
-
-  this->TrackMouseEvent();
-
-  this->SetDPI(GetDpiForWindow(mHwnd.get()));
-
-  gInstances.emplace(mHwnd.get(), this);
-  const auto calculatedInitialSize = this->CalculateInitialWindowSize();
-  mMinimumWidth = calculatedInitialSize.cx;
-  SetWindowPos(
-    mHwnd.get(),
-    nullptr,
-    0,
-    0,
-    calculatedInitialSize.cx,
-    calculatedInitialSize.cy,
-    SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
-  RECT clientRect {};
-  GetClientRect(mHwnd.get(), &clientRect);
-
-  if (mOffsetToChild) {
-    auto root = mOffsetToChild->GetLayoutNode();
-    while (const auto node = YGNodeGetParent(root)) {
-      root = node;
-    }
-    YGNodeCalculateLayout(
-      root,
-      static_cast<float>(clientRect.right - clientRect.left) / mDPIScale,
-      static_cast<float>(clientRect.bottom - clientRect.top) / mDPIScale,
-      YGDirectionLTR);
-    const auto canvas = mOffsetToChild->GetTopLeftCanvasPoint();
-    const auto native = CanvasPointToNativePoint(canvas);
-    const auto nativeOrigin = mOptions.mInitialPosition;
-    FUI_ASSERT(nativeOrigin.mX != CW_USEDEFAULT);
-    FUI_ASSERT(nativeOrigin.mY != CW_USEDEFAULT);
-
-    SetWindowPos(
-      mHwnd.get(),
-      nullptr,
-      (2 * nativeOrigin.mX) - native.mX,
-      (2 * nativeOrigin.mY) - native.mY,
-      0,
-      0,
-      SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
-        | SWP_NOCOPYBITS);
-  }
-
-  GetWindowRect(mHwnd.get(), &mNCRect);
-  GetClientRect(mHwnd.get(), &clientRect);
-  mClientSize = {
-    clientRect.right - clientRect.left,
-    clientRect.bottom - clientRect.top,
-  };
-}
-
 void Win32Direct3D12GaneshWindow::InitializeD3D() {
-  mSharedResources = SharedResources::Get();
+  mSharedResources = SharedResources::Get(this->GetDXGIFactory());
   mDXGIAdapter = mSharedResources->mDXGIAdapter;
   mD3DDevice = mSharedResources->mD3DDevice;
   mD3DCommandQueue = mSharedResources->mD3DCommandQueue;
@@ -426,23 +213,7 @@ void Win32Direct3D12GaneshWindow::InitializeSkia() {
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
-  if (mParentHwnd && gInstances.contains(mParentHwnd)) {
-    auto& siblings = gInstances.at(mParentHwnd)->mChildren;
-    siblings.erase(std::ranges::find(siblings, mHwnd.get()));
-  }
   this->CleanupFrameContexts();
-
-  const auto it = std::ranges::find(
-    gInstances, this, [](const auto& pair) { return pair.second; });
-  if (it != gInstances.end()) {
-    gInstances.erase(it);
-  }
-}
-void Win32Direct3D12GaneshWindow::SetSystemBackdropType(
-  DWM_SYSTEMBACKDROP_TYPE type) {
-  FUI_ASSERT(
-    !mHwnd, "Can't set system backdrop type after creating the window");
-  mOptions.mSystemBackdrop = type;
 }
 
 IUnknown* Win32Direct3D12GaneshWindow::GetDirectCompositionTargetDevice()
@@ -450,42 +221,16 @@ IUnknown* Win32Direct3D12GaneshWindow::GetDirectCompositionTargetDevice()
   return mD3DCommandQueue.get();
 }
 
-void Win32Direct3D12GaneshWindow::InitializeDirectComposition() {
-  CheckHResult(
-    DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
-  CheckHResult(mCompositionDevice->CreateTargetForHwnd(
-    mHwnd.get(), true, mCompositionTarget.put()));
-  CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
-
-  DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
-    .Width = static_cast<UINT>(mClientSize.cx),
-    .Height = static_cast<UINT>(mClientSize.cy),
-    .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-    .SampleDesc = {1, 0},
-    .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-    .BufferCount = SwapChainLength,
-    .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-    .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
-  };
-
-  CheckHResult(mSharedResources->mDXGIFactory->CreateSwapChainForComposition(
-    this->GetDirectCompositionTargetDevice(),
-    &swapChainDesc,
-    nullptr,
-    mSwapChain.put()));
-  mCompositionVisual->SetContent(mSwapChain.get());
-  mCompositionTarget->SetRoot(mCompositionVisual.get());
-  mCompositionDevice->Commit();
-}
-
 void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
   const auto rtvStart = mD3DRTVHeap->GetCPUDescriptorHandleForHeapStart();
   const auto rtvStep = mD3DDevice->GetDescriptorHandleIncrementSize(
     D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+  const auto swapchain = GetSwapChain();
   for (UINT i = 0; i < SwapChainLength; ++i) {
     auto& frame = mFrames[i];
     CheckHResult(
-      mSwapChain->GetBuffer(i, IID_PPV_ARGS(frame.mRenderTarget.put())));
+      swapchain->GetBuffer(i, IID_PPV_ARGS(frame.mRenderTarget.put())));
     frame.mRenderTarget->SetName(L"FredEmmott::GUI Skia RenderTarget");
     frame.mRenderTargetView = rtvStart;
     frame.mRenderTargetView.ptr += i * rtvStep;
@@ -493,7 +238,7 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
       frame.mRenderTarget.get(), nullptr, frame.mRenderTargetView);
 
     DXGI_SWAP_CHAIN_DESC1 desc;
-    mSwapChain->GetDesc1(&desc);
+    swapchain->GetDesc1(&desc);
 
     frame.mRenderTarget->AddRef();
     GrD3DTextureResourceInfo backBufferInfo(
@@ -518,54 +263,6 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
   }
 }
 
-void Win32Direct3D12GaneshWindow::ResizeSwapchain() {
-  this->CleanupFrameContexts();
-  mFrameIndex = 0;
-  CheckHResult(mSwapChain->ResizeBuffers(
-    0, mClientSize.cx, mClientSize.cy, DXGI_FORMAT_UNKNOWN, 0));
-  this->CreateRenderTargets();
-}
-
-void Win32Direct3D12GaneshWindow::ResizeIfNeeded() {
-  if (!mPendingResize.TestAndClear()) {
-    return;
-  }
-
-  RECT clientRect {};
-  GetClientRect(mHwnd.get(), &clientRect);
-  SIZE clientSize = {
-    clientRect.right - clientRect.left,
-    clientRect.bottom - clientRect.top,
-  };
-  mClientSize = clientSize;
-
-  GetWindowRect(mHwnd.get(), &mNCRect);
-
-  ResizeSwapchain();
-}
-
-void Win32Direct3D12GaneshWindow::Paint() {
-  this->ResizeIfNeeded();
-
-  const Size size {
-    std::floor(static_cast<float>(mClientSize.cx) / mDPIScale),
-    std::floor(static_cast<float>(mClientSize.cy) / mDPIScale),
-  };
-
-  {
-    const auto painter = this->GetFramePainter(mFrameIndex);
-    const auto renderer = painter->GetRenderer();
-    const auto layer = renderer->ScopedLayer();
-    renderer->Clear(
-      mHaveSystemBackdrop ? Colors::Transparent
-                          : Color {StaticTheme::SolidBackgroundFillColorBase});
-    renderer->Scale(mDPIScale);
-    mFUIRoot.Paint(renderer, size);
-  }
-
-  mFrameIndex = (mFrameIndex + 1) % SwapChainLength;
-}
-
 void Win32Direct3D12GaneshWindow::AfterPaintFrame(uint8_t frameIndex) {
   auto& frame = mFrames.at(frameIndex);
 
@@ -585,384 +282,7 @@ void Win32Direct3D12GaneshWindow::AfterPaintFrame(uint8_t frameIndex) {
     });
   mSkContext->submit(GrSyncCpu::kNo);
 
-  CheckHResult(mSwapChain->Present(0, 0));
-}
-
-void Win32Direct3D12GaneshWindow::EndFrame() {
-  using namespace Immediate::immediate_detail;
-  mFUIRoot.EndFrame();
-
-  FUI_ASSERT(tWindow == this, "Improperly nested windows");
-  tWindow = nullptr;
-
-  if (!mHwnd) [[unlikely]] {
-    this->InitializeWindow();
-    if (!mHwnd) {
-      mExitCode = EXIT_FAILURE;
-      return;
-    }
-  }
-
-  this->Paint();
-}
-FrameRateRequirement Win32Direct3D12GaneshWindow::GetFrameRateRequirement()
-  const {
-  return mFUIRoot.GetFrameRateRequirement();
-}
-void Win32Direct3D12GaneshWindow::OffsetPositionToDescendant(
-  Widgets::Widget* child) {
-  FUI_ASSERT(child);
-  if (mHwnd) {
-    return;
-  }
-  FUI_ASSERT(
-    mOptions.mInitialPosition.mX != CW_USEDEFAULT,
-    "Can't align a child element if an initial position is not specified");
-  FUI_ASSERT(
-    mOptions.mInitialPosition.mY != CW_USEDEFAULT,
-    "Can't align a child element if an initial position is not specified");
-  mOffsetToChild = child;
-}
-
-void Win32Direct3D12GaneshWindow::SetParent(HWND value) {
-  if (mParentHwnd == value) {
-    return;
-  }
-  mParentHwnd = value;
-  FUI_ASSERT(!(value && mHwnd), "Parent must be set before window is created");
-}
-
-void Win32Direct3D12GaneshWindow::SetInitialPositionInNativeCoords(
-  const NativePoint& native) {
-  FUI_ASSERT(!mHwnd, "Initial position must be set before window is created");
-  mOptions.mInitialPosition = native;
-}
-
-NativePoint Win32Direct3D12GaneshWindow::CanvasPointToNativePoint(
-  const Point& canvas) const {
-  FUI_ASSERT(mDPI && mHwnd);
-
-  NativePoint native {
-    static_cast<int>(std::round(canvas.mX * mDPIScale)),
-    static_cast<int>(std::round(canvas.mY * mDPIScale)),
-  };
-
-  // Adjust an all-zero rect to get padding
-  RECT rect {};
-  AdjustWindowRectEx(
-    &rect, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
-  // The top and left padding will both be <= 0
-  native.mX -= rect.left;
-  native.mY -= rect.top;
-
-  GetWindowRect(mHwnd.get(), &rect);
-  native.mX += rect.left;
-  native.mY += rect.top;
-
-  return native;
-}
-
-std::expected<void, int> Win32Direct3D12GaneshWindow::BeginFrame() {
-  // We may have failed since the last window message without it being directly
-  // caused by a window message to this window.
-  //
-  // For example, popup windows can be closed by a click on their owner window.
-  if (mExitCode.has_value()) {
-    return std::unexpected {mExitCode.value()};
-  }
-  using namespace Immediate::immediate_detail;
-
-  mBeginFrameTime = std::chrono::steady_clock::now();
-  MSG msg {};
-  while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-    if (mExitCode.has_value()) {
-      return std::unexpected {mExitCode.value()};
-    }
-  }
-  FUI_ASSERT(!tWindow);
-  tWindow = this;
-  mFUIRoot.BeginFrame();
-  return {};
-}
-
-void Win32Direct3D12GaneshWindow::WaitFrame(
-  unsigned int minFPS,
-  unsigned int maxFPS) const {
-  if (minFPS == std::numeric_limits<unsigned int>::max()) {
-    return;
-  }
-
-  if (mExitCode) {
-    return;
-  }
-
-  const auto fps = std::clamp<unsigned int>(
-    mFUIRoot.GetFrameRateRequirement() == FrameRateRequirement::SmoothAnimation
-      ? 60
-      : 0,
-    minFPS,
-    maxFPS);
-  if (fps == 0) {
-    MsgWaitForMultipleObjects(0, nullptr, false, INFINITE, QS_ALLINPUT);
-  }
-  std::chrono::milliseconds frameInterval {1000 / maxFPS};
-
-  const auto frameDuration = std::chrono::steady_clock::now() - mBeginFrameTime;
-  if (frameDuration >= frameInterval) {
-    return;
-  }
-  const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
-    frameInterval - frameDuration);
-
-  std::this_thread::sleep_for(millis);
-}
-
-LRESULT Win32Direct3D12GaneshWindow::StaticWindowProc(
-  HWND hwnd,
-  UINT uMsg,
-  WPARAM wParam,
-  LPARAM lParam) {
-  auto it = gInstances.find(hwnd);
-  if (it != gInstances.end()) {
-    auto& self = *it->second;
-    if (hwnd == self.mHwnd.get()) {
-      return self.WindowProc(hwnd, uMsg, wParam, lParam);
-    }
-#ifndef NDEBUG
-    // Should *always* match above
-    __debugbreak();
-#endif
-  }
-  if (gInstanceCreatingWindow) {
-    return gInstanceCreatingWindow->WindowProc(hwnd, uMsg, wParam, lParam);
-  }
-  return DefWindowProcW(hwnd, uMsg, wParam, lParam);
-}
-
-void Win32Direct3D12GaneshWindow::SetDPI(const WORD newDPI) {
-  mDPI = newDPI;
-  mDPIScale = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
-  YGConfigSetPointScaleFactor(GetYogaConfig(), mDPIScale);
-}
-
-LRESULT
-Win32Direct3D12GaneshWindow::WindowProc(
-  HWND hwnd,
-  UINT uMsg,
-  WPARAM wParam,
-  LPARAM lParam) {
-  if (mHwnd && hwnd != mHwnd.get()) {
-    throw std::logic_error("hwnd mismatch");
-  }
-  namespace fui = FredEmmott::GUI;
-  switch (uMsg) {
-    case WM_SETCURSOR: {
-      static const wil::unique_hcursor sDefaultCursor {
-        LoadCursor(nullptr, IDC_ARROW)};
-      const auto hitTest = LOWORD(lParam);
-      if (hitTest == HTCLIENT) {
-        // Hand: sPointerCursor -> IDC_HAND
-        SetCursor(sDefaultCursor.get());
-        return true;
-      }
-      break;
-    }
-    case WM_SETTINGCHANGE:
-      StaticTheme::Refresh();
-      this->AdjustToWindowsTheme();
-      SystemSettings::Get().ClearWin32(static_cast<UINT>(wParam));
-      break;
-    case WM_GETMINMAXINFO: {
-      if (!mDPI) {
-        this->SetDPI(GetDpiForWindow(hwnd));
-      }
-      if (!mMinimumWidth) {
-        break;
-      }
-      auto* minInfo = reinterpret_cast<MINMAXINFO*>(lParam);
-      minInfo->ptMinTrackSize.x = mMinimumWidth;
-      return 0;
-    }
-    case WM_SIZE: {
-      if (wParam == SIZE_MINIMIZED) {
-        break;
-      }
-      const auto w = LOWORD(lParam);
-      const auto h = HIWORD(lParam);
-      if (w == mClientSize.cx && h == mClientSize.cy) {
-        break;
-      }
-      mPendingResize.Set();
-      break;
-    }
-    case WM_PAINT:
-      this->Paint();
-      break;
-    case WM_SIZING: {
-      // Initially this is the full window size, including the non-client
-      // area
-      RECT& rect = *reinterpret_cast<RECT*>(lParam);
-      // Let's figure out how the client relates, and adjust from there
-      RECT padding {};
-      AdjustWindowRectEx(
-        &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
-      padding.left = -padding.left;
-      padding.top = -padding.top;
-      const auto contentSize = SIZE {
-        (rect.right - padding.right) - (rect.left + padding.left),
-        (rect.bottom - padding.bottom) - (rect.top + padding.top),
-      };
-      if (mFUIRoot.CanFit(
-            std::floor(contentSize.cx / mDPIScale),
-            std::floor(contentSize.cy / mDPIScale))) {
-        mPendingResize.Set();
-        break;
-      }
-      const auto height = std::ceil(
-        mFUIRoot.GetHeightForWidth(std::floor(contentSize.cx / mDPIScale))
-        * mDPIScale);
-      if (rect.top == mNCRect.top) {
-        rect.bottom = rect.top + padding.top + height + padding.bottom;
-      } else {
-        rect.top = rect.bottom - (padding.top + height + padding.bottom);
-      }
-      break;
-    }
-    case WM_DPICHANGED: {
-      const auto newDPI = HIWORD(wParam);
-      // TODO: lParam is a RECT that we *should* use
-      SetDPI(newDPI);
-      break;
-    }
-    case WM_MOUSEACTIVATE: {
-      if ((mOptions.mWindowExStyle & WS_EX_NOACTIVATE)) {
-        return MA_NOACTIVATE;
-      }
-      break;
-    }
-    case WM_MOVE: {
-      GetWindowRect(hwnd, &mNCRect);
-      const auto x = LOWORD(lParam);
-      const auto y = HIWORD(lParam);
-      const auto dx = x - mPosition.mX;
-      const auto dy = y - mPosition.mY;
-      mPosition = {x, y};
-      for (auto&& child: mChildren) {
-        RECT rect {};
-        GetWindowRect(child, &rect);
-        SetWindowPos(
-          child,
-          nullptr,
-          rect.left + dx,
-          rect.top + dy,
-          0,
-          0,
-          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-      }
-      break;
-    }
-    case WM_MOUSEMOVE: {
-      TrackMouseEvent();
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_MOUSELEAVE: {
-      MouseEvent e;
-      e.mWindowPoint = {-1, -1};
-      mFUIRoot.DispatchEvent(&e);
-      mTrackingMouseEvents = false;
-      break;
-    }
-    case WM_MOUSEWHEEL: {
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::VerticalWheelEvent {
-        -static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
-      };
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_MOUSEHWHEEL: {
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::HorizontalWheelEvent {
-        static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
-      };
-      mFUIRoot.DispatchEvent(&e);
-    }
-    case WM_LBUTTONDOWN: {
-      for (auto&& child: mChildren) {
-        gInstances.at(child)->mExitCode = 0;
-      }
-      SetCapture(mHwnd.get());
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_LBUTTONUP: {
-      ReleaseCapture();
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_MBUTTONDOWN: {
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Middle};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_MBUTTONUP: {
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Middle};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_RBUTTONDOWN: {
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Right};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_RBUTTONUP: {
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Right};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_XBUTTONDOWN: {
-      MouseButtons pressed {};
-      if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
-        pressed |= MouseButton::X1;
-      }
-      if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
-        pressed |= MouseButton::X2;
-      }
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonPressEvent {pressed};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_XBUTTONUP: {
-      MouseButtons released {};
-      if ((HIWORD(wParam) & XBUTTON1) == XBUTTON1) {
-        released |= MouseButton::X1;
-      }
-      if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
-        released |= MouseButton::X2;
-      }
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      e.mDetail = MouseEvent::ButtonReleaseEvent {released};
-      mFUIRoot.DispatchEvent(&e);
-      break;
-    }
-    case WM_CLOSE:
-      mExitCode = 0;
-      break;
-  }
-  return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+  CheckHResult(GetSwapChain()->Present(0, 0));
 }
 
 void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
@@ -973,12 +293,19 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
   CheckHResult(mD3DFence->SetEventOnCompletion(fenceValue, mFenceEvent.get()));
   WaitForSingleObject(mFenceEvent.get(), INFINITE);
 
-  for (auto& frame: mFrames) {
+  for (auto&& frame: mFrames) {
     frame.mSkSurface = {};
     frame.mRenderTarget = nullptr;
     frame.mRenderTargetView = {};
     frame.mFenceValue = {};
   }
+}
+std::unique_ptr<Win32Window> Win32Direct3D12GaneshWindow::CreatePopup(
+  HINSTANCE instance,
+  int showCommand,
+  const Options& options) const {
+  return std::make_unique<Win32Direct3D12GaneshWindow>(
+    instance, showCommand, options);
 }
 
 std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>
@@ -996,27 +323,6 @@ void Win32Direct3D12GaneshWindow::BeforePaintFrame(uint8_t frameIndex) {
 
   mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
   WaitForSingleObject(mFenceEvent.get(), INFINITE);
-}
-
-SIZE Win32Direct3D12GaneshWindow::CalculateInitialWindowSize() const {
-  const auto contentSizeInDIPs = mFUIRoot.GetInitialSize();
-
-  RECT rect {
-    0,
-    0,
-    std::lround(std::ceil(contentSizeInDIPs.mWidth * mDPIScale)),
-    std::lround(std::ceil(contentSizeInDIPs.mHeight * mDPIScale)),
-  };
-  AdjustWindowRectEx(
-    &rect,
-    mOptions.mWindowStyle & ~WS_OVERLAPPED,
-    false,
-    mOptions.mWindowExStyle);
-
-  return {
-    rect.right - rect.left,
-    rect.bottom - rect.top,
-  };
 }
 
 }// namespace FredEmmott::GUI
