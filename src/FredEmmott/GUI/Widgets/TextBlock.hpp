@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/config.hpp>
+
+#ifdef FUI_ENABLE_SKIA
 #include <skia/modules/skparagraph/include/Paragraph.h>
+#endif
 
 #include <FredEmmott/GUI/Style.hpp>
 
@@ -12,12 +16,8 @@ namespace FredEmmott::GUI::Widgets {
 
 class TextBlock final : public Widget {
  public:
-  TextBlock(std::size_t id);
-  void UpdateParagraph();
+  explicit TextBlock(std::size_t id);
 
-  std::string_view GetText() const noexcept {
-    return mText;
-  }
   void SetText(std::string_view);
 
  protected:
@@ -28,10 +28,22 @@ class TextBlock final : public Widget {
     override;
 
  private:
-  std::unique_ptr<skia::textlayout::Paragraph> mParagraph;
+#ifdef FUI_ENABLE_SKIA
+  std::unique_ptr<skia::textlayout::Paragraph> mSkiaParagraph;
+#endif
   std::string mText;
   Font mFont;
   float mMeasuredHeight {};
+
+#ifdef FUI_ENABLE_SKIA
+  void UpdateSkiaParagraph();
+  void PaintOwnContent(SkCanvas*, const Rect&, const Style&) const;
+  YGSize MeasureWithSkia(
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode);
+#endif
 
   static YGSize Measure(
     YGNodeConstRef node,

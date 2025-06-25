@@ -121,6 +121,7 @@ if(ENABLE_SKIA)
     GUI/LinearGradientBrush_Skia.cpp
     GUI/SkiaRenderer.cpp GUI/SkiaRenderer.hpp
     GUI/SystemFont_Skia.cpp
+    GUI/Widgets/TextBlock_Skia.cpp
   )
   target_link_libraries(
     fredemmott-gui

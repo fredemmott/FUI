@@ -4,18 +4,23 @@
 #include "TextBlock.hpp"
 
 #include <Windows.h>
+
+#include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/assert.hpp>
+#include <FredEmmott/GUI/config.hpp>
+#include <FredEmmott/utility/lazy_init.hpp>
+
+#include "FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp"
+
+#ifdef FUI_ENABLE_SKIA
 #include <skia/core/SkFont.h>
 #include <skia/core/SkFontMgr.h>
 #include <skia/modules/skparagraph/include/ParagraphBuilder.h>
 #include <skia/modules/skunicode/include/SkUnicode_icu.h>
 #include <skia/ports/SkFontMgr_empty.h>
 
-#include <FredEmmott/GUI/StaticTheme.hpp>
-#include <FredEmmott/GUI/assert.hpp>
-#include <FredEmmott/utility/lazy_init.hpp>
-
-#include "FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp"
-#include "FredEmmott/GUI/SkiaRenderer.hpp"
+#include <FredEmmott/GUI/SkiaRenderer.hpp>
+#endif
 
 using namespace FredEmmott::utility;
 
@@ -26,57 +31,28 @@ TextBlock::TextBlock(std::size_t id) : Widget(id) {
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
 
-void TextBlock::UpdateParagraph() {
-  static const auto SkiaICU = SkUnicodes::ICU::Make();
-  static const auto FontCollection
-    = sk_make_sp<skia::textlayout::FontCollection>();
-  if (FontCollection->getFontManagersCount() == 0) {
-    FontCollection->setDefaultFontManager(SystemFont::GetFontManager());
-  }
-  using namespace skia::textlayout;
-
-  SkString familyName;
-  const auto font = SkFont {mFont};
-  font.getTypeface()->getFamilyName(&familyName);
-  TextStyle textStyle;
-  textStyle.setFontFamilies({familyName});
-  textStyle.setFontSize(font.getSize());
-  ParagraphStyle paragraphStyle;
-  paragraphStyle.setTextStyle(textStyle);
-  auto builder = skia::textlayout::ParagraphBuilder::make(
-    paragraphStyle, FontCollection, SkiaICU);
-  builder->addText(mText.data(), mText.size());
-  mParagraph = builder->Build();
-
-  YGNodeMarkDirty(this->GetLayoutNode());
-}
-
-void TextBlock::SetText(std::string_view text) {
+void TextBlock::SetText(const std::string_view text) {
   if (text == mText) {
     return;
   }
   mText = std::string {text};
 
-  this->UpdateParagraph();
+#ifdef FUI_ENABLE_SKIA
+  this->UpdateSkiaParagraph();
+#endif
 }
 
 void TextBlock::PaintOwnContent(
   Renderer* renderer,
   const Rect& rect,
   const Style& style) const {
-#ifndef NDEBUG
-  if (style.mFont != mFont) [[unlikely]] {
-    throw std::logic_error(
-      "Stylesheet font does not match mFont; computed style not updated");
+#ifdef FUI_ENABLE_SKIA
+  if (auto* canvas = skia_canvas_cast(renderer)) {
+    this->PaintOwnContent(canvas, rect, style);
+    return;
   }
 #endif
-  auto canvas = skia_canvas_cast(renderer);
-  FUI_ASSERT(canvas, "TextBlock currently only supports Skia");
-
-  auto paint = style.mColor->GetSkiaPaint(rect);
-  paint.setStyle(SkPaint::Style::kFill_Style);
-  mParagraph->updateForegroundPaint(0, mText.size(), paint);
-  mParagraph->paint(canvas, rect.GetLeft(), rect.GetTop());
+  FUI_ALWAYS_ASSERT(false, "TextBlock currently requires Skia")
 }
 
 Style TextBlock::GetBuiltInStyles() const {
@@ -93,7 +69,10 @@ Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   if (mFont != style.mFont) {
     mFont = style.mFont.value();
   }
-  this->UpdateParagraph();
+
+#ifdef FUI_ENABLE_SKIA
+  this->UpdateSkiaParagraph();
+#endif
 
   return ComputedStyleFlags::Empty;
 }
@@ -105,15 +84,15 @@ YGSize TextBlock::Measure(
   float height,
   YGMeasureMode heightMode) {
   const auto self = static_cast<TextBlock*>(FromYogaNode(node));
-
-  if (widthMode == YGMeasureModeUndefined) {
-    return {YGUndefined, YGUndefined};
+#ifdef FUI_ENABLE_SKIA
+  if (self->mSkiaParagraph) {
+    return self->MeasureWithSkia(width, widthMode, height, heightMode);
   }
-
-  self->mParagraph->layout(width);
-  self->mMeasuredHeight = self->mParagraph->getHeight();
-
-  return {width, self->mMeasuredHeight};
+#endif
+  if constexpr (Config::Debug) {
+    __debugbreak();
+  }
+  return {YGUndefined, YGUndefined};
 }
 
 }// namespace FredEmmott::GUI::Widgets
