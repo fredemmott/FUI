@@ -12,13 +12,10 @@
 #include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 #include <wil/win32_helpers.h>
 
-#include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <FredEmmott/GUI/SkiaRenderer.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/SystemSettings.hpp>
-#include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
-#include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <chrono>
 #include <filesystem>
 #include <format>
