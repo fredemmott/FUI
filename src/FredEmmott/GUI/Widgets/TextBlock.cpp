@@ -21,22 +21,18 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
-namespace {
-
-const auto gUnicode = SkUnicodes::ICU::Make();
-auto gFontCollection = sk_make_sp<skia::textlayout::FontCollection>();
-
-}// namespace
-
 TextBlock::TextBlock(std::size_t id) : Widget(id) {
-  if (gFontCollection->getFontManagersCount() == 0) {
-    gFontCollection->setDefaultFontManager(SystemFont::GetFontManager());
-  }
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBlock::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
 
 void TextBlock::UpdateParagraph() {
+  static const auto SkiaICU = SkUnicodes::ICU::Make();
+  static const auto FontCollection
+    = sk_make_sp<skia::textlayout::FontCollection>();
+  if (FontCollection->getFontManagersCount() == 0) {
+    FontCollection->setDefaultFontManager(SystemFont::GetFontManager());
+  }
   using namespace skia::textlayout;
 
   SkString familyName;
@@ -48,12 +44,13 @@ void TextBlock::UpdateParagraph() {
   ParagraphStyle paragraphStyle;
   paragraphStyle.setTextStyle(textStyle);
   auto builder = skia::textlayout::ParagraphBuilder::make(
-    paragraphStyle, gFontCollection, gUnicode);
+    paragraphStyle, FontCollection, SkiaICU);
   builder->addText(mText.data(), mText.size());
   mParagraph = builder->Build();
 
   YGNodeMarkDirty(this->GetLayoutNode());
 }
+
 void TextBlock::SetText(std::string_view text) {
   if (text == mText) {
     return;
