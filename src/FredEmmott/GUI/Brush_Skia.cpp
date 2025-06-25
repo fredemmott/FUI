@@ -7,7 +7,7 @@ namespace FredEmmott::GUI {
 SkPaint Brush::GetSkiaPaint(const SkRect& rect) const {
   if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
     SkPaint paint;
-    paint.setColor(*it);
+    paint.setColor(it->as<SkColor>());
     return paint;
   }
   if (const auto it = get_if<LinearGradientBrush>(&mBrush)) {

@@ -25,14 +25,14 @@
 namespace FredEmmott::GUI {
 
 template <class T>
-concept native_color = false
+concept native_color =
 #ifdef FUI_ENABLE_SKIA
-  || std::same_as<T, SkColor>
+  std::same_as<T, SkColor> ||
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-  || std::same_as<T, D2D1_COLOR_F>
+  std::same_as<T, D2D1_COLOR_F> ||
 #endif
-  ;
+  false;
 
 class Color final {
   using StaticThemeColor = const StaticTheme::Resource<Color>*;
@@ -129,17 +129,20 @@ class Color final {
       std::unreachable();
     }
 
+    template <native_color T>
+    constexpr T as() const noexcept {
 #ifdef FUI_ENABLE_SKIA
-    constexpr operator SkColor() const noexcept {
-      return mSkia;
-    }
+      if constexpr (std::same_as<T, SkColor>) {
+        return mSkia;
+      }
 #endif
-
 #ifdef FUI_ENABLE_DIRECT2D
-    constexpr operator D2D1_COLOR_F() const noexcept {
-      return mD2D;
-    }
+      if constexpr (std::same_as<T, D2D1_COLOR_F>) {
+        return mD2D;
+      }
 #endif
+      std::unreachable();
+    }
 
    private:
 #ifdef FUI_ENABLE_SKIA
@@ -176,8 +179,8 @@ class Color final {
   }
 
   template <native_color T>
-  operator T() const noexcept {
-    return Resolve();
+  T as() const noexcept {
+    return Resolve().as<T>();
   }
 
   constexpr auto GetRGBAFTuple() const noexcept {

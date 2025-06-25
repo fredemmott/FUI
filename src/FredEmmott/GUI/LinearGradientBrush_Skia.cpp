@@ -31,7 +31,7 @@ void LinearGradientBrush::InitializeSkiaShader() {
   std::vector<SkColor> colors;
   for (auto&& [pos, color]: mStops) {
     positions.push_back(pos);
-    colors.push_back(color);
+    colors.push_back(color.as<SkColor>());
   }
 
   const auto xRange = (mEnd.mX - mStart.mX);

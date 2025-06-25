@@ -20,6 +20,9 @@
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
 #endif
+#ifdef FUI_ENABLE_DIRECT2D
+#include <FredEmmott/GUI/Windows/Win32Direct2DWindow.hpp>
+#endif
 
 namespace FredEmmott::GUI {
 using namespace win32_detail;
@@ -58,23 +61,6 @@ MouseEvent MakeMouseEvent(WPARAM wParam, LPARAM lParam, float dpiScale) {
   return ret;
 }
 
-std::wstring Utf8ToWide(std::string_view s) {
-  const auto retCharCount = MultiByteToWideChar(
-    CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s.size(), nullptr, 0);
-  std::wstring ret;
-  ret.resize(retCharCount);
-  MultiByteToWideChar(
-    CP_UTF8,
-    MB_ERR_INVALID_CHARS,
-    s.data(),
-    s.size(),
-    ret.data(),
-    retCharCount);
-  if (const auto i = ret.find_last_of(L'\0'); i != std::wstring::npos) {
-    ret.erase(i);
-  }
-  return ret;
-}
 }// namespace
 
 thread_local decltype(Win32Window::gInstances) Win32Window::gInstances {};
@@ -109,11 +95,10 @@ void Win32Window::InitializeWindow() {
 }
 
 Win32Window::Win32Window(
-  renderer_detail::RenderAPI renderApi,
-  HINSTANCE hInstance,
+  const HINSTANCE hInstance,
   int nCmdShow,
   const Options& options)
-  : Window(renderApi, SwapChainLength),
+  : Window(SwapChainLength),
     mInstanceHandle(hInstance),
     mShowCommand(nCmdShow),
     mOptions(options) {
@@ -133,9 +118,11 @@ unique_ptr<Win32Window> Win32Window::CreateAny(
   HINSTANCE hinstance,
   int showCommand,
   const Options& options) {
-#ifdef FUI_ENABLE_SKIA
+#if defined(FUI_ENABLE_SKIA)
   return std::make_unique<Win32Direct3D12GaneshWindow>(
     hinstance, showCommand, options);
+#elif defined(FUI_ENABLE_DIRECT2D)
+  return std::make_unique<Win32Direct2DWindow>(hinstance, showCommand, options);
 #endif
   return nullptr;
 }

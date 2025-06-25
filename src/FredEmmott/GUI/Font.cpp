@@ -21,13 +21,18 @@ Font::Font(const SkFont& font) : mFont(font) {
     return;
   }
 
-  SkFontMetrics pt {};
-  const auto lineSpacingPt = PointsToPixels(font.getMetrics(&pt));
-  mMetrics = {
-    .mSize = PointsToPixels(font.getSize()),
-    .mLineSpacing = PointsToPixels(lineSpacingPt),
-    .mDescent = PointsToPixels(pt.fDescent),
-  };
+  mMetrics = renderer_detail::GetFontMetricsProvider()->GetFontMetrics(*this);
+}
+#endif
+
+#ifdef FUI_ENABLE_DIRECT2D
+Font::Font(const DirectWriteFont& font) : mFont(font) {
+  if (font == DirectWriteFont {}) {
+    mFont = std::monostate {};
+    return;
+  }
+
+  mMetrics = renderer_detail::GetFontMetricsProvider()->GetFontMetrics(*this);
 }
 #endif
 
@@ -43,23 +48,8 @@ Font Font::WithSize(float pixels) const noexcept {
 }
 
 float Font::MeasureTextWidth(const std::string_view text) const noexcept {
-#ifdef FUI_ENABLE_SKIA
-  if (const auto it = std::get_if<SkFont>(&mFont)) {
-    return PointsToPixels(
-      it->measureText(text.data(), text.size(), SkTextEncoding::kUTF8));
-  }
-#endif
-  if constexpr (Config::Debug) {
-    __debugbreak();
-  }
-  return std::numeric_limits<float>::quiet_NaN();
+  return renderer_detail::GetFontMetricsProvider()->MeasureTextWidth(
+    *this, text);
 }
-
-#ifdef FUI_ENABLE_SKIA
-Font::operator SkFont() const noexcept {
-  const auto it = std::get_if<SkFont>(&mFont);
-  return it ? (*it) : SkFont {};
-}
-#endif
 
 }// namespace FredEmmott::GUI

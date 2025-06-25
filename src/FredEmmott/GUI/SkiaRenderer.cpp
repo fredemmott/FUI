@@ -40,7 +40,7 @@ void SkiaRenderer::PopLayer() {
 }
 
 void SkiaRenderer::Clear(const Color& color) {
-  mCanvas->clear(color);
+  mCanvas->clear(color.as<SkColor>());
 }
 
 void SkiaRenderer::ClipTo(const Rect& rect) {
@@ -101,7 +101,8 @@ void SkiaRenderer::DrawText(
   const Point& baseline) {
   auto paint = brush.GetSkiaPaint(brushRect);
   paint.setStyle(SkPaint::Style::kFill_Style);
-  mCanvas->drawString(SkString {text}, baseline.mX, baseline.mY, font, paint);
+  mCanvas->drawString(
+    SkString {text}, baseline.mX, baseline.mY, font.as<SkFont>(), paint);
 }
 
 }// namespace FredEmmott::GUI

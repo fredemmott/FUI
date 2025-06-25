@@ -29,4 +29,22 @@ void CheckHResult(const HRESULT ret, const std::source_location& caller) {
   }
   ThrowHResult(ret, caller);
 }
+
+std::wstring Utf8ToWide(const std::string_view s) {
+  const auto retCharCount = MultiByteToWideChar(
+    CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s.size(), nullptr, 0);
+  std::wstring ret;
+  ret.resize(retCharCount);
+  MultiByteToWideChar(
+    CP_UTF8,
+    MB_ERR_INVALID_CHARS,
+    s.data(),
+    s.size(),
+    ret.data(),
+    retCharCount);
+  if (const auto i = ret.find_last_of(L'\0'); i != std::wstring::npos) {
+    ret.erase(i);
+  }
+  return ret;
+}
 }// namespace FredEmmott::GUI::win32_detail

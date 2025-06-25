@@ -45,7 +45,7 @@ add_library(
   GUI/StyleClass.cpp GUI/StyleClass.hpp
   GUI/StyleProperty.hpp>
   GUI/StyleTransition.hpp
-  GUI/SystemFont.hpp
+  GUI/SystemFont.cpp GUI/SystemFont.hpp
   GUI/SystemSettings.cpp GUI/SystemSettings.hpp
   GUI/SystemTheme.cpp GUI/SystemTheme.hpp
   GUI/WidgetFont.cpp GUI/WidgetFont.hpp
@@ -73,6 +73,7 @@ add_library(
   GUI/detail/immediate_detail.cpp GUI/detail/immediate_detail.hpp
   GUI/detail/renderer_detail.cpp GUI/detail/renderer_detail.hpp
   GUI/detail/style_detail.hpp
+  GUI/detail/system_font_detail.hpp
   GUI/detail/widget_detail.hpp
   GUI/detail/win32_detail.cpp GUI/detail/win32_detail.hpp
   GUI/events/Event.hpp
@@ -138,10 +139,22 @@ if(ENABLE_SKIA)
 endif()
 
 if(ENABLE_DIRECT2D)
+  target_sources(
+    fredemmott-gui
+    PRIVATE
+    GUI/Windows/Win32Direct2DWindow.cpp GUI/Windows/Win32Direct2DWindow.hpp
+    GUI/Direct2DRenderer.cpp GUI/Direct2DRenderer.hpp
+    GUI/SystemFont_DirectWrite.cpp
+    GUI/detail/direct_write_detail/DirectWriteFontProvider.cpp GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp
+    GUI/detail/direct2d_detail.hpp
+  )
   target_link_libraries(
     fredemmott-gui
     PRIVATE
     # System
     DXGI
+    D2d1
+    Dwrite
+    D3d11
   )
 endif()

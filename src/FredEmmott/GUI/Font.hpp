@@ -18,6 +18,16 @@
 
 namespace FredEmmott::GUI {
 
+template <class T>
+concept native_font =
+#ifdef FUI_ENABLE_SKIA
+  std::same_as<T, SkFont> ||
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  std::same_as<T, font_detail::DirectWriteFont> ||
+#endif
+  false;
+
 class Font {
  public:
   struct Metrics {
@@ -29,6 +39,12 @@ class Font {
   Font() {}
   Font(SystemFont::Usage usage) : Font(Resolve(usage)) {}
   Font(WidgetFont::Usage usage) : Font(Resolve(usage)) {}
+#ifdef FUI_ENABLE_SKIA
+  Font(const SkFont&);
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  Font(const font_detail::DirectWriteFont&);
+#endif
 
   [[nodiscard]]
   const Metrics& GetMetrics() const noexcept {
@@ -41,10 +57,14 @@ class Font {
   [[nodiscard]]
   float MeasureTextWidth(std::string_view) const noexcept;
 
-#ifdef FUI_ENABLE_SKIA
-  Font(const SkFont& f);
-  operator SkFont() const noexcept;
-#endif
+  template <native_font T>
+  T as() const {
+    return std::get<T>(mFont);
+  }
+
+  constexpr operator bool() const noexcept {
+    return !std::holds_alternative<std::monostate>(mFont);
+  }
 
   constexpr bool operator==(const Font& other) const noexcept {
     return mFont == other.mFont;
@@ -55,6 +75,9 @@ class Font {
   std::variant<
 #ifdef FUI_ENABLE_SKIA
     SkFont,
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+    font_detail::DirectWriteFont,
 #endif
     std::monostate>
     mFont {std::monostate {}};

@@ -46,7 +46,7 @@ void TextBlock::UpdateSkiaParagraph() {
   using namespace skia::textlayout;
 
   SkString familyName;
-  const auto font = SkFont {mFont};
+  const auto font = mFont.as<SkFont>();
   font.getTypeface()->getFamilyName(&familyName);
   TextStyle textStyle;
   textStyle.setFontFamilies({familyName});

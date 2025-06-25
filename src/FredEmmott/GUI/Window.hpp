@@ -32,7 +32,7 @@ class Window {
       return mValue != nullptr;
     }
   };
-  Window(renderer_detail::RenderAPI, uint8_t swapChainLength);
+  Window(uint8_t swapChainLength);
   virtual ~Window() = default;
 
   virtual std::unique_ptr<Window> CreatePopup() const = 0;
@@ -64,6 +64,7 @@ class Window {
   virtual Size GetClientAreaSize() const = 0;
   virtual float GetDPIScale() const = 0;
   virtual Color GetClearColor() const = 0;
+  virtual void InitializeGraphicsAPI() = 0;
 
   // This is protected so it can be called outside the usual frame loop, e.g.
   // when resizing on Windows
@@ -85,6 +86,7 @@ class Window {
   uint8_t mSwapChainLength {};
   std::chrono::steady_clock::time_point mBeginFrameTime;
   uint8_t mFrameIndex {};// Used to index into mFrames; reset when buffer reset
+  std::once_flag mGraphicsAPIFlag;
 
   std::optional<int> mExitCode;
   Immediate::Root mFUIRoot;

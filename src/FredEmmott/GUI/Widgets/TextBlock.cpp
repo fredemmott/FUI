@@ -37,6 +37,10 @@ void TextBlock::SetText(const std::string_view text) {
   }
   mText = std::string {text};
 
+  if (!mFont) {
+    return;
+  }
+
 #ifdef FUI_ENABLE_SKIA
   this->UpdateSkiaParagraph();
 #endif

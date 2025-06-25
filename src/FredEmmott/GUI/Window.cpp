@@ -9,14 +9,11 @@
 
 namespace FredEmmott::GUI {
 
-Window::Window(
-  const renderer_detail::RenderAPI renderAPI,
-  const uint8_t swapChainLength)
-  : mSwapChainLength(swapChainLength) {
-  renderer_detail::SetRenderAPI(renderAPI);
-}
+Window::Window(const uint8_t swapChainLength)
+  : mSwapChainLength(swapChainLength) {}
 
 std::expected<void, int> Window::BeginFrame() {
+  std::call_once(mGraphicsAPIFlag, [this]() { this->InitializeGraphicsAPI(); });
   // We may have failed since the last window message without it being directly
   // caused by a window message to this window.
   //

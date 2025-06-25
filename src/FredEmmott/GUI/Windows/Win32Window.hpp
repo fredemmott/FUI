@@ -70,11 +70,7 @@ class Win32Window : public Window {
  protected:
   static constexpr UINT SwapChainLength = 3;
 
-  explicit Win32Window(
-    renderer_detail::RenderAPI renderApi,
-    HINSTANCE instance,
-    int showCommand,
-    const Options& options);
+  Win32Window(HINSTANCE instance, int showCommand, const Options& options);
 
   void InitializeWindow() final;
   void ResizeIfNeeded() final;
@@ -85,7 +81,6 @@ class Win32Window : public Window {
   virtual std::unique_ptr<Win32Window>
   CreatePopup(HINSTANCE instance, int showCommand, const Options& options) const
     = 0;
-  virtual void InitializeGraphicsAPI() = 0;
   virtual IUnknown* GetDirectCompositionTargetDevice() const = 0;
   virtual void CreateRenderTargets() = 0;
   virtual void CleanupFrameContexts() = 0;

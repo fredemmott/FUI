@@ -11,7 +11,6 @@
 namespace FredEmmott::GUI {
 
 class Renderer {
- private:
  public:
   virtual ~Renderer() = default;
 

@@ -27,9 +27,8 @@ enum class Usage {
 };
 using enum Usage;
 
-Font Resolve(Usage) noexcept;
-
-Font ResolveGlyphFont(Usage) noexcept;
+Font Resolve(Usage);
+Font ResolveGlyphFont(Usage);
 
 #ifdef FUI_ENABLE_SKIA
 sk_sp<SkFontMgr> GetFontManager() noexcept;

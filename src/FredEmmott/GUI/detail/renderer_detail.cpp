@@ -8,28 +8,50 @@
 namespace FredEmmott::GUI::renderer_detail {
 
 namespace {
-std::optional<RenderAPI>& GetStorage() {
-  static std::optional<RenderAPI> storage;
+
+struct Storage {
+  RenderAPI mRenderAPI;
+  std::unique_ptr<FontMetricsProvider> mFontMetricsProvider;
+};
+
+std::optional<Storage>& GetStorage() {
+  static std::optional<Storage> storage;
   return storage;
 }
 }// namespace
 
-RenderAPI GetRenderAPI() {
-  if (const auto& ret = GetStorage(); ret.has_value()) {
-    return ret.value();
+bool HaveRenderAPI(RenderAPI required) {
+  auto& storage = GetStorage();
+  if (!storage.has_value()) {
+    return false;
   }
-  throw std::logic_error("GetRenderer() called before SetRenderer()");
+  return storage->mRenderAPI == required;
 }
 
-void SetRenderAPI(const RenderAPI value) {
+RenderAPI GetRenderAPI() {
+  if (const auto& ret = GetStorage(); ret.has_value()) [[likely]] {
+    return ret->mRenderAPI;
+  }
+  throw std::logic_error("GetRenderAPI() called before SetRenderAPI()");
+}
+
+FontMetricsProvider* GetFontMetricsProvider() {
+  if (const auto& ret = GetStorage(); ret.has_value()) [[likely]] {
+    return ret->mFontMetricsProvider.get();
+  }
+  throw std::logic_error(
+    "GetFontMetricsProvider() called before SetRenderAPI()");
+}
+
+void SetRenderAPI(
+  const RenderAPI value,
+  std::unique_ptr<FontMetricsProvider> fontMetrics) {
   auto& s = GetStorage();
-  if (s.has_value()) {
-    if (s.value() != value) [[unlikely]] {
-      throw std::logic_error("SetRenderer() called with different results");
-    }
+  if (!s.has_value()) [[likely]] {
+    s.emplace(value, std::move(fontMetrics));
     return;
   }
-  s = value;
+  throw std::logic_error("SetRenderAPI() called multiple times");
 }
 
 }// namespace FredEmmott::GUI::renderer_detail

@@ -5,15 +5,12 @@
 #include <cmath>
 #include <limits>
 
-#define FUI_ENUM_SYSTEM_FONT_USAGES(X) \
-  X(Caption) \
-  X(Body) \
-  X(BodyStrong) \
-  X(BodyLarge) \
-  X(Subtitle) \
-  X(Title) \
-  X(TitleLarge) \
-  X(Display)
+#ifdef FUI_ENABLE_DIRECT2D
+#include <dwrite.h>
+#include <wil/com.h>
+
+#include <string>
+#endif
 
 // Values from
 // https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
@@ -32,15 +29,21 @@ namespace FredEmmott::GUI::font_detail {
 // Win32: this is the same as USER_DEFAULT_SCREEN_DPI
 static constexpr auto BaselineDPI = 96;
 
-constexpr float PixelsToPoints(const auto pixels) {
-  return (static_cast<float>(pixels) * 72) / BaselineDPI;
+template <auto ToDPI>
+constexpr float PixelsToDPI(const auto pixels) {
+  return (static_cast<float>(pixels) * ToDPI) / BaselineDPI;
 }
 
-constexpr float PointsToPixels(const float points) {
-  const auto raw = (points * BaselineDPI) / 72;
+constexpr float PixelsToPoints(const auto pixels) {
+  return PixelsToDPI<72>(pixels);
+}
+
+template <auto FromDPI>
+constexpr float PixelsFromDPI(const float points) {
+  const auto raw = (points * BaselineDPI) / FromDPI;
   // std::round() *should* be constexpr in C++23, but as of
   // 2024-12-22, this is not yet implemented in MSVC
-  if (std::is_constant_evaluated()) {
+  if consteval {
     const auto diff
       = (0.5 + std::numeric_limits<float>::epsilon()) * ((raw > 0) ? 1 : -1);
     return static_cast<uint32_t>(raw + diff);
@@ -48,11 +51,30 @@ constexpr float PointsToPixels(const float points) {
     return std::round(raw);
   }
 }
+
+constexpr float PointsToPixels(const float points) {
+  return PixelsFromDPI<72>(points);
+}
+
 static_assert(PointsToPixels(72) == 96);
 static_assert(PixelsToPoints(96) == 72);
 static_assert(PointsToPixels(71.9) == 96);
 static_assert(PointsToPixels(72.1) == 96);
 static_assert(PointsToPixels(72) == 96);
 static_assert(PointsToPixels(73) == 97);
+
+#ifdef FUI_ENABLE_DIRECT2D
+struct DirectWriteFont {
+  std::wstring mName;
+  DWRITE_FONT_WEIGHT mWeight {DWRITE_FONT_WEIGHT_NORMAL};
+  float mSize {};
+  wil::com_ptr<IDWriteTextFormat> mTextFormat;
+
+  constexpr bool operator==(const DirectWriteFont& other) const noexcept {
+    return mName == other.mName && mWeight == other.mWeight
+      && mSize == other.mSize;
+  }
+};
+#endif
 
 }// namespace FredEmmott::GUI::font_detail
