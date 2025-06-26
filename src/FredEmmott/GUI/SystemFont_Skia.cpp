@@ -58,22 +58,24 @@ const UsageTypefaces& GetUsageTypefaces() {
 struct UsageFonts {
  private:
   const UsageTypefaces Typefaces = GetUsageTypefaces();
-  template <Height THeight>
+  template <Size TSize>
   static SkFont Load(auto typeface) {
+    // The documentation lies: SkFont takes a font size in pixels/canvas units,
+    // not points
     return {
       typeface,
-      PixelsToPoints(THeight),
+      static_cast<float>(TSize),
     };
   }
 
  public:
 #define DEFINE_FONT(USAGE, TYPEFACE) \
-  const SkFont USAGE = Load<Height::USAGE>(Typefaces.TYPEFACE);
+  const SkFont USAGE = Load<Size::USAGE>(Typefaces.TYPEFACE);
   FUI_ENUM_SYSTEM_FONT_FONTS(DEFINE_FONT)
 #undef DEFINE_FONT
 
 #define DEFINE_GLYPH_FONT(USAGE, TYPEFACE) \
-  const SkFont Glyph##USAGE = Load<Height::USAGE>(Typefaces.Glyph);
+  const SkFont Glyph##USAGE = Load<Size::USAGE>(Typefaces.Glyph);
   FUI_ENUM_SYSTEM_FONT_FONTS(DEFINE_GLYPH_FONT)
 #undef DEFINE_GLYPH_FONT
 };

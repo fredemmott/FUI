@@ -48,7 +48,7 @@ Font Font::WithSize(float pixels) const noexcept {
 #ifdef FUI_ENABLE_SKIA
   if (const auto it = std::get_if<SkFont>(&mFont)) {
     auto ret = *it;
-    ret.setSize(PixelsToPoints(pixels));
+    ret.setSize(pixels);
     return Font(ret);
   }
 #endif
