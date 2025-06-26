@@ -32,18 +32,18 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
   float MeasureTextWidth(const Font& font, const std::string_view text)
     const override {
     const auto it = font.as<SkFont>();
-    return font_detail::PointsToPixels(
-      it.measureText(text.data(), text.size(), SkTextEncoding::kUTF8));
+    return it.measureText(text.data(), text.size(), SkTextEncoding::kUTF8);
   }
+
   Font::Metrics GetFontMetrics(const Font& font) const override {
     using namespace font_detail;
     const auto it = font.as<SkFont>();
     SkFontMetrics pt {};
-    const auto lineSpacingPt = PointsToPixels(it.getMetrics(&pt));
+    const auto lineSpacingPt = it.getMetrics(&pt);
     return {
-      .mSize = PointsToPixels(it.getSize()),
-      .mLineSpacing = PointsToPixels(lineSpacingPt),
-      .mDescent = PointsToPixels(pt.fDescent),
+      .mSize = it.getSize(),
+      .mLineSpacing = lineSpacingPt,
+      .mDescent = pt.fDescent,
     };
   }
 };
