@@ -32,7 +32,7 @@ class Brush final {
   constexpr Brush(const std::convertible_to<Color> auto& color)
     : mBrush(SolidColorBrush {Color {color}}) {}
 
-  constexpr Brush(const LinearGradientBrush& brush) : mBrush(brush) {}
+  Brush(const LinearGradientBrush& brush) : mBrush(brush) {}
 
   Brush(StaticThemeBrush brush) : mBrush(brush) {
     if (!brush) [[unlikely]] {

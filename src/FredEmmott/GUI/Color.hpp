@@ -118,7 +118,7 @@ class Color final {
 #endif
     }
 
-    constexpr bool operator==(const Constant& other) const noexcept {
+    bool operator==(const Constant& other) const noexcept {
 #ifdef FUI_ENABLE_SKIA
       return mSkia == other.mSkia;
 #elifdef FUI_ENABLE_DIRECT2D
