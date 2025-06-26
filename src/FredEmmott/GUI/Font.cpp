@@ -44,7 +44,17 @@ Font Font::WithSize(float pixels) const noexcept {
     return Font(ret);
   }
 #endif
-  return Font {};
+#ifdef FUI_ENABLE_DIRECT2D
+  if (const auto it = std::get_if<DirectWriteFont>(&mFont)) {
+    auto dup = *it;
+    dup.mSize = pixels;
+    return {dup};
+  }
+#endif
+  if constexpr (Config::Debug) {
+    __debugbreak();
+  }
+  std::unreachable();
 }
 
 float Font::MeasureTextWidth(const std::string_view text) const noexcept {
