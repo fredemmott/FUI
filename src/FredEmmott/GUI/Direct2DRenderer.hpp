@@ -54,8 +54,8 @@ class Direct2DRenderer final : public Renderer {
     const Point& baseline) override;
 
  private:
-  using StateStackFrame = std::
-    variant<wil::com_ptr<ID2D1DrawingStateBlock>, wil::com_ptr<ID2D1Layer>>;
+  struct Direct2DLayer : std::monostate {};
+  using StateStackFrame = std::variant<Direct2DLayer, D2D1_MATRIX_3X2_F>;
   std::stack<StateStackFrame> mStateStack;
 
   ID2D1DeviceContext* mDeviceContext = nullptr;

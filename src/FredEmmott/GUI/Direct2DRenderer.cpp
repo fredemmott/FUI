@@ -27,6 +27,11 @@ Direct2DRenderer::~Direct2DRenderer() {
 }
 
 void Direct2DRenderer::PushLayer(float alpha) {
+  if (alpha > (1.0f - std::numeric_limits<float>::epsilon())) {
+    D2D1_MATRIX_3X2_F t {};
+    mDeviceContext->GetTransform(&t);
+    mStateStack.push(t);
+  }
   return;
   const D2D1_LAYER_PARAMETERS params {
     .contentBounds = D2D1::InfiniteRect(),
@@ -35,6 +40,10 @@ void Direct2DRenderer::PushLayer(float alpha) {
   mDeviceContext->PushLayer(params, nullptr);
 }
 void Direct2DRenderer::PopLayer() {
+  if (const auto t = get_if<D2D1_MATRIX_3X2_F>(&mStateStack.top()); t) {
+    mDeviceContext->SetTransform(*t);
+    mStateStack.pop();
+  }
   return;
   mDeviceContext->PopLayer();
 }
