@@ -58,5 +58,12 @@ Widget::EventHandlerResult Button::OnClick(const MouseEvent& e) {
   mClicked.Set();
   return EventHandlerResult::StopPropagation;
 }
+Widget::ComputedStyleFlags Button::OnComputedStyleChange(
+  const Style& style,
+  const StateFlags state) {
+  return Widget::OnComputedStyleChange(style, state)
+    | ComputedStyleFlags::InheritableActiveState
+    | ComputedStyleFlags::InheritableHoverState;
+}
 
 }// namespace FredEmmott::GUI::Widgets
