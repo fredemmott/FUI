@@ -210,6 +210,9 @@ void Win32Direct2DWindow::BeforePaintFrame(uint8_t frameIndex) {
   const auto scale = DIPScale / GetDPIScale();
 
   mD2DDeviceContext->BeginDraw();
+  const auto dpi = GetDPIScale() * USER_DEFAULT_SCREEN_DPI;
+  mD2DDeviceContext->SetDpi(dpi, dpi);
+
   const D2D1_MATRIX_3X2_F transform = D2D1::Matrix3x2F::Scale(scale, scale);
   mD2DDeviceContext->SetTransform(transform);
 }
