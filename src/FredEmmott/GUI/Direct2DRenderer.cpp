@@ -27,25 +27,35 @@ Direct2DRenderer::~Direct2DRenderer() {
 }
 
 void Direct2DRenderer::PushLayer(float alpha) {
-  if (alpha > (1.0f - std::numeric_limits<float>::epsilon())) {
+  if (std::abs(alpha - 1.0f) <= std::numeric_limits<float>::epsilon()) {
     D2D1_MATRIX_3X2_F t {};
     mDeviceContext->GetTransform(&t);
     mStateStack.push(t);
+    return;
   }
-  return;
-  const D2D1_LAYER_PARAMETERS params {
+
+  const D2D1_LAYER_PARAMETERS1 params {
     .contentBounds = D2D1::InfiniteRect(),
+    .maskAntialiasMode = D2D1_ANTIALIAS_MODE_ALIASED,
     .opacity = alpha,
   };
-  mDeviceContext->PushLayer(params, nullptr);
+
+  mDeviceContext->PushLayer(&params, nullptr);
+  mStateStack.push(NativeLayer {});
 }
+
 void Direct2DRenderer::PopLayer() {
   if (const auto t = get_if<D2D1_MATRIX_3X2_F>(&mStateStack.top()); t) {
     mDeviceContext->SetTransform(*t);
     mStateStack.pop();
+    return;
   }
-  return;
-  mDeviceContext->PopLayer();
+  if (holds_alternative<NativeLayer>(mStateStack.top())) {
+    mStateStack.pop();
+    mDeviceContext->PopLayer();
+    return;
+  }
+  throw std::logic_error("Invalid state stack");
 }
 
 void Direct2DRenderer::PushClipRect(const Rect& rect) {
@@ -59,7 +69,7 @@ void Direct2DRenderer::PopClipRect() {
 void Direct2DRenderer::Scale(float x, float y) {
   D2D1_MATRIX_3X2_F t1 {};
   mDeviceContext->GetTransform(&t1);
-  auto t2 = t1 * D2D1::Matrix3x2F::Scale(x, y);
+  const auto t2 = t1 * D2D1::Matrix3x2F::Scale(x, y);
   mDeviceContext->SetTransform(t2);
 }
 
@@ -70,11 +80,21 @@ void Direct2DRenderer::Translate(const Point& point) {
   mDeviceContext->SetTransform(t1 * t2);
 }
 
-void Direct2DRenderer::FillRect(const Brush& brush, const Rect& rect) {}
+void Direct2DRenderer::FillRect(const Brush& brush, const Rect& rect) {
+  mDeviceContext->FillRectangle(
+    rect, brush.GetDirect2DBrush(mDeviceContext, rect).get());
+}
+
 void Direct2DRenderer::StrokeRect(
   const Brush& brush,
   const Rect& rect,
-  float thickness) {}
+  const float thickness) {
+  mDeviceContext->DrawRectangle(
+    rect,
+    brush.GetDirect2DBrush(mDeviceContext, rect).get(),
+    thickness == 0 ? 1 : thickness,
+    nullptr);
+}
 
 void Direct2DRenderer::FillRoundedRect(
   const Brush& brush,

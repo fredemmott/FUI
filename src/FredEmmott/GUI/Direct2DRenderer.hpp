@@ -54,8 +54,9 @@ class Direct2DRenderer final : public Renderer {
     const Point& baseline) override;
 
  private:
-  struct Direct2DLayer : std::monostate {};
-  using StateStackFrame = std::variant<Direct2DLayer, D2D1_MATRIX_3X2_F>;
+  /// Marker for needing an ID2D1RenderTarget::PopLayer()
+  struct NativeLayer : std::monostate {};
+  using StateStackFrame = std::variant<NativeLayer, D2D1_MATRIX_3X2_F>;
   std::stack<StateStackFrame> mStateStack;
 
   ID2D1DeviceContext* mDeviceContext = nullptr;
