@@ -71,8 +71,8 @@ void Root::Paint(Renderer* renderer, const Size& size) {
   if (!mWidget) {
     return;
   }
-  const auto layer = renderer->ScopedLayer();
-  renderer->ClipTo(Rect {.mSize = {size.mWidth, size.mHeight}});
+  const auto clipRegion
+    = renderer->ScopedClipRect({.mSize = {size.mWidth, size.mHeight}});
 
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);

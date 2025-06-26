@@ -43,8 +43,19 @@ void SkiaRenderer::Clear(const Color& color) {
   mCanvas->clear(color.as<SkColor>());
 }
 
-void SkiaRenderer::ClipTo(const Rect& rect) {
+void SkiaRenderer::PushClipRect(const Rect& rect) {
+  mCanvas->save();
   mCanvas->clipRect(rect);
+#ifndef NDEBUG
+  ++mStackDepth;
+#endif
+}
+
+void SkiaRenderer::PopClipRect() {
+  mCanvas->restore();
+#ifndef NDEBUG
+  --mStackDepth;
+#endif
 }
 
 void SkiaRenderer::Scale(const float x, const float y) {

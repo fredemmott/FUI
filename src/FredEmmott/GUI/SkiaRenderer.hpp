@@ -20,7 +20,8 @@ class SkiaRenderer final : public Renderer {
 
   // Basic drawing operations
   void Clear(const Color& color) override;
-  void ClipTo(const Rect& rect) override;
+  void PushClipRect(const Rect& rect) override;
+  void PopClipRect() override;
 
   // Transformations
   void Scale(float x, float y) override;

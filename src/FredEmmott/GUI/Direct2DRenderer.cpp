@@ -39,7 +39,13 @@ void Direct2DRenderer::PopLayer() {
   mDeviceContext->PopLayer();
 }
 
-void Direct2DRenderer::ClipTo(const Rect& rect) {}
+void Direct2DRenderer::PushClipRect(const Rect& rect) {
+  mDeviceContext->PushAxisAlignedClip(rect, D2D1_ANTIALIAS_MODE_ALIASED);
+}
+
+void Direct2DRenderer::PopClipRect() {
+  mDeviceContext->PopAxisAlignedClip();
+}
 
 void Direct2DRenderer::Scale(float x, float y) {
   D2D1_MATRIX_3X2_F t1 {};

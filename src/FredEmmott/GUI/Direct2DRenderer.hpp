@@ -24,7 +24,8 @@ class Direct2DRenderer final : public Renderer {
 
   // Basic drawing operations
   void Clear(const Color& color) override;
-  void ClipTo(const Rect& rect) override;
+  void PushClipRect(const Rect& rect) override;
+  void PopClipRect();
 
   // Transformations
   void Scale(float x, float y) override;

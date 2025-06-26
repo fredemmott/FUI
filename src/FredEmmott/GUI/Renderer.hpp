@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <wil/com.h>
+
 #include "Brush.hpp"
 #include "Color.hpp"
 #include "Font.hpp"
@@ -19,30 +21,17 @@ class Renderer {
   virtual void PopLayer() = 0;
   auto ScopedLayer(float alpha = 1.0f) {
     PushLayer(alpha);
-    struct ScopedPopLayer {
-      ScopedPopLayer() = delete;
-      ScopedPopLayer(const ScopedPopLayer&) = delete;
-      ScopedPopLayer(ScopedPopLayer&& other) noexcept {
-        mRenderer = std::exchange(other.mRenderer, nullptr);
-      }
-      ScopedPopLayer& operator=(const ScopedPopLayer&) = delete;
-      ScopedPopLayer& operator=(ScopedPopLayer&&) = delete;
-
-      explicit ScopedPopLayer(Renderer* render) : mRenderer(render) {}
-      ~ScopedPopLayer() {
-        if (mRenderer) {
-          mRenderer->PopLayer();
-        }
-      }
-
-     private:
-      Renderer* mRenderer {nullptr};
-    } ret {this};
-    return std::move(ret);
+    return wil::scope_exit([this] { PopLayer(); });
   }
 
   virtual void Clear(const Color&) = 0;
-  virtual void ClipTo(const Rect&) = 0;
+
+  virtual void PushClipRect(const Rect&) = 0;
+  virtual void PopClipRect() = 0;
+  auto ScopedClipRect(const Rect& rect) {
+    PushClipRect(rect);
+    return wil::scope_exit([this] { PopClipRect(); });
+  }
 
   virtual void Scale(float x, float y) = 0;
 
