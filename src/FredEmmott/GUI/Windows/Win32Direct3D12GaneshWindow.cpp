@@ -43,6 +43,7 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
     return {
       .mSize = it.getSize(),
       .mLineSpacing = lineSpacingPt,
+      .mAscent = pt.fAscent,
       .mDescent = pt.fDescent,
     };
   }

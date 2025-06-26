@@ -71,7 +71,7 @@ YGSize Label::Measure(
 
   return {
     font.MeasureTextWidth(text),
-    font.GetMetrics().mSize,
+    -font.GetMetrics().mAscent,
   };
 }
 

@@ -132,8 +132,7 @@ void Direct2DRenderer::DrawText(
     tf,
     Rect {
       baseline,
-      {std::numeric_limits<float>::infinity(),
-       -font.GetMetrics().mLineSpacing}},
+      {std::numeric_limits<float>::infinity(), font.GetMetrics().mAscent}},
     brush.GetDirect2DBrush(mDeviceContext, brushRect).get(),
     D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
     DWRITE_MEASURING_MODE_NATURAL);

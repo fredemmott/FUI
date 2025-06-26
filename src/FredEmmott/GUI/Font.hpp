@@ -33,6 +33,7 @@ class Font {
   struct Metrics {
     float mSize {};
     float mLineSpacing {};
+    float mAscent {};
     float mDescent {};
     constexpr bool operator==(const Metrics&) const noexcept = default;
   };

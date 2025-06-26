@@ -92,6 +92,7 @@ Font::Metrics DirectWriteFontProvider::GetFontMetrics(const Font& font) const {
   return Font::Metrics {
     .mSize = props.mSize,
     .mLineSpacing = ascent + descent + lineGap,
+    .mAscent = -ascent,
     .mDescent = descent,
   };
 }
