@@ -91,11 +91,11 @@ void EndComboBoxButton() {
     .mMarginLeft = 14,
     .mMarginRight = 14,
     .mTop = {
-      -2, FasterAnimation,
+      0, FasterAnimation,
     },
     .mAnd = {
       { Active, Style {
-        .mTop = 0,
+        .mTop = 2,
       }},
     },
   });
