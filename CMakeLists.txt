@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
 
-option(ENABLE_SKIA "Build with support for Skia" ON)
+option(ENABLE_IMPLICIT_BACKENDS "Automatically enable available backends" ON)
+option(ENABLE_SKIA "Build with support for Skia" ${ENABLE_IMPLICIT_BACKENDS})
 if(ENABLE_SKIA)
   list(APPEND VCPKG_MANIFEST_FEATURES "skia")
 endif()
-option(ENABLE_DIRECT2D "Build with support for Direct2D+DirectWrite+D3D11" ON)
+option(ENABLE_DIRECT2D "Build with support for Direct2D+DirectWrite+D3D11" ${ENABLE_IMPLICIT_BACKENDS})
 if (ENABLE_DIRECT2D)
   list(APPEND VCPKG_MANIFEST_FEATURES "direct2d")
 endif()
@@ -32,8 +33,8 @@ if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
     "/DEFAULTLIB:ucrt$<$<CONFIG:Debug>:d>.lib" # include the dynamic UCRT
     "/NODEFAULTLIB:libucrt$<$<CONFIG:Debug>:d>.lib" # remove the static UCRT
   )
-else ()
-  message(WARNING "Advanced text features require SkParagraph, which is only available with vcpkg static triplets}")
+elseif (ENABLE_SKIA)
+  message(FATAL_ERROR "Advanced text features require SkParagraph, which is only available with vcpkg static triplets}")
 endif ()
 
 set(

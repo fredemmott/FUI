@@ -1,0 +1,84 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables":{
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      }
+    },
+    {
+      "name": "clang-cl",
+      "hidden": true,
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_MT": "mt",
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl"
+      }
+    },
+    {
+      "name": "Debug",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Debug - clang-cl",
+      "inherits": "clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Release",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "Direct2D - Debug - clang-cl",
+      "inherits": "clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_DIRECT2D": "ON"
+      }
+    },
+    {
+      "name": "Direct2D - Release",
+      "inherits": "clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_DIRECT2D": "ON"
+      }
+    },
+    {
+      "name": "Skia - Debug - clang-cl",
+      "inherits": "clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_SKIA": "ON"
+      }
+    },
+    {
+      "name": "Skia - Release",
+      "inherits": "clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_SKIA": "ON"
+      }
+    }
+  ]
+}
