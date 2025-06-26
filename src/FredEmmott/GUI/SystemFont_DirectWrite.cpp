@@ -5,7 +5,6 @@
 
 #include "Font.hpp"
 #include "SystemFont.hpp"
-#include "detail/direct2d_detail.hpp"
 #include "detail/direct_write_detail/DirectWriteFontProvider.hpp"
 #include "detail/font_detail.hpp"
 #include "detail/renderer_detail.hpp"
@@ -13,7 +12,6 @@
 
 using namespace FredEmmott::GUI::font_detail;
 using namespace FredEmmott::GUI::direct_write_detail;
-using namespace FredEmmott::GUI::direct2d_detail;
 using namespace FredEmmott::GUI::renderer_detail;
 using namespace FredEmmott::GUI::win32_detail;
 
@@ -64,13 +62,13 @@ const UsageTypefaces& GetUsageTypefaces() {
 struct UsageFonts {
  private:
   const UsageTypefaces Typefaces = GetUsageTypefaces();
-  template <Height THeight>
+  template <Size TSize>
   static DirectWriteFont Load(const Typeface& typeface) {
     const auto& [weight, name] = typeface;
     DirectWriteFont ret {
       .mName = typeface.mName,
       .mWeight = typeface.mWeight,
-      .mSize = static_cast<float>(THeight),
+      .mSize = static_cast<float>(TSize),
     };
     CheckHResult(
       DirectWriteFontProvider::Get()->mDWriteFactory->CreateTextFormat(
@@ -79,7 +77,7 @@ struct UsageFonts {
         weight,
         DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL,
-        PixelsToDIPs(THeight),
+        ret.mSize,
         L"",
         ret.mTextFormat.put()));
     return ret;
@@ -87,12 +85,12 @@ struct UsageFonts {
 
  public:
 #define DEFINE_FONT(USAGE, TYPEFACE) \
-  const DirectWriteFont USAGE = Load<Height::USAGE>(Typefaces.TYPEFACE);
+  const DirectWriteFont USAGE = Load<Size::USAGE>(Typefaces.TYPEFACE);
   FUI_ENUM_SYSTEM_FONT_FONTS(DEFINE_FONT)
 #undef DEFINE_FONT
 
 #define DEFINE_GLYPH_FONT(USAGE, TYPEFACE) \
-  const DirectWriteFont Glyph##USAGE = Load<Height::USAGE>(Typefaces.Glyph);
+  const DirectWriteFont Glyph##USAGE = Load<Size::USAGE>(Typefaces.Glyph);
   FUI_ENUM_SYSTEM_FONT_FONTS(DEFINE_GLYPH_FONT)
 #undef DEFINE_GLYPH_FONT
 };

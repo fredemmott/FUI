@@ -1,10 +1,7 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 #include "Brush.hpp"
-#include "detail/direct2d_detail.hpp"
 #include "detail/win32_detail.hpp"
-
-using namespace FredEmmott::GUI::direct2d_detail;
 
 namespace FredEmmott::GUI {
 

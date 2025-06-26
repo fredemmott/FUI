@@ -10,7 +10,6 @@
 #include <FredEmmott/GUI/Direct2DRenderer.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/SystemSettings.hpp>
-#include <FredEmmott/GUI/detail/direct2d_detail.hpp>
 #include <FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
@@ -19,7 +18,6 @@
 namespace FredEmmott::GUI {
 
 using namespace win32_detail;
-using namespace direct2d_detail;
 using namespace direct_write_detail;
 
 class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
@@ -206,15 +204,11 @@ Win32Direct2DWindow::GetFramePainter(uint8_t frameIndex) {
 void Win32Direct2DWindow::BeforePaintFrame(uint8_t frameIndex) {
   mD2DDeviceContext->SetTarget(mFrame.mD2DTargetBitmap.get());
 
-  constexpr auto DIPScale = 96.f / USER_DEFAULT_SCREEN_DPI;
-  const auto scale = DIPScale / GetDPIScale();
-
   mD2DDeviceContext->BeginDraw();
   const auto dpi = GetDPIScale() * USER_DEFAULT_SCREEN_DPI;
+  const auto scale = 1 / GetDPIScale();
   mD2DDeviceContext->SetDpi(dpi, dpi);
-
-  const D2D1_MATRIX_3X2_F transform = D2D1::Matrix3x2F::Scale(scale, scale);
-  mD2DDeviceContext->SetTransform(transform);
+  mD2DDeviceContext->SetTransform(D2D1::Matrix3x2F::Scale(scale, scale));
 }
 
 }// namespace FredEmmott::GUI

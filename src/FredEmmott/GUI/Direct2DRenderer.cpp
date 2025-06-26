@@ -9,11 +9,9 @@
 #include <FredEmmott/GUI/Rect.hpp>
 
 #include "assert.hpp"
-#include "detail/direct2d_detail.hpp"
 #include "detail/direct_write_detail/DirectWriteFontProvider.hpp"
 #include "detail/win32_detail.hpp"
 
-using namespace FredEmmott::GUI::direct2d_detail;
 using namespace FredEmmott::GUI::direct_write_detail;
 using namespace FredEmmott::GUI::win32_detail;
 using namespace FredEmmott::GUI::font_detail;

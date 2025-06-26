@@ -4,13 +4,20 @@
 #include "Font.hpp"
 
 #include "Immediate/TextBlock.hpp"
+#include "assert.hpp"
 #include "detail/font_detail.hpp"
+#include "detail/win32_detail.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <skia/core/SkFontTypes.h>
 #endif
 
+#ifdef FUI_ENABLE_DIRECT2D
+#include <FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp>
+#endif
+
 using namespace FredEmmott::GUI::font_detail;
+using namespace FredEmmott::GUI::win32_detail;
 
 namespace FredEmmott::GUI {
 
@@ -31,6 +38,7 @@ Font::Font(const DirectWriteFont& font) : mFont(font) {
     mFont = std::monostate {};
     return;
   }
+  FUI_ASSERT(font.mSize > std::numeric_limits<float>::epsilon());
 
   mMetrics = renderer_detail::GetFontMetricsProvider()->GetFontMetrics(*this);
 }
@@ -48,6 +56,18 @@ Font Font::WithSize(float pixels) const noexcept {
   if (const auto it = std::get_if<DirectWriteFont>(&mFont)) {
     auto dup = *it;
     dup.mSize = pixels;
+    dup.mTextFormat.reset();
+    CheckHResult(
+      direct_write_detail::DirectWriteFontProvider::Get()
+        ->mDWriteFactory->CreateTextFormat(
+          dup.mName.c_str(),
+          nullptr,
+          dup.mWeight,
+          DWRITE_FONT_STYLE_NORMAL,
+          DWRITE_FONT_STRETCH_NORMAL,
+          dup.mSize,
+          L"",
+          dup.mTextFormat.put()));
     return {dup};
   }
 #endif

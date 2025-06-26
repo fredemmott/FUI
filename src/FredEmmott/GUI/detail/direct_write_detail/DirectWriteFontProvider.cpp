@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: MIT
 #include "DirectWriteFontProvider.hpp"
 
-#include <FredEmmott/GUI/detail/direct2d_detail.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
 
 namespace FredEmmott::GUI::direct_write_detail {
 using namespace win32_detail;
-using namespace direct2d_detail;
 
 float DirectWriteFontProvider::MeasureTextWidth(
   const Font& font,
@@ -43,8 +41,9 @@ float DirectWriteFontProvider::MeasureTextWidth(
     return 0.f;
   }
 
-  return direct2d_detail::DIPsToPixels(metrics.width);
+  return metrics.width;
 }
+
 Font::Metrics DirectWriteFontProvider::GetFontMetrics(const Font& font) const {
   using namespace font_detail;
   const auto props = font.as<DirectWriteFont>();
@@ -76,7 +75,7 @@ Font::Metrics DirectWriteFontProvider::GetFontMetrics(const Font& font) const {
     fontFamily->GetFirstMatchingFont(weight, stretch, style, dwriteFont.put()));
 
   // Get font metrics
-  DWRITE_FONT_METRICS fontMetrics;
+  DWRITE_FONT_METRICS fontMetrics {};
   dwriteFont->GetMetrics(&fontMetrics);
 
   // Convert design units to DIPs and then to pixels
