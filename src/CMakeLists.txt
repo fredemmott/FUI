@@ -2,6 +2,8 @@ if(ENABLE_SKIA)
   include(skia)
 endif()
 
+find_package(wil CONFIG REQUIRED)
+
 set(CONFIG_HPP "${CMAKE_CURRENT_BINARY_DIR}/include/FredEmmott/GUI/config.hpp")
 block()
   set(FUI_ENABLE_SKIA ${ENABLE_SKIA})

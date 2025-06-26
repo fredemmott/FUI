@@ -6,6 +6,8 @@
 #include <d2d1_1.h>
 #include <dwrite.h>
 
+#include <stack>
+
 #include "Renderer.hpp"
 
 namespace FredEmmott::GUI {
@@ -14,7 +16,7 @@ class Direct2DRenderer final : public Renderer {
  public:
   Direct2DRenderer() = delete;
   explicit Direct2DRenderer(ID2D1DeviceContext* deviceContext);
-  ~Direct2DRenderer() override = default;
+  ~Direct2DRenderer() override;
 
   // State management
   void PushLayer(float alpha = 1.f) override;
@@ -51,10 +53,11 @@ class Direct2DRenderer final : public Renderer {
     const Point& baseline) override;
 
  private:
+  using StateStackFrame = std::
+    variant<wil::com_ptr<ID2D1DrawingStateBlock>, wil::com_ptr<ID2D1Layer>>;
+  std::stack<StateStackFrame> mStateStack;
+
   ID2D1DeviceContext* mDeviceContext = nullptr;
-#ifndef NDEBUG
-  std::size_t mStackDepth {};
-#endif
 };
 
 }// namespace FredEmmott::GUI

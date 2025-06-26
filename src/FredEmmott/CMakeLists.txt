@@ -144,9 +144,10 @@ if(ENABLE_DIRECT2D)
     PRIVATE
     GUI/Windows/Win32Direct2DWindow.cpp GUI/Windows/Win32Direct2DWindow.hpp
     GUI/Direct2DRenderer.cpp GUI/Direct2DRenderer.hpp
+    GUI/LinearGradientBrush_Direct2D.cpp
     GUI/SystemFont_DirectWrite.cpp
     GUI/detail/direct_write_detail/DirectWriteFontProvider.cpp GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp
-    GUI/detail/direct2d_detail.hpp
+    GUI/Brush_Direct2D.cpp
   )
   target_link_libraries(
     fredemmott-gui

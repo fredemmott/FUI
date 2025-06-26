@@ -82,7 +82,7 @@ Font::Metrics DirectWriteFontProvider::GetFontMetrics(const Font& font) const {
   // Convert design units to DIPs and then to pixels
   const float fontSize = props.mTextFormat->GetFontSize();
   const float designUnitsToPixels
-    = DIPsToPixels(fontSize / fontMetrics.designUnitsPerEm);
+    = (fontSize / fontMetrics.designUnitsPerEm) * (72.f / 96);
 
   // Calculate font metrics in pixels
   const float ascent = fontMetrics.ascent * designUnitsToPixels;

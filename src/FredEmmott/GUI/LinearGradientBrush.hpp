@@ -8,9 +8,15 @@
 #include <concepts>
 #include <vector>
 
+#include "Rect.hpp"
+
 #ifdef FUI_ENABLE_SKIA
 #include <skia/core/SkPaint.h>
 #include <skia/core/SkShader.h>
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+#include <d2d1_3.h>
+#include <wil/com.h>
 #endif
 
 namespace FredEmmott::GUI {
@@ -53,6 +59,11 @@ class LinearGradientBrush final {
 #ifdef FUI_ENABLE_SKIA
   [[nodiscard]] SkPaint GetSkiaPaint(const SkRect&) const;
 #endif
+#ifdef FUI_ENABLE_DIRECT2D
+  [[nodiscard]] wil::com_ptr<ID2D1Brush> GetDirect2DBrush(
+    ID2D1RenderTarget*,
+    const Rect&) const;
+#endif
  private:
   MappingMode mMappingMode;
   Point mStart;
@@ -64,6 +75,12 @@ class LinearGradientBrush final {
   sk_sp<SkShader> mSkiaShader;
 
   void InitializeSkiaShader();
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  wil::com_ptr<ID2D1GradientStopCollection> mDirect2DGradientStops;
+  wil::com_ptr<ID2D1LinearGradientBrush> mDirect2DBrush;
+
+  void InitializeDirect2DBrush(ID2D1RenderTarget*);
 #endif
 };
 

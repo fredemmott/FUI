@@ -109,6 +109,7 @@ function(add_winui3_theme_file COMPONENT)
     "${TARGET}"
     PRIVATE
     fredemmott-gui-config
+    WIL::WIL
   )
   if(ENABLE_SKIA)
     target_link_libraries("${TARGET}" PRIVATE skia)

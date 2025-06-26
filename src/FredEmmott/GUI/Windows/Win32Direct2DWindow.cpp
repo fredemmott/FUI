@@ -181,8 +181,8 @@ void Win32Direct2DWindow::CreateRenderTargets() {
 
 void Win32Direct2DWindow::AfterPaintFrame(uint8_t frameIndex) {
   CheckHResult(mD2DDeviceContext->EndDraw());
+  CheckHResult(GetSwapChain()->Present(0, 0));
   mD2DDeviceContext->SetTarget(nullptr);
-  CheckHResult(GetSwapChain()->Present(1, 0));
 }
 
 void Win32Direct2DWindow::CleanupFrameContexts() {
@@ -207,11 +207,11 @@ void Win32Direct2DWindow::BeforePaintFrame(uint8_t frameIndex) {
   mD2DDeviceContext->SetTarget(mFrame.mD2DTargetBitmap.get());
 
   constexpr auto DIPScale = 96.f / USER_DEFAULT_SCREEN_DPI;
-  const auto scale = DIPScale * GetDPIScale();
-  D2D1_MATRIX_3X2_F transform = D2D1::Matrix3x2F::Scale(scale, scale);
-  mD2DDeviceContext->SetTransform(transform);
+  const auto scale = DIPScale / GetDPIScale();
 
   mD2DDeviceContext->BeginDraw();
+  const D2D1_MATRIX_3X2_F transform = D2D1::Matrix3x2F::Scale(scale, scale);
+  mD2DDeviceContext->SetTransform(transform);
 }
 
 }// namespace FredEmmott::GUI

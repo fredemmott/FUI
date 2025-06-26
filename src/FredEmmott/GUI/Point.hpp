@@ -42,6 +42,11 @@ struct BasicPoint {
   }
 
   constexpr bool operator==(const BasicPoint&) const noexcept = default;
+
+  template <class Other>
+  Other as() const noexcept {
+    return Other {mX, mY};
+  }
 };
 
 using Point = BasicPoint<float>;

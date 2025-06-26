@@ -13,6 +13,10 @@
 #include <skia/core/SkRect.h>
 #endif
 
+#ifdef FUI_ENABLE_DIRECT2D
+#include <D2d1.h>
+#endif
+
 namespace FredEmmott::GUI {
 
 template <class T>
@@ -67,6 +71,13 @@ struct BasicRect {
   {
     return SkRect::MakeXYWH(
       mTopLeft.mX, mTopLeft.mY, mSize.mWidth, mSize.mHeight);
+  }
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  constexpr operator D2D1_RECT_F() const noexcept
+    requires std::same_as<float, T>
+  {
+    return {GetLeft(), GetTop(), GetRight(), GetBottom()};
   }
 #endif
 };
