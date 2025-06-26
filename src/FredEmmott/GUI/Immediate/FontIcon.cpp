@@ -18,17 +18,25 @@ void FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyphs,
   FontIconSize size,
   const ID id) {
-  const Style styles {.mFont = {ResolveGlyphFont(size), !important}};
+  const auto font = ResolveGlyphFont(size);
+  const Style styles {
+    .mFont = {font, !important},
+    .mPosition = YGPositionTypeRelative,
+  };
 
   bool first = true;
   immediate_detail::BeginWidget<Widgets::Widget>(id);
   std::size_t count = 0;
+
+  float offset {};
+
   for (auto&& [glyph, style]: glyphs) {
     auto thisStyle = styles + style;
     if (first) {
+      offset = -font.MeasureTextWidth(glyph);
       first = false;
     } else {
-      thisStyle.mPosition = YGPositionTypeAbsolute;
+      thisStyle.mLeft = offset;
     }
 
     Label(glyph, ID {count++});
