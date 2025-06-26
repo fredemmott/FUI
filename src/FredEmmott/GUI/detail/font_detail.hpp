@@ -12,19 +12,6 @@
 #include <string>
 #endif
 
-// Values from
-// https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
-enum class Size : uint16_t {
-  Caption = 12,
-  Body = 14,
-  BodyStrong = 14,
-  BodyLarge = 18,
-  Subtitle = 20,
-  Title = 28,
-  TitleLarge = 40,
-  Display = 68,
-};
-
 namespace FredEmmott::GUI::font_detail {
 // Win32: this is the same as USER_DEFAULT_SCREEN_DPI
 static constexpr auto BaselineDPI = 96;

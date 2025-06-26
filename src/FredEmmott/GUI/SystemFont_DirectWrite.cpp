@@ -62,7 +62,7 @@ const UsageTypefaces& GetUsageTypefaces() {
 struct UsageFonts {
  private:
   const UsageTypefaces Typefaces = GetUsageTypefaces();
-  template <Size TSize>
+  template <SystemFontSize TSize>
   static DirectWriteFont Load(const Typeface& typeface) {
     const auto& [weight, name] = typeface;
     DirectWriteFont ret {
@@ -85,12 +85,13 @@ struct UsageFonts {
 
  public:
 #define DEFINE_FONT(USAGE, TYPEFACE) \
-  const DirectWriteFont USAGE = Load<Size::USAGE>(Typefaces.TYPEFACE);
+  const DirectWriteFont USAGE = Load<SystemFontSize::USAGE>(Typefaces.TYPEFACE);
   FUI_ENUM_SYSTEM_FONT_FONTS(DEFINE_FONT)
 #undef DEFINE_FONT
 
 #define DEFINE_GLYPH_FONT(USAGE, TYPEFACE) \
-  const DirectWriteFont Glyph##USAGE = Load<Size::USAGE>(Typefaces.Glyph);
+  const DirectWriteFont Glyph##USAGE \
+    = Load<SystemFontSize::USAGE>(Typefaces.Glyph);
   FUI_ENUM_SYSTEM_FONT_FONTS(DEFINE_GLYPH_FONT)
 #undef DEFINE_GLYPH_FONT
 };

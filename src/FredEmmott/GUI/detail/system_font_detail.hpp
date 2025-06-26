@@ -26,6 +26,19 @@
 
 namespace FredEmmott::GUI::SystemFont {
 
+// Values from
+// https://learn.microsoft.com/en-us/windows/apps/design/signature-experiences/typography
+enum class SystemFontSize : uint16_t {
+  Caption = 12,
+  Body = 14,
+  BodyStrong = 14,
+  BodyLarge = 18,
+  Subtitle = 20,
+  Title = 28,
+  TitleLarge = 40,
+  Display = 68,
+};
+
 #ifdef FUI_ENABLE_SKIA
 Font ResolveSkiaFont(Usage) noexcept;
 Font ResolveGlyphSkiaFont(Usage) noexcept;
