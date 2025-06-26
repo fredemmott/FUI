@@ -82,6 +82,8 @@ class Window {
     mExitCode = exitCode;
   }
 
+  void ResetToFirstBackBuffer();
+
  private:
   uint8_t mSwapChainLength {};
   std::chrono::steady_clock::time_point mBeginFrameTime;

@@ -290,6 +290,7 @@ void Win32Window::ResizeSwapchain() {
   CheckHResult(mSwapChain->ResizeBuffers(
     0, mClientSize.cx, mClientSize.cy, DXGI_FORMAT_UNKNOWN, 0));
   this->CreateRenderTargets();
+  this->ResetToFirstBackBuffer();
 }
 
 void Win32Window::ResizeIfNeeded() {

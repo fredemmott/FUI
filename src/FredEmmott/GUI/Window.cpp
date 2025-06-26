@@ -105,4 +105,8 @@ void Window::Paint() {
   mFrameIndex = (mFrameIndex + 1) % mSwapChainLength;
 }
 
+void Window::ResetToFirstBackBuffer() {
+  mFrameIndex = 0;
+}
+
 }// namespace FredEmmott::GUI
