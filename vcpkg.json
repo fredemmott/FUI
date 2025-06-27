@@ -3,15 +3,13 @@
   "supports": "windows & static",
   "dependencies": [
     "wil",
-    "yoga",
     "fmt",
-    "tinyxml"
+    "tinyxml",
+    {
+      "name": "yoga",
+      "version>=": "3.2.1"
+    }
   ],
-  "vcpkg-configuration": {
-    "overlay-ports": [
-      "third-party/vcpkg-overlay"
-    ]
-  },
   "features": {
     "skia": {
       "description": "Enable support for Skia",
