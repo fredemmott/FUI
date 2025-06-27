@@ -24,6 +24,7 @@ add_library(
   GUI/Immediate/PopupWindow.cpp GUI/Immediate/PopupWindow.hpp
   GUI/Immediate/Root.cpp GUI/Immediate/Root.hpp
   GUI/Immediate/StackPanel.hpp
+  GUI/Immediate/Style.hpp
   GUI/Immediate/TextBlock.cpp GUI/Immediate/TextBlock.hpp
   GUI/Immediate/ToggleSwitch.cpp GUI/Immediate/ToggleSwitch.hpp
   GUI/Interpolation/CubicBezier.hpp
