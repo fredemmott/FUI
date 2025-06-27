@@ -118,11 +118,11 @@ unique_ptr<Win32Window> Win32Window::CreateAny(
   HINSTANCE hinstance,
   int showCommand,
   const Options& options) {
-#if defined(FUI_ENABLE_SKIA)
+#if defined(FUI_ENABLE_DIRECT2D)
+  return std::make_unique<Win32Direct2DWindow>(hinstance, showCommand, options);
+#elif defined(FUI_ENABLE_SKIA)
   return std::make_unique<Win32Direct3D12GaneshWindow>(
     hinstance, showCommand, options);
-#elif defined(FUI_ENABLE_DIRECT2D)
-  return std::make_unique<Win32Direct2DWindow>(hinstance, showCommand, options);
 #endif
   return nullptr;
 }

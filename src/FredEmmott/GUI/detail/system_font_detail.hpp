@@ -8,9 +8,9 @@
 /// X(NAME, WEIGHT, ...typefaces)
 #define FUI_ENUM_SYSTEM_FONT_TYPEFACES(X) \
   X(Regular, Normal, "Segoe UI Variable Text", "Segoe UI") \
-  X(BodyStrong, SemiBold, "Segoe UI Variable Text", "Segoe UI") \
-  X(Caption, Normal, "Segoe UI Variable Small") \
-  X(Display, SemiBold, "Segoe UI Variable Display", "Segoe UI") \
+  X(BodyStrong, SemiBold, "Segoe UI Variable Text Semibold", "Segoe UI") \
+  X(Caption, Normal, "Segoe UI Variable Small", "Segoe UI") \
+  X(Display, SemiBold, "Segoe UI Variable Display Semibold", "Segoe UI") \
   X(Glyph, Normal, "Segoe Fluent Icons", "Segoe MDL2 Assets")
 
 /// X(USAGE, TYPEFACE)

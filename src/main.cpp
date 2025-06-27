@@ -15,12 +15,27 @@ static void AppTick() {
     fuii::BeginVScrollView();
   }
 
+  fuii::BeginVStackPanel();
+  fuii::Style({
+    .mGap = 12,
+    .mMargin = 12,
+    .mPadding = 8,
+  });
+
+  fuii::SubtitleLabel("FUI Details");
   fuii::BeginCard();
   fuii::BeginVStackPanel();
   fuii::Label("Backend: {}", fui::GetBackendDescription());
   fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
   fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
-  fuii::Label("Disable all widgets");
+  fuii::EndVStackPanel();
+  fuii::EndCard();
+
+  fuii::SubtitleLabel("Controls");
+  fuii::BeginCard();
+  fuii::BeginVStackPanel();
+
+  fuii::Caption("Disable all controls");
   static bool sDisableAll = false;
   // (void) cast to ignore [[nodiscard]] is-changed return value
   (void)fuii::ToggleSwitch(&sDisableAll);
@@ -89,6 +104,7 @@ static void AppTick() {
 
   fuii::EndStackPanel();
   fuii::EndCard();
+  fuii::EndStackPanel();
   if constexpr (UseScrollView) {
     fuii::EndVScrollView();
   }

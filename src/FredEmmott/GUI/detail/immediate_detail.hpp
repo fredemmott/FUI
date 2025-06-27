@@ -28,6 +28,9 @@ extern thread_local ActivatedFlag tNeedAdditionalFrame;
 
 template <std::derived_from<Widget> T = Widget>
 T* GetCurrentNode() {
+  if (tStack.back().mNewSiblings.empty()) {
+    return nullptr;
+  }
   return widget_cast<T>(tStack.back().mNewSiblings.back());
 }
 

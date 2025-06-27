@@ -18,7 +18,6 @@ Style Card::GetBuiltInStyles() const {
   static const Style ret {
     .mBackgroundColor = CardBackgroundFillColorDefaultBrush,
     .mBorderRadius = OverlayCornerRadius,
-    .mMargin = Spacing * 9,
     .mPadding = Spacing * 4,
   };
   return ret;
