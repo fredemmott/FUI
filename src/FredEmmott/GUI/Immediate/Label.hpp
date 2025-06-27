@@ -19,9 +19,8 @@ void Label(std::format_string<Args...> fmt, Args&&... args) {
 }
 
 namespace immediate_detail {
-using StyleMutator = void (*)(GUI::Style&);
 
-template <StyleMutator... TStyleMutators>
+template <class TDerived>
 struct StyledLabel {
   static void operator()(
     const std::string_view text,
@@ -39,18 +38,24 @@ struct StyledLabel {
  private:
   static void ApplyStyles() {
     GUI::Style styles;
-    (TStyleMutators(styles), ...);
+    TDerived::ApplyStyles(styles);
     GetCurrentNode()->SetAdditionalBuiltInStyles(styles);
   }
 };
 
-template <SystemFont::Usage U, StyleMutator... TRest>
-struct SystemFontLabel
-  : StyledLabel<[](GUI::Style& style) { style.mFont = {U}; }, TRest...> {};
+template <SystemFont::Usage U>
+struct SystemFontLabel : StyledLabel<SystemFontLabel<U>> {
+  static void ApplyStyles(Style& style) {
+    style.mFont = {U};
+  }
+};
 
-struct Caption : SystemFontLabel<SystemFont::Caption, [](GUI::Style& style) {
-  style.mMarginBottom = -4;
-}> {};
+struct Caption : StyledLabel<Caption> {
+  static void ApplyStyles(Style& style) {
+    SystemFontLabel<SystemFont::Caption>::ApplyStyles(style);
+    style.mMarginBottom = -4;
+  }
+};
 }// namespace immediate_detail
 
 constexpr auto CaptionLabel
