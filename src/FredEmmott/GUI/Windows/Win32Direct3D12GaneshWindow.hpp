@@ -5,7 +5,12 @@
 
 #include <d3d12.h>
 #include <skia/core/SkSurface.h>
+
+#if __has_include(<skia/gpu/ganesh/GrDirectContext.h>)
+#include <skia/gpu/ganesh/GrDirectContext.h>
+#else
 #include <skia/gpu/GrDirectContext.h>
+#endif
 
 #include "Win32Window.hpp"
 

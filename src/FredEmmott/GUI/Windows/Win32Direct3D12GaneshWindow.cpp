@@ -5,11 +5,6 @@
 #include <Windowsx.h>
 #include <dwmapi.h>
 #include <skia/core/SkColorSpace.h>
-#include <skia/gpu/GrBackendSemaphore.h>
-#include <skia/gpu/GrBackendSurface.h>
-#include <skia/gpu/GrDirectContext.h>
-#include <skia/gpu/d3d/GrD3DBackendContext.h>
-#include <skia/gpu/ganesh/SkSurfaceGanesh.h>
 #include <wil/win32_helpers.h>
 
 #include <FredEmmott/GUI/SkiaRenderer.hpp>
@@ -21,6 +16,20 @@
 #include <filesystem>
 #include <print>
 #include <thread>
+
+#if __has_include(<skia/gpu/ganesh/GrDirectContext.h>)
+#include <skia/gpu/ganesh/GrBackendSemaphore.h>
+#include <skia/gpu/ganesh/GrBackendSurface.h>
+#include <skia/gpu/ganesh/GrDirectContext.h>
+#include <skia/gpu/ganesh/SkSurfaceGanesh.h>
+#include <skia/gpu/ganesh/d3d/GrD3DBackendContext.h>
+#else
+#include <skia/gpu/GrBackendSemaphore.h>
+#include <skia/gpu/GrBackendSurface.h>
+#include <skia/gpu/GrDirectContext.h>
+#include <skia/gpu/d3d/GrD3DBackendContext.h>
+#include <skia/gpu/ganesh/SkSurfaceGanesh.h>
+#endif
 
 namespace FredEmmott::GUI {
 namespace {
