@@ -8,9 +8,9 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
-#include <FredEmmott/utility/lazy_init.hpp>
 
-#include "FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp"
+#include "FredEmmott/GUI/Direct2DRenderer.hpp"
+#include "FredEmmott/GUI/detail/renderer_detail.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <skia/core/SkFont.h>
@@ -23,6 +23,7 @@
 #endif
 
 using namespace FredEmmott::utility;
+using namespace FredEmmott::GUI::renderer_detail;
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -42,17 +43,37 @@ void TextBlock::SetText(const std::string_view text) {
   }
 
 #ifdef FUI_ENABLE_SKIA
-  this->UpdateSkiaParagraph();
+  if (GetRenderAPI() == RenderAPI::Skia) {
+    this->UpdateSkiaParagraph();
+  }
 #endif
+#ifdef FUI_ENABLE_DIRECT2D
+  if (GetRenderAPI() == RenderAPI::Direct2D) {
+    this->UpdateDirectWriteTextLayout();
+  }
+#endif
+  if constexpr (Config::Debug) {
+    __debugbreak();
+  }
 }
 
 void TextBlock::PaintOwnContent(
   Renderer* renderer,
   const Rect& rect,
   const Style& style) const {
+  FUI_ASSERT(
+    style.mFont == mFont,
+    "Stylesheet font does not match mFont; computed style not updated");
+
 #ifdef FUI_ENABLE_SKIA
-  if (auto* canvas = skia_canvas_cast(renderer)) {
+  if (auto canvas = skia_canvas_cast(renderer)) {
     this->PaintOwnContent(canvas, rect, style);
+    return;
+  }
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  if (auto d2d = direct2d_device_context_cast(renderer)) {
+    this->PaintOwnContent(d2d, rect, style);
     return;
   }
 #endif
@@ -75,7 +96,14 @@ Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   }
 
 #ifdef FUI_ENABLE_SKIA
-  this->UpdateSkiaParagraph();
+  if (GetRenderAPI() == RenderAPI::Skia) {
+    this->UpdateSkiaParagraph();
+  }
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  if (GetRenderAPI() == RenderAPI::Direct2D) {
+    this->UpdateDirectWriteTextLayout();
+  }
 #endif
 
   return ComputedStyleFlags::Empty;
@@ -91,6 +119,11 @@ YGSize TextBlock::Measure(
 #ifdef FUI_ENABLE_SKIA
   if (self->mSkiaParagraph) {
     return self->MeasureWithSkia(width, widthMode, height, heightMode);
+  }
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  if (self->mDirectWriteTextLayout) {
+    return self->MeasureWithDirectWrite(width, widthMode, height, heightMode);
   }
 #endif
   if constexpr (Config::Debug) {

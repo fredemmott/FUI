@@ -31,18 +31,30 @@ class TextBlock final : public Widget {
 #ifdef FUI_ENABLE_SKIA
   std::unique_ptr<skia::textlayout::Paragraph> mSkiaParagraph;
 #endif
+#ifdef FUI_ENABLE_DIRECT2D
+  wil::com_ptr<IDWriteTextLayout> mDirectWriteTextLayout;
+#endif
   std::string mText;
   Font mFont;
   float mMeasuredHeight {};
 
 #ifdef FUI_ENABLE_SKIA
   void UpdateSkiaParagraph();
-  void PaintOwnContent(SkCanvas*, const Rect&, const Style&) const;
   YGSize MeasureWithSkia(
     float width,
     YGMeasureMode widthMode,
     float height,
     YGMeasureMode heightMode);
+  void PaintOwnContent(SkCanvas*, const Rect&, const Style&) const;
+#endif
+#ifdef FUI_ENABLE_DIRECT2D
+  void UpdateDirectWriteTextLayout();
+  YGSize MeasureWithDirectWrite(
+    float width,
+    YGMeasureMode widthMode,
+    float height,
+    YGMeasureMode heightMode);
+  void PaintOwnContent(ID2D1RenderTarget*, const Rect&, const Style&) const;
 #endif
 
   static YGSize Measure(

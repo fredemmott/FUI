@@ -74,7 +74,6 @@ static void AppTick() {
   fuii::Label("After stack");
   fuii::EndStackPanel();
 
-#ifdef FUI_ENABLE_SKIA
   fuii::TextBlock(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
     "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
@@ -83,7 +82,6 @@ static void AppTick() {
     "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.");
-#endif
   fuii::EndDisabled();
 
   fuii::EndStackPanel();

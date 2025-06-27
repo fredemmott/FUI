@@ -27,7 +27,9 @@ YGSize TextBlock::MeasureWithSkia(
   float height,
   YGMeasureMode heightMode) {
   if (widthMode == YGMeasureModeUndefined) {
-    return {YGUndefined, YGUndefined};
+    return {
+      mSkiaParagraph->getMinIntrinsicWidth(),
+      std::numeric_limits<float>::infinity()};
   }
 
   mSkiaParagraph->layout(width);
@@ -65,10 +67,6 @@ void TextBlock::PaintOwnContent(
   SkCanvas* canvas,
   const Rect& rect,
   const Style& style) const {
-  FUI_ASSERT(
-    style.mFont == mFont,
-    "Stylesheet font does not match mFont; computed style not updated");
-
   auto paint = style.mColor->GetSkiaPaint(rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   mSkiaParagraph->updateForegroundPaint(0, mText.size(), paint);

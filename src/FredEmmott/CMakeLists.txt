@@ -148,6 +148,7 @@ if(ENABLE_DIRECT2D)
     GUI/SystemFont_DirectWrite.cpp
     GUI/detail/direct_write_detail/DirectWriteFontProvider.cpp GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp
     GUI/Brush_Direct2D.cpp
+    GUI/Widgets/TextBlock_DirectWrite.cpp
   )
   target_link_libraries(
     fredemmott-gui

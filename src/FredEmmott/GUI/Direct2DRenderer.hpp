@@ -53,13 +53,24 @@ class Direct2DRenderer final : public Renderer {
     std::string_view text,
     const Point& baseline) override;
 
+  ID2D1DeviceContext* mDeviceContext = nullptr;
+
  private:
   /// Marker for needing an ID2D1RenderTarget::PopLayer()
   struct NativeLayer : std::monostate {};
   using StateStackFrame = std::variant<NativeLayer, D2D1_MATRIX_3X2_F>;
   std::stack<StateStackFrame> mStateStack;
-
-  ID2D1DeviceContext* mDeviceContext = nullptr;
 };
+
+constexpr Direct2DRenderer* direct2d_renderer_target_cast(
+  Renderer* renderer) noexcept {
+  return dynamic_cast<Direct2DRenderer*>(renderer);
+}
+
+constexpr ID2D1DeviceContext* direct2d_device_context_cast(
+  Renderer* renderer) noexcept {
+  const auto direct2dRenderer = direct2d_renderer_target_cast(renderer);
+  return direct2dRenderer ? direct2dRenderer->mDeviceContext : nullptr;
+}
 
 }// namespace FredEmmott::GUI
