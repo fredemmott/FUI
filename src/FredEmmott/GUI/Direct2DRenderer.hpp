@@ -62,14 +62,14 @@ class Direct2DRenderer final : public Renderer {
   std::stack<StateStackFrame> mStateStack;
 };
 
-constexpr Direct2DRenderer* direct2d_renderer_target_cast(
+constexpr Direct2DRenderer* direct2d_renderer_cast(
   Renderer* renderer) noexcept {
   return dynamic_cast<Direct2DRenderer*>(renderer);
 }
 
 constexpr ID2D1DeviceContext* direct2d_device_context_cast(
   Renderer* renderer) noexcept {
-  const auto direct2dRenderer = direct2d_renderer_target_cast(renderer);
+  const auto direct2dRenderer = direct2d_renderer_cast(renderer);
   return direct2dRenderer ? direct2dRenderer->mDeviceContext : nullptr;
 }
 

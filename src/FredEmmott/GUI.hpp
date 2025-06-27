@@ -18,3 +18,18 @@
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/Window.hpp>
+#include <string_view>
+
+namespace FredEmmott::GUI {
+
+/** Human-readable description for debugging.
+ *
+ * If your code requires a specific backend, use:
+ * - `skia_renderer_cast()`
+ * - `direct2d_renderer_cast()`
+ */
+inline std::string_view GetBackendDescription() {
+  return renderer_detail::GetRenderAPIDetails();
+}
+
+}// namespace FredEmmott::GUI

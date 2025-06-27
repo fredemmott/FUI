@@ -134,6 +134,7 @@ void Win32Direct2DWindow::InitializeGraphicsAPI() {
 
   SetRenderAPI(
     RenderAPI::Direct2D,
+    "D2D+DWrite+D3D11",
     std::make_unique<DirectWriteFontProvider>(mDWriteFactory));
 }
 

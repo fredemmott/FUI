@@ -17,6 +17,7 @@ static void AppTick() {
 
   fuii::BeginCard();
   fuii::BeginVStackPanel();
+  fuii::Label("Backend: {}", fui::GetBackendDescription());
   fuii::Label("Disable all widgets");
   static bool sDisableAll = false;
   // (void) cast to ignore [[nodiscard]] is-changed return value

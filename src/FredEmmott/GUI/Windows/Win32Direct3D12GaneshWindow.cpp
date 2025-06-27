@@ -216,7 +216,10 @@ Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
   if (HaveRenderAPI(RenderAPI::Skia)) {
     return;
   }
-  SetRenderAPI(RenderAPI::Skia, std::make_unique<SkiaFontMetricsProvider>());
+  SetRenderAPI(
+    RenderAPI::Skia,
+    "Skia(Ganesh)+D3D12",
+    std::make_unique<SkiaFontMetricsProvider>());
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {

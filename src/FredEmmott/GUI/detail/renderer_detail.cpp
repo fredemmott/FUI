@@ -11,6 +11,7 @@ namespace {
 
 struct Storage {
   RenderAPI mRenderAPI;
+  std::string mDetails;
   std::unique_ptr<FontMetricsProvider> mFontMetricsProvider;
 };
 
@@ -45,13 +46,20 @@ FontMetricsProvider* GetFontMetricsProvider() {
 
 void SetRenderAPI(
   const RenderAPI value,
+  const std::string_view details,
   std::unique_ptr<FontMetricsProvider> fontMetrics) {
   auto& s = GetStorage();
-  if (!s.has_value()) [[likely]] {
-    s.emplace(value, std::move(fontMetrics));
-    return;
+  if (s.has_value()) [[unlikely]] {
+    throw std::logic_error("SetRenderAPI() called multiple times");
   }
-  throw std::logic_error("SetRenderAPI() called multiple times");
+  s.emplace(value, std::string {details}, std::move(fontMetrics));
+}
+
+std::string_view GetRenderAPIDetails() {
+  if (const auto& ret = GetStorage(); ret.has_value()) [[likely]] {
+    return ret->mDetails;
+  }
+  throw std::logic_error("GetRenderAPIDetails() called before SetRenderAPI()");
 }
 
 }// namespace FredEmmott::GUI::renderer_detail

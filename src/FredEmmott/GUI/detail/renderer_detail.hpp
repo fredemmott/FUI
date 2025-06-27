@@ -4,6 +4,7 @@
 
 #include <FredEmmott/GUI/Font.hpp>
 #include <memory>
+#include <string_view>
 
 namespace FredEmmott::GUI::renderer_detail {
 
@@ -21,9 +22,14 @@ enum class RenderAPI {
 [[nodiscard]]
 bool HaveRenderAPI(RenderAPI required);
 /// Throws an std::logic_error if the renderer is already set
-void SetRenderAPI(RenderAPI, std::unique_ptr<FontMetricsProvider>);
+void SetRenderAPI(
+  RenderAPI,
+  std::string_view details,
+  std::unique_ptr<FontMetricsProvider>);
 /// Throws an std::logic_error if the renderer has not yet been set
 RenderAPI GetRenderAPI();
 FontMetricsProvider* GetFontMetricsProvider();
+/// Human-readable detailed name
+std::string_view GetRenderAPIDetails();
 
 }// namespace FredEmmott::GUI::renderer_detail
