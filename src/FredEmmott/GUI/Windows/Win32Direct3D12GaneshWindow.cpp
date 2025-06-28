@@ -58,7 +58,8 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
   }
 };
 
-void ConfigureD3DDebugLayer(const wil::com_ptr<ID3D12Device>& device) {
+void ConfigureD3DDebugLayer(
+  [[maybe_unused]] const wil::com_ptr<ID3D12Device>& device) {
 #ifndef NDEBUG
   auto infoQueue = device.try_query<ID3D12InfoQueue1>();
   if (!infoQueue) {
