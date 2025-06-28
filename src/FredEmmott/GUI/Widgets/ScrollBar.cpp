@@ -42,7 +42,6 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
   constexpr auto upGlyph = "\ueddb";
   constexpr auto downGlyph = "\ueddc";
 
-  // FIXME: callbacks
   this->ChangeDirectChildren([this] {
     mSmallDecrement.reset(new ScrollBarButton(
       nullptr,
@@ -95,11 +94,11 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
       ResolveGlyphFont(SystemFont::Body).WithSize(ScrollBarButtonArrowIconFontSize),
       !important,
     },
+    .mLeft = (mOrientation == Orientation::Horizontal) ? 0 : 2.0f,
     .mOpacity = 0,
     .mScaleX = { 1, SmallPressedAnimation },
     .mScaleY = { 1, SmallPressedAnimation },
     .mTop = {0, SmallPressedAnimation},
-    .mTranslateX = {0, SmallPressedAnimation},
     .mTranslateY = {0, SmallPressedAnimation},
     .mAnd = {
       { Hover, Style {
@@ -107,9 +106,8 @@ ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
       }},
       { Active, Style {
         .mColor = ScrollBarButtonArrowForegroundPressed,
-        .mScaleX = (orientation == Orientation::Horizontal) ? 1.0 : ScrollBarButtonArrowScalePressed,
-        .mScaleY = (orientation == Orientation::Vertical) ? 1.0 : ScrollBarButtonArrowScalePressed,
-        .mTranslateX = (orientation == Orientation::Horizontal) ? 0 : 0.5f,
+        .mScaleX = ScrollBarButtonArrowScalePressed,
+        .mScaleY = ScrollBarButtonArrowScalePressed,
         .mTranslateY = (orientation == Orientation::Vertical) ? 0 : 1.0f,
       }},
     },
@@ -187,7 +185,6 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   const bool hovered = (state & StateFlags::Hovered) == StateFlags::Hovered;
 
   const Style smallChangeStyles {
-    .mLeft = (mOrientation == Orientation::Horizontal) ? 0 : 3.0f,
     .mOpacity = {
       (hovered ? 1.0f : 0.0f),
       (hovered ? ExpandAnimation : ContractAnimation),
