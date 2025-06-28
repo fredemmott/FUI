@@ -13,9 +13,11 @@ ScrollBarThumb::~ScrollBarThumb() = default;
 
 Widget::EventHandlerResult ScrollBarThumb::OnMouseButtonPress(
   const MouseEvent& e) {
-  if (!e.IsValid()) {
+  if (this->IsDisabled() || !e.IsValid()) {
     return EventHandlerResult::Default;
   }
+  (void)Widget::OnMouseButtonPress(e);
+
   mDragStart = e.mWindowPoint;
   this->StartMouseCapture();
   return EventHandlerResult::StopPropagation;
@@ -40,10 +42,12 @@ ScrollBarThumb::EventHandlerResult ScrollBarThumb::OnMouseMove(
 }
 
 Widget::EventHandlerResult ScrollBarThumb::OnMouseButtonRelease(
-  const MouseEvent&) {
-  if (!mDragStart.has_value()) {
+  const MouseEvent& e) {
+  if (this->IsDisabled() || !mDragStart.has_value()) {
     return EventHandlerResult::Default;
   }
+  (void)Widget::OnMouseButtonRelease(e);
+
   mDragStart = std::nullopt;
   this->EndMouseCapture();
   return EventHandlerResult::StopPropagation;

@@ -55,9 +55,11 @@ void ScrollBarButton::Tick() {
 
 Widget::EventHandlerResult ScrollBarButton::OnMouseButtonPress(
   const MouseEvent& e) {
-  if (!e.IsValid()) {
+  if (this->IsDisabled() || !e.IsValid()) {
     return EventHandlerResult::Default;
   }
+  (void)Widget::OnMouseButtonPress(e);
+
   this->StartMouseCapture();
   if (mPressCallback) {
     mPressCallback(e.GetPosition());
@@ -71,10 +73,11 @@ Widget::EventHandlerResult ScrollBarButton::OnMouseButtonPress(
 }
 
 Widget::EventHandlerResult ScrollBarButton::OnMouseButtonRelease(
-  const MouseEvent&) {
-  if (!mNextTick) {
+  const MouseEvent& e) {
+  if (this->IsDisabled() || !mNextTick) {
     return EventHandlerResult::Default;
   }
+  (void)Widget::OnMouseButtonRelease(e);
 
   mNextTick = std::nullopt;
   this->EndMouseCapture();
