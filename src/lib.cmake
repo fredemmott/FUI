@@ -95,6 +95,7 @@ target_link_libraries(
   fredemmott-gui
   PUBLIC
   fredemmott-gui-config
+  winui3-themes
   # vpckg
   yoga::yogacore
   # system
