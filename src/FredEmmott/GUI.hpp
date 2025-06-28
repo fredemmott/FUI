@@ -21,6 +21,10 @@
 #include <FredEmmott/GUI/Window.hpp>
 #include <string_view>
 
+#if __has_include(<FredEmmott/GUI/Windows/Win32Window.hpp>)
+#include <FredEmmott/GUI/Windows/Win32Window.hpp>
+#endif
+
 namespace FredEmmott::GUI {
 
 /** Human-readable description for debugging.
