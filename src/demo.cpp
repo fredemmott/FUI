@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 #include <FredEmmott/GUI.hpp>
+#include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #include <print>
-
-#include "FredEmmott/GUI/Windows/Win32Window.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -13,6 +13,10 @@ static void AppTick() {
   constexpr bool UseScrollView = true;
   if constexpr (UseScrollView) {
     fuii::BeginVScrollView();
+    fuii::Style({
+      .mBackgroundColor
+      = fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush,
+    });
   }
 
   fuii::BeginVStackPanel();
