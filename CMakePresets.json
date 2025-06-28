@@ -56,7 +56,7 @@
     },
     {
       "name": "Direct2D - Release",
-      "inherits": "clang-cl",
+      "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "ENABLE_IMPLICIT_BACKENDS": "OFF",
@@ -74,7 +74,7 @@
     },
     {
       "name": "Skia - Release",
-      "inherits": "clang-cl",
+      "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "ENABLE_IMPLICIT_BACKENDS": "OFF",
