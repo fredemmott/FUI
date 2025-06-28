@@ -97,8 +97,6 @@ target_link_libraries(
   fredemmott-gui-config
   # vpckg
   yoga::yogacore
-  PRIVATE
-  winui3-themes
   # system
   Dcomp
   Dwmapi
