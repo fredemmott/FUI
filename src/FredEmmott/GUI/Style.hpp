@@ -21,6 +21,7 @@ namespace FredEmmott::GUI {
 struct Style {
   using Selector = std::variant<StyleClass, const Widgets::Widget*>;
 
+  StyleProperty<YGAlign> mAlignContent;
   StyleProperty<YGAlign> mAlignItems;
   StyleProperty<YGAlign> mAlignSelf;
   StyleProperty<Brush> mBackgroundColor;
@@ -82,6 +83,7 @@ struct Style {
 }// namespace FredEmmott::GUI
 
 #define FUI_STYLE_PROPERTIES(X) \
+  X(AlignContent) \
   X(AlignItems) \
   X(AlignSelf) \
   X(BackgroundColor) \

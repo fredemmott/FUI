@@ -138,7 +138,7 @@ void Widget::ComputeStyles(const Style& inherited) {
 
   setYoga(&Style::mPosition, &YGNodeStyleSetPositionType);
 
-  setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignSelf);
+  setYoga(&Style::mAlignContent, &YGNodeStyleSetAlignContent);
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignItems);
   setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
   setYoga(&Style::mBorderWidth, &YGNodeStyleSetBorder, YGEdgeAll);
