@@ -102,7 +102,7 @@ target_link_libraries(
   Dcomp
   Dwmapi
   User32
-  WindowsApp
+  runtimeobject
 )
 target_compile_definitions(
   fredemmott-gui

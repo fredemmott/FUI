@@ -23,13 +23,13 @@
   X(SystemColorDisabledTextColor, COLOR_GRAYTEXT)
 
 #define FUI_WINRT_UI_ACCENT_COLORS(X) \
-  X(SystemAccentColorDark3, UIColorType::AccentDark3) \
-  X(SystemAccentColorDark2, UIColorType::AccentDark2) \
-  X(SystemAccentColorDark1, UIColorType::AccentDark1) \
-  X(SystemAccentColor, UIColorType::Accent) \
-  X(SystemAccentColorLight1, UIColorType::AccentLight1) \
-  X(SystemAccentColorLight2, UIColorType::AccentLight2) \
-  X(SystemAccentColorLight3, UIColorType::AccentLight3)
+  X(SystemAccentColorDark3, UIColorType_AccentDark3) \
+  X(SystemAccentColorDark2, UIColorType_AccentDark2) \
+  X(SystemAccentColorDark1, UIColorType_AccentDark1) \
+  X(SystemAccentColor, UIColorType_Accent) \
+  X(SystemAccentColorLight1, UIColorType_AccentLight1) \
+  X(SystemAccentColorLight2, UIColorType_AccentLight2) \
+  X(SystemAccentColorLight3, UIColorType_AccentLight3)
 
 namespace FredEmmott::GUI {
 class Color;

@@ -4,16 +4,20 @@
 #include "SystemTheme.hpp"
 
 #include <Windows.h>
-#include <winrt/windows.ui.viewmanagement.h>
+#include <wil/com.h>
+#include <wil/winrt.h>
+#include <windows.ui.viewmanagement.h>
 #include <winuser.h>
 
 #include "Color.hpp"
+#include "detail/win32_detail.hpp"
 
 #define FUI_SYSTEM_COLOR_USAGES(X) \
   FUI_WINAPI_SYS_COLORS(X) \
   FUI_WINRT_UI_ACCENT_COLORS(X)
 
-using namespace winrt::Windows::UI::ViewManagement;
+using namespace FredEmmott::GUI::win32_detail;
+using namespace ABI::Windows::UI::ViewManagement;
 
 namespace FredEmmott::GUI::SystemTheme {
 struct Store {
@@ -22,27 +26,35 @@ struct Store {
   void Populate(Color::Constant*, UIColorType) const;
   void Populate(Color::Constant*, int) const;
 
+  static Store& Get() {
+    static Store ret;
+    return ret;
+  }
+
 #define DECLARE_USAGE_VARIABLE(X, IMPL) Color::Constant m##X {};
   FUI_SYSTEM_COLOR_USAGES(DECLARE_USAGE_VARIABLE)
 #undef DECLARE_USAGE_VARIABLE
 
  private:
-  UISettings mUISettings;
+  wil::com_ptr<IUISettings3> mUISettings;
 };
 
 Store::Store() {
+  mUISettings = wil::ActivateInstance<IUISettings3>(
+    L"Windows.UI.ViewManagement.UISettings");
   this->Populate();
 }
 
 void Store::Populate() {
-  using enum UIColorType;
 #define POPULATE_COLOR(X, IMPL) this->Populate(&m##X, IMPL);
   FUI_SYSTEM_COLOR_USAGES(POPULATE_COLOR)
 #undef POPULATE_COLOR
 }
 
 void Store::Populate(Color::Constant* p, const UIColorType type) const {
-  const auto [a, r, g, b] = mUISettings.GetColorValue(type);
+  ABI::Windows::UI::Color ret;
+  CheckHResult(mUISettings->GetColorValue(type, &ret));
+  const auto [a, r, g, b] = ret;
   *p = Color::Constant::FromARGB32(a, r, g, b);
 }
 
@@ -52,13 +64,11 @@ void Store::Populate(Color::Constant* p, int sysColor) const {
     0xff, GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
-static Store gStore;
-
 Color Resolve(const ColorType usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X, IMPL) \
   case ColorType::X: \
-    return gStore.m##X;
+    return Store::Get().m##X;
     FUI_SYSTEM_COLOR_USAGES(USAGE_CASE);
 #undef USAGE_CASE
   }
@@ -66,8 +76,8 @@ Color Resolve(const ColorType usage) noexcept {
 }
 
 void Refresh() {
-  gStore = {};
-  gStore.Populate();
+  Store::Get() = {};
+  Store::Get().Populate();
 }
 
 }// namespace FredEmmott::GUI::SystemTheme
