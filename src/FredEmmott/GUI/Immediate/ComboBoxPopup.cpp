@@ -51,11 +51,11 @@ bool BeginComboBoxPopup(ID id) {
     .mMarginLeft = 0.0,
     .mMarginRight = 0,
     .mMarginTop = -0.5,
+    .mMinWidth = width,
     .mPaddingBottom = ComboBoxDropdownContentMarginBottom,
     .mPaddingLeft = ComboBoxDropdownContentMarginLeft,
     .mPaddingRight = ComboBoxDropdownContentMarginRight,
     .mPaddingTop = ComboBoxDropdownContentMarginTop,
-    .mWidth = width,
   });
   return true;
 }

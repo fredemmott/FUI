@@ -74,6 +74,7 @@ static void AppTick() {
     "foo",
     "bar",
     "baz",
+    "I am a much much much longer entry",
   };
   if (fuii::ComboBox(&selectedIndex, comboItems)) {
     std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
