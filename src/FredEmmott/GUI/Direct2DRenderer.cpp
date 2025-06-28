@@ -65,17 +65,21 @@ void Direct2DRenderer::PopClipRect() {
 }
 
 void Direct2DRenderer::Scale(float x, float y) {
-  D2D1_MATRIX_3X2_F t1 {};
-  mDeviceContext->GetTransform(&t1);
-  const auto t2 = t1 * D2D1::Matrix3x2F::Scale(x, y);
-  mDeviceContext->SetTransform(t2);
+  if (
+    std::abs(x - 1.0f) <= std::numeric_limits<float>::epsilon()
+    && std::abs(y - 1.0f) <= std::numeric_limits<float>::epsilon()) {
+    return;
+  }
+  this->PostTransform(D2D1::Matrix3x2F::Scale(x, y));
 }
 
 void Direct2DRenderer::Translate(const Point& point) {
-  D2D1_MATRIX_3X2_F t1 {};
-  mDeviceContext->GetTransform(&t1);
-  const auto t2 = D2D1::Matrix3x2F::Translation(point.mX, point.mY);
-  mDeviceContext->SetTransform(t1 * t2);
+  if (
+    std::max(point.mX, point.mY) < std::numeric_limits<float>::epsilon()
+    && std::min(point.mX, point.mY) > -std::numeric_limits<float>::epsilon()) {
+    return;
+  }
+  this->PostTransform(D2D1::Matrix3x2F::Translation(point.mX, point.mY));
 }
 
 void Direct2DRenderer::FillRect(const Brush& brush, const Rect& rect) {
@@ -136,6 +140,12 @@ void Direct2DRenderer::DrawText(
     brush.GetDirect2DBrush(mDeviceContext, brushRect).get(),
     D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
     DWRITE_MEASURING_MODE_NATURAL);
+}
+void Direct2DRenderer::PostTransform(const D2D1_MATRIX_3X2_F& transform) {
+  D2D1_MATRIX_3X2_F combined {};
+  mDeviceContext->GetTransform(&combined);
+  combined = transform * combined;
+  mDeviceContext->SetTransform(combined);
 }
 
 void Direct2DRenderer::Clear(const Color& color) {

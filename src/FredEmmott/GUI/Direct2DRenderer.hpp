@@ -60,6 +60,8 @@ class Direct2DRenderer final : public Renderer {
   struct NativeLayer : std::monostate {};
   using StateStackFrame = std::variant<NativeLayer, D2D1_MATRIX_3X2_F>;
   std::stack<StateStackFrame> mStateStack;
+
+  void PostTransform(const D2D1_MATRIX_3X2_F&);
 };
 
 constexpr Direct2DRenderer* direct2d_renderer_cast(
