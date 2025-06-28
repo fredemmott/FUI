@@ -27,6 +27,7 @@ add_executable(
   Resource.hpp
   SortResources.cpp SortResources.hpp
 )
+install(TARGETS xaml-to-fui-statictheme)
 
 target_link_libraries(
   xaml-to-fui-statictheme
@@ -76,7 +77,7 @@ function(add_winui3_theme_file COMPONENT)
   cmake_path(GET arg_DETAIL_HPP_OUTPUT PARENT_PATH DETAIL_HPP_OUTPUT_DIRECTORY)
   file(MAKE_DIRECTORY "${DETAIL_HPP_OUTPUT_DIRECTORY}")
 
-  set(TARGET "winui3-themes-${COMPONENT}")
+  set(TARGET "fredemmott-gui-StaticTheme-${COMPONENT}")
 
   add_custom_command(
     OUTPUT
@@ -102,6 +103,14 @@ function(add_winui3_theme_file COMPONENT)
     "${TARGET}"
     STATIC
     "${arg_CPP_OUTPUT}"
+  )
+  target_sources(
+    "${TARGET}"
+    PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS
+    "${OUTPUT_BASE_PATH}"
+    FILES
     "${arg_HPP_OUTPUT}"
     "${arg_DETAIL_HPP_OUTPUT}"
   )
@@ -111,22 +120,25 @@ function(add_winui3_theme_file COMPONENT)
     fredemmott-gui-config
     WIL::WIL
   )
-  if(ENABLE_SKIA)
+  if (ENABLE_SKIA)
     target_link_libraries("${TARGET}" PRIVATE skia)
-  endif()
+  endif ()
   target_include_directories(
     "${TARGET}"
     PUBLIC
-    "${HPP_OUTPUT_DIRECTORY}"
-    "${arg_PUBLIC_INCLUDE_DIRECTORIES}"
+    "$<BUILD_INTERFACE:${HPP_OUTPUT_DIRECTORY}>"
+    "$<BUILD_INTERFACE:${arg_PUBLIC_INCLUDE_DIRECTORIES}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
   )
   target_link_libraries(winui3-themes INTERFACE "${TARGET}")
 
   if (NOT PARENT_THEME STREQUAL "NONE")
-    target_link_libraries("${TARGET}" PUBLIC "winui3-themes-${PARENT_THEME}")
+    target_link_libraries("${TARGET}" PUBLIC "fredemmott-gui-StaticTheme-${PARENT_THEME}")
   endif ()
+
+  install(TARGETS "${TARGET}" EXPORT exports FILE_SET HEADERS)
 endfunction()
 
 function(add_winui3_component_theme COMPONENT)
@@ -139,7 +151,8 @@ function(add_winui3_component_theme COMPONENT)
     CPP_OUTPUT "${PUBLIC_CPP}"
     HPP_OUTPUT "${PUBLIC_HPP}"
     DETAIL_HPP_OUTPUT "${DETAIL_HPP}"
-    PUBLIC_INCLUDE_DIRECTORIES "${OUTPUT_BASE_PATH}"
+    PUBLIC_INCLUDE_DIRECTORIES
+    "${OUTPUT_BASE_PATH}"
     ${ARGN}
   )
 endfunction()
@@ -163,3 +176,4 @@ add_winui3_component_theme(ScrollBar)
 add_winui3_component_theme(ScrollView)
 add_winui3_component_theme(ToggleSwitch)
 
+install(TARGETS winui3-themes EXPORT exports)

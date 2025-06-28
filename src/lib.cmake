@@ -23,6 +23,7 @@ add_library(
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
+  FredEmmott/GUI/Immediate/ScrollView.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
   FredEmmott/GUI/Immediate/Style.hpp
   FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
@@ -44,7 +45,7 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
-  FredEmmott/GUI/StyleProperty.hpp>
+  FredEmmott/GUI/StyleProperty.hpp
   FredEmmott/GUI/StyleTransition.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
@@ -53,7 +54,7 @@ add_library(
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
-  FredEmmott/GUI/Widgets/PopupWIndow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp
+  FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp
   FredEmmott/GUI/Widgets/ScrollBar.cpp FredEmmott/GUI/Widgets/ScrollBar.hpp
   FredEmmott/GUI/Widgets/ScrollBarButton.cpp FredEmmott/GUI/Widgets/ScrollBarButton.hpp
   FredEmmott/GUI/Widgets/ScrollBarThumb.cpp FredEmmott/GUI/Widgets/ScrollBarThumb.hpp
@@ -69,6 +70,7 @@ add_library(
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
   FredEmmott/GUI/Windows/Win32Window.cpp FredEmmott/GUI/Windows/Win32Window.hpp
   FredEmmott/GUI/Window.cpp FredEmmott/GUI/Window.hpp
+  FredEmmott/GUI/assert.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
@@ -101,6 +103,7 @@ target_link_libraries(
   Dcomp
   Dwmapi
   User32
+  WindowsApp
 )
 target_compile_definitions(
   fredemmott-gui
@@ -113,11 +116,17 @@ target_compile_definitions(
 target_include_directories(
   fredemmott-gui
   PUBLIC
-  "${CMAKE_CURRENT_BINARY_DIR}/include"
-  "${CMAKE_CURRENT_SOURCE_DIR}"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+target_compile_features(
+  fredemmott-gui
+  PUBLIC
+  cxx_std_23
 )
 
-if(ENABLE_SKIA)
+if (ENABLE_SKIA)
   include(skia)
   target_sources(
     fredemmott-gui
@@ -137,9 +146,9 @@ if(ENABLE_SKIA)
     unofficial::skia::modules::skunicode_icu
     unofficial::skia::modules::skparagraph
   )
-endif()
+endif ()
 
-if(ENABLE_DIRECT2D)
+if (ENABLE_DIRECT2D)
   target_sources(
     fredemmott-gui
     PRIVATE
@@ -160,4 +169,32 @@ if(ENABLE_DIRECT2D)
     Dwrite
     D3d11
   )
-endif()
+endif ()
+
+get_target_property(HEADERS fredemmott-gui SOURCES)
+list(FILTER HEADERS INCLUDE REGEX "\\.hpp$")
+target_sources(fredemmott-gui PUBLIC FILE_SET HEADERS FILES "${HEADERS}")
+install(
+  TARGETS fredemmott-gui
+  EXPORT exports
+  ARCHIVE FILE_SET HEADERS
+)
+configure_file(
+  "exports-config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/exports-config.cmake"
+  @ONLY
+  NEWLINE_STYLE LF
+)
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/exports-config.cmake"
+  RENAME "fredemmott-gui-config.cmake"
+  DESTINATION lib/cmake/fredemmott-gui
+)
+
+install(
+  EXPORT
+  exports
+  NAMESPACE fredemmott-gui::
+  FILE fredemmott-gui-targets.cmake
+  DESTINATION lib/cmake/fredemmott-gui
+)

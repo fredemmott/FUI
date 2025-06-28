@@ -1,6 +1,6 @@
 {
   "name": "fredemmott-gui",
-  "version": "0.1.0",
+  "version-string": "main",
   "builtin-baseline": "ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0",
   "supports": "windows & static",
   "dependencies": [
@@ -10,7 +10,8 @@
     {
       "name": "yoga",
       "version>=": "3.2.1"
-    }
+    },
+    "vcpkg-cmake"
   ],
   "features": {
     "skia": {

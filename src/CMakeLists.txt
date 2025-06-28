@@ -1,6 +1,6 @@
-if(ENABLE_SKIA)
+if (ENABLE_SKIA)
   include(skia)
-endif()
+endif ()
 
 find_package(wil CONFIG REQUIRED)
 
@@ -16,7 +16,18 @@ block()
   )
 endblock()
 add_library(fredemmott-gui-config INTERFACE)
-target_include_directories(fredemmott-gui-config INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/include")
+target_include_directories(
+  fredemmott-gui-config
+  INTERFACE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+install(TARGETS fredemmott-gui-config EXPORT exports)
+install(
+  FILES
+  "${CONFIG_HPP}"
+  DESTINATION "include/FredEmmott/GUI"
+)
 
 add_subdirectory(xaml-to-fui-statictheme)
 
@@ -25,4 +36,4 @@ include(lib.cmake)
 option(BUILD_DEMO "Build the demo app" ${PROJECT_IS_TOP_LEVEL})
 if (BUILD_DEMO)
   include(demo.cmake)
-endif()
+endif ()
