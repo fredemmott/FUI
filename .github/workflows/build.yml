@@ -40,8 +40,8 @@ jobs:
       - name: Configure
         shell: pwsh
         run: |
-          mkdir "${{env.VCPKG_DEFAULT_BINARY_CACHE}}"
-          mkdir build
+          New-Item -Type directory -Force "${{env.VCPKG_DEFAULT_BINARY_CACHE}}"
+          New-Item -Type directory build
           cd build
           cmake .. --preset "${{matrix.preset}}"
       - name: Build
