@@ -16,7 +16,7 @@ target_compile_definitions(
 get_target_property(SKIA_INCLUDE_DIRECTORIES unofficial::skia::skia INTERFACE_INCLUDE_DIRECTORIES)
 set(HAVE_SKIA_CORE_CANVAS_H OFF)
 foreach (PATH IN LISTS SKIA_INCLUDE_DIRECTORIES)
-  if (EXISTS "$PATH}/skia/core/canvas.h")
+  if (EXISTS "${PATH}/skia/core/canvas.h")
     set(HAVE_SKIA_CORE_CANVAS_H ON)
     break()
   endif ()
