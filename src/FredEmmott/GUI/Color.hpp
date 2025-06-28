@@ -97,7 +97,8 @@ class Color final {
       const float mult) const noexcept {
       Constant ret = *this;
 #ifdef FUI_ENABLE_SKIA
-      ret.mSkia = SkColorSetA(mSkia, SkColorGetA(mSkia) * mult);
+      ret.mSkia = SkColorSetA(
+        mSkia, static_cast<U8CPU>(std::round(SkColorGetA(mSkia) * mult)));
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
       ret.mD2D.a *= std::clamp(mult, 0.0f, 1.0f);
@@ -126,7 +127,6 @@ class Color final {
 #else
       static_assert(false, "No backends enabled for Colors")
 #endif
-      std::unreachable();
     }
 
     template <native_color T>
@@ -154,10 +154,7 @@ class Color final {
   };
   Color() = delete;
   constexpr Color(const Constant& color) : mVariant(color) {}
-  constexpr Color(
-    StaticThemeColor color,
-    const std::source_location& loc = std::source_location::current())
-    : mVariant(color) {
+  constexpr Color(StaticThemeColor color) : mVariant(color) {
     if (!color) [[unlikely]] {
       throw std::logic_error("Static resource colors must be a valid pointer");
     }

@@ -71,7 +71,7 @@ Widget::EventHandlerResult ScrollBarButton::OnMouseButtonPress(
 }
 
 Widget::EventHandlerResult ScrollBarButton::OnMouseButtonRelease(
-  const MouseEvent& e) {
+  const MouseEvent&) {
   if (!mNextTick) {
     return EventHandlerResult::Default;
   }

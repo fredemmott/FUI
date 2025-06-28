@@ -61,13 +61,13 @@ Style ToggleSwitch::GetBuiltInStyles() const {
 }
 Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
   const Style& style,
-  StateFlags state) {
+  StateFlags) {
   using enum ComputedStyleFlags;
   return Widget::OnComputedStyleChange(style, StateFlags::Animating)
     | InheritableActiveState | InheritableHoverState;
 }
 
-Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent& event) {
+Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent&) {
   this->SetIsOn(!this->IsOn());
   // This is used to detect user-triggered changes, not any change
   mChanged.Set();

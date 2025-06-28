@@ -36,13 +36,11 @@ inline void assert_fail(
 #ifdef _MSVC_TRADITIONAL
 #define FUI_ALWAYS_ASSERT(condition, ...) \
   if (!(condition)) [[unlikely]] { \
-    const auto location = std::source_location::current(); \
     assert_fail(std::source_location::current(), #condition, ##__VA_ARGS__); \
   }
 #else
 #define FUI_ALWAYS_ASSERT(condition, ...) \
   if (!(condition)) [[unlikely]] { \
-    const auto location = std::source_location::current(); \
     assert_fail( \
       std::source_location::current(), #condition __VA_OPT__(, ) __VA_ARGS__); \
   }

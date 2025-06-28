@@ -28,7 +28,6 @@ class Brush final {
 
  public:
   Brush() = delete;
-  constexpr Brush(const Brush&) = default;
   constexpr Brush(const std::convertible_to<Color> auto& color)
     : mBrush(SolidColorBrush {Color {color}}) {}
 

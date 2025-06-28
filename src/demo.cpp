@@ -69,7 +69,6 @@ static void AppTick() {
     std::println(stderr, "Toggled to {}", isOn);
   }
 
-  static bool comboBoxVisible = false;
   static int selectedIndex = 1;
   constexpr auto comboItems = std::array {
     "foo",
@@ -112,8 +111,8 @@ static void AppTick() {
 
 int WINAPI wWinMain(
   HINSTANCE hInstance,
-  HINSTANCE hPrevInstance,
-  LPWSTR lpCmdLine,
+  [[maybe_unused]] HINSTANCE hPrevInstance,
+  [[maybe_unused]] LPWSTR lpCmdLine,
   int nCmdShow) {
   CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);

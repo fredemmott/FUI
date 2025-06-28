@@ -170,7 +170,7 @@ void Widget::ComputeStyles(const Style& inherited) {
 
 Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
   const Style&,
-  StateFlags state) {
+  StateFlags) {
   auto ret = ComputedStyleFlags::Empty;
   if ((mInheritedStateFlags & StateFlags::Hovered) != StateFlags::Default) {
     ret |= ComputedStyleFlags::InheritableHoverState;

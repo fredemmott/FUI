@@ -17,7 +17,7 @@ YGSize TextBlock::MeasureWithDirectWrite(
   float width,
   YGMeasureMode widthMode,
   float height,
-  YGMeasureMode heightMode) {
+  [[maybe_unused]] YGMeasureMode heightMode) {
   auto layout = mDirectWriteTextLayout.get();
   if (widthMode == YGMeasureModeUndefined) {
     FLOAT textWidth = 0;

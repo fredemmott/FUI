@@ -160,12 +160,11 @@ class Widget {
     const Style& style,
     StateFlags state);
 
-  virtual void PaintOwnContent(Renderer*, const Rect&, const Style& style)
-    const {}
+  virtual void PaintOwnContent(Renderer*, const Rect&, const Style&) const {}
   virtual void PaintChildren(Renderer* canvas) const;
 
   [[nodiscard]]
-  virtual EventHandlerResult OnClick(const MouseEvent& event) {
+  virtual EventHandlerResult OnClick(const MouseEvent&) {
     return EventHandlerResult::Default;
   }
 

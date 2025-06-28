@@ -64,7 +64,7 @@ class Win32Direct3D12GaneshWindow final : public Win32Window {
   void InitializeSkia();
 
   std::unique_ptr<BasicFramePainter> GetFramePainter(
-    uint8_t mFrameIndex) override;
+    uint8_t frameIndex) override;
   class FramePainter;
   friend class FramePainter;
 

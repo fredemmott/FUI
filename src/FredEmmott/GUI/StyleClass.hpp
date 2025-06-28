@@ -10,7 +10,7 @@
 namespace FredEmmott::GUI {
 
 class StyleClass {
-  friend class std::hash<StyleClass>;
+  friend struct std::hash<StyleClass>;
 
  public:
   StyleClass() = delete;

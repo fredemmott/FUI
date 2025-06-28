@@ -24,8 +24,8 @@ namespace FredEmmott::GUI::Widgets {
 YGSize TextBlock::MeasureWithSkia(
   float width,
   YGMeasureMode widthMode,
-  float height,
-  YGMeasureMode heightMode) {
+  [[maybe_unused]] float height,
+  [[maybe_unused]] YGMeasureMode heightMode) {
   if (widthMode == YGMeasureModeUndefined) {
     return {
       mSkiaParagraph->getMinIntrinsicWidth(),

@@ -328,9 +328,9 @@ std::unique_ptr<Win32Window> Win32Direct3D12GaneshWindow::CreatePopup(
 }
 
 std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>
-Win32Direct3D12GaneshWindow::GetFramePainter(uint8_t mFrameIndex) {
+Win32Direct3D12GaneshWindow::GetFramePainter(uint8_t frameIndex) {
   return std::unique_ptr<BasicFramePainter> {
-    new FramePainter(this, mFrameIndex)};
+    new FramePainter(this, frameIndex)};
 }
 
 void Win32Direct3D12GaneshWindow::BeforePaintFrame(uint8_t frameIndex) {

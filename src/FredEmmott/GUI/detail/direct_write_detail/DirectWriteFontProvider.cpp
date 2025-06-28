@@ -81,13 +81,9 @@ Font::Metrics DirectWriteFontProvider::GetFontMetrics(const Font& font) const {
   const float fontSize = props.mTextFormat->GetFontSize();
   const float designUnitsToPixels = (fontSize / fontMetrics.designUnitsPerEm);
 
-  // Calculate font metrics in pixels
   const float ascent = fontMetrics.ascent * designUnitsToPixels;
   const float descent = fontMetrics.descent * designUnitsToPixels;
   const float lineGap = fontMetrics.lineGap * designUnitsToPixels;
-
-  // Calculate line height
-  const float lineHeight = ascent + descent + lineGap;
 
   return Font::Metrics {
     .mSize = props.mSize,

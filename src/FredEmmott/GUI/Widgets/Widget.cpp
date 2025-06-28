@@ -356,7 +356,7 @@ Widget::EventHandlerResult Widget::OnMouseHorizontalWheel(const MouseEvent&) {
   return EventHandlerResult::Default;
 }
 
-Widget::EventHandlerResult Widget::OnMouseButtonPress(const MouseEvent& event) {
+Widget::EventHandlerResult Widget::OnMouseButtonPress(const MouseEvent&) {
   if (this->IsDisabled()) {
     return EventHandlerResult::Default;
   }

@@ -49,7 +49,7 @@ void Label::PaintOwnContent(
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(
   const Style& style,
-  StateFlags state) {
+  StateFlags) {
   if (mFont != style.mFont) {
     mFont = style.mFont.value();
     YGNodeMarkDirty(this->GetLayoutNode());
@@ -60,10 +60,10 @@ Widget::ComputedStyleFlags Label::OnComputedStyleChange(
 
 YGSize Label::Measure(
   YGNodeConstRef node,
-  float width,
-  YGMeasureMode widthMode,
-  float height,
-  YGMeasureMode heightMode) {
+  [[maybe_unused]] float width,
+  [[maybe_unused]] YGMeasureMode widthMode,
+  [[maybe_unused]] float height,
+  [[maybe_unused]] YGMeasureMode heightMode) {
   const auto self = static_cast<Label*>(FromYogaNode(node));
 
   const auto& font = self->mFont;

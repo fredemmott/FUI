@@ -2,26 +2,17 @@ cmake_minimum_required(VERSION 3.25)
 
 option(ENABLE_IMPLICIT_BACKENDS "Automatically enable available backends" ON)
 option(ENABLE_SKIA "Build with support for Skia" ${ENABLE_IMPLICIT_BACKENDS})
-if(ENABLE_SKIA)
+if (ENABLE_SKIA)
   list(APPEND VCPKG_MANIFEST_FEATURES "skia")
-endif()
+endif ()
 option(ENABLE_DIRECT2D "Build with support for Direct2D+DirectWrite+D3D11" ${ENABLE_IMPLICIT_BACKENDS})
 if (ENABLE_DIRECT2D)
   list(APPEND VCPKG_MANIFEST_FEATURES "direct2d")
-endif()
+endif ()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-add_compile_options(
-  # Standard C++ exception behavior
-  "/EHsc"
-  # Include content and marker in error messages
-  "/diagnostics:caret"
-  # Source and execution charset
-  "/utf-8"
-)
 
 if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
   # https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md
@@ -44,6 +35,45 @@ set(
 )
 
 project(FUI VERSION 0.0.1 LANGUAGES CXX)
+
+if (MSVC)
+  add_compile_options(
+    # Standard C++ exception behavior
+    "/EHsc"
+    # Include content and marker in error messages
+    "/diagnostics:caret"
+    # Source and execution charset
+    "/utf-8"
+  )
+endif ()
+
+if (${PROJECT_IS_TOP_LEVEL})
+  if (MSVC)
+    add_compile_options(
+      # Lots of warnings
+      "/W4"
+      # Error on warning
+      "/WX"
+    )
+  endif ()
+
+  # clang-cl
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(
+      "-Wno-missing-field-initializers"
+      "-Wno-missing-designated-field-initializers"
+      "-Wno-sign-compare"
+    )
+  else ()
+    add_compile_options(
+      "/wd4244" # using integer literals for floats
+      "/wd4267" # converting from larger to smaller-sized integers
+      "/wd4305" # truncation from 'double' to 'float'
+      "/wd4389" # ==/!= between signed and unsigned
+      "/wd4702" # unreachable code. Usually complains about std::unreachable() after ifdefs
+    )
+  endif ()
+endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 

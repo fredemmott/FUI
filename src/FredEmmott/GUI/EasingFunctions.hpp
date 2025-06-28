@@ -50,7 +50,7 @@ struct CubicBezier {
       low = mSamples->back().mT;
     } else {
       uint8_t lowIdx = 0;
-      uint8_t highIdx = std::size(*mSamples) - 1;
+      uint8_t highIdx = static_cast<uint8_t>(std::size(*mSamples) - 1);
       while (lowIdx < highIdx) {
         uint8_t mid = (highIdx + lowIdx) / 2;
         const auto& sample = mSamples->at(mid);

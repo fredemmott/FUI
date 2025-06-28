@@ -60,9 +60,9 @@ struct Widget::StyleTransitions {
 
   template <auto TStyleProperty, auto TStateProperty>
   void Apply(
-    std::chrono::steady_clock::time_point now,
-    const Style& old,
-    Style* newStyle)
+    [[maybe_unused]] std::chrono::steady_clock::time_point now,
+    [[maybe_unused]] const Style& old,
+    [[maybe_unused]] Style* newStyle)
     requires(!supports_transitions_v<TStyleProperty>)
   {
   }

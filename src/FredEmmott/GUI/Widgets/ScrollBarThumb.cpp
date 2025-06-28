@@ -40,7 +40,7 @@ ScrollBarThumb::EventHandlerResult ScrollBarThumb::OnMouseMove(
 }
 
 Widget::EventHandlerResult ScrollBarThumb::OnMouseButtonRelease(
-  const MouseEvent& e) {
+  const MouseEvent&) {
   if (!mDragStart.has_value()) {
     return EventHandlerResult::Default;
   }
