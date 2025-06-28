@@ -470,15 +470,19 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       };
 
       const auto root = GetRoot();
-      if (root->CanFit(
-            std::floor(clientSize.cx / mDPIScale),
-            std::floor(clientSize.cy / mDPIScale))) {
-        mPendingResize.Set();
-        break;
-      }
       const auto height = std::ceil(
         root->GetHeightForWidth(std::floor(clientSize.cx / mDPIScale))
         * mDPIScale);
+
+      if (root->CanFit(
+            std::floor(clientSize.cx / mDPIScale),
+            std::floor(clientSize.cy / mDPIScale))) {
+        if (const auto dy = clientSize.cy - height; dy > 0) {
+          rect.bottom -= dy;
+        }
+        mPendingResize.Set();
+        break;
+      }
       if (rect.top == mNCRect.top) {
         rect.bottom = rect.top + padding.top + height + padding.bottom;
       } else {
