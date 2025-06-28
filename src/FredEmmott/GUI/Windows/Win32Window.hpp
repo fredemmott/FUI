@@ -130,6 +130,7 @@ class Win32Window : public Window {
   SIZE CalculateInitialWindowSize() const;
   void TrackMouseEvent();
   void SetDPI(WORD newDPI);
+  [[nodiscard]] LONG LimitToMonitorHeight(LONG ncHeight) const;
 
   LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

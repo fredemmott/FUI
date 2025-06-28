@@ -625,6 +625,14 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
+LONG Win32Window::LimitToMonitorHeight(LONG ncHeight) const {
+  const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
+  MONITORINFO monitorInfo {sizeof(monitorInfo)};
+  GetMonitorInfoW(monitor, &monitorInfo);
+
+  return std::min(ncHeight, monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
+}
+
 SIZE Win32Window::CalculateInitialWindowSize() const {
   const auto contentSizeInDIPs = GetRoot()->GetInitialSize();
 
@@ -642,7 +650,7 @@ SIZE Win32Window::CalculateInitialWindowSize() const {
 
   return {
     rect.right - rect.left,
-    rect.bottom - rect.top,
+    LimitToMonitorHeight(rect.bottom - rect.top),
   };
 }
 
