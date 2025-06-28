@@ -210,12 +210,18 @@ void Widget::Paint(Renderer* renderer) const {
       YGNodeLayoutGetHeight(yoga),
     }};
 
+  const auto scaleX = style.mScaleX.value_or_default();
   const auto scaleY = style.mScaleY.value_or_default();
   if (
-    scaleY + std::numeric_limits<float>::epsilon() < 1.0f
-    || scaleY > 1.0f + std::numeric_limits<float>::epsilon()) {
-    renderer->Scale(1.0f, scaleY);
-    renderer->Translate(0, (rect.GetHeight() * (1.0f - scaleY) / 2.0f));
+    std::min(scaleX, scaleY) + std::numeric_limits<float>::epsilon() < 1.0f
+    || std::max(scaleX, scaleY)
+      > 1.0f + std::numeric_limits<float>::epsilon()) {
+    const auto oldWidth = rect.GetWidth();
+    const auto newWidth = oldWidth * scaleX;
+    const auto oldHeight = rect.GetHeight();
+    const auto newHeight = oldHeight * scaleY;
+    renderer->Translate((oldWidth - newWidth) / 2, (oldHeight - newHeight) / 2);
+    renderer->Scale(scaleX, scaleY);
     rect.mSize = {rect.GetWidth(), rect.GetHeight()};
   }
 
