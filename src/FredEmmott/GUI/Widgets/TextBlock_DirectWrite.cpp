@@ -22,7 +22,7 @@ YGSize TextBlock::MeasureWithDirectWrite(
   if (widthMode == YGMeasureModeUndefined) {
     FLOAT textWidth = 0;
     CheckHResult(layout->DetermineMinWidth(&textWidth));
-    return {textWidth, std::numeric_limits<float>::infinity()};
+    return {textWidth, -mFont.GetMetrics().mAscent};
   }
 
   CheckHResult(layout->SetMaxWidth(width));

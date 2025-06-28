@@ -28,8 +28,7 @@ YGSize TextBlock::MeasureWithSkia(
   [[maybe_unused]] YGMeasureMode heightMode) {
   if (widthMode == YGMeasureModeUndefined) {
     return {
-      mSkiaParagraph->getMinIntrinsicWidth(),
-      std::numeric_limits<float>::infinity()};
+      mSkiaParagraph->getMinIntrinsicWidth(), -mFont.GetMetrics().mAscent};
   }
 
   mSkiaParagraph->layout(width);
