@@ -379,13 +379,20 @@ float ScrollBar::GetValue() const {
   return mValue;
 }
 
-void ScrollBar::SetValue(float value) {
+void ScrollBar::SetValue(const float value) {
   mValue = value;
+  if (mValueChangedCallback) {
+    mValueChangedCallback(value);
+  }
   this->UpdateLayout();
 }
 
 float ScrollBar::GetThumbSize() const {
   return mThumbSize;
+}
+
+void ScrollBar::OnValueChanged(ValueChangedCallback cb) {
+  mValueChangedCallback = std::move(cb);
 }
 
 void ScrollBar::SetThumbSize(float value) {

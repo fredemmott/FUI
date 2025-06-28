@@ -14,6 +14,8 @@ class ScrollBarThumb;
 
 class ScrollBar final : public Widget {
  public:
+  using ValueChangedCallback = std::function<void(float)>;
+
   ScrollBar(std::size_t id, Orientation);
   ~ScrollBar() override;
 
@@ -25,6 +27,7 @@ class ScrollBar final : public Widget {
   [[nodiscard]] float GetValue() const;
   void SetThumbSize(float value);
   [[nodiscard]] float GetThumbSize() const;
+  void OnValueChanged(ValueChangedCallback);
 
  protected:
   [[nodiscard]]
@@ -53,6 +56,8 @@ class ScrollBar final : public Widget {
   ScrollBarButton* mLargeDecrement {nullptr};// Space above thumb
   ScrollBarThumb* mThumb {nullptr};
   ScrollBarButton* mLargeIncrement {nullptr};// Space below thumb
+
+  ValueChangedCallback mValueChangedCallback;
 
   std::optional<float> mLargeDecrementMin;
   std::optional<float> mLargeIncrementMax;

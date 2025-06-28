@@ -73,6 +73,11 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     .mPosition = YGPositionTypeAbsolute,
     .mRight = ScrollBarSize,
   });
+
+  mHorizontalScrollBar->OnValueChanged(
+    std::bind_front(&ScrollView::OnHorizontalScroll, this));
+  mVerticalScrollBar->OnValueChanged(
+    std::bind_front(&ScrollView::OnVerticalScroll, this));
 }
 
 ScrollView::~ScrollView() {
@@ -189,8 +194,15 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   const auto value = std::clamp<float>(
     scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
   scrollBar->SetValue(value);
-  mContent->AddExplicitStyles(Style {.mTranslateY = -value});
   return EventHandlerResult::StopPropagation;
+}
+
+void ScrollView::OnHorizontalScroll(float value) {
+  mContent->AddExplicitStyles({.mTranslateX = -value});
+}
+
+void ScrollView::OnVerticalScroll(float value) {
+  mContent->AddExplicitStyles({.mTranslateY = -value});
 }
 
 bool ScrollView::IsScrollBarVisible(

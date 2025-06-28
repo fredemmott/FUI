@@ -34,6 +34,22 @@ class ScrollView final : public Widget {
   void PaintChildren(Renderer* renderer) const override;
   EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
 
+ private:
+  unique_ptr<Widget> mContent;
+  unique_ptr<YGNode> mContentYoga;
+
+  unique_ptr<YGNode> mScrollBarsYoga;
+  unique_ptr<ScrollBar> mHorizontalScrollBar;
+  unique_ptr<ScrollBar> mVerticalScrollBar;
+
+  ScrollBarVisibility mHorizontalScrollBarVisibility {
+    ScrollBarVisibility::Hidden};
+  ScrollBarVisibility mVerticalScrollBarVisibility {
+    ScrollBarVisibility::Hidden};
+
+  void OnHorizontalScroll(float value);
+  void OnVerticalScroll(float value);
+
   [[nodiscard]]
   static bool IsScrollBarVisible(
     ScrollBarVisibility visibility,
@@ -46,17 +62,5 @@ class ScrollView final : public Widget {
     YGMeasureMode widthMode,
     float height,
     YGMeasureMode heightMode);
-
-  unique_ptr<Widget> mContent;
-  unique_ptr<YGNode> mContentYoga;
-
-  unique_ptr<YGNode> mScrollBarsYoga;
-  unique_ptr<ScrollBar> mHorizontalScrollBar;
-  unique_ptr<ScrollBar> mVerticalScrollBar;
-
-  ScrollBarVisibility mHorizontalScrollBarVisibility {
-    ScrollBarVisibility::Hidden};
-  ScrollBarVisibility mVerticalScrollBarVisibility {
-    ScrollBarVisibility::Hidden};
 };
 }// namespace FredEmmott::GUI::Widgets
