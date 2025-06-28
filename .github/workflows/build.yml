@@ -14,30 +14,18 @@ jobs:
     name: "${{matrix.preset}}"
     runs-on: windows-latest
     steps:
-      - name: Add Windows SDK to path
+      - name: Set up visual studio environment
         shell: pwsh
         run: |
-          dotnet tool install --global Nefarius.Tools.WDKWhere
-          wdkwhere | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-      - name: Add Visual Studio C++ tools (compilers) to path
-        shell: pwsh
-        run: |
-          $VCRoot = $(
+          $VSRoot = $(
             vswhere `
               -latest `
               -products * `
               -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
               -property installationPath)
-          echo "VC root: ${VCRoot}"
-          $VCVersion = $(Get-Content "${VCRoot}\VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt")
-          echo "VC version: ${VCVersion}"
-          $VCBin = "${VCRoot}\VC\Tools\MSVC\${VCVersion}\bin\HostX64\x64"
-          echo "VC bin: ${VCBin}"
-          $ClangBin = "${VCRoot}\VC\Tools\Llvm\x64\bin"
-          echo "Clang bin: ${ClangBin}"
-          
-          echo "${VCBin}" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-          echo "${ClangBin}" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+          cmd /c "`"${VSRoot}/VC/Auxiliary/Build/vcvarsall.bat`" x64&set" `
+            | Where-Object { $_ -like '*=*' } `
+            | Out-File -Encoding utf8 -Append $Env:GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v4
         with:
