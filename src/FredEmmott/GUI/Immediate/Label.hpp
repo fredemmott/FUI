@@ -9,7 +9,7 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void Label(std::string_view text, ID id);
+void Label(std::string_view text, ID id = ID {std::source_location::current()});
 
 template <class... Args>
 void Label(std::format_string<Args...> fmt, Args&&... args) {

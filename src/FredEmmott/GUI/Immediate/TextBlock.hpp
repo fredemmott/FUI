@@ -9,7 +9,9 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void TextBlock(std::string_view text, ID id);
+void TextBlock(
+  std::string_view text,
+  ID id = ID {std::source_location::current()});
 
 template <class... Args>
 void TextBlock(std::format_string<Args...> fmt, Args&&... args) {
