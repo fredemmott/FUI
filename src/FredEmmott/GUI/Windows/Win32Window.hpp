@@ -37,15 +37,17 @@ struct WindowOptions {
   IDXGIFactory* mDXGIFactory {nullptr};
 };
 
+class Win32Window;
+
 struct WinMainOptions {
   struct Hooks {
     void (*mBeforeWindow)() {nullptr};
-    unique_ptr<Window> (*mCreateWindow)(
+    unique_ptr<Win32Window> (*mCreateWindow)(
       HINSTANCE instance,
       UINT showCommand,
       const WindowOptions&) {nullptr};
-    void (*mBeforeMainLoop)(Window&) {nullptr};
-    void (*mAfterMainLoop)(Window&, int exitCode) {nullptr};
+    void (*mBeforeMainLoop)(Win32Window&) {nullptr};
+    void (*mAfterMainLoop)(Win32Window&, int exitCode) {nullptr};
   };
 
   enum class COMMode {

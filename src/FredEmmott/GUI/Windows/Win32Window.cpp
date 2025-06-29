@@ -170,7 +170,7 @@ int Win32Window::WinMain(
     options.mHooks.mBeforeWindow();
   }
 
-  unique_ptr<Window> window;
+  unique_ptr<Win32Window> window;
   if (options.mHooks.mCreateWindow) {
     window = options.mHooks.mCreateWindow(hInstance, nCmdShow, windowOptions);
   } else {
