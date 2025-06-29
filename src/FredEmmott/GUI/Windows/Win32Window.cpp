@@ -134,7 +134,7 @@ int Win32Window::WinMain(
   [[maybe_unused]] HINSTANCE hPrevInstance,
   [[maybe_unused]] LPWSTR lpCmdLine,
   int nCmdShow,
-  void (*appTick)(Window&),
+  void (*appTick)(Win32Window&),
   const WindowOptions& windowOptions,
   const WinMainOptions& options) {
   void (*comCleanupFun)() {nullptr};

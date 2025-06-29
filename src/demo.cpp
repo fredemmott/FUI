@@ -124,6 +124,6 @@ int WINAPI wWinMain(
     hPrevInstance,
     lpCmdLine,
     nCmdShow,
-    [](fui::Window&) { AppTick(); },
+    [](fui::Win32Window&) { AppTick(); },
     {"FUI Demo"});
 }

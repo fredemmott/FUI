@@ -88,7 +88,7 @@ class Win32Window : public Window {
     HINSTANCE hPrevInstance,
     LPWSTR lpCmdLine,
     int nCmdShow,
-    void (*appTick)(Window&),
+    void (*appTick)(Win32Window&),
     const WindowOptions& windowOptions = {},
     const WinMainOptions& options = {});
 
