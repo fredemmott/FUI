@@ -19,8 +19,11 @@
       "dependencies": [
         {
           "name": "skia",
+          "default-features": false,
           "features": [
-            "direct3d"
+            "direct3d",
+            "harfbuzz",
+            "icu"
           ]
         }
       ],
