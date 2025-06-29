@@ -57,6 +57,8 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     std::chrono::milliseconds(100),
     StaticTheme::Common::ControlFastOutSlowInKeySpline);
   mContent->SetBuiltInStyles({
+    .mAlignSelf = YGAlignStretch,
+    .mFlexDirection = YGFlexDirectionColumn,
     .mTranslateX = {0, SmoothScrollingAnimation},
     .mTranslateY = {0, SmoothScrollingAnimation},
   });
