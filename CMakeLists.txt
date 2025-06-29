@@ -49,6 +49,8 @@ endif ()
 
 option(ENABLE_DEVELOPER_OPTIONS "Enable lots of warnings, and warnings-as-errors" "${PROJECT_IS_TOP_LEVEL}")
 if (${ENABLE_DEVELOPER_OPTIONS})
+  set(CMAKE_LINK_LIBRARIES_ONLY_TARGETS ON)
+
   if (MSVC)
     add_compile_options(
       # Lots of warnings

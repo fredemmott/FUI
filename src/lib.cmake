@@ -98,12 +98,8 @@ target_link_libraries(
   winui3-themes
   # vpckg
   yoga::yogacore
-  # system
-  Dcomp
-  Dwmapi
-  User32
-  runtimeobject
 )
+set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject)
 target_compile_definitions(
   fredemmott-gui
   PUBLIC
@@ -159,16 +155,20 @@ if (ENABLE_DIRECT2D)
     FredEmmott/GUI/Brush_Direct2D.cpp
     FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
   )
-  target_link_libraries(
-    fredemmott-gui
-    PRIVATE
-    # System
+  list(
+    APPEND
+    WINDOWS_SDK_LIBRARIES
     DXGI
     D2d1
     Dwrite
     D3d11
   )
 endif ()
+
+foreach (NAME IN LISTS WINDOWS_SDK_LIBRARIES)
+  find_library("${NAME}_PATH" "${NAME}" REQUIRED)
+  target_link_libraries(fredemmott-gui PRIVATE "${${NAME}_PATH}")
+endforeach ()
 
 get_target_property(HEADERS fredemmott-gui SOURCES)
 list(FILTER HEADERS INCLUDE REGEX "\\.hpp$")
