@@ -23,8 +23,8 @@ namespace FredEmmott::GUI::SystemTheme {
 struct Store {
   Store();
   void Populate();
-  void Populate(Color::Constant*, UIColorType) const;
-  void Populate(Color::Constant*, int) const;
+  void Populate(IUISettings3&, Color::Constant*, UIColorType) const;
+  void Populate(IUISettings3&, Color::Constant*, int) const;
 
   static Store& Get() {
     static Store ret;
@@ -34,31 +34,32 @@ struct Store {
 #define DECLARE_USAGE_VARIABLE(X, IMPL) Color::Constant m##X {};
   FUI_SYSTEM_COLOR_USAGES(DECLARE_USAGE_VARIABLE)
 #undef DECLARE_USAGE_VARIABLE
-
- private:
-  wil::com_ptr<IUISettings3> mUISettings;
 };
 
 Store::Store() {
-  mUISettings = wil::ActivateInstance<IUISettings3>(
-    L"Windows.UI.ViewManagement.UISettings");
   this->Populate();
 }
 
 void Store::Populate() {
-#define POPULATE_COLOR(X, IMPL) this->Populate(&m##X, IMPL);
+  const wil::com_ptr<IUISettings3> uiSettings
+    = wil::ActivateInstance<IUISettings3>(
+      L"Windows.UI.ViewManagement.UISettings");
+#define POPULATE_COLOR(X, IMPL) this->Populate(*uiSettings, &m##X, IMPL);
   FUI_SYSTEM_COLOR_USAGES(POPULATE_COLOR)
 #undef POPULATE_COLOR
 }
 
-void Store::Populate(Color::Constant* p, const UIColorType type) const {
+void Store::Populate(
+  IUISettings3& uiSettings,
+  Color::Constant* p,
+  const UIColorType type) const {
   ABI::Windows::UI::Color ret;
-  CheckHResult(mUISettings->GetColorValue(type, &ret));
+  CheckHResult(uiSettings.GetColorValue(type, &ret));
   const auto [a, r, g, b] = ret;
   *p = Color::Constant::FromARGB32(a, r, g, b);
 }
 
-void Store::Populate(Color::Constant* p, int sysColor) const {
+void Store::Populate(IUISettings3&, Color::Constant* p, int sysColor) const {
   const auto color = GetSysColor(sysColor);
   *p = Color::Constant::FromARGB32(
     0xff, GetRValue(color), GetGValue(color), GetBValue(color));
