@@ -42,6 +42,7 @@ add_library(
   FredEmmott/GUI/StaticTheme/Resource.hpp
   FredEmmott/GUI/StaticTheme/Theme.hpp
   FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp
+  FredEmmott/GUI/StaticTheme/detail/ResourceSupertype.hpp
   FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
