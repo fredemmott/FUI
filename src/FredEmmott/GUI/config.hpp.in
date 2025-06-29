@@ -25,11 +25,15 @@ static_assert(
   "Compiler is not set to UTF-8; if you're using MSVC, add /utf-8");
 
 // Don't require `/Zc:__cplusplus` under MSVC...
-#ifdef _MSVC_LANG
-constexpr auto CPlusPlus = _MSVC_LANG;
+#if defined(_MSVC_LANG)
+// Check for larger because as of VS 17.14.7 (2025-06-23), by default:
+// - MSVC will have _MSVC_LANG > __cplusplus
+// - clang-cl will have __cplusplus > MSVC_LANG
+// - for both, only one of those will report C++23
+constexpr auto CPlusPlus
+  = (_MSVC_LANG > __cplusplus) ? _MSVC_LANG : __cplusplus;
 #else
 constexpr auto CPlusPlus = __cplusplus;
 #endif
 static_assert(CPlusPlus >= 202302, "C++23 is required");
-
 }// namespace FredEmmott::GUI::CompilerChecks
