@@ -5,6 +5,8 @@
 
 #include <Windows.h>
 #include <Windowsx.h>
+#include <roapi.h>
+#include <wil/resource.h>
 #include <wil/win32_helpers.h>
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
@@ -125,6 +127,80 @@ unique_ptr<Win32Window> Win32Window::CreateAny(
     hinstance, showCommand, options);
 #endif
   return nullptr;
+}
+
+int Win32Window::WinMain(
+  HINSTANCE hInstance,
+  [[maybe_unused]] HINSTANCE hPrevInstance,
+  [[maybe_unused]] LPWSTR lpCmdLine,
+  int nCmdShow,
+  void (*appTick)(Window&),
+  const WindowOptions& windowOptions,
+  const WinMainOptions& options) {
+  void (*comCleanupFun)() {nullptr};
+  const auto cleanupCOM = wil::scope_exit([options, &comCleanupFun]() {
+    if (
+      comCleanupFun
+      && options.mCOMCleanupMode
+        == WinMainOptions::COMCleanupMode::Uninitialize) {
+      comCleanupFun();
+    }
+  });
+
+  using COMMode = WinMainOptions::COMMode;
+  switch (options.mCOMMode) {
+    case COMMode::Uninitialized:
+      break;
+    case COMMode::WinRTMultithreaded:
+      CheckHResult(RoInitialize(RO_INIT_MULTITHREADED));
+      comCleanupFun = &RoUninitialize;
+      break;
+  }
+
+  using DPIMode = WinMainOptions::DPIMode;
+  switch (options.mDPIMode) {
+    case DPIMode::Uninitialized:
+      break;
+    case DPIMode::PerMonitorV2:
+      SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+      break;
+  }
+
+  if (options.mHooks.mBeforeWindow) {
+    options.mHooks.mBeforeWindow();
+  }
+
+  unique_ptr<Window> window;
+  if (options.mHooks.mCreateWindow) {
+    window = options.mHooks.mCreateWindow(hInstance, nCmdShow, windowOptions);
+  } else {
+    window = CreateAny(hInstance, nCmdShow, windowOptions);
+  }
+
+  if (options.mHooks.mBeforeMainLoop) {
+    options.mHooks.mBeforeMainLoop(*window);
+  }
+
+  while (true) {
+    // Variable FPS - wait for whichever is sooner:
+    // - input
+    // - target frame interval
+    //
+    // The default target FPS varies; it is '0 fps - input only' usually, but
+    // is 60FPS when an animation is active.
+    window->WaitFrame();
+
+    if (const auto ok = window->BeginFrame(); !ok) {
+      if (options.mHooks.mAfterMainLoop) {
+        options.mHooks.mAfterMainLoop(*window, ok.error());
+      }
+      return ok.error();
+    }
+
+    appTick(*window);
+
+    window->EndFrame();
+  }
 }
 
 void Win32Window::TrackMouseEvent() {

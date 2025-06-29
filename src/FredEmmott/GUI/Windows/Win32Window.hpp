@@ -37,6 +37,36 @@ struct WindowOptions {
   IDXGIFactory* mDXGIFactory {nullptr};
 };
 
+struct WinMainOptions {
+  struct Hooks {
+    void (*mBeforeWindow)() {nullptr};
+    unique_ptr<Window> (*mCreateWindow)(
+      HINSTANCE instance,
+      UINT showCommand,
+      const WindowOptions&) {nullptr};
+    void (*mBeforeMainLoop)(Window&) {nullptr};
+    void (*mAfterMainLoop)(Window&, int exitCode) {nullptr};
+  };
+
+  enum class COMMode {
+    Uninitialized,
+    WinRTMultithreaded,// implies ApartmentThreaded
+  };
+  enum class COMCleanupMode {
+    None,
+    Uninitialize,
+  };
+  enum class DPIMode {
+    Uninitialized,
+    PerMonitorV2,
+  };
+  COMMode mCOMMode {COMMode::WinRTMultithreaded};
+  COMCleanupMode mCOMCleanupMode {COMCleanupMode::Uninitialize};
+  DPIMode mDPIMode {DPIMode::PerMonitorV2};
+
+  Hooks mHooks {};
+};
+
 class Win32Window : public Window {
  public:
   using Options = WindowOptions;
@@ -49,6 +79,16 @@ class Win32Window : public Window {
 
   static unique_ptr<Win32Window>
   CreateAny(HINSTANCE hinstance, int showCommand, const Options& options = {});
+
+  [[nodiscard]]
+  static int WinMain(
+    HINSTANCE hInstance,
+    HINSTANCE hPrevInstance,
+    LPWSTR lpCmdLine,
+    int nCmdShow,
+    void (*appTick)(Window&),
+    const WindowOptions& windowOptions = {},
+    const WinMainOptions& options = {});
 
   ~Win32Window() override;
 

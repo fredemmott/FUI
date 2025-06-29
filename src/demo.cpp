@@ -115,31 +115,15 @@ static void AppTick() {
 }
 
 int WINAPI wWinMain(
-  HINSTANCE hInstance,
-  [[maybe_unused]] HINSTANCE hPrevInstance,
-  [[maybe_unused]] LPWSTR lpCmdLine,
-  int nCmdShow) {
-  CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-  const auto window
-    = fui::Win32Window::CreateAny(hInstance, nCmdShow, {"FUI Demo"});
-  while (true) {
-    // Variable FPS - wait for whichever is sooner:
-    // - input
-    // - target frame interval
-    //
-    // The default target FPS varies; it is '0 fps - input only' usually, but
-    // is 60FPS when an animation is active.
-    window->WaitFrame();
-
-    const auto ok = window->BeginFrame();
-    if (!ok) {
-      return ok.error();
-    }
-
-    AppTick();
-
-    window->EndFrame();
-  }
+  const HINSTANCE hInstance,
+  const HINSTANCE hPrevInstance,
+  const LPWSTR lpCmdLine,
+  const int nCmdShow) {
+  return fui::Win32Window::WinMain(
+    hInstance,
+    hPrevInstance,
+    lpCmdLine,
+    nCmdShow,
+    [](fui::Window&) { AppTick(); },
+    {"FUI Demo"});
 }
