@@ -66,7 +66,7 @@ function(add_winui3_theme_file COMPONENT)
     set(arg_SOURCES "${COMPONENT}_themeresources.xaml")
   endif ()
   foreach (SOURCE IN LISTS arg_SOURCES)
-    cmake_path(ABSOLUTE_PATH SOURCE BASE_DIRECTORY "${CMAKE_SOURCE_DIR}/third-party/microsoft-ui-xaml")
+    cmake_path(ABSOLUTE_PATH SOURCE BASE_DIRECTORY "${PROJECT_SOURCE_DIR}/third-party/microsoft-ui-xaml")
     list(APPEND SOURCES "${SOURCE}")
   endforeach ()
 
@@ -130,7 +130,7 @@ function(add_winui3_theme_file COMPONENT)
     "$<BUILD_INTERFACE:${arg_PUBLIC_INCLUDE_DIRECTORIES}>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
+    "${PROJECT_SOURCE_DIR}/src"
   )
   target_link_libraries(winui3-themes INTERFACE "${TARGET}")
 

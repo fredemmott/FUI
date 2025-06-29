@@ -197,3 +197,6 @@ install(
   FILE fredemmott-gui-targets.cmake
   DESTINATION lib/cmake/fredemmott-gui
 )
+
+# For projects pulling this in via add_subdirectory()
+add_library(fredemmott-gui::fredemmott-gui ALIAS fredemmott-gui)
