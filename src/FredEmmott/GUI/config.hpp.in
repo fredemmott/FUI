@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <string_view>
+
 #cmakedefine FUI_ENABLE_SKIA
 #cmakedefine FUI_ENABLE_DIRECT2D
 
@@ -12,3 +14,22 @@ constexpr bool Debug = true;
 constexpr bool Debug = false;
 #endif
 }// namespace FredEmmott::GUI::Config
+
+namespace FredEmmott::GUI::Config::CompilerChecks {
+
+// As of Visual Studio 17.14.7 (2025-06-23), MSVC does not yet
+// support the nicer `\u{1f4a9}` syntax from P2290R3
+constexpr std::string_view UnicodeLiteral {"\U0001f4a9"};
+static_assert(
+  UnicodeLiteral == "💩",
+  "Compiler is not set to UTF-8; if you're using MSVC, add /utf-8");
+
+// Don't require `/Zc:__cplusplus` under MSVC...
+#ifdef _MSVC_LANG
+constexpr auto CPlusPlus = _MSVC_LANG;
+#else
+constexpr auto CPlusPlus = __cplusplus;
+#endif
+static_assert(CPlusPlus >= 202302, "C++23 is required");
+
+}// namespace FredEmmott::GUI::CompilerChecks
