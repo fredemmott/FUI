@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.25)
 
+# This is mostly to suppress the incorrect warning that an explicitly provided variable was not used
+if (CMAKE_TOOLCHAIN_FILE)
+  message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+endif ()
+
 option(ENABLE_IMPLICIT_BACKENDS "Automatically enable available backends" ON)
 option(ENABLE_SKIA "Build with support for Skia" ${ENABLE_IMPLICIT_BACKENDS})
 if (ENABLE_SKIA)
@@ -27,12 +32,6 @@ if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
 elseif (ENABLE_SKIA)
   message(FATAL_ERROR "Advanced text features require SkParagraph, which is only available with vcpkg static triplets}")
 endif ()
-
-set(
-  CMAKE_TOOLCHAIN_FILE
-  "${CMAKE_SOURCE_DIR}/third-party/vcpkg/scripts/buildsystems/vcpkg.cmake"
-  CACHE STRING "Vcpkg toolchain file"
-)
 
 project(FUI VERSION 0.0.1 LANGUAGES CXX)
 
