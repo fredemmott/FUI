@@ -3,7 +3,7 @@ include(CMakeFindDependencyMacro)
 find_dependency(yoga CONFIG)
 find_dependency(wil CONFIG)
 
-if (@ENABLE_SKIA)
+if (@ENABLE_SKIA@) # ENABLE_SKIA
   find_dependency(unofficial-skia CONFIG)
 endif()
 
