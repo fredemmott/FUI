@@ -80,3 +80,14 @@ endif ()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 add_subdirectory(src)
+
+install(
+  FILES LICENSE
+  DESTINATION share/fredemmott-gui/
+)
+install(
+  FILES
+  third-party/microsoft-ui-xaml/LICENSE
+  RENAME LICENSE.microsoft-ui-xaml
+  DESTINATION share/fredemmott-gui/
+)
