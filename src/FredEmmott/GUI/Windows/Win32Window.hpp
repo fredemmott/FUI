@@ -82,6 +82,12 @@ class Win32Window : public Window {
   static unique_ptr<Win32Window>
   CreateAny(HINSTANCE hinstance, int showCommand, const Options& options = {});
 
+  /** Main loop; continues until a stop is requested.
+   *
+   * Can be requested by:
+   * - throwing an `ExitException`
+   * - calling `Window::RequestStop()`
+   */
   [[nodiscard]]
   static int WinMain(
     HINSTANCE hInstance,

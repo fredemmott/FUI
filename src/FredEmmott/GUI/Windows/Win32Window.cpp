@@ -19,6 +19,8 @@
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
 
+#include "FredEmmott/GUI/ExitException.hpp"
+
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
 #endif
@@ -197,8 +199,11 @@ int Win32Window::WinMain(
       return ok.error();
     }
 
-    appTick(*window);
+    try {
       appTick(*window);
+    } catch (const ExitException& e) {
+      return e.GetExitCode();
+    }
 
     // Check this before EndFrame() so that users don't have to call EndWidget()
     // correctly if they're quitting anyway
