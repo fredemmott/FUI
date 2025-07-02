@@ -12,28 +12,27 @@ namespace fuii = fui::Immediate;
 static void AppTick() {
   constexpr bool UseScrollView = true;
   if constexpr (UseScrollView) {
-    fuii::BeginVScrollView();
-    fuii::Style({
+    fuii::BeginVScrollView().Styled({
       .mBackgroundColor
       = fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush,
     });
   }
 
-  fuii::BeginVStackPanel();
-  fuii::Style({
+  fuii::BeginVStackPanel().Styled({
     .mGap = 12,
     .mMargin = 12,
     .mPadding = 8,
   });
 
   fuii::SubtitleLabel("FUI Details");
-  fuii::BeginCard();
-  fuii::BeginVStackPanel();
-  fuii::Label("Backend: {}", fui::GetBackendDescription());
-  fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
-  fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
-  fuii::EndVStackPanel();
-  fuii::EndCard();
+  {
+    // Could call EndCard() and EndVStackPanel() instead of .Scoped();
+    const auto card = fuii::BeginCard().Scoped();
+    const auto layout = fuii::BeginVStackPanel().Scoped();
+    fuii::Label("Backend: {}", fui::GetBackendDescription());
+    fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
+    fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
+  }
 
   fuii::SubtitleLabel("Controls");
   fuii::BeginCard();

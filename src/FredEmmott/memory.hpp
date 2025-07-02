@@ -26,9 +26,3 @@ struct shared_ptr : std::shared_ptr<T> {
     : std::shared_ptr<T>(ptr, memory_detail::deleter_type_t<T, TDeleter> {}) {}
 };
 }// namespace FredEmmott::Memory
-
-#ifdef _MSC_VER
-#define FUI_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#else
-#define FUI_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#endif

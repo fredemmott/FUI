@@ -5,21 +5,23 @@
 #include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
-namespace FredEmmott::GUI::Immediate {
+#include "Result.hpp"
 
-inline void BeginVScrollView(
-  const ID id = ID {std::source_location::current()}) {
-  using Widgets::ScrollView;
-  using namespace immediate_detail;
-  BeginWidget<ScrollView>(id);
-  GetCurrentParentNode<ScrollView>()->SetHorizontalScrollBarVisibility(
-    ScrollView::ScrollBarVisibility::Hidden);
-  GetCurrentParentNode<ScrollView>()->SetVerticalScrollBarVisibility(
-    ScrollView::ScrollBarVisibility::Auto);
-}
+namespace FredEmmott::GUI::Immediate {
 
 inline void EndVScrollView() {
   immediate_detail::EndWidget<Widgets::ScrollView>();
+}
+
+inline Result<&EndVScrollView> BeginVScrollView(
+  const ID id = ID {std::source_location::current()}) {
+  using Widgets::ScrollView;
+  using namespace immediate_detail;
+  const auto ret = BeginWidget<ScrollView>(id);
+  ret->SetHorizontalScrollBarVisibility(
+    ScrollView::ScrollBarVisibility::Hidden);
+  ret->SetVerticalScrollBarVisibility(ScrollView::ScrollBarVisibility::Auto);
+  return {ret};
 }
 
 }// namespace FredEmmott::GUI::Immediate

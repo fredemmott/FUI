@@ -12,11 +12,12 @@
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
-void BeginComboBoxButton(bool* clicked, const ID id) {
+Result<&EndComboBoxButton, void> BeginComboBoxButton(
+  bool* clicked,
+  const ID id) {
   using Button = Widgets::Button;
   using Widget = Widgets::Widget;
-  BeginWidget<Button>(id);
-  auto button = GetCurrentParentNode<Button>();
+  const auto button = BeginWidget<Button>(id);
   if (clicked) {
     *clicked = button->mClicked.TestAndClear();
   }
@@ -69,6 +70,7 @@ void BeginComboBoxButton(bool* clicked, const ID id) {
   GetCurrentParentNode()->SetBuiltInStyles({
     .mDisplay = YGDisplayContents,
   });
+  return {button};
 };
 
 void EndComboBoxButton() {
@@ -103,12 +105,14 @@ void EndComboBoxButton() {
   EndWidget<Button>();
 }
 
-bool ComboBoxButton(const std::string_view label, const ID id) {
+Result<nullptr, bool> ComboBoxButton(
+  const std::string_view label,
+  const ID id) {
   bool clicked {};
-  BeginComboBoxButton(&clicked, id);
+  const auto button = BeginComboBoxButton(&clicked, id);
   Label(label, ID {0});
   EndComboBoxButton();
-  return clicked;
+  return {button, clicked};
 }
 
 }// namespace FredEmmott::GUI::Immediate

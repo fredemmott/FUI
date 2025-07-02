@@ -6,8 +6,11 @@
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
 #include "Label.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
+
+void EndComboBoxButton();
 
 /** Start a button containing a child widget; for multiple widgets, use
  * a layout.
@@ -18,21 +21,19 @@ namespace FredEmmott::GUI::Immediate {
  *
  * @see `ComboBoxButton()` if you just want text
  */
-void BeginComboBoxButton(
+Result<&EndComboBoxButton> BeginComboBoxButton(
   bool* clicked,
   ID id = ID {std::source_location::current()});
 
-void EndComboBoxButton();
-
 /// Create a button with a text label
 [[nodiscard]]
-bool ComboBoxButton(
+Result<nullptr, bool> ComboBoxButton(
   std::string_view label,
   ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label
 template <class... Args>
-[[nodiscard]] bool ComboBoxButton(
+[[nodiscard]] Result<nullptr, bool> ComboBoxButton(
   std::format_string<Args...> format,
   Args&&... args) {
   const auto [id, text]

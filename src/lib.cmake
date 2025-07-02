@@ -22,10 +22,10 @@ add_library(
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
+  FredEmmott/GUI/Immediate/Result.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/ScrollView.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
-  FredEmmott/GUI/Immediate/Style.hpp
   FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
@@ -88,6 +88,7 @@ add_library(
   FredEmmott/memory/memory_detail.hpp
   FredEmmott/type_traits/concepts.hpp
   FredEmmott/utility/bitflag_enums.hpp
+  FredEmmott/utility/moved_flag.hpp
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
 )

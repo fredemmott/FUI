@@ -9,16 +9,17 @@
 #include <vector>
 
 #include "ID.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-bool ComboBox(
+Result<nullptr, bool> ComboBox(
   std::size_t* selectedIndex,
   std::span<std::string_view> items,
   ID id = ID {std::source_location::current()});
 
 template <class T>
-bool ComboBox(
+Result<nullptr, bool> ComboBox(
   T* selectedKey,
   const std::ranges::range auto& items,
   ID id = ID {std::source_location::current()})

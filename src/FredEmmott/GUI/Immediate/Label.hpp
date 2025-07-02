@@ -6,13 +6,16 @@
 #include <format>
 
 #include "ID.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-void Label(std::string_view text, ID id = ID {std::source_location::current()});
+Result<> Label(
+  std::string_view text,
+  ID id = ID {std::source_location::current()});
 
 template <class... Args>
-void Label(std::format_string<Args...> fmt, Args&&... args) {
+Result<> Label(std::format_string<Args...> fmt, Args&&... args) {
   const auto [id, text]
     = immediate_detail::ParsedID(fmt, std::forward<Args>(args)...);
   return Label(text, id);
@@ -22,24 +25,26 @@ namespace immediate_detail {
 
 template <class TDerived>
 struct StyledLabel {
-  static void operator()(
+  static auto operator()(
     const std::string_view text,
     const ID id = ID {std::source_location::current()}) {
-    Label(text, id);
-    ApplyStyles();
+    const auto ret = Label(text, id);
+    ApplyStyles(widget_from_result(ret));
+    return ret;
   }
 
   template <class... Args>
-  static void operator()(std::format_string<Args...> fmt, Args&&... args) {
-    Label(fmt, std::forward<Args>(args)...);
-    ApplyStyles();
+  static auto operator()(std::format_string<Args...> fmt, Args&&... args) {
+    const auto ret = Label(fmt, std::forward<Args>(args)...);
+    ApplyStyles(ret);
+    return ret;
   }
 
  private:
-  static void ApplyStyles() {
-    GUI::Style styles;
+  static void ApplyStyles(Widget* widget) {
+    Style styles;
     TDerived::ApplyStyles(styles);
-    GetCurrentNode()->SetAdditionalBuiltInStyles(styles);
+    widget->SetAdditionalBuiltInStyles(styles);
   }
 };
 

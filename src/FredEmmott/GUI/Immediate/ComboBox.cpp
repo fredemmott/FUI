@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 
+#include "Button.hpp"
 #include "ComboBoxButton.hpp"
 #include "ComboBoxItem.hpp"
 #include "ComboBoxPopup.hpp"
@@ -28,10 +29,8 @@ class ComboBoxWidget : public Widgets::Widget {
 };
 }// namespace
 
-bool ComboBox(
-  std::size_t* selectedIndex,
-  std::span<std::string_view> items,
-  ID id) {
+Result<nullptr, bool>
+ComboBox(std::size_t* selectedIndex, std::span<std::string_view> items, ID id) {
   using namespace immediate_detail;
   FUI_ASSERT(selectedIndex, "A selected index is required");
   FUI_ASSERT(
@@ -39,8 +38,7 @@ bool ComboBox(
     "Selected index {} is >= items.size() {}",
     *selectedIndex,
     items.size());
-  BeginWidget<ComboBoxWidget>(id);
-  auto widget = GetCurrentParentNode<ComboBoxWidget>();
+  const auto widget = BeginWidget<ComboBoxWidget>(id);
   widget->SetBuiltInStyles({.mDisplay = YGDisplayContents});
 
   if (ComboBoxButton("{}", items[*selectedIndex])) {
@@ -63,7 +61,7 @@ bool ComboBox(
   }
 
   EndWidget<ComboBoxWidget>();
-  return changed;
+  return {widget, changed};
 }
 
 }// namespace FredEmmott::GUI::Immediate

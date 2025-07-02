@@ -7,12 +7,12 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
+Result<&EndToggleSwitch>
+BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
   using namespace immediate_detail;
   using Widgets::ToggleSwitch;
 
-  BeginWidget<ToggleSwitch>(id);
-  auto toggle = GetCurrentParentNode<ToggleSwitch>();
+  const auto toggle = BeginWidget<ToggleSwitch>(id);
   const auto isChanged = toggle->mChanged.TestAndClear();
   if (pIsChanged) {
     *pIsChanged = isChanged;
@@ -22,9 +22,10 @@ void BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
   } else if (pIsOn) {
     toggle->SetIsOn(*pIsOn);
   }
+  return {toggle};
 }
 
-bool ToggleSwitch(
+Result<nullptr, bool> ToggleSwitch(
   bool* pIsOn,
   std::string_view onText,
   std::string_view offText,
@@ -34,7 +35,7 @@ bool ToggleSwitch(
     isOn = *pIsOn;
   }
   bool isChanged {false};
-  BeginToggleSwitch(&isChanged, &isOn, id);
+  const auto toggle = BeginToggleSwitch(&isChanged, &isOn, id);
 
   if (pIsOn) [[likely]] {
     *pIsOn = isOn;
@@ -43,7 +44,7 @@ bool ToggleSwitch(
   Label(isOn ? onText : offText, ID {0});
 
   EndToggleSwitch();
-  return isChanged;
+  return {toggle, isChanged};
 }
 
 }// namespace FredEmmott::GUI::Immediate

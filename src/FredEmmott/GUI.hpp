@@ -15,7 +15,6 @@
 #include <FredEmmott/GUI/Immediate/PopupWindow.hpp>
 #include <FredEmmott/GUI/Immediate/ScrollView.hpp>
 #include <FredEmmott/GUI/Immediate/StackPanel.hpp>
-#include <FredEmmott/GUI/Immediate/Style.hpp>
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/Window.hpp>

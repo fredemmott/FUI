@@ -8,12 +8,13 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void Label(const std::string_view text, const ID id) {
+Result<> Label(const std::string_view text, const ID id) {
   using Widgets::Label;
   using namespace immediate_detail;
 
-  BeginWidget<Label>(id);
-  GetCurrentParentNode<Label>()->SetText(text);
+  const auto label = BeginWidget<Label>(id);
+  label->SetText(text);
   EndWidget<Label>();
+  return {label};
 }
 }// namespace FredEmmott::GUI::Immediate

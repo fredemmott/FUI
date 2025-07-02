@@ -4,8 +4,8 @@
 
 #include <yoga/YGValue.h>
 
+#include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/style_detail.hpp>
-#include <FredEmmott/memory.hpp>
 
 #include "StyleTransition.hpp"
 

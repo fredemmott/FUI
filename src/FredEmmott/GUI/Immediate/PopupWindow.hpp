@@ -3,9 +3,11 @@
 #pragma once
 
 #include "ID.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
+void EndPopupWindow();
 /** Start a popup window.
  *
  * Returns true if it's visible and content should follow.
@@ -25,7 +27,8 @@ namespace FredEmmott::GUI::Immediate {
  *
  */
 [[nodiscard]]
-bool BeginPopupWindow(ID id = ID {std::source_location::current()});
+Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
+  ID id = ID {std::source_location::current()});
 /** Start a popup window; optionally show it.
  *
  * Returns true if the window is open and content should follow.
@@ -34,7 +37,8 @@ bool BeginPopupWindow(ID id = ID {std::source_location::current()});
  *   closed, it will be set to false.
  */
 [[nodiscard]]
-bool BeginPopupWindow(bool* open, ID id = ID {std::source_location::current()});
-void EndPopupWindow();
+Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
+  bool* open,
+  ID id = ID {std::source_location::current()});
 
 }// namespace FredEmmott::GUI::Immediate

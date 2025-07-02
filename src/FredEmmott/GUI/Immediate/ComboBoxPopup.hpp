@@ -3,12 +3,15 @@
 #pragma once
 
 #include "ID.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
+void EndComboBoxPopup();
 
 [[nodiscard]]
-bool BeginComboBoxPopup(ID id = ID { std::source_location::current() });
+Result<&EndComboBoxPopup, bool, {.mHasWidgetPointer = false}>
+BeginComboBoxPopup(ID id = ID {std::source_location::current()});
 [[nodiscard]]
-bool BeginComboBoxPopup(bool *open, ID id = ID { std::source_location::current() });
-void EndComboBoxPopup();
-}
+Result<&EndComboBoxPopup, bool, {.mHasWidgetPointer = false}>
+BeginComboBoxPopup(bool* open, ID id = ID {std::source_location::current()});
+}// namespace FredEmmott::GUI::Immediate

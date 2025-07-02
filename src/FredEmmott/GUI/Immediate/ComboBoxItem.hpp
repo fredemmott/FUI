@@ -5,24 +5,25 @@
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
 #include "ID.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginComboBoxItem(
+void EndComboBoxItem();
+Result<&EndComboBoxItem> BeginComboBoxItem(
   bool* selected,
   bool initiallySelected,
   ID id = ID {std::source_location::current()});
-void EndComboBoxItem();
 
 [[nodiscard]]
-bool ComboBoxItem(
+Result<nullptr, bool> ComboBoxItem(
   bool initiallySelected,
   std::string_view label,
   ID id = ID {std::source_location::current()});
 
 template <class... Args>
 [[nodiscard]]
-bool ComboBoxItem(
+Result<nullptr, bool> ComboBoxItem(
   bool initiallySelected,
   std::format_string<Args...> fmt,
   Args&&... args) {

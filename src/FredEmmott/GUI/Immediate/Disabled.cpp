@@ -7,13 +7,16 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginDisabled(const bool isDisabled, const ID id) {
+Result<&EndDisabled, void, {.mHasWidgetPointer = false}> BeginDisabled(
+  const bool isDisabled,
+  const ID id) {
   static const Style baseStyles {.mDisplay = YGDisplayContents};
   using namespace immediate_detail;
   BeginWidget<Widgets::Widget>(id);
   auto widget = GetCurrentParentNode();
   widget->ReplaceExplicitStyles(baseStyles);
   widget->SetIsDirectlyDisabled(isDisabled);
+  return {};
 }
 
 }// namespace FredEmmott::GUI::Immediate

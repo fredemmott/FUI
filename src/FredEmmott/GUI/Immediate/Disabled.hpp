@@ -3,27 +3,29 @@
 #pragma once
 
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
+#include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
-#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-
-void BeginDisabled(
-  bool isDisabled,
-  ID id = ID {std::source_location::current()});
 
 inline void EndDisabled() {
   immediate_detail::EndWidget<Widgets::Widget>();
 }
 
-inline void BeginEnabled(
+inline void EndEnabled() {
+  EndDisabled();
+}
+
+Result<&EndDisabled, void, {.mHasWidgetPointer = false}> BeginDisabled(
+  bool isDisabled,
+  ID id = ID {std::source_location::current()});
+
+inline Result<&EndEnabled, void, {.mHasWidgetPointer = false}> BeginEnabled(
   const bool isEnabled = true,
   const ID id = ID {std::source_location::current()}) {
   BeginDisabled(!isEnabled, id);
-}
-
-inline void EndEnabled() {
-  EndDisabled();
+  return {};
 }
 
 }// namespace FredEmmott::GUI::Immediate

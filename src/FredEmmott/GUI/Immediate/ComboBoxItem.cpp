@@ -11,11 +11,12 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
+Result<&EndComboBoxItem>
+BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
   using namespace immediate_detail;
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
-  BeginButton(clicked, id);
+  const auto ret = BeginButton(clicked, id);
   const bool isSelected = initiallySelected || (clicked && *clicked);
 
   using namespace PseudoClasses;
@@ -105,6 +106,8 @@ void BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
     FUI_ASSERT(tWindow);
     tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
   }
+
+  return {ret};
 }
 
 void EndComboBoxItem() {
@@ -114,12 +117,13 @@ void EndComboBoxItem() {
   EndButton();
 }
 
-bool ComboBoxItem(bool initiallySelected, std::string_view label, ID id) {
+Result<nullptr, bool>
+ComboBoxItem(bool initiallySelected, std::string_view label, ID id) {
   bool clicked = false;
-  BeginComboBoxItem(&clicked, initiallySelected, id);
+  const auto item = BeginComboBoxItem(&clicked, initiallySelected, id);
   Label(label, ID {0});
   EndComboBoxItem();
-  return clicked;
+  return {item, clicked};
 }
 
 }// namespace FredEmmott::GUI::Immediate
