@@ -11,11 +11,11 @@ namespace FredEmmott::GUI {
 class ExitException final : public std::runtime_error {
  public:
   ExitException() = delete;
-  explicit constexpr ExitException(int exitCode)
+  explicit ExitException(int exitCode)
     : std::runtime_error(std::format("Exit with code {}", exitCode)),
       mExitCode(exitCode) {}
 
-  constexpr int GetExitCode() const {
+  int GetExitCode() const {
     return mExitCode;
   }
 
