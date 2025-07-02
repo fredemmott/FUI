@@ -109,6 +109,8 @@ class Win32Window : public Window {
 
   std::unique_ptr<Window> CreatePopup() const final;
 
+  void WaitForInput() const override;
+
  protected:
   static constexpr UINT SwapChainLength = 3;
 

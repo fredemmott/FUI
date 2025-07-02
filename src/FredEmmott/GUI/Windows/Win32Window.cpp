@@ -742,4 +742,8 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
     });
 }
 
+void Win32Window::WaitForInput() const {
+  MsgWaitForMultipleObjects(0, nullptr, false, INFINITE, QS_ALLINPUT);
+}
+
 }// namespace FredEmmott::GUI

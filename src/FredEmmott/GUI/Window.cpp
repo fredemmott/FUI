@@ -54,7 +54,7 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
     minFPS,
     maxFPS);
   if (fps == 0) {
-    MsgWaitForMultipleObjects(0, nullptr, false, INFINITE, QS_ALLINPUT);
+    this->WaitForInput();
   }
   std::chrono::milliseconds frameInterval {1000 / maxFPS};
 

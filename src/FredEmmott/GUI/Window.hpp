@@ -65,6 +65,7 @@ class Window {
   virtual float GetDPIScale() const = 0;
   virtual Color GetClearColor() const = 0;
   virtual void InitializeGraphicsAPI() = 0;
+  virtual void WaitForInput() const = 0;
 
   // This is protected so it can be called outside the usual frame loop, e.g.
   // when resizing on Windows
