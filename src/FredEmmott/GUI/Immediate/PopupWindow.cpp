@@ -39,8 +39,7 @@ void PopParentContext() {
 
 }// namespace
 
-Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
-  const ID id) {
+PopupWindowResult BeginPopupWindow(const ID id) {
   auto anchor = GetCurrentNode();
 
   BeginWidget<PopupWindow>(id);
@@ -69,9 +68,7 @@ Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
   return false;
 }
 
-Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
-  bool* open,
-  ID id) {
+PopupWindowResult BeginPopupWindow(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }

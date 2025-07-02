@@ -17,11 +17,11 @@ inline void EndEnabled() {
   EndDisabled();
 }
 
-Result<&EndDisabled, void, {.mHasWidgetPointer = false}> BeginDisabled(
-  bool isDisabled,
-  ID id = ID {std::source_location::current()});
+Result<&EndDisabled, void, immediate_detail::WidgetlessResultMixin>
+BeginDisabled(bool isDisabled, ID id = ID {std::source_location::current()});
 
-inline Result<&EndEnabled, void, {.mHasWidgetPointer = false}> BeginEnabled(
+inline Result<&EndEnabled, void, immediate_detail::WidgetlessResultMixin>
+BeginEnabled(
   const bool isEnabled = true,
   const ID id = ID {std::source_location::current()}) {
   BeginDisabled(!isEnabled, id);

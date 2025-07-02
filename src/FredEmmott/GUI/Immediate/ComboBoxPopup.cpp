@@ -11,8 +11,7 @@
 #include "StackPanel.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-Result<&EndComboBoxPopup, bool, {.mHasWidgetPointer = false}>
-BeginComboBoxPopup(bool* open, ID id) {
+ComboBoxPopupResult BeginComboBoxPopup(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }
@@ -20,8 +19,7 @@ BeginComboBoxPopup(bool* open, ID id) {
   return *open;
 }
 
-Result<&EndComboBoxPopup, bool, {.mHasWidgetPointer = false}>
-BeginComboBoxPopup(ID id) {
+ComboBoxPopupResult BeginComboBoxPopup(ID id) {
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   using namespace immediate_detail;

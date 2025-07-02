@@ -8,6 +8,10 @@
 namespace FredEmmott::GUI::Immediate {
 
 void EndPopupWindow();
+
+using PopupWindowResult
+  = Result<&EndPopupWindow, bool, immediate_detail::WidgetlessResultMixin>;
+
 /** Start a popup window.
  *
  * Returns true if it's visible and content should follow.
@@ -27,7 +31,7 @@ void EndPopupWindow();
  *
  */
 [[nodiscard]]
-Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
+PopupWindowResult BeginPopupWindow(
   ID id = ID {std::source_location::current()});
 /** Start a popup window; optionally show it.
  *
@@ -37,7 +41,7 @@ Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
  *   closed, it will be set to false.
  */
 [[nodiscard]]
-Result<&EndPopupWindow, bool, {.mHasWidgetPointer = false}> BeginPopupWindow(
+PopupWindowResult BeginPopupWindow(
   bool* open,
   ID id = ID {std::source_location::current()});
 

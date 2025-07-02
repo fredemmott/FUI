@@ -8,10 +8,14 @@
 namespace FredEmmott::GUI::Immediate {
 void EndComboBoxPopup();
 
+using ComboBoxPopupResult
+  = Result<&EndComboBoxPopup, bool, immediate_detail::WidgetlessResultMixin>;
+
 [[nodiscard]]
-Result<&EndComboBoxPopup, bool, {.mHasWidgetPointer = false}>
-BeginComboBoxPopup(ID id = ID {std::source_location::current()});
+ComboBoxPopupResult BeginComboBoxPopup(
+  ID id = ID {std::source_location::current()});
 [[nodiscard]]
-Result<&EndComboBoxPopup, bool, {.mHasWidgetPointer = false}>
-BeginComboBoxPopup(bool* open, ID id = ID {std::source_location::current()});
+ComboBoxPopupResult BeginComboBoxPopup(
+  bool* open,
+  ID id = ID {std::source_location::current()});
 }// namespace FredEmmott::GUI::Immediate

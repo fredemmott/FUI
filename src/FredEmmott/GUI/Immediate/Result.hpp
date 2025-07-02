@@ -7,9 +7,8 @@
 #include <FredEmmott/utility/moved_flag.hpp>
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
-struct ResultOptions {
-  const bool mHasWidgetPointer = true;
-};
+
+struct WidgetlessResultMixin {};
 
 template <class T>
 struct widget_from_result_t {};
@@ -28,12 +27,12 @@ auto widget_from_result(const T& v) {
   return widget_from_result_t<T> {}(v);
 }
 
-template <ResultOptions TOptions>
+template <class... TMixins>
 struct StyledResultMixin {};
 
-template <ResultOptions TOptions>
-  requires(TOptions.mHasWidgetPointer)
-struct StyledResultMixin<TOptions> {
+template <class... TMixins>
+  requires(!(std::same_as<TMixins, WidgetlessResultMixin> || ...))
+struct StyledResultMixin<TMixins...> {
   template <class Self>
   decltype(auto) Styled(this Self&& self, const Style& style) {
     widget_from_result(self)->ReplaceExplicitStyles(style);
@@ -91,18 +90,17 @@ struct ValueResultMixin<void> {};
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
 
 namespace FredEmmott::GUI::Immediate {
-template <
-  void (*TEndWidget)() = nullptr,
-  class TValue = void,
-  immediate_detail::ResultOptions TOptions = {}>
-class Result final : public immediate_detail::StyledResultMixin<TOptions>,
+template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
+class Result final : public immediate_detail::StyledResultMixin<TMixins...>,
                      public immediate_detail::ScopedResultMixin<TEndWidget>,
-                     public immediate_detail::ValueResultMixin<TValue> {
+                     public immediate_detail::ValueResultMixin<TValue>,
+                     public TMixins... {
  public:
-  static constexpr bool HasWidget = TOptions.mHasWidgetPointer;
+  static constexpr bool HasWidget
+    = !(std::same_as<immediate_detail::WidgetlessResultMixin, TMixins> || ...);
   static constexpr bool HasValue = !std::is_void_v<TValue>;
 
-  template <void (*)(), class, immediate_detail::ResultOptions>
+  template <void (*)(), class, class...>
   friend class Result;
   friend struct immediate_detail::ValueResultMixin<TValue>;
   friend std::conditional_t<
