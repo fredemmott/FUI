@@ -198,6 +198,13 @@ int Win32Window::WinMain(
     }
 
     appTick(*window);
+      appTick(*window);
+
+    // Check this before EndFrame() so that users don't have to call EndWidget()
+    // correctly if they're quitting anyway
+    if (const auto ec = window->GetExitCode()) {
+      return *ec;
+    }
 
     window->EndFrame();
   }

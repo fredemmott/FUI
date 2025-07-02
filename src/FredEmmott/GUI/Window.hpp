@@ -70,6 +70,9 @@ class Window {
   // This is protected so it can be called outside the usual frame loop, e.g.
   // when resizing on Windows
   void Paint();
+  std::optional<int> GetExitCode() const noexcept {
+    return mExitCode;
+  }
 
   auto GetRoot() const noexcept {
     return &mFUIRoot;
