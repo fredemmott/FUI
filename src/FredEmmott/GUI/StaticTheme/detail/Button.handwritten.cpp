@@ -9,7 +9,6 @@
 
 namespace FredEmmott::GUI::StaticTheme::Button {
 using namespace StaticTheme::Common;
-using namespace StaticTheme::Button;
 using namespace PseudoClasses;
 
 const style_detail::lazy_init_style DefaultButtonStyle {[] {
