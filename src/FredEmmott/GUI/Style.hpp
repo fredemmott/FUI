@@ -71,14 +71,15 @@ struct Style {
   static Style BuiltinBaseline();
 
   Style& operator+=(const Style& other) noexcept;
-  Style operator+(const Style& other) const noexcept {
-    Style ret {*this};
-    ret += other;
-    return ret;
-  }
 
   bool operator==(const Style& other) const noexcept = default;
 };
+
+inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
+  Style ret {lhs};
+  ret += rhs;
+  return ret;
+}
 
 }// namespace FredEmmott::GUI
 

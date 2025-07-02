@@ -64,6 +64,9 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
 }
 
 std::string GetHpp(const HppData& data) {
+  const auto handWrittenHeader = fmt::format(
+    "<FredEmmott/GUI/StaticTheme/detail/{}.handwritten.hpp>",
+    data.mMetadata.mComponent);
   return fmt::format(
     R"EOF(
 #pragma once
@@ -75,9 +78,14 @@ namespace {NAMESPACE} {{
 {CONSTANTS}
 
 }} // namespace {NAMESPACE}
+
+#if __has_include({MANUAL_HEADER})
+#include {MANUAL_HEADER}
+#endif
 )EOF",
     fmt::arg("COMPONENT", data.mMetadata.mComponent),
     fmt::arg("NAMESPACE", data.mMetadata.mNamespace),
+    fmt::arg("MANUAL_HEADER", handWrittenHeader),
     fmt::arg(
       "CONSTANTS",
       std::ranges::to<std::string>(

@@ -1,6 +1,7 @@
 # Use `fmt` instead of `<format>` for named arguments in codegen
 find_package(fmt CONFIG REQUIRED)
 find_package(tinyxml CONFIG REQUIRED)
+find_package(yoga CONFIG REQUIRED)
 
 add_executable(
   xaml-to-fui-statictheme
@@ -119,6 +120,7 @@ function(add_winui3_theme_file COMPONENT)
     PRIVATE
     fredemmott-gui-config
     WIL::WIL
+    yoga::yogacore
   )
   if (ENABLE_SKIA)
     target_link_libraries("${TARGET}" PRIVATE skia)

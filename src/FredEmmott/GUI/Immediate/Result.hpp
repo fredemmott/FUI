@@ -122,9 +122,11 @@ class Result final : public immediate_detail::StyledResultMixin<TMixins...>,
     requires(HasWidget && !HasValue)
     : mWidget(widget) {};
 
-  template <void (*TOtherEndWidget)()>
-    requires(HasWidget && !HasValue)
-  constexpr Result(const Result<TOtherEndWidget, void>& other)
+  template <void (*TOtherEndWidget)(), class... TOtherMixins>
+    requires(
+      HasWidget && !HasValue
+      && Result<TOtherEndWidget, void, TOtherMixins...>::HasWidget)
+  constexpr Result(const Result<TOtherEndWidget, void, TOtherMixins...>& other)
     : mWidget(other.mWidget) {}
 
   template <std::convertible_to<TValue> T>
@@ -133,9 +135,15 @@ class Result final : public immediate_detail::StyledResultMixin<TMixins...>,
     : mWidget(widget),
       mValue(std::forward<T>(result)) {}
 
-  template <std::convertible_to<TValue> T, void (*TOtherEndWidget)()>
-    requires(HasWidget && HasValue)
-  constexpr Result(const Result<TOtherEndWidget, void>& other, T&& result)
+  template <
+    std::convertible_to<TValue> T,
+    void (*TOtherEndWidget)(),
+    class... TOtherMixins>
+    requires(HasWidget && HasValue
+             && Result<TOtherEndWidget, void, TOtherMixins...>::HasWidget)
+  constexpr Result(
+    const Result<TOtherEndWidget, void, TOtherMixins...>& other,
+    T&& result)
     : mWidget(other.mWidget),
       mValue(std::forward<T>(result)) {}
 

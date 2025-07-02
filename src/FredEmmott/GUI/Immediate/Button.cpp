@@ -6,7 +6,7 @@
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
-Result<&EndButton> BeginButton(bool* clicked, const ID id) {
+ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
   using Button = Widgets::Button;
   const auto button = BeginWidget<Button>(id);
   if (clicked) {
@@ -15,7 +15,7 @@ Result<&EndButton> BeginButton(bool* clicked, const ID id) {
   return button;
 }
 
-Result<nullptr, bool> Button(const std::string_view label, const ID id) {
+ButtonResult<nullptr, bool> Button(const std::string_view label, const ID id) {
   bool clicked {};
   const auto button = BeginButton(&clicked, id);
   Label(label, ID {0});
