@@ -6,14 +6,19 @@
 #include <FredEmmott/GUI/Widgets/TextBlock.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
+#include "Button.hpp"
+
 namespace FredEmmott::GUI::Immediate {
 
-void TextBlock(const std::string_view text, const ID id) {
+TextBlockResult TextBlock(const std::string_view text, const ID id) {
   using Widgets::TextBlock;
   using namespace immediate_detail;
 
-  BeginWidget<TextBlock>(id);
+  const auto widget = BeginWidget<TextBlock>(id);
   GetCurrentParentNode<TextBlock>()->SetText(text);
   EndWidget<TextBlock>();
+
+  return {widget};
 }
+
 }// namespace FredEmmott::GUI::Immediate

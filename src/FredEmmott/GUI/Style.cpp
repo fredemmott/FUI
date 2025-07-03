@@ -78,7 +78,7 @@ Style Style::InheritableValues() const noexcept {
 }
 
 Style Style::BuiltinBaseline() {
-  auto ret = StaticTheme::Generic::BaseTextBlockStyle + Style {
+  auto ret = StaticTheme::Generic::BodyTextBlockStyle + Style {
     .mColor = StaticTheme::TextFillColorPrimaryBrush,
     .mAnd = {
       { PseudoClasses::Disabled, Style {
