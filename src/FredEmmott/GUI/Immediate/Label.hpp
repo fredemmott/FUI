@@ -36,7 +36,7 @@ struct StyledLabel {
   template <class... Args>
   static auto operator()(std::format_string<Args...> fmt, Args&&... args) {
     const auto ret = Label(fmt, std::forward<Args>(args)...);
-    ApplyStyles(ret);
+    ApplyStyles(widget_from_result(ret));
     return ret;
   }
 
