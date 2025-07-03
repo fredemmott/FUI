@@ -24,7 +24,7 @@ static void AppTick() {
     .mPadding = 8,
   });
 
-  fuii::SubtitleLabel("FUI Details");
+  fuii::Label("FUI Details").Subtitle();
   {
     // Could call EndCard() and EndVStackPanel() instead of .Scoped();
     const auto card = fuii::BeginCard().Scoped();
@@ -34,11 +34,11 @@ static void AppTick() {
     fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
   }
 
-  fuii::SubtitleLabel("Controls");
+  fuii::Label("Controls").Subtitle();
   fuii::BeginCard();
   fuii::BeginVStackPanel();
 
-  fuii::Caption("Disable all controls");
+  fuii::Label("Disable all controls").Caption();
   static bool sDisableAll = false;
   // (void) cast to ignore [[nodiscard]] is-changed return value
   (void)fuii::ToggleSwitch(&sDisableAll);

@@ -47,6 +47,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp
   FredEmmott/GUI/StaticTheme/detail/Button.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/Button.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
   FredEmmott/GUI/StyleProperty.hpp
@@ -77,6 +79,7 @@ add_library(
   FredEmmott/GUI/assert.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
+  FredEmmott/GUI/detail/immediate/TextBlockStylesMixin.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/renderer_detail.cpp FredEmmott/GUI/detail/renderer_detail.hpp
   FredEmmott/GUI/detail/style_detail.hpp

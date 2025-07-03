@@ -6,9 +6,11 @@
 #include <FredEmmott/GUI/Widgets/Label.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
+#include "Button.hpp"
+
 namespace FredEmmott::GUI::Immediate {
 
-Result<> Label(const std::string_view text, const ID id) {
+LabelResult Label(const std::string_view text, const ID id) {
   using Widgets::Label;
   using namespace immediate_detail;
 

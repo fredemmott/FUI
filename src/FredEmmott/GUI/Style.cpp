@@ -3,6 +3,7 @@
 
 #include "Style.hpp"
 
+#include <FredEmmott/GUI/StaticTheme/Generic.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <mutex>
 
@@ -77,9 +78,8 @@ Style Style::InheritableValues() const noexcept {
 }
 
 Style Style::BuiltinBaseline() {
-  Style ret {
+  auto ret = StaticTheme::Generic::BaseTextBlockStyle + Style {
     .mColor = StaticTheme::TextFillColorPrimaryBrush,
-    .mFont = SystemFont::Body,
     .mAnd = {
       { PseudoClasses::Disabled, Style {
         .mColor = StaticTheme::TextFillColorDisabledBrush,

@@ -13,7 +13,10 @@
   X(Display, SemiBold, "Segoe UI Variable Display Semibold", "Segoe UI") \
   X(Glyph, Normal, "Segoe Fluent Icons", "Segoe MDL2 Assets")
 
-/// X(USAGE, TYPEFACE)
+/** X(USAGE, TYPEFACE)
+ *
+ * BodyLarge is defined in Fluent2, but not WinUI3
+ */
 #define FUI_ENUM_SYSTEM_FONT_FONTS(X) \
   X(Caption, Caption) \
   X(Body, Regular) \
