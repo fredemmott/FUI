@@ -5,6 +5,7 @@
 
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <print>
 
 #include "FredEmmott/GUI/StaticTheme.hpp"
 
@@ -17,6 +18,9 @@ using namespace Widgets;
 
 Root::Root() {
   mYogaRoot.reset(YGNodeNew());
+  const auto yoga = mYogaRoot.get();
+  YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
+  YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
 }
 Root::~Root() {}
 
@@ -75,7 +79,7 @@ void Root::Paint(Renderer* renderer, const Size& size) {
     = renderer->ScopedClipRect({.mSize = {size.mWidth, size.mHeight}});
 
   auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
+  YGNodeCalculateLayout(yoga, size.mWidth, YGUndefined, YGDirectionLTR);
   mWidget->Paint(renderer);
 }
 bool Root::CanFit(const Size& size) const {
@@ -83,12 +87,7 @@ bool Root::CanFit(const Size& size) const {
 }
 
 bool Root::CanFit(float width, float height) const {
-  auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, width, height, YGDirectionLTR);
-  if (YGNodeLayoutGetHadOverflow(yoga)) {
-    return false;
-  }
-  return true;
+  return GetHeightForWidth(width) <= height;
 }
 
 Size Root::GetInitialSize() const {
@@ -96,25 +95,52 @@ Size Root::GetInitialSize() const {
     mWidget->UpdateLayout();
     mWidget->ComputeStyles({});
   }
-  auto yoga = mYogaRoot.get();
+  float minWidth = 128;
+  float maxWidth = 2048;
+  while ((maxWidth - minWidth) > 1) {
+    // We clone the node due to caching bugs with YGNodeCalculateLayout with
+    // varying sizes, and instead set the width property on the clone.
+    //
+    // This workaround is suggested here:
+    //
+    // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
+    unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
+    const auto yoga = testRoot.get();
+
+    const auto mid = std::ceil((minWidth + maxWidth) / 2);
+    YGNodeStyleSetWidth(yoga, mid);
+    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+    if (YGNodeLayoutGetHadOverflow(yoga)) {
+      if (mid - minWidth < 1) {
+        break;
+      }
+      minWidth = mid;
+    } else {
+      if (maxWidth - mid < 1) {
+        break;
+      }
+      maxWidth = mid;
+    }
+  }
+
+  unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
+  const auto yoga = testRoot.get();
+  YGNodeStyleSetWidth(yoga, maxWidth);
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-  // This works as for things with a variable width (e.g. wrappable text), we
-  // return `YGUndefined` from the measure functions if the width is undefined.
-  //
-  // While we 'should' return the true maximum size (e.g the length of all the
-  // text as a single line), that unfortunately is interpreted as having a
-  // definite size, as Yoga does not currently support measure funcs providing
-  // minimum values.
+
   return Size {
-    YGNodeLayoutGetWidth(yoga),
-    YGNodeLayoutGetHeight(yoga),
+    std::ceil(YGNodeLayoutGetWidth(yoga)),
+    std::ceil(YGNodeLayoutGetHeight(yoga)),
   };
 }
 
 float Root::GetHeightForWidth(float width) const {
-  auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, width, YGUndefined, YGDirectionLTR);
-  return YGNodeLayoutGetHeight(yoga);
+  unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
+  auto yoga = testRoot.get();
+  YGNodeStyleSetWidth(yoga, width);
+  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+  const auto h = YGNodeLayoutGetHeight(yoga);
+  return h;
 }
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {
