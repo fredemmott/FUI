@@ -74,7 +74,9 @@ void GetString(
   std::back_insert_iterator<std::vector<Resource>> back,
   const TiXmlElement& it) {
   const auto key = std::string_view {it.Attribute("x:Key")};
-  if (key.ends_with("Duration") || key.ends_with("Time")) {
+  if (
+    key.ends_with("Duration") || key.ends_with("Time")
+    || key.ends_with("Delay")) {
     if (GetDuration(back, it)) {
       return;
     }
