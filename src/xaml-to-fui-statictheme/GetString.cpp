@@ -95,6 +95,7 @@ void GetString(
   back = {
     .mName = it.Attribute("x:Key"),
     .mValue = std::format("\"{}\"", it.GetText()),
-    .mType = "std::string",
+    .mType = "std::string_view",
+    .mKind = Resource::Kind::Literal,
   };
 }
