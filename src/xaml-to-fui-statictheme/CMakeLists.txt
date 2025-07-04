@@ -174,6 +174,7 @@ add_winui3_component_theme(Deprecated)
 add_winui3_component_theme(Button PARENT Deprecated)
 add_winui3_component_theme(ComboBox PARENT Button)
 
+add_winui3_component_theme(CheckBox)
 add_winui3_component_theme(ScrollBar)
 add_winui3_component_theme(ScrollView)
 add_winui3_component_theme(ToggleSwitch)

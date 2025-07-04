@@ -3,6 +3,7 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <FredEmmott/GUI/Widgets/CheckBox.hpp>
 #include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #include <print>
 
@@ -43,6 +44,9 @@ static void AppTick() {
   // (void) cast to ignore [[nodiscard]] is-changed return value
   (void)fuii::ToggleSwitch(&sDisableAll);
   fuii::BeginDisabled(sDisableAll);
+
+  fuii::immediate_detail::BeginWidget<fui::Widgets::CheckBox>(fuii::ID {123});
+  fuii::immediate_detail::EndWidget<fui::Widgets::CheckBox>();
 
   fuii::Label("Hello, world; this text doesn't make the button wider aeg");
   static uint64_t frameCounter {};
