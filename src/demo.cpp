@@ -46,6 +46,7 @@ static void AppTick() {
   fuii::BeginDisabled(sDisableAll);
 
   fuii::immediate_detail::BeginWidget<fui::Widgets::CheckBox>(fuii::ID {123});
+  fuii::Label("I'm a checkbox");
   fuii::immediate_detail::EndWidget<fui::Widgets::CheckBox>();
 
   fuii::Label("Hello, world; this text doesn't make the button wider aeg");

@@ -24,6 +24,8 @@ class CheckBox final : public Widget {
   EventHandlerResult OnClick(const MouseEvent& event) override;
   Widget* GetFosterParent() const noexcept override;
   WidgetList GetDirectChildren() const noexcept override;
+  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
+    override;
 
  private:
   // Using an enum here to make things clearer if support for Indeterminate

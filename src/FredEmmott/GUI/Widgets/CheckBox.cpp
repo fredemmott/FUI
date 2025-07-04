@@ -25,6 +25,14 @@ CheckBox::CheckBox(std::size_t id) : Widget(id) {
   });
   mCheckGlyphBackground->SetChildren({mCheckGlyph});
 
+  using namespace StaticTheme::CheckBox;
+  mFosterParent->SetBuiltInStyles({
+    .mPaddingBottom = CheckBoxPaddingBottom + 6,
+    .mPaddingLeft = CheckBoxPaddingLeft,
+    .mPaddingRight = CheckBoxPaddingRight,
+    .mPaddingTop = CheckBoxPaddingTop,
+  });
+
   this->UpdateCheckGlyphStyles();
 }
 
@@ -136,9 +144,9 @@ Style CheckBox::GetBuiltInStyles() const {
     .mBorderRadius = ControlCornerRadius,
     .mBorderWidth = CheckBoxBorderThickness,
     .mColor = CheckBoxForegroundUnchecked,
-    .mFlexGrow = 0,
     .mFont = {WidgetFont::ControlContent},
     .mHeight = CheckBoxHeight,
+    .mMarginLeft = -CheckBoxPaddingLeft,
     .mMinWidth = CheckBoxMinWidth,
     .mPaddingBottom = CheckBoxPaddingBottom,
     .mPaddingLeft = CheckBoxPaddingLeft,
@@ -216,6 +224,13 @@ WidgetList CheckBox::GetDirectChildren() const noexcept {
     mCheckGlyphBackground.get(),
     mFosterParent.get(),
   };
+}
+Widget::ComputedStyleFlags CheckBox::OnComputedStyleChange(
+  const Style& style,
+  StateFlags state) {
+  return Widget::OnComputedStyleChange(style, state)
+    | ComputedStyleFlags::InheritableActiveState
+    | ComputedStyleFlags::InheritableHoverState;
 }
 
 }// namespace FredEmmott::GUI::Widgets
