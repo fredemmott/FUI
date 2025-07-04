@@ -28,8 +28,10 @@ YGSize TextBlock::MeasureWithSkia(
   [[maybe_unused]] YGMeasureMode heightMode) {
   if (widthMode == YGMeasureModeUndefined) {
     return {
-      mSkiaParagraph->getMinIntrinsicWidth(), -mFont.GetMetrics().mAscent};
+      mSkiaParagraph->getMaxIntrinsicWidth(), -mFont.GetMetrics().mAscent};
   }
+
+  FUI_ASSERT(!YGFloatIsUndefined(width));
 
   mSkiaParagraph->layout(width);
   mMeasuredHeight = mSkiaParagraph->getHeight();

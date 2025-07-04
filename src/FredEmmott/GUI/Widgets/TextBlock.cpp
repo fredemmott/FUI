@@ -80,14 +80,6 @@ void TextBlock::PaintOwnContent(
   FUI_ALWAYS_ASSERT(false, "TextBlock currently requires Skia")
 }
 
-Style TextBlock::GetBuiltInStyles() const {
-  static const Style ret {
-    .mFlexGrow = 0,
-    .mFlexShrink = 1,
-  };
-  return ret;
-}
-
 Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   const Style& style,
   StateFlags) {

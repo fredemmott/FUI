@@ -3,6 +3,8 @@
 
 #include <Windows.h>
 
+#include <print>
+
 #include "FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
 #include "TextBlock.hpp"
@@ -15,24 +17,27 @@ using namespace FredEmmott::GUI::direct_write_detail;
 namespace FredEmmott::GUI::Widgets {
 YGSize TextBlock::MeasureWithDirectWrite(
   float width,
-  YGMeasureMode widthMode,
+  [[maybe_unused]] YGMeasureMode widthMode,
   float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
-  auto layout = mDirectWriteTextLayout.get();
-  if (widthMode == YGMeasureModeUndefined) {
-    FLOAT textWidth = 0;
-    CheckHResult(layout->DetermineMinWidth(&textWidth));
-    return {textWidth, -mFont.GetMetrics().mAscent};
-  }
+  const auto layout = mDirectWriteTextLayout.get();
 
+  if (std::isnan(width)) {
+    width = std::numeric_limits<float>::infinity();
+  }
   CheckHResult(layout->SetMaxWidth(width));
+
   if (std::isnan(height)) {
     height = std::numeric_limits<float>::infinity();
   }
   CheckHResult(layout->SetMaxHeight(height));
+
   DWRITE_TEXT_METRICS metrics {};
   CheckHResult(layout->GetMetrics(&metrics));
-  return {metrics.width, metrics.height};
+  return {
+    std::ceil(metrics.width),
+    std::ceil(metrics.height),
+  };
 }
 
 void TextBlock::UpdateDirectWriteTextLayout() {

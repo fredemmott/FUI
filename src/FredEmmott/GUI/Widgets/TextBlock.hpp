@@ -23,7 +23,6 @@ class TextBlock final : public Widget {
  protected:
   void PaintOwnContent(Renderer*, const Rect&, const Style& style)
     const override;
-  Style GetBuiltInStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& base, StateFlags state)
     override;
 
