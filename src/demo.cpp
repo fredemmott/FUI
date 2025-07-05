@@ -61,10 +61,6 @@ static void AppTick() {
     std::println(stderr, "Clicked!");
   }
 
-  if (fuii::Button("Accent style").Caption("Accent button").Accent()) {
-    std::println(stderr, "Accent clicked");
-  }
-
   if (fuii::BeginPopupWindow(&popupVisible)) {
     fuii::BeginCard();
     fuii::BeginVStackPanel();
@@ -76,6 +72,10 @@ static void AppTick() {
     fuii::EndStackPanel();
     fuii::EndCard();
     fuii::EndPopupWindow();
+  }
+
+  if (fuii::Button("Accent style").Caption("Accent button").Accent()) {
+    std::println(stderr, "Accent clicked");
   }
 
   static bool isOn = true;
