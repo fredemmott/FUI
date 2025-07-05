@@ -278,19 +278,10 @@ void Win32Window::CreateNativeWindow() {
   this->SetDPI(GetDpiForWindow(mHwnd.get()));
 
   gInstances.emplace(mHwnd.get(), this);
-  const auto calculatedInitialSize = this->CalculateInitialWindowSize();
-  mMinimumWidth = calculatedInitialSize.cx;
-  SetWindowPos(
-    mHwnd.get(),
-    nullptr,
-    0,
-    0,
-    calculatedInitialSize.cx,
-    calculatedInitialSize.cy,
-    SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS);
+  this->ResizeToFit();
+
   RECT clientRect {};
   GetClientRect(mHwnd.get(), &clientRect);
-
   if (mOffsetToChild) {
     auto root = mOffsetToChild->GetLayoutNode();
     while (const auto node = YGNodeGetParent(root)) {
@@ -398,6 +389,7 @@ void Win32Window::ResizeIfNeeded() {
 
   ResizeSwapchain();
 }
+
 Size Win32Window::GetClientAreaSize() const {
   return {
     std::floor(static_cast<float>(mClientSize.cx) / mDPIScale),
@@ -427,6 +419,40 @@ void Win32Window::OffsetPositionToDescendant(Widgets::Widget* child) {
     mOptions.mInitialPosition.mY != CW_USEDEFAULT,
     "Can't align a child element if an initial position is not specified");
   mOffsetToChild = child;
+}
+
+void Win32Window::ResizeToFit() {
+  const auto [w, h] = CalculateInitialWindowSize();
+
+  RECT rect {};
+  GetWindowRect(mHwnd.get(), &rect);
+
+  const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
+  MONITORINFO monitorInfo {sizeof(monitorInfo)};
+  GetMonitorInfoW(monitor, &monitorInfo);
+
+  if (rect.left + w > monitorInfo.rcWork.right) {
+    rect.left = monitorInfo.rcWork.right - w;
+  }
+  if (rect.top + h > monitorInfo.rcWork.bottom) {
+    rect.top = monitorInfo.rcWork.bottom - h;
+  }
+
+  SetWindowPos(
+    mHwnd.get(),
+    nullptr,
+    rect.left,
+    rect.top,
+    w,
+    h,
+    SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+  GetWindowRect(mHwnd.get(), &mNCRect);
+  GetClientRect(mHwnd.get(), &rect);
+  mClientSize = {rect.right - rect.left, rect.bottom - rect.top};
+  mMinimumWidth = w;
+  if (mSwapChain) {
+    this->ResizeSwapchain();
+  }
 }
 
 void Win32Window::SetParent(NativeHandle value) {

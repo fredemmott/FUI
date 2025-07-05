@@ -110,6 +110,7 @@ class Win32Window : public Window {
   void SetParent(NativeHandle) final;
   void SetInitialPositionInNativeCoords(const NativePoint& native) final;
   void OffsetPositionToDescendant(Widgets::Widget* child) final;
+  void ResizeToFit() override;
 
   NativePoint CanvasPointToNativePoint(const Point& canvas) const final;
 

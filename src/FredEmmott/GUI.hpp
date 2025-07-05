@@ -15,6 +15,7 @@
 #include <FredEmmott/GUI/Immediate/Label.hpp>
 #include <FredEmmott/GUI/Immediate/PopupWindow.hpp>
 #include <FredEmmott/GUI/Immediate/PushID.hpp>
+#include <FredEmmott/GUI/Immediate/ResizeToFit.hpp>
 #include <FredEmmott/GUI/Immediate/ScrollView.hpp>
 #include <FredEmmott/GUI/Immediate/StackPanel.hpp>
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>

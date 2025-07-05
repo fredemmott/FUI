@@ -60,6 +60,10 @@ void Root::EndFrame() {
     YGNodeSetChildren(mYogaRoot.get(), &node, 1);
   }
 
+  if (tResizeToFit.TestAndClear()) {
+    tWindow->ResizeToFit();
+  }
+
   mWidget->Tick();
   mWidget->ComputeStyles({});
   mWidget->UpdateLayout();

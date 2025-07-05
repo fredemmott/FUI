@@ -25,6 +25,7 @@ struct StackEntry final {
 extern thread_local std::vector<StackEntry> tStack;
 extern thread_local Window* tWindow;
 extern thread_local ActivatedFlag tNeedAdditionalFrame;
+extern thread_local ActivatedFlag tResizeToFit;
 
 template <std::derived_from<Widget> T = Widget>
 T* GetCurrentNode() {
