@@ -19,10 +19,7 @@ struct OnOffTextResultMixin {
    */
   template <class Self>
   decltype(auto) OnText(this Self&& self, const std::string_view label) {
-    if (const auto widget = widget_from_result<ToggleSwitch>(self);
-        widget->IsOn()) {
-      Self::SetLabelText(widget, label);
-    }
+    Self::SetOnText(widget_from_result<ToggleSwitch>(self), label);
     return std::forward<Self>(self);
   }
 
@@ -35,12 +32,9 @@ struct OnOffTextResultMixin {
     requires(sizeof...(Args) >= 1)
   decltype(auto)
   OnText(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
-    if (const auto widget = widget_from_result<ToggleSwitch>(self);
-        widget->IsOn()) {
-      Self::SetLabelText(
-        widget_from_result<ToggleSwitch>(self),
-        std::format(fmt, std::forward<Args>(args)...));
-    }
+    Self::SetOnText(
+      widget_from_result<ToggleSwitch>(self),
+      std::format(fmt, std::forward<Args>(args)...));
     return std::forward<Self>(self);
   }
 
@@ -51,10 +45,7 @@ struct OnOffTextResultMixin {
    */
   template <class Self>
   decltype(auto) OffText(this Self&& self, const std::string_view label) {
-    if (const auto widget = widget_from_result<ToggleSwitch>(self);
-        !widget->IsOn()) {
-      Self::SetLabelText(widget_from_result<ToggleSwitch>(self), label);
-    }
+    Self::SetOffText(widget_from_result<ToggleSwitch>(self), label);
     return std::forward<Self>(self);
   }
 
@@ -67,17 +58,15 @@ struct OnOffTextResultMixin {
     requires(sizeof...(Args) >= 1)
   decltype(auto)
   OffText(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
-    if (const auto widget = widget_from_result<ToggleSwitch>(self);
-        !widget->IsOn()) {
-      Self::SetLabelText(
-        widget_from_result<ToggleSwitch>(self),
-        std::format(fmt, std::forward<Args>(args)...));
-    }
+    Self::SetOffText(
+      widget_from_result<ToggleSwitch>(self),
+      std::format(fmt, std::forward<Args>(args)...));
     return std::forward<Self>(self);
   }
 
  private:
-  static void SetLabelText(Widgets::ToggleSwitch* self, std::string_view text);
+  static void SetOnText(Widgets::ToggleSwitch* self, std::string_view text);
+  static void SetOffText(Widgets::ToggleSwitch* self, std::string_view text);
 };
 }// namespace immediate_detail
 

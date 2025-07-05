@@ -11,13 +11,29 @@ namespace FredEmmott::GUI::Immediate {
 namespace {
 struct ToggleSwitchContext : Widgets::Context {
   Widgets::Label* mLabel {nullptr};
+  std::string mOnText {"On"};
+  std::string mOffText {"Off"};
 };
 }// namespace
 
-void immediate_detail::OnOffTextResultMixin::SetLabelText(
+void immediate_detail::OnOffTextResultMixin::SetOnText(
   Widgets::ToggleSwitch* self,
   const std::string_view text) {
-  self->GetContext<ToggleSwitchContext>().value()->mLabel->SetText(text);
+  const auto ctx = self->GetContext<ToggleSwitchContext>().value();
+  ctx->mOnText = text;
+  if (self->IsOn()) {
+    ctx->mLabel->SetText(text);
+  }
+}
+
+void immediate_detail::OnOffTextResultMixin::SetOffText(
+  Widgets::ToggleSwitch* self,
+  const std::string_view text) {
+  const auto ctx = self->GetContext<ToggleSwitchContext>().value();
+  ctx->mOffText = text;
+  if (!self->IsOn()) {
+    ctx->mLabel->SetText(text);
+  }
 }
 
 ToggleSwitchResult<&EndToggleSwitch>
@@ -47,6 +63,7 @@ LabeledToggleSwitchResult<nullptr, bool> ToggleSwitch(
   }
   bool isChanged {false};
   const auto toggle = BeginToggleSwitch(&isChanged, &isOn, id);
+  const auto toggleWidget = widget_from_result<Widgets::ToggleSwitch>(toggle);
 
   if (pIsOn) [[likely]] {
     *pIsOn = isOn;
@@ -54,6 +71,10 @@ LabeledToggleSwitchResult<nullptr, bool> ToggleSwitch(
 
   std::string_view onText = "On";
   std::string_view offText = "Off";
+  if (const auto ctx = toggleWidget->GetContext<ToggleSwitchContext>()) {
+    onText = ctx.value()->mOnText;
+    offText = ctx.value()->mOffText;
+  }
   auto label
     = Label(isOn ? onText : offText, ID {"__GeneratedToggleSwitchLabel"});
   widget_from_result(toggle)->SetContextIfUnset([&label] {
