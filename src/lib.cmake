@@ -76,6 +76,7 @@ add_library(
   FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
   FredEmmott/GUI/Widgets/Widget.cpp
   FredEmmott/GUI/Widgets/Widget.hpp
+  FredEmmott/GUI/Widgets/WidgetList.hpp
   FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
   FredEmmott/GUI/Windows/Win32Window.cpp FredEmmott/GUI/Windows/Win32Window.hpp
@@ -96,6 +97,7 @@ add_library(
   FredEmmott/GUI/detail/system_font_detail.hpp
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
+  FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
   FredEmmott/GUI/events/MouseButton.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
@@ -107,6 +109,25 @@ add_library(
   FredEmmott/utility/moved_flag.hpp
   FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
+)
+set(
+  SKIA_SOURCES
+  FredEmmott/GUI/Brush_Skia.cpp
+  FredEmmott/GUI/LinearGradientBrush_Skia.cpp
+  FredEmmott/GUI/SkiaRenderer.cpp FredEmmott/GUI/SkiaRenderer.hpp
+  FredEmmott/GUI/SystemFont_Skia.cpp
+  FredEmmott/GUI/Widgets/TextBlock_Skia.cpp
+  FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
+)
+set(
+  DIRECT2D_SOURCES
+  FredEmmott/GUI/Windows/Win32Direct2DWindow.cpp FredEmmott/GUI/Windows/Win32Direct2DWindow.hpp
+  FredEmmott/GUI/Direct2DRenderer.cpp FredEmmott/GUI/Direct2DRenderer.hpp
+  FredEmmott/GUI/LinearGradientBrush_Direct2D.cpp
+  FredEmmott/GUI/SystemFont_DirectWrite.cpp
+  FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.cpp FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp
+  FredEmmott/GUI/Brush_Direct2D.cpp
+  FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
 )
 
 target_link_libraries(
@@ -141,16 +162,7 @@ target_compile_features(
 
 if (ENABLE_SKIA)
   include(skia)
-  target_sources(
-    fredemmott-gui
-    PRIVATE
-    FredEmmott/GUI/Brush_Skia.cpp
-    FredEmmott/GUI/LinearGradientBrush_Skia.cpp
-    FredEmmott/GUI/SkiaRenderer.cpp FredEmmott/GUI/SkiaRenderer.hpp
-    FredEmmott/GUI/SystemFont_Skia.cpp
-    FredEmmott/GUI/Widgets/TextBlock_Skia.cpp
-    FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
-  )
+  target_sources(fredemmott-gui PRIVATE ${SKIA_SOURCES})
   target_link_libraries(
     fredemmott-gui
     PUBLIC
@@ -162,17 +174,7 @@ if (ENABLE_SKIA)
 endif ()
 
 if (ENABLE_DIRECT2D)
-  target_sources(
-    fredemmott-gui
-    PRIVATE
-    FredEmmott/GUI/Windows/Win32Direct2DWindow.cpp FredEmmott/GUI/Windows/Win32Direct2DWindow.hpp
-    FredEmmott/GUI/Direct2DRenderer.cpp FredEmmott/GUI/Direct2DRenderer.hpp
-    FredEmmott/GUI/LinearGradientBrush_Direct2D.cpp
-    FredEmmott/GUI/SystemFont_DirectWrite.cpp
-    FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.cpp FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp
-    FredEmmott/GUI/Brush_Direct2D.cpp
-    FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
-  )
+  target_sources(fredemmott-gui PRIVATE ${DIRECT2D_SOURCES})
   list(
     APPEND
     WINDOWS_SDK_LIBRARIES
@@ -190,6 +192,17 @@ endforeach ()
 
 get_target_property(HEADERS fredemmott-gui SOURCES)
 list(FILTER HEADERS INCLUDE REGEX "\\.hpp$")
+
+if (ENABLE_DEVELOPER_OPTIONS)
+  # Explicit listing is needed for CMake to fully work correctly - but we can at least do a safety check
+  file(GLOB_RECURSE GLOBBED_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "FredEmmott/*.hpp")
+  foreach (HEADER IN LISTS GLOBBED_HEADERS)
+    if (NOT HEADER IN_LIST HEADERS AND NOT HEADER IN_LIST SKIA_SOURCES AND NOT HEADER IN_LIST DIRECT2D_SOURCES)
+      message(FATAL_ERROR "Header '${HEADER}' must be explicitly added to ${CMAKE_CURRENT_LIST_FILE}")
+    endif ()
+  endforeach ()
+endif ()
+
 target_sources(fredemmott-gui PUBLIC FILE_SET HEADERS FILES "${HEADERS}")
 install(
   TARGETS fredemmott-gui
