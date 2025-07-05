@@ -50,6 +50,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp
   FredEmmott/GUI/StaticTheme/detail/Button.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/Button.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/ContentDialog.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/ContentDialog.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
