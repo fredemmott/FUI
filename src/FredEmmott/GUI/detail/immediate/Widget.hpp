@@ -12,7 +12,15 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 template <std::derived_from<Widgets::Widget> T, auto... TFixedArgs>
 T* BeginWidget(const ID id) {
   auto& frame = tStack.back();
-  auto pending
+
+  if constexpr (Config::Debug) {
+    if (std::ranges::contains(
+          frame.mNewSiblings, id.GetValue(), &Widget::GetID)) {
+      throw std::logic_error("All siblings must have different IDs");
+    }
+  }
+
+  const auto pending
     = std::ranges::find(frame.mPending, id.GetValue(), &Widget::GetID);
 
   if (pending == frame.mPending.end()) {
@@ -26,7 +34,6 @@ T* BeginWidget(const ID id) {
 
   tStack.emplace_back(it->GetChildren() | std::ranges::to<std::vector>());
   tStack.back().mNewSiblings.reserve(tStack.back().mPending.size());
-
   return it;
 }
 
