@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/config.hpp>
 #include <format>
 #include <source_location>
 
@@ -44,10 +45,10 @@ inline void assert_fail(
     assert_fail( \
       std::source_location::current(), #condition __VA_OPT__(, ) __VA_ARGS__); \
   }
+
 #endif
 
-#ifdef NDEBUG
-#define FUI_ASSERT(...)
-#else
-#define FUI_ASSERT FUI_ALWAYS_ASSERT
-#endif
+#define FUI_ASSERT(...) \
+  if constexpr (FredEmmott::GUI::Config::Debug) { \
+    FUI_ALWAYS_ASSERT(__VA_ARGS__); \
+  }
