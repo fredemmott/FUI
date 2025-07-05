@@ -6,6 +6,8 @@
 
 #include <FredEmmott/memory.hpp>
 
+#include "Size.hpp"
+
 namespace FredEmmott::Memory::extensions {
 template <>
 struct deleter<YGNode> {
@@ -26,5 +28,6 @@ namespace FredEmmott::GUI {
 using namespace FredEmmott::Memory;
 
 YGConfigRef GetYogaConfig();
+Size GetMinimumWidthAndIdealHeight(YGNodeConstRef node);
 
 }// namespace FredEmmott::GUI

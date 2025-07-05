@@ -102,49 +102,7 @@ Size Root::GetInitialSize() const {
     mWidget->ComputeStyles({});
   }
 
-  // We clone the node due to caching bugs with YGNodeCalculateLayout with
-  // varying sizes, and instead set the width property on the clone.
-  //
-  // This workaround is suggested here:
-  //
-  // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
-  float minWidth = 128;
-  float maxWidth = 0;
-  {
-    const unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
-    YGNodeCalculateLayout(
-      testRoot.get(), YGUndefined, YGUndefined, YGDirectionLTR);
-    maxWidth = YGNodeLayoutGetWidth(testRoot.get());
-  }
-  while ((maxWidth - minWidth) > 1) {
-    unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
-    const auto yoga = testRoot.get();
-
-    const auto mid = std::ceil((minWidth + maxWidth) / 2);
-    YGNodeStyleSetWidth(yoga, mid);
-    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-    if (YGNodeLayoutGetHadOverflow(yoga)) {
-      if (mid - minWidth < 1) {
-        break;
-      }
-      minWidth = mid;
-    } else {
-      if (maxWidth - mid < 1) {
-        break;
-      }
-      maxWidth = mid;
-    }
-  }
-
-  unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
-  const auto yoga = testRoot.get();
-  YGNodeStyleSetWidth(yoga, maxWidth);
-  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-
-  return Size {
-    std::ceil(YGNodeLayoutGetWidth(yoga)),
-    std::ceil(YGNodeLayoutGetHeight(yoga)),
-  };
+  return GetMinimumWidthAndIdealHeight(mYogaRoot.get());
 }
 
 float Root::GetHeightForWidth(float width) const {

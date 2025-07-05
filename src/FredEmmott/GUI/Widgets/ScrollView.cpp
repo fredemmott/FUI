@@ -129,47 +129,18 @@ void ScrollView::UpdateLayout() {
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
 
-  {
-    unique_ptr<YGNode> testNode {YGNodeClone(mContentYoga.get())};
-    auto yoga = testNode.get();
-    YGNodeStyleSetWidth(yoga, w);
-    YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
-    YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
-    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-    if (
-      YGNodeLayoutGetHadOverflow(yoga) || YGNodeLayoutGetWidth(yoga) > w
-      || YGFloatIsUndefined(w)) {
-      YGNodeStyleSetWidth(yoga, YGUndefined);
-      YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
-      YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
-      YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-      float high = YGNodeLayoutGetWidth(yoga);
-      float low = 128;
-      while ((high - low) > 1) {
-        const auto mid = std::ceil((low + high) / 2);
-        YGNodeStyleSetWidth(yoga, mid);
-        YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-        if (YGNodeLayoutGetHadOverflow(yoga)) {
-          if (mid - low < 1) {
-            break;
-          }
-          low = mid;
-        } else {
-          if (high - mid < 1) {
-            break;
-          }
-          high = mid;
-        }
-      }
-      YGNodeStyleSetWidth(yoga, high);
-      YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-      const auto w = YGNodeLayoutGetWidth(yoga);
-      const auto h = YGNodeLayoutGetHeight(yoga);
-      this->SetAdditionalBuiltInStyles({
-        .mMaxHeight = std::ceil(h),
-        .mMinWidth = std::ceil(w),
-      });
-    }
+  mContent->UpdateLayout();
+  mContent->ComputeStyles({});
+
+  if (
+    YGNodeGetHasNewLayout(mContentYoga.get()) || YGNodeGetHasNewLayout(node)) {
+    YGNodeSetHasNewLayout(mContentYoga.get(), false);
+    YGNodeSetHasNewLayout(node, false);
+    const auto [w, h] = GetMinimumWidthAndIdealHeight(mContentYoga.get());
+    this->SetAdditionalBuiltInStyles({
+      .mMaxHeight = std::ceil(h),
+      .mMinWidth = std::ceil(w),
+    });
   }
 
   if (YGFloatIsUndefined(w) || YGFloatIsUndefined(h)) {
