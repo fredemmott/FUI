@@ -24,7 +24,7 @@ ComboBoxPopupResult BeginComboBoxPopup(ID id) {
   using namespace StaticTheme::ComboBox;
   using namespace immediate_detail;
   auto button = GetCurrentNode();
-  if (!BeginPopupWindow(id).Transparent()) {
+  if (!BeginBasicPopupWindow(id).Transparent()) {
     return false;
   }
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
@@ -60,7 +60,7 @@ void EndComboBoxPopup() {
   using namespace immediate_detail;
   EndStackPanel();
   EndWidget<Widget>();
-  EndPopupWindow();
+  EndBasicPopupWindow();
 }
 
 }// namespace FredEmmott::GUI::Immediate

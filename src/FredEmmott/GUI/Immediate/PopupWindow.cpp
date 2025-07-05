@@ -3,6 +3,7 @@
 
 #include "PopupWindow.hpp"
 
+#include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
@@ -45,7 +46,8 @@ void PopupWindowResultMixin::MakeTransparent(const bool transparent) {
     transparent ? DWMSBT_NONE : DWMSBT_TRANSIENTWINDOW);
 }
 
-PopupWindowResult BeginPopupWindow(const ID id) {
+BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
+  const ID id) {
   auto anchor = GetCurrentNode();
 
   BeginWidget<PopupWindow>(id);
@@ -74,19 +76,52 @@ PopupWindowResult BeginPopupWindow(const ID id) {
   return false;
 }
 
+BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
+  bool* open,
+  ID id) {
+  if (!(open && *open)) {
+    return false;
+  }
+  *open = BeginBasicPopupWindow(id);
+  return *open;
+}
+void EndBasicPopupWindow() {
+  auto window = tPopupStack.back().mWindow;
+  window->EndFrame();
+  PopParentContext();
+  EndWidget<PopupWindow>();
+}
+
+void EndPopupWindow() {
+  EndWidget<Widget>();
+  EndBasicPopupWindow();
+}
+
+PopupWindowResult BeginPopupWindow(const ID id) {
+  if (!BeginBasicPopupWindow(id).Transparent()) {
+    return false;
+  }
+
+  const auto widget = BeginWidget<Widget>(ID {0});
+
+  using namespace StaticTheme::Common;
+  widget->SetBuiltInStyles({
+    .mBackgroundColor = AcrylicBackgroundFillColorDefaultBrush,
+    .mBorderColor = SurfaceStrokeColorDefaultBrush,
+    .mBorderRadius = OverlayCornerRadius,
+    .mBorderWidth = 2,
+    .mPadding = 20,
+  });
+
+  return {true};
+}
+
 PopupWindowResult BeginPopupWindow(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }
   *open = BeginPopupWindow(id);
   return *open;
-}
-
-void EndPopupWindow() {
-  auto window = tPopupStack.back().mWindow;
-  window->EndFrame();
-  PopParentContext();
-  EndWidget<PopupWindow>();
 }
 
 }// namespace FredEmmott::GUI::Immediate

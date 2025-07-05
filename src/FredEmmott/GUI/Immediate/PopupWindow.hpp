@@ -23,14 +23,18 @@ struct PopupWindowResultMixin {
 };
 }// namespace immediate_detail
 
-void EndPopupWindow();
+void EndBasicPopupWindow();
 
-using PopupWindowResult = Result<
-  &EndPopupWindow,
+template <void (*TEndPopupWindow)()>
+using BasicPopupWindowResult = Result<
+  TEndPopupWindow,
   bool,
   immediate_detail::WidgetlessResultMixin,
   immediate_detail::ConditionallyScopedResultMixin,
   immediate_detail::PopupWindowResultMixin>;
+
+void EndPopupWindow();
+using PopupWindowResult = BasicPopupWindowResult<&EndPopupWindow>;
 
 /** Start a popup window.
  *
@@ -51,6 +55,9 @@ using PopupWindowResult = Result<
  *
  */
 [[nodiscard]]
+BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
+  ID id = ID {std::source_location::current()});
+[[nodiscard]]
 PopupWindowResult BeginPopupWindow(
   ID id = ID {std::source_location::current()});
 /** Start a popup window; optionally show it.
@@ -60,6 +67,10 @@ PopupWindowResult BeginPopupWindow(
  * @param open inout: if true, the window will be shown. When the window is
  *   closed, it will be set to false.
  */
+[[nodiscard]]
+BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
+  bool* open,
+  ID id = ID {std::source_location::current()});
 [[nodiscard]]
 PopupWindowResult BeginPopupWindow(
   bool* open,

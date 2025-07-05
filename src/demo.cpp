@@ -54,23 +54,17 @@ static void AppTick() {
   fuii::Label("Frame {}##Frames", ++frameCounter);
 
   static bool popupVisible = false;
-  static bool transparentPopup = false;
   if (fuii::Button("Click Me!")
         .Caption("Button")
         .Styled({.mMinWidth = 200.f})) {
     popupVisible = true;
-    transparentPopup = false;
     std::println(stderr, "Clicked!");
   }
 
-  if (
-    const auto window = fuii::BeginPopupWindow(&popupVisible)
-                          .Transparent(transparentPopup)
-                          .Scoped()) {
+  if (const auto window = fuii::BeginPopupWindow(&popupVisible).Scoped()) {
     const auto card = fuii::BeginCard().Scoped();
     const auto layout = fuii::BeginVStackPanel().Scoped();
     fuii::Label("This is a popup");
-    (void)fuii::ToggleSwitch(&transparentPopup).Caption("Transparent");
     if (fuii::Button("Close")) {
       popupVisible = false;
       fuii::EnqueueAdditionalFrame();
