@@ -179,10 +179,20 @@ int main(int argc, char** argv) {
 
   SortResources(resources);
 
-  const auto header = std::format(
-    "// @{} by {}\n\n",
+  auto header = std::format(
+    "// @{} by {}\n//\n// Command line:\n//\n// {}\n",
     "generated" /* avoid including the combined token in the generator */,
-    std::filesystem::path(argv[0]).filename().string());
+    std::filesystem::path(argv[0]).filename().string(),
+    argv[0]);
+  for (int i = 1; i < argc; ++i) {
+    if (std::string_view {argv[i]}.starts_with("--") && i < (argc - 1)) {
+      header += std::format("//     {} {}\n", argv[i], argv[i + 1]);
+      ++i;
+    } else {
+      header += std::format("//     {}\n", argv[i]);
+    }
+  }
+  header += "\n";
 
   const Metadata metadata {
     .mComponent = arguments->mComponent,
