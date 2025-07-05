@@ -16,7 +16,7 @@ struct CaptionResultMixin {
   }
 
   template <class Self, class... Args>
-    requires(sizeof...(Args) > 1)
+    requires(sizeof...(Args) >= 1)
   decltype(auto)
   Caption(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
     const auto [id, text] = ParsedID(fmt, std::forward<Args>(args)...);

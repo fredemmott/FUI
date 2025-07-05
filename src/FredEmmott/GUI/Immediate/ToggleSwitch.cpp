@@ -4,8 +4,21 @@
 #include "ToggleSwitch.hpp"
 
 #include <FredEmmott/GUI/Immediate/Label.hpp>
+#include <FredEmmott/GUI/Widgets/Label.hpp>
 
 namespace FredEmmott::GUI::Immediate {
+
+namespace {
+struct ToggleSwitchContext : Widgets::Context {
+  Widgets::Label* mLabel {nullptr};
+};
+}// namespace
+
+void immediate_detail::OnOffTextResultMixin::SetLabelText(
+  Widgets::ToggleSwitch* self,
+  const std::string_view text) {
+  self->GetContext<ToggleSwitchContext>().value()->mLabel->SetText(text);
+}
 
 ToggleSwitchResult<&EndToggleSwitch>
 BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
@@ -25,10 +38,8 @@ BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
   return {toggle};
 }
 
-ToggleSwitchResult<nullptr, bool> ToggleSwitch(
+LabeledToggleSwitchResult<nullptr, bool> ToggleSwitch(
   bool* pIsOn,
-  std::string_view onText,
-  std::string_view offText,
   const ID id) {
   bool isOn {false};
   if (pIsOn) [[likely]] {
@@ -41,7 +52,15 @@ ToggleSwitchResult<nullptr, bool> ToggleSwitch(
     *pIsOn = isOn;
   }
 
-  Label(isOn ? onText : offText, ID {0});
+  std::string_view onText = "On";
+  std::string_view offText = "Off";
+  auto label
+    = Label(isOn ? onText : offText, ID {"__GeneratedToggleSwitchLabel"});
+  widget_from_result(toggle)->SetContextIfUnset([&label] {
+    auto ret = std::make_unique<ToggleSwitchContext>();
+    ret->mLabel = widget_from_result<Widgets::Label>(label);
+    return ret;
+  });
 
   EndToggleSwitch();
   return {toggle, isChanged};

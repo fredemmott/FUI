@@ -13,9 +13,9 @@ struct widget_from_result_t<T> {
   };
 };
 
-template <class T>
-  requires requires { widget_from_result_t<T> {}; }
-auto widget_from_result(const T& v) {
-  return widget_from_result_t<T> {}(v);
+template <std::derived_from<Widgets::Widget> T = Widgets::Widget, class TResult>
+  requires requires { widget_from_result_t<TResult> {}; }
+T* widget_from_result(const TResult& v) {
+  return dynamic_cast<T*>(widget_from_result_t<TResult> {}(v));
 }
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

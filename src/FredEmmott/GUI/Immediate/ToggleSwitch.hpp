@@ -10,9 +10,88 @@
 
 namespace FredEmmott::GUI::Immediate {
 
+namespace immediate_detail {
+struct OnOffTextResultMixin {
+  /** Change the text displayed when the ToggleSwitch is on.
+   *
+   * Note Microsoft UI guidelines *strongly* recommend leaving this alone -
+   * call `.Caption("descriptive text")` instead.
+   */
+  template <class Self>
+  decltype(auto) OnText(this Self&& self, const std::string_view label) {
+    if (const auto widget = widget_from_result<ToggleSwitch>(self);
+        widget->IsOn()) {
+      Self::SetLabelText(widget, label);
+    }
+    return std::forward<Self>(self);
+  }
+
+  /** Change the text displayed when the ToggleSwitch is on.
+   *
+   * Note Microsoft UI guidelines *strongly* recommend leaving this alone -
+   * call `.Caption("descriptive text")` instead.
+   */
+  template <class Self, class... Args>
+    requires(sizeof...(Args) >= 1)
+  decltype(auto)
+  OnText(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
+    if (const auto widget = widget_from_result<ToggleSwitch>(self);
+        widget->IsOn()) {
+      Self::SetLabelText(
+        widget_from_result<ToggleSwitch>(self),
+        std::format(fmt, std::forward<Args>(args)...));
+    }
+    return std::forward<Self>(self);
+  }
+
+  /** Change the text displayed when the ToggleSwitch is off.
+   *
+   * Note Microsoft UI guidelines *strongly* recommend leaving this alone -
+   * call `.Caption("descriptive text")` instead.
+   */
+  template <class Self>
+  decltype(auto) OffText(this Self&& self, const std::string_view label) {
+    if (const auto widget = widget_from_result<ToggleSwitch>(self);
+        !widget->IsOn()) {
+      Self::SetLabelText(widget_from_result<ToggleSwitch>(self), label);
+    }
+    return std::forward<Self>(self);
+  }
+
+  /** Change the text displayed when the ToggleSwitch is off.
+   *
+   * Note Microsoft UI guidelines *strongly* recommend leaving this alone -
+   * call `.Caption("descriptive text")` instead.
+   */
+  template <class Self, class... Args>
+    requires(sizeof...(Args) >= 1)
+  decltype(auto)
+  OffText(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
+    if (const auto widget = widget_from_result<ToggleSwitch>(self);
+        !widget->IsOn()) {
+      Self::SetLabelText(
+        widget_from_result<ToggleSwitch>(self),
+        std::format(fmt, std::forward<Args>(args)...));
+    }
+    return std::forward<Self>(self);
+  }
+
+ private:
+  static void SetLabelText(Widgets::ToggleSwitch* self, std::string_view text);
+};
+}// namespace immediate_detail
+
+template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
+using ToggleSwitchResult = Result<
+  TEndWidget,
+  TValue,
+  immediate_detail::CaptionResultMixin,
+  TMixins...>;
 template <void (*TEndWidget)() = nullptr, class TValue = void>
-using ToggleSwitchResult
-  = Result<TEndWidget, TValue, immediate_detail::CaptionResultMixin>;
+using LabeledToggleSwitchResult = ToggleSwitchResult<
+  TEndWidget,
+  TValue,
+  immediate_detail::OnOffTextResultMixin>;
 
 inline void EndToggleSwitch() {
   immediate_detail::EndWidget<Widgets::ToggleSwitch>();
@@ -24,10 +103,8 @@ ToggleSwitchResult<&EndToggleSwitch> BeginToggleSwitch(
   ID id = ID {std::source_location::current()});
 
 [[nodiscard]]
-ToggleSwitchResult<nullptr, bool> ToggleSwitch(
+LabeledToggleSwitchResult<nullptr, bool> ToggleSwitch(
   bool* isOn,
-  std::string_view onText = "On",
-  std::string_view offText = "Off",
   ID id = ID {std::source_location::current()});
 
 }// namespace FredEmmott::GUI::Immediate

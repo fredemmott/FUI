@@ -80,6 +80,10 @@ static void AppTick() {
   if (fuii::ToggleSwitch(&isOn).Caption("ToggleSwitch")) {
     std::println(stderr, "Toggled to {}", isOn);
   }
+  (void)(fuii::ToggleSwitch(&isOn)
+           .Caption("ToggleSwitch with custom on/off text (discouraged)")
+           .OnText("Foo (on)")
+           .OffText("Bar (off)"));
 
   static int selectedIndex = 1;
   constexpr auto comboItems = std::array {
