@@ -5,10 +5,15 @@
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
 #include "Label.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
+
+template <void (*TEndWidget)() = nullptr, class TValue = void>
+using ComboBoxButtonResult
+  = Result<TEndWidget, TValue, immediate_detail::CaptionResultMixin>;
 
 void EndComboBoxButton();
 
@@ -21,19 +26,19 @@ void EndComboBoxButton();
  *
  * @see `ComboBoxButton()` if you just want text
  */
-Result<&EndComboBoxButton> BeginComboBoxButton(
+ComboBoxButtonResult<&EndComboBoxButton> BeginComboBoxButton(
   bool* clicked,
   ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label
 [[nodiscard]]
-Result<nullptr, bool> ComboBoxButton(
+ComboBoxButtonResult<nullptr, bool> ComboBoxButton(
   std::string_view label,
   ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label
 template <class... Args>
-[[nodiscard]] Result<nullptr, bool> ComboBoxButton(
+[[nodiscard]] auto ComboBoxButton(
   std::format_string<Args...> format,
   Args&&... args) {
   const auto [id, text]

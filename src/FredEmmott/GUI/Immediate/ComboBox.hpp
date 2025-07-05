@@ -8,18 +8,23 @@
 #include <string>
 #include <vector>
 
+#include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
 #include "ID.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-Result<nullptr, bool> ComboBox(
+template <class TValue = void>
+using ComboBoxResult
+  = Result<nullptr, TValue, immediate_detail::CaptionResultMixin>;
+
+ComboBoxResult<bool> ComboBox(
   std::size_t* selectedIndex,
   std::span<std::string_view> items,
   ID id = ID {std::source_location::current()});
 
 template <class T>
-Result<nullptr, bool> ComboBox(
+ComboBoxResult<bool> ComboBox(
   T* selectedKey,
   const std::ranges::range auto& items,
   ID id = ID {std::source_location::current()})
@@ -49,7 +54,7 @@ Result<nullptr, bool> ComboBox(
 }
 
 template <class T>
-bool ComboBox(
+ComboBoxResult<bool> ComboBox(
   T* selectedKey,
   const std::ranges::range auto& items,
   ID id = ID {std::source_location::current()})

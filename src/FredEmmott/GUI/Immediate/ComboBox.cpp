@@ -29,7 +29,7 @@ class ComboBoxWidget : public Widgets::Widget {
 };
 }// namespace
 
-Result<nullptr, bool>
+ComboBoxResult<bool>
 ComboBox(std::size_t* selectedIndex, std::span<std::string_view> items, ID id) {
   using namespace immediate_detail;
   FUI_ASSERT(selectedIndex, "A selected index is required");

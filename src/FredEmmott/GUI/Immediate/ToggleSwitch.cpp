@@ -7,7 +7,7 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-Result<&EndToggleSwitch>
+ToggleSwitchResult<&EndToggleSwitch>
 BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
   using namespace immediate_detail;
   using Widgets::ToggleSwitch;
@@ -25,7 +25,7 @@ BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
   return {toggle};
 }
 
-Result<nullptr, bool> ToggleSwitch(
+ToggleSwitchResult<nullptr, bool> ToggleSwitch(
   bool* pIsOn,
   std::string_view onText,
   std::string_view offText,

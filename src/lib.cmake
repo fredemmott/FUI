@@ -84,6 +84,7 @@ add_library(
   FredEmmott/GUI/assert.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
+  FredEmmott/GUI/detail/immediate/CaptionResultMixin.cpp FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp
   FredEmmott/GUI/detail/immediate/TextBlockStylesMixin.hpp
   FredEmmott/GUI/detail/immediate/ScopedResultMixin.hpp
   FredEmmott/GUI/detail/immediate/StyledResultMixin.hpp

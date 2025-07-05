@@ -38,10 +38,9 @@ static void AppTick() {
   fuii::BeginCard();
   fuii::BeginVStackPanel();
 
-  fuii::Label("Disable all controls").Caption();
   static bool sDisableAll = false;
   // (void) cast to ignore [[nodiscard]] is-changed return value
-  (void)fuii::ToggleSwitch(&sDisableAll);
+  fuii::ToggleSwitch(&sDisableAll).Caption("Disable all controls");
   fuii::BeginDisabled(sDisableAll);
 
   static bool sIsChecked {false};
@@ -55,12 +54,12 @@ static void AppTick() {
   fuii::Label("Frame {}##Frames", ++frameCounter);
 
   static bool popupVisible = false;
-  if (fuii::Button("Click Me!")) {
+  if (fuii::Button("Click Me!").Caption("Button")) {
     popupVisible = true;
     std::println(stderr, "Clicked!");
   }
 
-  if (fuii::Button("Accent style").Accent()) {
+  if (fuii::Button("Accent style").Caption("Accent button").Accent()) {
     std::println(stderr, "Accent clicked");
   }
 
@@ -78,7 +77,7 @@ static void AppTick() {
   }
 
   static bool isOn = true;
-  if (fuii::ToggleSwitch(&isOn)) {
+  if (fuii::ToggleSwitch(&isOn).Caption("ToggleSwitch")) {
     std::println(stderr, "Toggled to {}", isOn);
   }
 
@@ -89,7 +88,7 @@ static void AppTick() {
     "baz",
     "I am a much much much longer entry",
   };
-  if (fuii::ComboBox(&selectedIndex, comboItems)) {
+  if (fuii::ComboBox(&selectedIndex, comboItems).Caption("ComboBox")) {
     std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
   }
 

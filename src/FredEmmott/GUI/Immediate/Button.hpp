@@ -5,15 +5,15 @@
 #include <FredEmmott/GUI/Immediate/Result.hpp>
 #include <FredEmmott/GUI/StaticTheme/Button.hpp>
 #include <FredEmmott/GUI/Widgets/Button.hpp>
+#include <FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
-#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
 #include "Button.hpp"
 #include "Label.hpp"
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-struct ButtonResultMixin {
+struct ButtonResultMixin : CaptionResultMixin {
   template <class Self>
   decltype(auto) Accent(this Self&& self) {
     widget_from_result(self)->SetAdditionalBuiltInStyles(

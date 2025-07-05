@@ -12,7 +12,7 @@
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
-Result<&EndComboBoxButton, void> BeginComboBoxButton(
+ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   bool* clicked,
   const ID id) {
   using Button = Widgets::Button;
@@ -105,7 +105,7 @@ void EndComboBoxButton() {
   EndWidget<Button>();
 }
 
-Result<nullptr, bool> ComboBoxButton(
+ComboBoxButtonResult<nullptr, bool> ComboBoxButton(
   const std::string_view label,
   const ID id) {
   bool clicked {};
