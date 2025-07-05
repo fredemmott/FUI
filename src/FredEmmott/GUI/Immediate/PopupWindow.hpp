@@ -33,8 +33,8 @@ using BasicPopupWindowResult = Result<
   immediate_detail::ConditionallyScopedResultMixin,
   immediate_detail::PopupWindowResultMixin>;
 
-void EndPopupWindow();
-using PopupWindowResult = BasicPopupWindowResult<&EndPopupWindow>;
+void EndPopup();
+using PopupWindowResult = BasicPopupWindowResult<&EndPopup>;
 
 /** Start a popup window.
  *
@@ -58,8 +58,7 @@ using PopupWindowResult = BasicPopupWindowResult<&EndPopupWindow>;
 BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
   ID id = ID {std::source_location::current()});
 [[nodiscard]]
-PopupWindowResult BeginPopupWindow(
-  ID id = ID {std::source_location::current()});
+PopupWindowResult BeginPopup(ID id = ID {std::source_location::current()});
 /** Start a popup window; optionally show it.
  *
  * Returns true if the window is open and content should follow.
@@ -72,7 +71,7 @@ BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
   bool* open,
   ID id = ID {std::source_location::current()});
 [[nodiscard]]
-PopupWindowResult BeginPopupWindow(
+PopupWindowResult BeginPopup(
   bool* open,
   ID id = ID {std::source_location::current()});
 

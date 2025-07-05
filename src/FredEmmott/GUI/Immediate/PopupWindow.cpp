@@ -92,12 +92,12 @@ void EndBasicPopupWindow() {
   EndWidget<PopupWindow>();
 }
 
-void EndPopupWindow() {
+void EndPopup() {
   EndWidget<Widget>();
   EndBasicPopupWindow();
 }
 
-PopupWindowResult BeginPopupWindow(const ID id) {
+PopupWindowResult BeginPopup(const ID id) {
   if (!BeginBasicPopupWindow(id).Transparent()) {
     return false;
   }
@@ -116,11 +116,11 @@ PopupWindowResult BeginPopupWindow(const ID id) {
   return {true};
 }
 
-PopupWindowResult BeginPopupWindow(bool* open, ID id) {
+PopupWindowResult BeginPopup(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }
-  *open = BeginPopupWindow(id);
+  *open = BeginPopup(id);
   return *open;
 }
 
