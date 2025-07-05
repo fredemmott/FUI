@@ -24,12 +24,8 @@ ComboBoxPopupResult BeginComboBoxPopup(ID id) {
   using namespace StaticTheme::ComboBox;
   using namespace immediate_detail;
   auto button = GetCurrentNode();
-  if (!BeginPopupWindow(id)) {
+  if (!BeginPopupWindow(id).Transparent()) {
     return false;
-  }
-  if (tWindow && !tWindow->GetNativeHandle()) {
-    const auto win32 = static_cast<Win32Window*>(tWindow);
-    win32->SetSystemBackdropType(DWMSBT_NONE);
   }
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
