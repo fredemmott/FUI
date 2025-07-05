@@ -8,7 +8,7 @@
 namespace FredEmmott::GUI::Immediate {
 
 namespace immediate_detail {
-struct PopupWindowResultMixin {
+struct BasicPopupWindowResultMixin {
   template <class Self>
     requires(std::same_as<bool, typename Self::value_type>)
   decltype(auto) Transparent(this Self&& self, bool transparent = true) {
@@ -25,16 +25,12 @@ struct PopupWindowResultMixin {
 
 void EndBasicPopupWindow();
 
-template <void (*TEndPopupWindow)()>
 using BasicPopupWindowResult = Result<
-  TEndPopupWindow,
+  &EndBasicPopupWindow,
   bool,
   immediate_detail::WidgetlessResultMixin,
   immediate_detail::ConditionallyScopedResultMixin,
-  immediate_detail::PopupWindowResultMixin>;
-
-void EndPopup();
-using PopupWindowResult = BasicPopupWindowResult<&EndPopup>;
+  immediate_detail::BasicPopupWindowResultMixin>;
 
 /** Start a popup window.
  *
@@ -55,11 +51,9 @@ using PopupWindowResult = BasicPopupWindowResult<&EndPopup>;
  *
  */
 [[nodiscard]]
-BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
+BasicPopupWindowResult BeginBasicPopupWindow(
   ID id = ID {std::source_location::current()});
-[[nodiscard]]
-PopupWindowResult BeginPopup(ID id = ID {std::source_location::current()});
-/** Start a popup window; optionally show it.
+/** Start a popup window; optionally, show it.
  *
  * Returns true if the window is open and content should follow.
  *
@@ -67,11 +61,21 @@ PopupWindowResult BeginPopup(ID id = ID {std::source_location::current()});
  *   closed, it will be set to false.
  */
 [[nodiscard]]
-BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
+BasicPopupWindowResult BeginBasicPopupWindow(
   bool* open,
   ID id = ID {std::source_location::current()});
+
+void EndPopup();
+using PopupResult = Result<
+  &EndPopup,
+  bool,
+  immediate_detail::WidgetlessResultMixin,
+  immediate_detail::ConditionallyScopedResultMixin>;
+
 [[nodiscard]]
-PopupWindowResult BeginPopup(
+PopupResult BeginPopup(ID id = ID {std::source_location::current()});
+[[nodiscard]]
+PopupResult BeginPopup(
   bool* open,
   ID id = ID {std::source_location::current()});
 

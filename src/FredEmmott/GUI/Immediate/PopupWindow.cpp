@@ -41,13 +41,12 @@ void PopParentContext() {
 
 }// namespace
 
-void PopupWindowResultMixin::MakeTransparent(const bool transparent) {
+void BasicPopupWindowResultMixin::MakeTransparent(const bool transparent) {
   static_cast<Win32Window*>(tWindow)->SetSystemBackdropType(
     transparent ? DWMSBT_NONE : DWMSBT_TRANSIENTWINDOW);
 }
 
-BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
-  const ID id) {
+BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
   auto anchor = GetCurrentNode();
 
   BeginWidget<PopupWindow>(id);
@@ -76,9 +75,7 @@ BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
   return false;
 }
 
-BasicPopupWindowResult<&EndBasicPopupWindow> BeginBasicPopupWindow(
-  bool* open,
-  ID id) {
+BasicPopupWindowResult BeginBasicPopupWindow(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }
@@ -97,7 +94,7 @@ void EndPopup() {
   EndBasicPopupWindow();
 }
 
-PopupWindowResult BeginPopup(const ID id) {
+PopupResult BeginPopup(const ID id) {
   if (!BeginBasicPopupWindow(id).Transparent()) {
     return false;
   }
@@ -116,7 +113,7 @@ PopupWindowResult BeginPopup(const ID id) {
   return {true};
 }
 
-PopupWindowResult BeginPopup(bool* open, ID id) {
+PopupResult BeginPopup(bool* open, ID id) {
   if (!(open && *open)) {
     return false;
   }
