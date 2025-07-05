@@ -126,9 +126,6 @@ Widget* ScrollView::GetFosterParent() const noexcept {
 
 void ScrollView::UpdateLayout() {
   const auto node = this->GetLayoutNode();
-  const auto w = YGNodeLayoutGetWidth(node);
-  const auto h = YGNodeLayoutGetHeight(node);
-
   mContent->UpdateLayout();
   mContent->ComputeStyles({});
 
@@ -142,6 +139,9 @@ void ScrollView::UpdateLayout() {
       .mMinWidth = std::ceil(w),
     });
   }
+
+  const auto w = YGNodeLayoutGetWidth(node);
+  const auto h = YGNodeLayoutGetHeight(node);
 
   if (YGFloatIsUndefined(w) || YGFloatIsUndefined(h)) {
     return;
