@@ -24,6 +24,7 @@ add_library(
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
+  FredEmmott/GUI/Immediate/PushID.cpp FredEmmott/GUI/Immediate/PushID.hpp
   FredEmmott/GUI/Immediate/Result.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/ScrollView.hpp

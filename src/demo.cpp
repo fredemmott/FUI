@@ -113,6 +113,18 @@ static void AppTick() {
     "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.");
+
+  for (int i = 0; i < 5; ++i) {
+    // IDs are automatically generated for formats
+    fuii::Label("Formatted label {}", i);
+  }
+  for (int i = 0; i < 5; ++i) {
+    // ... but not if we're passing in a variable like below,
+    // so we need to explicitly manage state
+    const auto scopedID = fuii::PushID(i).Scoped();
+    fuii::Label(std::format("String label {}", i));
+  }
+
   fuii::EndDisabled();
 
   fuii::EndStackPanel();
