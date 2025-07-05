@@ -64,10 +64,9 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     .mTranslateY = {0, SmoothScrollingAnimation},
   });
   mVerticalScrollBar->SetAdditionalBuiltInStyles({
-    .mBottom = ScrollBarSize,
     .mPosition = YGPositionTypeAbsolute,
     .mRight = 4,
-    .mTop = 0,
+    .mTop = 4,
   });
   mHorizontalScrollBar->SetAdditionalBuiltInStyles({
     .mBottom = 4,
@@ -157,29 +156,31 @@ void ScrollView::UpdateLayout() {
     = IsScrollBarVisible(mHorizontalScrollBarVisibility, cw, w);
   const bool showVScroll
     = IsScrollBarVisible(mVerticalScrollBarVisibility, ch, h);
-  mHorizontalScrollBar->AddExplicitStyles(
-    Style {
-      .mDisplay = showHScroll ? YGDisplayFlex : YGDisplayNone,
-    });
-  mVerticalScrollBar->AddExplicitStyles(
-    Style {
-      .mDisplay = showVScroll ? YGDisplayFlex : YGDisplayNone,
-    });
 
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
     mHorizontalScrollBar->SetMaximum(cw - w);
+    mHorizontalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayFlex});
+    mVerticalScrollBar->AddExplicitStyles({
+      .mBottom = StaticTheme::ScrollBar::ScrollBarSize + 4,
+    });
   } else {
     mHorizontalScrollBar->SetValue(0);
     mHorizontalScrollBar->SetMaximum(0);
+    mHorizontalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayNone});
+    mVerticalScrollBar->AddExplicitStyles({
+      .mBottom = 4,
+    });
   }
 
   if (showVScroll) {
     mVerticalScrollBar->SetThumbSize(h);
     mVerticalScrollBar->SetMaximum(ch - h);
+    mVerticalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayFlex});
   } else {
     mVerticalScrollBar->SetValue(0);
     mVerticalScrollBar->SetMaximum(0);
+    mVerticalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayNone});
   }
 
   Widget::UpdateLayout();
