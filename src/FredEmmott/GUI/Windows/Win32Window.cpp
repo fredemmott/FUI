@@ -330,10 +330,20 @@ Win32Window::~Win32Window() {
   }
 }
 
-void Win32Window::SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE type) {
-  FUI_ASSERT(
-    !mHwnd, "Can't set system backdrop type after creating the window");
+void Win32Window::SetSystemBackdropType(const DWM_SYSTEMBACKDROP_TYPE type) {
+  if (mOptions.mSystemBackdrop == type) {
+    return;
+  }
   mOptions.mSystemBackdrop = type;
+
+  if (!mHwnd) {
+    return;
+  }
+  mHaveSystemBackdrop = SUCCEEDED(DwmSetWindowAttribute(
+    mHwnd.get(),
+    DWMWA_SYSTEMBACKDROP_TYPE,
+    &mOptions.mSystemBackdrop,
+    sizeof(mOptions.mSystemBackdrop)));
 }
 
 void Win32Window::InitializeDirectComposition() {
