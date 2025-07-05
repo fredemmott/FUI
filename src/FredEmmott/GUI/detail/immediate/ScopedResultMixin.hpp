@@ -7,37 +7,77 @@
 #include <utility>
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
-template <void (*TEndWidget)()>
+
+/** Scoped() returns a no-op scope if the value is false.
+ *
+ * Requires `std::same_as<TValue, bool>`
+ */
+struct ConditionallyScopedResultMixin {};
+
+template <void (*TEndWidget)(), class TValue, class... TMixins>
 struct ScopedEndWidget {
+  template <std::convertible_to<TValue> T>
+    requires(!std::is_void_v<TValue>)
+  explicit constexpr ScopedEndWidget(T&& result)
+    : mResult(std::forward<T>(result)) {}
+
   ScopedEndWidget(const ScopedEndWidget&) = delete;
   ScopedEndWidget& operator=(const ScopedEndWidget&) = delete;
 
-  constexpr ScopedEndWidget() = default;
+  constexpr ScopedEndWidget()
+    requires(std::is_void_v<TValue>)
+  = default;
   constexpr ScopedEndWidget(ScopedEndWidget&&) noexcept = default;
   constexpr ScopedEndWidget& operator=(ScopedEndWidget&&) noexcept = default;
 
   constexpr ~ScopedEndWidget() {
+    if constexpr ((std::same_as<TMixins, ConditionallyScopedResultMixin>
+                   || ...)) {
+      static_assert(std::same_as<TValue, bool>);
+      if (!mResult) {
+        return;
+      }
+    }
     if (!mMoved) {
       TEndWidget();
     }
   }
 
+  constexpr operator TValue() const
+    requires(!std::is_void_v<TValue>)
+  {
+    return mResult;
+  }
+
+  constexpr TValue GetValue() const
+    requires(!std::is_void_v<TValue>)
+  {
+    return mResult;
+  }
+
  private:
   utility::moved_flag mMoved;
+  FUI_NO_UNIQUE_ADDRESS
+  std::conditional_t<std::is_void_v<TValue>, std::monostate, TValue> mResult;
 };
 
-template <void (*TEndWidget)()>
+template <void (*TEndWidget)(), class TValue, class... TMixins>
 struct ScopedResultMixin {
-  auto Scoped() {
-    if (std::exchange(mScoped, true)) [[unlikely]] {
+  template <class Self>
+  auto Scoped(this Self&& self) {
+    if (std::exchange(self.mScoped, true)) [[unlikely]] {
       throw std::logic_error("Can't call Scoped() twice on the same Result");
     }
-    return ScopedEndWidget<TEndWidget> {};
+    if constexpr (std::is_void_v<TValue>) {
+      return ScopedEndWidget<TEndWidget, void, TMixins...> {};
+    } else {
+      return ScopedEndWidget<TEndWidget, TValue, TMixins...> {self.GetValue()};
+    }
   }
 
  private:
   bool mScoped = false;
 };
-template <>
-struct ScopedResultMixin<nullptr> {};
+template <class T>
+struct ScopedResultMixin<nullptr, T> {};
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

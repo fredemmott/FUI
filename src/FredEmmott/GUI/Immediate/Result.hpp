@@ -11,10 +11,11 @@
 
 namespace FredEmmott::GUI::Immediate {
 template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
-class Result final : public immediate_detail::StyledResultMixin<TMixins...>,
-                     public immediate_detail::ScopedResultMixin<TEndWidget>,
-                     public immediate_detail::ValueResultMixin<TValue>,
-                     public TMixins... {
+class Result final
+  : public immediate_detail::StyledResultMixin<TMixins...>,
+    public immediate_detail::ScopedResultMixin<TEndWidget, TValue, TMixins...>,
+    public immediate_detail::ValueResultMixin<TValue>,
+    public TMixins... {
  public:
   static constexpr bool HasWidget
     = !(std::same_as<immediate_detail::WidgetlessResultMixin, TMixins> || ...);

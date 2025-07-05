@@ -9,8 +9,11 @@ namespace FredEmmott::GUI::Immediate {
 
 void EndPopupWindow();
 
-using PopupWindowResult
-  = Result<&EndPopupWindow, bool, immediate_detail::WidgetlessResultMixin>;
+using PopupWindowResult = Result<
+  &EndPopupWindow,
+  bool,
+  immediate_detail::WidgetlessResultMixin,
+  immediate_detail::ConditionallyScopedResultMixin>;
 
 /** Start a popup window.
  *
