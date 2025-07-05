@@ -63,18 +63,18 @@ static void AppTick() {
     std::println(stderr, "Clicked!");
   }
 
-  if (fuii::BeginPopupWindow(&popupVisible).Transparent(transparentPopup)) {
-    fuii::BeginCard();
-    fuii::BeginVStackPanel();
+  if (
+    const auto window = fuii::BeginPopupWindow(&popupVisible)
+                          .Transparent(transparentPopup)
+                          .Scoped()) {
+    const auto card = fuii::BeginCard().Scoped();
+    const auto layout = fuii::BeginVStackPanel().Scoped();
     fuii::Label("This is a popup");
     (void)fuii::ToggleSwitch(&transparentPopup).Caption("Transparent");
     if (fuii::Button("Close")) {
       popupVisible = false;
       fuii::EnqueueAdditionalFrame();
     }
-    fuii::EndStackPanel();
-    fuii::EndCard();
-    fuii::EndPopupWindow();
   }
 
   if (fuii::Button("Accent style").Caption("Accent button").Accent()) {
