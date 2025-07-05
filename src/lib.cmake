@@ -84,6 +84,11 @@ add_library(
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate/TextBlockStylesMixin.hpp
+  FredEmmott/GUI/detail/immediate/ScopedResultMixin.hpp
+  FredEmmott/GUI/detail/immediate/StyledResultMixin.hpp
+  FredEmmott/GUI/detail/immediate/ValueResultMixin.hpp
+  FredEmmott/GUI/detail/immediate/WidgetlessResultMixin.hpp
+  FredEmmott/GUI/detail/immediate/widget_from_result.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/renderer_detail.cpp FredEmmott/GUI/detail/renderer_detail.hpp
   FredEmmott/GUI/detail/style_detail.hpp

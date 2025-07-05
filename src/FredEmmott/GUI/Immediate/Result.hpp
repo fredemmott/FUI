@@ -4,90 +4,10 @@
 
 #include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
-#include <FredEmmott/utility/moved_flag.hpp>
-
-namespace FredEmmott::GUI::Immediate::immediate_detail {
-
-struct WidgetlessResultMixin {};
-
-template <class T>
-struct widget_from_result_t {};
-
-template <class T>
-  requires requires(T& v) { T::HasWidget; } && T::HasWidget
-struct widget_from_result_t<T> {
-  static auto operator()(const T& v) {
-    return v.mWidget;
-  };
-};
-
-template <class T>
-  requires requires { widget_from_result_t<T> {}; }
-auto widget_from_result(const T& v) {
-  return widget_from_result_t<T> {}(v);
-}
-
-template <class... TMixins>
-struct StyledResultMixin {};
-
-template <class... TMixins>
-  requires(!(std::same_as<TMixins, WidgetlessResultMixin> || ...))
-struct StyledResultMixin<TMixins...> {
-  template <class Self>
-  decltype(auto) Styled(this Self&& self, const Style& style) {
-    widget_from_result(self)->ReplaceExplicitStyles(style);
-    return std::forward<Self>(self);
-  }
-};
-
-template <void (*TEndWidget)()>
-struct ScopedEndWidget {
-  ScopedEndWidget(const ScopedEndWidget&) = delete;
-  ScopedEndWidget& operator=(const ScopedEndWidget&) = delete;
-
-  constexpr ScopedEndWidget() = default;
-  constexpr ScopedEndWidget(ScopedEndWidget&&) noexcept = default;
-  constexpr ScopedEndWidget& operator=(ScopedEndWidget&&) noexcept = default;
-
-  constexpr ~ScopedEndWidget() {
-    if (!mMoved) {
-      TEndWidget();
-    }
-  }
-
- private:
-  utility::moved_flag mMoved;
-};
-
-template <void (*TEndWidget)()>
-struct ScopedResultMixin {
-  auto Scoped() {
-    if (std::exchange(mScoped, true)) [[unlikely]] {
-      throw std::logic_error("Can't call Scoped() twice on the same Result");
-    }
-    return ScopedEndWidget<TEndWidget> {};
-  }
-
- private:
-  bool mScoped = false;
-};
-template <>
-struct ScopedResultMixin<nullptr> {};
-
-template <class TValue>
-struct ValueResultMixin {
-  constexpr TValue GetValue(this const auto& self) noexcept {
-    return self.mValue;
-  }
-
-  constexpr operator TValue(this const auto& self) noexcept {
-    return self.GetValue();
-  }
-};
-template <>
-struct ValueResultMixin<void> {};
-
-}// namespace FredEmmott::GUI::Immediate::immediate_detail
+#include <FredEmmott/GUI/detail/immediate/ScopedResultMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/StyledResultMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/ValueResultMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/widget_from_result.hpp>
 
 namespace FredEmmott::GUI::Immediate {
 template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
