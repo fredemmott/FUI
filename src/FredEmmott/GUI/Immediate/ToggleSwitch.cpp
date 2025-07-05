@@ -19,7 +19,7 @@ struct ToggleSwitchContext : Widgets::Context {
 void immediate_detail::OnOffTextResultMixin::SetOnText(
   Widgets::ToggleSwitch* self,
   const std::string_view text) {
-  const auto ctx = self->GetContext<ToggleSwitchContext>().value();
+  const auto ctx = self->GetContext<ToggleSwitchContext>();
   ctx->mOnText = text;
   if (self->IsOn()) {
     ctx->mLabel->SetText(text);
@@ -29,7 +29,7 @@ void immediate_detail::OnOffTextResultMixin::SetOnText(
 void immediate_detail::OnOffTextResultMixin::SetOffText(
   Widgets::ToggleSwitch* self,
   const std::string_view text) {
-  const auto ctx = self->GetContext<ToggleSwitchContext>().value();
+  const auto ctx = self->GetContext<ToggleSwitchContext>();
   ctx->mOffText = text;
   if (!self->IsOn()) {
     ctx->mLabel->SetText(text);
@@ -72,8 +72,8 @@ LabeledToggleSwitchResult<nullptr, bool> ToggleSwitch(
   std::string_view onText = "On";
   std::string_view offText = "Off";
   if (const auto ctx = toggleWidget->GetContext<ToggleSwitchContext>()) {
-    onText = ctx.value()->mOnText;
-    offText = ctx.value()->mOffText;
+    onText = ctx->mOnText;
+    offText = ctx->mOffText;
   }
   auto label
     = Label(isOn ? onText : offText, ID {"__GeneratedToggleSwitchLabel"});

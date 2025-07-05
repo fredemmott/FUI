@@ -47,7 +47,7 @@ PopupWindowResult BeginPopupWindow(const ID id) {
   window->SetParent(tWindow->GetNativeHandle());
   if (anchor && !window->GetNativeHandle()) {
     if (const auto ctx = anchor->GetContext<PopupAnchorContext>()) {
-      anchor = (*ctx)->mAnchor;
+      anchor = ctx->mAnchor;
     }
     window->SetInitialPositionInNativeCoords(
       tWindow->CanvasPointToNativePoint(anchor->GetTopLeftCanvasPoint()));

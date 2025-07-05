@@ -80,10 +80,10 @@ class Widget {
    * Set with `SetContextIfUnset()`
    */
   template <context T>
-  std::optional<T*> GetContext() {
+  T* GetContext() {
     const auto key = std::type_index(typeid(T));
     if (!mContexts.contains(key)) {
-      return std::nullopt;
+      return nullptr;
     }
     return static_cast<T*>(mContexts.at(key).get());
   }
