@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 
 namespace FredEmmott::GUI::Immediate {
@@ -38,6 +39,11 @@ void PopParentContext() {
 }
 
 }// namespace
+
+void PopupWindowResultMixin::MakeTransparent(const bool transparent) {
+  static_cast<Win32Window*>(tWindow)->SetSystemBackdropType(
+    transparent ? DWMSBT_NONE : DWMSBT_TRANSIENTWINDOW);
+}
 
 PopupWindowResult BeginPopupWindow(const ID id) {
   auto anchor = GetCurrentNode();

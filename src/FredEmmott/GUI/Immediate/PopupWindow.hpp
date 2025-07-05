@@ -7,13 +7,30 @@
 
 namespace FredEmmott::GUI::Immediate {
 
+namespace immediate_detail {
+struct PopupWindowResultMixin {
+  template <class Self>
+    requires(std::same_as<bool, typename Self::value_type>)
+  decltype(auto) Transparent(this Self&& self, bool transparent = true) {
+    if (self.GetValue()) {
+      Self::MakeTransparent(transparent);
+    }
+    return std::forward<Self>(self);
+  }
+
+ private:
+  static void MakeTransparent(bool transparent);
+};
+}// namespace immediate_detail
+
 void EndPopupWindow();
 
 using PopupWindowResult = Result<
   &EndPopupWindow,
   bool,
   immediate_detail::WidgetlessResultMixin,
-  immediate_detail::ConditionallyScopedResultMixin>;
+  immediate_detail::ConditionallyScopedResultMixin,
+  immediate_detail::PopupWindowResultMixin>;
 
 /** Start a popup window.
  *

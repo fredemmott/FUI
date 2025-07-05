@@ -17,6 +17,8 @@ class Result final
     public immediate_detail::ValueResultMixin<TValue>,
     public TMixins... {
  public:
+  using value_type = TValue;
+
   static constexpr bool HasWidget
     = !(std::same_as<immediate_detail::WidgetlessResultMixin, TMixins> || ...);
   static constexpr bool HasValue = !std::is_void_v<TValue>;
