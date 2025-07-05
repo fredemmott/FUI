@@ -39,10 +39,25 @@ void Label::PaintOwnContent(
 #endif
 
   const auto metrics = mFont.GetMetrics();
-  const Point baseline {
+  Point baseline {
     rect.GetLeft(),
     rect.GetBottom() - metrics.mDescent,
   };
+
+  switch (style.mTextAlign.value_or_default()) {
+    case TextAlign::Left:
+      break;
+    case TextAlign::Center: {
+      const auto textWidth = mFont.MeasureTextWidth(mText);
+      baseline.mX += (rect.GetWidth() - textWidth) / 2;
+      break;
+    }
+    case TextAlign::Right: {
+      const auto textWidth = mFont.MeasureTextWidth(mText);
+      baseline.mX = (rect.GetRight() - textWidth);
+      break;
+    }
+  }
 
   renderer->DrawText(style.mColor.value(), rect, mFont, mText, baseline);
 }

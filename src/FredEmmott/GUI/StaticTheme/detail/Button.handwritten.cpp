@@ -23,6 +23,7 @@ const style_detail::lazy_init_style DefaultButtonStyle {[] {
     .mPaddingLeft = ButtonPaddingLeft,
     .mPaddingRight = ButtonPaddingRight,
     .mPaddingTop = ButtonPaddingTop,
+    .mTextAlign = TextAlign::Center,
     .mAnd = {
       { Disabled, Style {
         .mBackgroundColor = ButtonBackgroundDisabled,

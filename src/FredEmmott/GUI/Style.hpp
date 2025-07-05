@@ -18,6 +18,12 @@ class Widget;
 
 namespace FredEmmott::GUI {
 
+enum class TextAlign {
+  Left,
+  Center,
+  Right,
+};
+
 struct Style {
   using Selector = std::variant<StyleClass, const Widgets::Widget*>;
 
@@ -60,6 +66,7 @@ struct Style {
   StyleProperty<float, 1.0f> mScaleX;
   StyleProperty<float, 1.0f> mScaleY;
   StyleProperty<float> mTop;
+  InheritableStyleProperty<TextAlign, TextAlign::Left> mTextAlign;
   StyleProperty<float, 0.0f> mTranslateX;
   StyleProperty<float, 0.0f> mTranslateY;
   StyleProperty<float> mWidth;
@@ -122,6 +129,7 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   X(Right) \
   X(ScaleX) \
   X(ScaleY) \
+  X(TextAlign) \
   X(Top) \
   X(TranslateX) \
   X(TranslateY) \

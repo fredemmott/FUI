@@ -54,7 +54,9 @@ static void AppTick() {
   fuii::Label("Frame {}##Frames", ++frameCounter);
 
   static bool popupVisible = false;
-  if (fuii::Button("Click Me!").Caption("Button")) {
+  if (fuii::Button("Click Me!")
+        .Caption("Button")
+        .Styled({.mMinWidth = 200.f})) {
     popupVisible = true;
     std::println(stderr, "Clicked!");
   }

@@ -18,7 +18,7 @@ ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
 ButtonResult<nullptr, bool> Button(const std::string_view label, const ID id) {
   bool clicked {};
   const auto button = BeginButton(&clicked, id);
-  Label(label, ID {0});
+  Label(label, ID {0}).Styled({.mFlexGrow = 1});
   EndButton();
   return {button, clicked};
 }
