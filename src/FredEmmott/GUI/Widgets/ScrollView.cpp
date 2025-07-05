@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>
 #include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetList.hpp>
+#include <print>
 
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
@@ -127,6 +128,54 @@ void ScrollView::UpdateLayout() {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
+
+  {
+    unique_ptr<YGNode> testNode {YGNodeClone(mContentYoga.get())};
+    auto yoga = testNode.get();
+    YGNodeStyleSetWidth(yoga, w);
+    YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
+    YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
+    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+    if (
+      YGNodeLayoutGetHadOverflow(yoga) || YGNodeLayoutGetWidth(yoga) > w
+      || YGFloatIsUndefined(w)) {
+      YGNodeStyleSetWidth(yoga, YGUndefined);
+      YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
+      YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
+      YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+      float high = YGNodeLayoutGetWidth(yoga);
+      float low = 128;
+      while ((high - low) > 1) {
+        const auto mid = std::ceil((low + high) / 2);
+        YGNodeStyleSetWidth(yoga, mid);
+        YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+        if (YGNodeLayoutGetHadOverflow(yoga)) {
+          if (mid - low < 1) {
+            break;
+          }
+          low = mid;
+        } else {
+          if (high - mid < 1) {
+            break;
+          }
+          high = mid;
+        }
+      }
+      YGNodeStyleSetWidth(yoga, high);
+      YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+      const auto w = YGNodeLayoutGetWidth(yoga);
+      const auto h = YGNodeLayoutGetHeight(yoga);
+      this->SetAdditionalBuiltInStyles({
+        .mMaxHeight = std::ceil(h),
+        .mMinWidth = std::ceil(w),
+      });
+    }
+  }
+
+  if (YGFloatIsUndefined(w) || YGFloatIsUndefined(h)) {
+    return;
+  }
+
   YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
@@ -169,7 +218,7 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
-  YGNodeCalculateLayout(mContentYoga.get(), w, h, YGDirectionLTR);
+  YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
   {
@@ -197,6 +246,11 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
     scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
   scrollBar->SetValue(value);
   return EventHandlerResult::StopPropagation;
+}
+Style ScrollView::GetBuiltInStyles() const {
+  return Style {
+    .mFlexShrink = 1,
+  };
 }
 
 void ScrollView::OnHorizontalScroll(float value) {
@@ -230,16 +284,27 @@ YGSize ScrollView::Measure(
   float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   float height,
-  [[maybe_unused]] YGMeasureMode heightMode) {
+  YGMeasureMode heightMode) {
   const auto& self = *static_cast<ScrollView*>(FromYogaNode(node));
 
-  const auto root = self.mContentYoga.get();
-  if (height == 0) {
-    height = YGUndefined;
+  const unique_ptr<YGNode> root {YGNodeClone(self.mContentYoga.get())};
+  const auto yoga = root.get();
+
+  YGNodeStyleSetWidth(yoga, width);
+  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+  width = YGNodeLayoutGetWidth(yoga);
+  switch (heightMode) {
+    case YGMeasureModeExactly:
+      break;
+    case YGMeasureModeAtMost:
+      height = std::min(height, YGNodeLayoutGetHeight(yoga));
+      break;
+    case YGMeasureModeUndefined:
+      height = YGNodeLayoutGetHeight(yoga);
+      break;
+    default:
+      std::unreachable();
   }
-  YGNodeCalculateLayout(root, width, height, YGDirectionLTR);
-  width = YGNodeLayoutGetWidth(root);
-  height = YGNodeLayoutGetHeight(root);
   return {width, height};
 }
 

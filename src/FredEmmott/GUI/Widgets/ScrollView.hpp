@@ -33,6 +33,7 @@ class ScrollView final : public Widget {
   void UpdateLayout() override;
   void PaintChildren(Renderer* renderer) const override;
   EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
+  Style GetBuiltInStyles() const override;
 
  private:
   unique_ptr<Widget> mContent;

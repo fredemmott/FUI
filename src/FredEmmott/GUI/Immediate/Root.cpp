@@ -79,15 +79,21 @@ void Root::Paint(Renderer* renderer, const Size& size) {
     = renderer->ScopedClipRect({.mSize = {size.mWidth, size.mHeight}});
 
   auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, size.mWidth, YGUndefined, YGDirectionLTR);
+  YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
   mWidget->Paint(renderer);
 }
+
 bool Root::CanFit(const Size& size) const {
   return CanFit(size.mWidth, size.mHeight);
 }
 
 bool Root::CanFit(float width, float height) const {
-  return GetHeightForWidth(width) <= height;
+  unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
+  auto yoga = testRoot.get();
+  YGNodeStyleSetWidth(yoga, width);
+  YGNodeStyleSetHeight(yoga, height);
+  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+  return !YGNodeLayoutGetHadOverflow(yoga);
 }
 
 Size Root::GetInitialSize() const {
@@ -95,15 +101,22 @@ Size Root::GetInitialSize() const {
     mWidget->UpdateLayout();
     mWidget->ComputeStyles({});
   }
+
+  // We clone the node due to caching bugs with YGNodeCalculateLayout with
+  // varying sizes, and instead set the width property on the clone.
+  //
+  // This workaround is suggested here:
+  //
+  // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
   float minWidth = 128;
-  float maxWidth = 2048;
+  float maxWidth = 0;
+  {
+    const unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
+    YGNodeCalculateLayout(
+      testRoot.get(), YGUndefined, YGUndefined, YGDirectionLTR);
+    maxWidth = YGNodeLayoutGetWidth(testRoot.get());
+  }
   while ((maxWidth - minWidth) > 1) {
-    // We clone the node due to caching bugs with YGNodeCalculateLayout with
-    // varying sizes, and instead set the width property on the clone.
-    //
-    // This workaround is suggested here:
-    //
-    // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
     unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
     const auto yoga = testRoot.get();
 
