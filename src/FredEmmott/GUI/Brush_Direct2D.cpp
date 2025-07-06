@@ -1,16 +1,20 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 #include "Brush.hpp"
+#include "Direct2DRenderer.hpp"
 #include "detail/win32_detail.hpp"
 
 namespace FredEmmott::GUI {
 
-wil::com_ptr<ID2D1Brush> Brush::GetDirect2DBrush(
-  ID2D1RenderTarget* rt,
+template <>
+wil::com_ptr<ID2D1Brush> Brush::as<wil::com_ptr<ID2D1Brush>>(
+  Renderer* renderer,
   const Rect& rect) const {
   if (mD2DSolidColorBrush) {
     return mD2DSolidColorBrush;
   }
+
+  const auto rt = direct2d_device_context_cast(renderer);
 
   if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
     win32_detail::CheckHResult(rt->CreateSolidColorBrush(

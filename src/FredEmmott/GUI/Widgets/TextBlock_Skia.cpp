@@ -71,10 +71,11 @@ void TextBlock::UpdateSkiaParagraph() {
 }
 
 void TextBlock::PaintOwnContent(
+  Renderer* renderer,
   SkCanvas* canvas,
   const Rect& rect,
   const Style& style) const {
-  auto paint = style.mColor->GetSkiaPaint(rect);
+  auto paint = style.mColor->as<SkPaint>(renderer, rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   mSkiaParagraph->updateForegroundPaint(0, mText.size(), paint);
   mSkiaParagraph->paint(canvas, rect.GetLeft(), rect.GetTop());

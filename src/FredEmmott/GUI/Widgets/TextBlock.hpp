@@ -44,7 +44,7 @@ class TextBlock final : public Widget {
     YGMeasureMode widthMode,
     float height,
     YGMeasureMode heightMode);
-  void PaintOwnContent(SkCanvas*, const Rect&, const Style&) const;
+  void PaintOwnContent(Renderer*, SkCanvas*, const Rect&, const Style&) const;
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
   void UpdateDirectWriteTextLayout();
@@ -53,7 +53,8 @@ class TextBlock final : public Widget {
     YGMeasureMode widthMode,
     float height,
     YGMeasureMode heightMode);
-  void PaintOwnContent(ID2D1RenderTarget*, const Rect&, const Style&) const;
+  void PaintOwnContent(Renderer*, ID2D1RenderTarget*, const Rect&, const Style&)
+    const;
 #endif
 
   static YGSize Measure(

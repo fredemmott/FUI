@@ -19,15 +19,23 @@
 
 namespace FredEmmott::GUI {
 
+namespace detail {
 template <class T>
-concept native_font =
+struct is_native_font_t : std::false_type {};
+
 #ifdef FUI_ENABLE_SKIA
-  std::same_as<T, SkFont> ||
+template <>
+struct is_native_font_t<SkFont> : std::true_type {};
 #endif
+
 #ifdef FUI_ENABLE_DIRECT2D
-  std::same_as<T, font_detail::DirectWriteFont> ||
+template <>
+struct is_native_font_t<font_detail::DirectWriteFont> : std::true_type {};
 #endif
-  false;
+}// namespace detail
+
+template <class T>
+concept native_font = detail::is_native_font_t<T>::value;
 
 class Font {
  public:

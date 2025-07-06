@@ -63,7 +63,7 @@ void SkiaRenderer::DrawLine(
   const Point& start,
   const Point& end,
   float thickness) {
-  auto paint = brush.GetSkiaPaint(Rect {start, end});
+  auto paint = brush.as<SkPaint>(this, Rect {start, end});
   paint.setStrokeWidth(thickness);
   mCanvas->drawLine(start.as<SkPoint>(), end.as<SkPoint>(), paint);
 }
@@ -77,7 +77,7 @@ void SkiaRenderer::Translate(const Point& point) {
 }
 
 void SkiaRenderer::FillRect(const Brush& brush, const Rect& rect) {
-  auto paint = brush.GetSkiaPaint(rect);
+  auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   mCanvas->drawRect(rect, paint);
 }
@@ -86,7 +86,7 @@ void SkiaRenderer::StrokeRect(
   const Brush& brush,
   const Rect& rect,
   float thickness) {
-  auto paint = brush.GetSkiaPaint(rect);
+  auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::Style::kStroke_Style);
   paint.setStrokeWidth(thickness);
   mCanvas->drawRect(rect, paint);
@@ -96,7 +96,7 @@ void SkiaRenderer::FillRoundedRect(
   const Brush& brush,
   const Rect& rect,
   float radius) {
-  auto paint = brush.GetSkiaPaint(rect);
+  auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   paint.setAntiAlias(true);
   mCanvas->drawRoundRect(rect, radius, radius, paint);
@@ -107,7 +107,7 @@ void SkiaRenderer::StrokeRoundedRect(
   const Rect& rect,
   float radius,
   float thickness) {
-  auto paint = brush.GetSkiaPaint(rect);
+  auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(thickness);
   paint.setAntiAlias(true);
@@ -120,7 +120,7 @@ void SkiaRenderer::DrawText(
   const Font& font,
   const std::string_view text,
   const Point& baseline) {
-  auto paint = brush.GetSkiaPaint(brushRect);
+  auto paint = brush.as<SkPaint>(this, brushRect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   mCanvas->drawString(
     SkString {text}, baseline.mX, baseline.mY, font.as<SkFont>(), paint);

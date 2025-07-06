@@ -24,15 +24,25 @@
 
 namespace FredEmmott::GUI {
 
+namespace detail {
+
 template <class T>
-concept native_color =
+struct is_native_color_t : std::false_type {};
+
 #ifdef FUI_ENABLE_SKIA
-  std::same_as<T, SkColor> ||
+template <>
+struct is_native_color_t<SkColor> : std::true_type {};
 #endif
+
 #ifdef FUI_ENABLE_DIRECT2D
-  std::same_as<T, D2D1_COLOR_F> ||
+template <>
+struct is_native_color_t<D2D1_COLOR_F> : std::true_type {};
 #endif
-  false;
+
+}// namespace detail
+
+template <class T>
+concept native_color = detail::is_native_color_t<T>::value;
 
 class Color final {
   using StaticThemeColor = const StaticTheme::Resource<Color>*;

@@ -21,6 +21,26 @@
 #endif
 
 namespace FredEmmott::GUI {
+class Renderer;
+
+namespace detail {
+template <class T>
+struct is_native_brush_t : std::false_type {};
+
+#ifdef FUI_ENABLE_SKIA
+template <>
+struct is_native_brush_t<SkPaint> : std::true_type {};
+#endif
+
+#ifdef FUI_ENABLE_DIRECT2D
+template <>
+struct is_native_brush_t<wil::com_ptr<ID2D1Brush>> : std::true_type {};
+#endif
+}// namespace detail
+
+template <class T>
+concept native_brush = detail::is_native_brush_t<T>::value;
+
 class Brush final {
  public:
   Brush() = delete;
@@ -40,14 +60,9 @@ class Brush final {
 
   constexpr bool operator==(const Brush&) const noexcept = default;
 
-#ifdef FUI_ENABLE_SKIA
-  [[nodiscard]] SkPaint GetSkiaPaint(const SkRect& rect) const;
-#endif
-#ifdef FUI_ENABLE_DIRECT2D
-  [[nodiscard]] wil::com_ptr<ID2D1Brush> GetDirect2DBrush(
-    ID2D1RenderTarget* rt,
-    const Rect& rect) const;
-#endif
+  template <native_brush T>
+  T as(Renderer*, const Rect&) const;
+
  private:
   // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
   // wanting more than just LinearGradientBrush, but it's worth special-casing

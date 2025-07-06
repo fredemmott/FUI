@@ -67,13 +67,13 @@ void TextBlock::PaintOwnContent(
 
 #ifdef FUI_ENABLE_SKIA
   if (auto canvas = skia_canvas_cast(renderer)) {
-    this->PaintOwnContent(canvas, rect, style);
+    this->PaintOwnContent(renderer, canvas, rect, style);
     return;
   }
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
   if (auto d2d = direct2d_device_context_cast(renderer)) {
-    this->PaintOwnContent(d2d, rect, style);
+    this->PaintOwnContent(renderer, d2d, rect, style);
     return;
   }
 #endif

@@ -4,7 +4,8 @@
 
 namespace FredEmmott::GUI {
 
-SkPaint Brush::GetSkiaPaint(const SkRect& rect) const {
+template <>
+SkPaint Brush::as<SkPaint>(Renderer*, const Rect& rect) const {
   if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
     SkPaint paint;
     paint.setColor(it->as<SkColor>());
