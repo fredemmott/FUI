@@ -43,6 +43,13 @@ class SkiaRenderer final : public Renderer {
   // Rounded rectangle drawing
   void FillRoundedRect(const Brush& brush, const Rect& rect, float radius)
     override;
+  void FillRoundedRect(
+    const Brush& brush,
+    const Rect& rect,
+    float topLeftRadius,
+    float topRightRadius,
+    float bottomRightRadius,
+    float bottomLeftRadius) override;
   void StrokeRoundedRect(
     const Brush& brush,
     const Rect& rect,

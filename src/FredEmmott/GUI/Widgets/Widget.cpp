@@ -27,20 +27,29 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
 
   auto brush = *style.mBackgroundColor;
 
-  if (style.mBorderRadius.value_or(0) < std::numeric_limits<float>::epsilon()) {
+  const auto baseRadius = style.mBorderRadius.value_or(0);
+  const auto tlRadius = style.mBorderTopLeftRadius.value_or(baseRadius);
+  const auto trRadius = style.mBorderTopRightRadius.value_or(baseRadius);
+  const auto brRadius = style.mBorderBottomRightRadius.value_or(baseRadius);
+  const auto blRadius = style.mBorderBottomLeftRadius.value_or(baseRadius);
+
+  constexpr auto Eps = std::numeric_limits<float>::epsilon();
+
+  if (tlRadius < Eps && trRadius < Eps && brRadius < Eps && blRadius < Eps) {
     renderer->FillRect(brush, rect);
     return;
   }
+  const auto allSameRadii = (tlRadius == trRadius) && (trRadius == brRadius)
+    && (brRadius == blRadius);
 
-  auto rrect = rect;
-  auto radius = style.mBorderRadius.value();
-  if (style.mBorderWidth && style.mBorderColor) {
-    radius -= style.mBorderWidth.value();
-    const auto inset = style.mBorderWidth.value() - 0.5f;
-    rrect.Inset(inset, inset);
+  if (allSameRadii) {
+    auto radius = style.mBorderRadius.value();
+    renderer->FillRoundedRect(brush, rect, radius);
+    return;
   }
 
-  renderer->FillRoundedRect(brush, rrect, radius);
+  renderer->FillRoundedRect(
+    brush, rect, tlRadius, trRadius, brRadius, blRadius);
 }
 
 void PaintBorder(

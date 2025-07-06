@@ -118,6 +118,61 @@ void Direct2DRenderer::FillRoundedRect(
     {rect, radius, radius},
     brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get());
 }
+void Direct2DRenderer::FillRoundedRect(
+  const Brush& brush,
+  const Rect& rect,
+  float topLeftRadius,
+  float topRightRadius,
+  [[maybe_unused]] float bottomRightRadius,
+  [[maybe_unused]] float bottomLeftRadius) {
+  wil::com_ptr<ID2D1PathGeometry> path;
+  wil::com_ptr<ID2D1Factory> factory;
+  mDeviceContext->GetFactory(&factory);
+  CheckHResult(factory->CreatePathGeometry(&path));
+  wil::com_ptr<ID2D1GeometrySink> sink;
+  CheckHResult(path->Open(&sink));
+  sink->BeginFigure(
+    (rect.GetTopLeft() - Point {0, -topLeftRadius}).as<D2D1_POINT_2F>(),
+    D2D1_FIGURE_BEGIN_FILLED);
+  sink->AddArc({
+    (rect.GetTopLeft() + Point {topLeftRadius, 0}).as<D2D1_POINT_2F>(),
+    {topLeftRadius, topLeftRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->AddLine(
+    (rect.GetTopRight() - Point {topRightRadius, 0}).as<D2D1_POINT_2F>());
+  sink->AddArc({
+    (rect.GetTopRight() + Point {0, topRightRadius}).as<D2D1_POINT_2F>(),
+    {topRightRadius, topRightRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->AddLine(
+    (rect.GetBottomRight() - Point {0, bottomRightRadius}).as<D2D1_POINT_2F>());
+  sink->AddArc({
+    (rect.GetBottomRight() - Point {bottomRightRadius, 0}).as<D2D1_POINT_2F>(),
+    {bottomRightRadius, bottomRightRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->AddLine(
+    (rect.GetBottomLeft() + Point {bottomLeftRadius, 0}).as<D2D1_POINT_2F>());
+  sink->AddArc({
+    (rect.GetBottomLeft() - Point {0, bottomLeftRadius}).as<D2D1_POINT_2F>(),
+    {bottomLeftRadius, bottomLeftRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+  CheckHResult(sink->Close());
+  mDeviceContext->FillGeometry(
+    path.get(), brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(), nullptr);
+}
 
 void Direct2DRenderer::StrokeRoundedRect(
   const Brush& brush,

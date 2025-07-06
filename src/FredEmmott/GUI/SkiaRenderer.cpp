@@ -3,6 +3,8 @@
 
 #include "SkiaRenderer.hpp"
 
+#include <skia/core/SkRRect.h>
+
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
 
 #include "assert.hpp"
@@ -100,6 +102,27 @@ void SkiaRenderer::FillRoundedRect(
   paint.setStyle(SkPaint::Style::kFill_Style);
   paint.setAntiAlias(true);
   mCanvas->drawRoundRect(rect, radius, radius, paint);
+}
+
+void SkiaRenderer::FillRoundedRect(
+  const Brush& brush,
+  const Rect& rect,
+  float topLeftRadius,
+  float topRightRadius,
+  float bottomRightRadius,
+  float bottomLeftRadius) {
+  auto paint = brush.as<SkPaint>(this, rect);
+  paint.setStyle(SkPaint::Style::kFill_Style);
+  paint.setAntiAlias(true);
+  SkVector radii[4] {
+    {topLeftRadius, topLeftRadius},
+    {topRightRadius, topRightRadius},
+    {bottomRightRadius, bottomRightRadius},
+    {bottomLeftRadius, bottomLeftRadius},
+  };
+  SkRRect roundedRect;
+  roundedRect.setRectRadii(rect, radii);
+  mCanvas->drawRRect(roundedRect, paint);
 }
 
 void SkiaRenderer::StrokeRoundedRect(

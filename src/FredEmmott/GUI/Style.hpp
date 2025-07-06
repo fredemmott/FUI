@@ -31,10 +31,15 @@ struct Style {
   StyleProperty<YGAlign> mAlignItems;
   StyleProperty<YGAlign> mAlignSelf;
   StyleProperty<Brush> mBackgroundColor;
+  StyleProperty<float> mBorderBottomLeftRadius;
+  StyleProperty<float> mBorderBottomRightRadius;
+  StyleProperty<float> mBorderBottomWidth;
   StyleProperty<Brush> mBorderColor;
   StyleProperty<float> mBorderLeftWidth;
   StyleProperty<float> mBorderRadius;
   StyleProperty<float> mBorderRightWidth;
+  StyleProperty<float> mBorderTopLeftRadius;
+  StyleProperty<float> mBorderTopRightRadius;
   StyleProperty<float> mBorderTopWidth;
   StyleProperty<float> mBorderWidth;
   StyleProperty<float> mBottom;
@@ -99,10 +104,14 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   X(AlignSelf) \
   X(BackgroundColor) \
   X(BorderBottomWidth) \
+  X(BorderBottomLeftRadius) \
+  X(BorderBottomRightRadius) \
   X(BorderColor) \
   X(BorderLeftWidth) \
   X(BorderRadius) \
   X(BorderRightWidth) \
+  X(BorderTopLeftRadius) \
+  X(BorderTopRightRadius) \
   X(BorderTopWidth) \
   X(BorderWidth) \
   X(Bottom) \

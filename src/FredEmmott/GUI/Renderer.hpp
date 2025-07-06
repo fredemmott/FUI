@@ -58,6 +58,14 @@ class Renderer {
   virtual void
   FillRoundedRect(const Brush& brush, const Rect& rect, float radius)
     = 0;
+  virtual void FillRoundedRect(
+    const Brush& brush,
+    const Rect& rect,
+    float topLeftRadius,
+    float topRightRadius,
+    float bottomRightRadius,
+    float bottomLeftRadius)
+    = 0;
   virtual void StrokeRoundedRect(
     const Brush& brush,
     const Rect& rect,
