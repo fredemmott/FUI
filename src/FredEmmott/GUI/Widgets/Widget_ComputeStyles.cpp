@@ -34,14 +34,14 @@ void Widget::ComputeStyles(const Style& inherited) {
   bool haveChanges = false;
   do {
     haveChanges = false;
-    for (auto it = style.mAnd.begin(); it != style.mAnd.end();
-         it = style.mAnd.erase(it)) {
+    for (auto it = style.mAnd.begin(); it != style.mAnd.end(); ++it) {
       const auto& [selector, rules] = *it;
       if (this->MatchesStyleSelector(selector)) {
         style += rules;
         haveChanges = true;
       }
     }
+    style.mAnd.clear();
   } while (haveChanges);
 
   const auto flattenEdge = [&style]<class T>(T allEdges, T thisEdge) {
