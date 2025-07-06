@@ -184,13 +184,10 @@ void Widget::ReplaceExplicitStyles(const Style& styles) {
     return;
   }
   mExplicitStyles = styles;
-
-  this->ComputeStyles(mInheritedStyles);
 }
 
 void Widget::AddExplicitStyles(const Style& styles) {
   mExplicitStyles += styles;
-  this->ComputeStyles(mInheritedStyles);
 }
 
 void Widget::SetBuiltInStyles(const Style& styles) {
