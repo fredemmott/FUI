@@ -29,7 +29,7 @@ void Label::SetText(std::string_view text) {
 
 void Label::PaintOwnContent(
   Renderer* renderer,
-  const Rect& rect,
+  const Rect& outerRect,
   const Style& style) const {
 #ifndef NDEBUG
   if (style.mFont != mFont) [[unlikely]] {
@@ -37,6 +37,16 @@ void Label::PaintOwnContent(
       "Stylesheet font does not match mFont; computed style not updated");
   }
 #endif
+  const auto yoga = this->GetLayoutNode();
+  const Rect rect = outerRect.WithInset(
+    YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeLeft),
+    YGNodeLayoutGetPadding(yoga, YGEdgeTop)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeTop),
+    YGNodeLayoutGetPadding(yoga, YGEdgeRight)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeRight),
+    YGNodeLayoutGetPadding(yoga, YGEdgeBottom)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeBottom));
 
   const auto metrics = mFont.GetMetrics();
   Point baseline {
