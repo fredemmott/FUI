@@ -23,20 +23,26 @@ namespace FredEmmott::GUI::Widgets {
 
 YGSize TextBlock::MeasureWithSkia(
   float width,
-  YGMeasureMode widthMode,
+  [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
-  if (widthMode == YGMeasureModeUndefined) {
-    return {
-      mSkiaParagraph->getMaxIntrinsicWidth(), -mFont.GetMetrics().mAscent};
+  if (std::isnan(width)) {
+    width = std::numeric_limits<float>::infinity();
   }
-
-  FUI_ASSERT(!YGFloatIsUndefined(width));
 
   mSkiaParagraph->layout(width);
   mMeasuredHeight = mSkiaParagraph->getHeight();
 
-  return {width, mMeasuredHeight};
+  if (std::isinf(width)) {
+    return {
+      std::ceil(mSkiaParagraph->getMaxIntrinsicWidth()),
+      std::ceil(mMeasuredHeight),
+    };
+  }
+  return {
+    std::ceil(mSkiaParagraph->getMaxWidth()),
+    std::ceil(mMeasuredHeight),
+  };
 }
 
 void TextBlock::UpdateSkiaParagraph() {
