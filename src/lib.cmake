@@ -10,6 +10,7 @@ add_library(
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/ExitException.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
+  FredEmmott/GUI/FontWeight.hpp
   FredEmmott/GUI/FrameRateRequirement.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
