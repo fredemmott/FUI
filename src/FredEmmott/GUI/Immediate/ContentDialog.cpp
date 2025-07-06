@@ -10,6 +10,7 @@
 
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
+using namespace StaticTheme::Common;
 using namespace StaticTheme::ContentDialog;
 
 void EndContentDialog() {
@@ -75,6 +76,8 @@ BeginContentDialogFooter() {
 
   BeginHStackPanel().Styled({
     .mBackgroundColor = ContentDialogBackground,
+    .mBorderBottomLeftRadius = OverlayCornerRadius,
+    .mBorderBottomRightRadius = OverlayCornerRadius,
     .mPaddingBottom = ContentDialogPaddingBottom,
     .mPaddingLeft = ContentDialogPaddingLeft,
     .mPaddingRight = ContentDialogPaddingRight,
