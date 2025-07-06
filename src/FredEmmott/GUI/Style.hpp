@@ -34,6 +34,10 @@ struct Style {
   StyleProperty<Brush> mBorderColor;
   StyleProperty<float> mBorderRadius;
   StyleProperty<float> mBorderWidth;
+  StyleProperty<float> mBorderBottomWidth;
+  StyleProperty<float> mBorderLeftWidth;
+  StyleProperty<float> mBorderRightWidth;
+  StyleProperty<float> mBorderTopWidth;
   StyleProperty<float> mBottom;
   InheritableStyleProperty<Brush> mColor;
   StyleProperty<YGDisplay, YGDisplayFlex> mDisplay;
@@ -95,8 +99,12 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   X(AlignItems) \
   X(AlignSelf) \
   X(BackgroundColor) \
+  X(BorderBottomWidth) \
   X(BorderColor) \
+  X(BorderLeftWidth) \
   X(BorderRadius) \
+  X(BorderRightWidth) \
+  X(BorderTopWidth) \
   X(BorderWidth) \
   X(Bottom) \
   X(Color) \

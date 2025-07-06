@@ -6,8 +6,19 @@
 #include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #include <print>
 
+#include "FredEmmott/GUI/Immediate/ContentDialog.hpp"
+
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
+
+constexpr auto LoremIpsum
+  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
+    "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
+    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea "
+    "commodo consequat. 💩 Duis aute irure dolor in reprehenderit in voluptate "
+    "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
+    "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+    "mollit anim id est laborum.";
 
 static void AppTick() {
   constexpr bool UseScrollView = true;
@@ -71,8 +82,26 @@ static void AppTick() {
     }
   }
 
+  static bool sShowAccentPopup = false;
   if (fuii::Button("Accent style").Caption("Accent button").Accent()) {
     std::println(stderr, "Accent clicked");
+    sShowAccentPopup = true;
+  }
+  if (
+    const auto dialog
+    = fuii::BeginContentDialog(&sShowAccentPopup, "Test Popup").Scoped()) {
+    fuii::Label("This is a ContentDialog.");
+    fuii::TextBlock(LoremIpsum).Styled({.mMinWidth = 400});
+
+    const auto footer = fuii::BeginContentDialogFooter().Scoped();
+    if (fuii::Button("Save").Accent()) {
+      std::println(stderr, "Save clicked");
+      sShowAccentPopup = false;
+    }
+    if (fuii::Button("Close")) {
+      std::println(stderr, "Close clicked");
+      sShowAccentPopup = false;
+    }
   }
 
   static bool isOn = true;
@@ -107,14 +136,7 @@ static void AppTick() {
   fuii::Label("After stack");
   fuii::EndStackPanel();
 
-  fuii::TextBlock(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
-    "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
-    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea "
-    "commodo consequat. 💩 Duis aute irure dolor in reprehenderit in voluptate "
-    "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
-    "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
-    "mollit anim id est laborum.");
+  fuii::TextBlock(LoremIpsum);
 
   for (int i = 0; i < 5; ++i) {
     // IDs are automatically generated for formats

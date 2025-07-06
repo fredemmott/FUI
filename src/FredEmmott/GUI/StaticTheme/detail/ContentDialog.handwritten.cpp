@@ -11,7 +11,7 @@ namespace FredEmmott::GUI::StaticTheme::ContentDialog {
 using namespace StaticTheme::Common;
 using namespace PseudoClasses;
 
-const style_detail::lazy_init_style DefaultButtonStyle {[] {
+const style_detail::lazy_init_style DefaultContentDialogStyle {[] {
   return Style {
     .mBackgroundColor = ContentDialogBackground,
     .mBorderColor = ContentDialogBorderBrush,
