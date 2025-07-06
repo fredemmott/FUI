@@ -54,7 +54,7 @@ void GetThickness(
     back = {
       .mName = std::string {key},
       .mValue = std::string {l},
-      .mType = "double",
+      .mType = "float",
       .mKind = Resource::Kind::Literal,
     };
     return;
@@ -81,7 +81,7 @@ void GetThickness(
     back = {
       .mName = std::format("{}{}", key, suffix),
       .mValue = std::string {value},
-      .mType = "double",
+      .mType = "float",
       .mKind = Resource::Kind::Literal,
     };
   }

@@ -59,7 +59,7 @@ void GetResource(
     return;
   }
   if (tagType == "x:Double") {
-    GetNumber(back, it, "double");
+    GetNumber(back, it, "float");
     return;
   }
   if (tagType == "x:Int32") {
