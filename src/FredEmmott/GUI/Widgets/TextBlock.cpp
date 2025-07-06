@@ -61,11 +61,22 @@ void TextBlock::SetText(const std::string_view text) {
 
 void TextBlock::PaintOwnContent(
   Renderer* renderer,
-  const Rect& rect,
+  const Rect& outerRect,
   const Style& style) const {
   FUI_ASSERT(
     style.mFont == mFont,
     "Stylesheet font does not match mFont; computed style not updated");
+
+  const auto yoga = this->GetLayoutNode();
+  const Rect rect = outerRect.WithInset(
+    YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeLeft),
+    YGNodeLayoutGetPadding(yoga, YGEdgeTop)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeTop),
+    YGNodeLayoutGetPadding(yoga, YGEdgeRight)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeRight),
+    YGNodeLayoutGetPadding(yoga, YGEdgeBottom)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeBottom));
 
 #ifdef FUI_ENABLE_SKIA
   if (auto canvas = skia_canvas_cast(renderer)) {
