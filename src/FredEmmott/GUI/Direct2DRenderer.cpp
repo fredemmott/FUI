@@ -97,6 +97,18 @@ void Direct2DRenderer::StrokeRect(
     thickness == 0 ? 1 : thickness,
     nullptr);
 }
+void Direct2DRenderer::DrawLine(
+  const Brush& brush,
+  const Point& start,
+  const Point& end,
+  const float thickness) {
+  mDeviceContext->DrawLine(
+    start.as<D2D1_POINT_2F>(),
+    end.as<D2D1_POINT_2F>(),
+    brush.GetDirect2DBrush(mDeviceContext, {start, end}).get(),
+    thickness == 0 ? 1 : thickness,
+    nullptr);
+}
 
 void Direct2DRenderer::FillRoundedRect(
   const Brush& brush,
@@ -136,7 +148,7 @@ void Direct2DRenderer::DrawText(
     tf,
     Rect {
       baseline,
-      {std::numeric_limits<float>::infinity(), font.GetMetrics().mAscent}},
+      Size {std::numeric_limits<float>::infinity(), font.GetMetrics().mAscent}},
     brush.GetDirect2DBrush(mDeviceContext, brushRect).get(),
     D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
     DWRITE_MEASURING_MODE_NATURAL);

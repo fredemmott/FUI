@@ -194,7 +194,7 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
   {
-    const auto clipTo = renderer->ScopedClipRect({.mSize = {w, h}});
+    const auto clipTo = renderer->ScopedClipRect(Size {w, h});
     mContent->Paint(renderer);
   }
 

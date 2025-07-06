@@ -27,7 +27,7 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
 
   auto brush = *style.mBackgroundColor;
 
-  if (!style.mBorderRadius) {
+  if (style.mBorderRadius.value_or(0) < std::numeric_limits<float>::epsilon()) {
     renderer->FillRect(brush, rect);
     return;
   }
@@ -57,23 +57,51 @@ void PaintBorder(
   const auto bottom = YGNodeLayoutGetBorder(yoga, YGEdgeBottom);
   const auto right = YGNodeLayoutGetBorder(yoga, YGEdgeRight);
 
-  if (top != left || top != right || top != bottom) {
+  constexpr auto Eps = std::numeric_limits<float>::epsilon();
+  if (top < Eps && left < Eps && right < Eps && bottom < Eps) {
+    return;
+  }
+
+  const auto allSame = (top == left) && (top == right) && (top == bottom);
+  const auto borderRect
+    = contentRect.WithInset(left / 2, top / 2, right / 2, bottom / 2);
+
+  const auto brush = *style.mBorderColor;
+
+  if (style.mBorderRadius.value_or(0) < std::numeric_limits<float>::epsilon()) {
+    if (allSame) {
+      renderer->StrokeRect(brush, borderRect);
+      return;
+    }
+    if (top > Eps) {
+      renderer->DrawLine(
+        brush, contentRect.GetTopLeft(), contentRect.GetTopRight(), top);
+    }
+    if (right > Eps) {
+      renderer->DrawLine(
+        brush, contentRect.GetTopRight(), contentRect.GetBottomRight(), right);
+    }
+    if (bottom > Eps) {
+      renderer->DrawLine(
+        brush,
+        contentRect.GetBottomRight(),
+        contentRect.GetBottomLeft(),
+        bottom);
+    }
+    if (left > Eps) {
+      renderer->DrawLine(
+        brush, contentRect.GetBottomLeft(), contentRect.GetTopLeft(), left);
+    }
+    return;
+  }
+
+  if (!allSame) {
     throw std::logic_error(
-      "Only equal-thickness borders are currently supported");
-  }
-  if (top == 0) {
-    return;
-  }
-  const auto borderRect = contentRect.WithInset(top / 2.0, top / 2.0);
-
-  auto brush = *style.mBorderColor;
-
-  if (!style.mBorderRadius) {
-    renderer->StrokeRect(brush, borderRect);
-    return;
+      "Only equal-thickness borders are currently supported if mBorderRadius "
+      "is set");
   }
 
-  auto radius = style.mBorderRadius.value();
+  const auto radius = style.mBorderRadius.value();
   renderer->StrokeRoundedRect(brush, borderRect, radius);
 }
 }// namespace
@@ -204,11 +232,10 @@ void Widget::Paint(Renderer* renderer) const {
   renderer->Translate(
     YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default(),
     YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default());
-  Rect rect {
-    .mSize = {
-      YGNodeLayoutGetWidth(yoga),
-      YGNodeLayoutGetHeight(yoga),
-    }};
+  Rect rect {Size {
+    YGNodeLayoutGetWidth(yoga),
+    YGNodeLayoutGetHeight(yoga),
+  }};
 
   const auto scaleX = style.mScaleX.value_or_default();
   const auto scaleY = style.mScaleY.value_or_default();

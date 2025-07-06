@@ -6,11 +6,28 @@
 #include <concepts>
 #include <cstdint>
 
+#include "Size.hpp"
+
 namespace FredEmmott::GUI {
 
 template <class T>
   requires(std::integral<T> || std::floating_point<T>)
 struct BasicPoint {
+ private:
+  template <class U>
+  struct is_size_type_t : std::false_type {};
+
+  template <std::same_as<T> U>
+  struct is_size_type_t<U> : std::true_type {};
+
+  template <std::integral U>
+    requires std::unsigned_integral<T> && std::same_as<std::make_signed_t<T>, U>
+  struct is_size_type_t<U> : std::true_type {};
+
+  template <class U>
+  static constexpr auto is_size_type_v = is_size_type_t<U>::value;
+
+ public:
   T mX {};
   T mY {};
 
@@ -23,6 +40,22 @@ struct BasicPoint {
     mX += other.mX;
     mY += other.mY;
     return *this;
+  }
+
+  template <class U>
+    requires is_size_type_v<U>
+  auto& operator+=(const BasicSize<U>& other) {
+    mX = static_cast<T>(mX + other.mWidth);
+    mY = static_cast<T>(mY + other.mHeight);
+    return *this;
+  }
+
+  template <class Self, class U>
+    requires is_size_type_v<U>
+  auto operator+(this const Self& self, const BasicSize<U>& other) {
+    auto ret = self;
+    ret += other;
+    return ret;
   }
 
   template <class Self>

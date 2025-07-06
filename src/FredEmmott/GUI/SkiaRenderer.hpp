@@ -23,6 +23,12 @@ class SkiaRenderer final : public Renderer {
   void PushClipRect(const Rect& rect) override;
   void PopClipRect() override;
 
+  void DrawLine(
+    const Brush& brush,
+    const Point& start,
+    const Point& end,
+    float thickness) override;
+
   // Transformations
   void Scale(float x, float y) override;
   void Translate(const Point& point) override;

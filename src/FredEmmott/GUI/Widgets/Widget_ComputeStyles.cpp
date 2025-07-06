@@ -64,6 +64,12 @@ void Widget::ComputeStyles(const Style& inherited) {
   FLATTEN_EDGES(Margin)
   FLATTEN_EDGES(Padding)
 #undef FLATTEN_EDGES
+  flattenEdges(
+    &Style::mBorderWidth,
+    &Style::mBorderLeftWidth,
+    &Style::mBorderTopWidth,
+    &Style::mBorderRightWidth,
+    &Style::mBorderBottomWidth);
 
   const auto children = this->GetDirectChildren();
   for (auto&& child: children) {
@@ -141,7 +147,10 @@ void Widget::ComputeStyles(const Style& inherited) {
   setYoga(&Style::mAlignContent, &YGNodeStyleSetAlignContent);
   setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignItems);
   setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
-  setYoga(&Style::mBorderWidth, &YGNodeStyleSetBorder, YGEdgeAll);
+  setYoga(&Style::mBorderBottomWidth, &YGNodeStyleSetBorder, YGEdgeBottom);
+  setYoga(&Style::mBorderLeftWidth, &YGNodeStyleSetBorder, YGEdgeLeft);
+  setYoga(&Style::mBorderRightWidth, &YGNodeStyleSetBorder, YGEdgeRight);
+  setYoga(&Style::mBorderTopWidth, &YGNodeStyleSetBorder, YGEdgeTop);
   setYoga(&Style::mBottom, &YGNodeStyleSetPosition, YGEdgeBottom);
   setYoga(&Style::mDisplay, &YGNodeStyleSetDisplay);
   setYoga(&Style::mFlexBasis, &YGNodeStyleSetFlexBasis);

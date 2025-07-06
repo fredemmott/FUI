@@ -48,6 +48,12 @@ class Renderer {
   virtual void
   StrokeRect(const Brush& brush, const Rect& rect, float thickness = 0)
     = 0;
+  virtual void DrawLine(
+    const Brush& brush,
+    const Point& start,
+    const Point& end,
+    float thickness = 0)
+    = 0;
 
   virtual void
   FillRoundedRect(const Brush& brush, const Rect& rect, float radius)

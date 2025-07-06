@@ -58,6 +58,16 @@ void SkiaRenderer::PopClipRect() {
 #endif
 }
 
+void SkiaRenderer::DrawLine(
+  const Brush& brush,
+  const Point& start,
+  const Point& end,
+  float thickness) {
+  auto paint = brush.GetSkiaPaint(Rect {start, end});
+  paint.setStrokeWidth(thickness);
+  mCanvas->drawLine(start.as<SkPoint>(), end.as<SkPoint>(), paint);
+}
+
 void SkiaRenderer::Scale(const float x, const float y) {
   mCanvas->scale(x, y);
 }

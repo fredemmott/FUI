@@ -25,7 +25,39 @@ struct BasicRect {
   BasicPoint<T> mTopLeft;
   BasicSize<T> mSize;
 
+  constexpr BasicRect(const BasicSize<T>& size) : mSize(size) {}
+
+  constexpr BasicRect(const BasicPoint<T>& topLeft, const BasicSize<T>& size)
+    : mTopLeft(topLeft),
+      mSize(size) {}
+
+  constexpr BasicRect(
+    const BasicPoint<T>& topLeft,
+    const BasicPoint<T>& bottomRight)
+    : mTopLeft(topLeft) {
+    mSize = {
+      bottomRight.mX - topLeft.mX,
+      bottomRight.mY - topLeft.mY,
+    };
+  }
+
   constexpr bool operator==(const BasicRect&) const noexcept = default;
+
+  constexpr BasicPoint<T> GetTopLeft() const noexcept {
+    return mTopLeft;
+  }
+
+  constexpr BasicPoint<T> GetTopRight() const noexcept {
+    return {mTopLeft.mX + mSize.mWidth, mTopLeft.mY};
+  }
+
+  constexpr BasicPoint<T> GetBottomRight() const noexcept {
+    return mTopLeft + mSize;
+  }
+
+  constexpr BasicPoint<T> GetBottomLeft() const noexcept {
+    return {mTopLeft.mX, mTopLeft.mY + mSize.mHeight};
+  }
 
   constexpr T GetWidth() const noexcept {
     return mSize.mWidth;
@@ -58,10 +90,25 @@ struct BasicRect {
     mSize.mHeight -= dy * 2;
   }
 
+  constexpr void Inset(T left, T top, T right, T bottom) noexcept {
+    mTopLeft.mX += left;
+    mTopLeft.mY += top;
+    mSize.mWidth -= left + right;
+    mSize.mHeight -= top + bottom;
+  }
+
   template <class Self>
   constexpr Self WithInset(this const Self& self, T dx, T dy) noexcept {
     Self result = self;
     result.Inset(dx, dy);
+    return result;
+  }
+
+  template <class Self>
+  constexpr Self
+  WithInset(this const Self& self, T left, T top, T right, T bottom) noexcept {
+    Self result = self;
+    result.Inset(left, top, right, bottom);
     return result;
   }
 
