@@ -6,8 +6,16 @@ find_package(wil CONFIG REQUIRED)
 
 set(CONFIG_HPP "${CMAKE_CURRENT_BINARY_DIR}/include/FredEmmott/GUI/config.hpp")
 block()
-  set(FUI_ENABLE_SKIA ${ENABLE_SKIA})
-  set(FUI_ENABLE_DIRECT2D ${ENABLE_DIRECT2D})
+  set(BACKEND_COUNT 0)
+  foreach (BACKEND IN ITEMS SKIA DIRECT2D)
+    set("FUI_ENABLE_${BACKEND}" "${ENABLE_${BACKEND}}")
+    if (ENABLE_${BACKEND})
+      MATH(EXPR BACKEND_COUNT "${BACKEND_COUNT} + 1")
+      set("ENABLE_${BACKEND}_BOOL" true)
+    else ()
+      set("ENABLE_${BACKEND}_BOOL" false)
+    endif ()
+  endforeach ()
   configure_file(
     "FredEmmott/GUI/config.hpp.in"
     "${CONFIG_HPP}"

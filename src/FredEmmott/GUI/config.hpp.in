@@ -23,6 +23,15 @@ constexpr bool Debug = true;
 #else
 constexpr bool Debug = false;
 #endif
+
+// Allows optimizations
+constexpr auto BackendCount = @BACKEND_COUNT@;
+static_assert(BackendCount > 0, "At least one backend must be enabled");
+constexpr bool HaveSingleBackend = (BackendCount == 1);
+
+constexpr bool HaveSkia = @ENABLE_SKIA_BOOL@;
+constexpr bool HaveDirect2D = @ENABLE_DIRECT2D_BOOL@;
+
 }// namespace FredEmmott::GUI::Config
 
 namespace FredEmmott::GUI::Config::CompilerChecks {

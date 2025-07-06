@@ -6,6 +6,7 @@
 #include <d2d1_1.h>
 #include <dwrite.h>
 
+#include <FredEmmott/GUI/config.hpp>
 #include <stack>
 
 #include "Renderer.hpp"
@@ -72,13 +73,22 @@ class Direct2DRenderer final : public Renderer {
 
 constexpr Direct2DRenderer* direct2d_renderer_cast(
   Renderer* renderer) noexcept {
-  return dynamic_cast<Direct2DRenderer*>(renderer);
+  if constexpr (Config::HaveSingleBackend) {
+    static_assert(Config::HaveDirect2D);
+    return static_cast<Direct2DRenderer*>(renderer);
+  } else {
+    return dynamic_cast<Direct2DRenderer*>(renderer);
+  }
 }
 
 constexpr ID2D1DeviceContext* direct2d_device_context_cast(
   Renderer* renderer) noexcept {
   const auto direct2dRenderer = direct2d_renderer_cast(renderer);
-  return direct2dRenderer ? direct2dRenderer->mDeviceContext : nullptr;
+  if constexpr (Config::HaveSingleBackend) {
+    return direct2dRenderer->mDeviceContext;
+  } else {
+    return direct2dRenderer ? direct2dRenderer->mDeviceContext : nullptr;
+  }
 }
 
 }// namespace FredEmmott::GUI

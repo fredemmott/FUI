@@ -4,6 +4,8 @@
 
 #include <skia/core/SkCanvas.h>
 
+#include <FredEmmott/GUI/config.hpp>
+
 #include "Renderer.hpp"
 
 namespace FredEmmott::GUI {
@@ -67,12 +69,21 @@ class SkiaRenderer final : public Renderer {
 };
 
 constexpr SkiaRenderer* skia_renderer_cast(Renderer* renderer) noexcept {
-  return dynamic_cast<SkiaRenderer*>(renderer);
+  if constexpr (Config::HaveSingleBackend) {
+    static_assert(Config::HaveSkia);
+    return static_cast<SkiaRenderer*>(renderer);
+  } else {
+    return dynamic_cast<SkiaRenderer*>(renderer);
+  }
 }
 
 constexpr SkCanvas* skia_canvas_cast(Renderer* renderer) noexcept {
   const auto skiaRenderer = skia_renderer_cast(renderer);
-  return skiaRenderer ? skiaRenderer->GetSkCanvas() : nullptr;
+  if constexpr (Config::HaveSingleBackend) {
+    return skiaRenderer->GetSkCanvas();
+  } else {
+    return skiaRenderer ? skiaRenderer->GetSkCanvas() : nullptr;
+  }
 }
 
 }// namespace FredEmmott::GUI

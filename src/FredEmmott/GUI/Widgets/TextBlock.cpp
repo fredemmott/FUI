@@ -8,9 +8,11 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
+#include <FredEmmott/GUI/detail/renderer_detail.hpp>
 
+#ifdef FUI_ENABLE_DIRECT2D
 #include "FredEmmott/GUI/Direct2DRenderer.hpp"
-#include "FredEmmott/GUI/detail/renderer_detail.hpp"
+#endif
 
 #ifdef FUI_ENABLE_SKIA
 #include <skia/core/SkFont.h>
