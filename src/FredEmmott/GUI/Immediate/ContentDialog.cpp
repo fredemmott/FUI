@@ -24,7 +24,7 @@ ContentDialogResult BeginContentDialog(
     return false;
   }
 
-  BeginVStackPanel().Styled(DefaultContentDialogStyle);
+  BeginVStackPanel().Styled(DefaultContentDialogStyle + Style {.mGap = 0});
 
   BeginVStackPanel().Styled(
     Style {
