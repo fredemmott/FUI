@@ -71,8 +71,7 @@ class Direct2DRenderer final : public Renderer {
   void PostTransform(const D2D1_MATRIX_3X2_F&);
 };
 
-constexpr Direct2DRenderer* direct2d_renderer_cast(
-  Renderer* renderer) noexcept {
+inline Direct2DRenderer* direct2d_renderer_cast(Renderer* renderer) noexcept {
   if constexpr (Config::HaveSingleBackend) {
     static_assert(Config::HaveDirect2D);
     return static_cast<Direct2DRenderer*>(renderer);
@@ -81,7 +80,7 @@ constexpr Direct2DRenderer* direct2d_renderer_cast(
   }
 }
 
-constexpr ID2D1DeviceContext* direct2d_device_context_cast(
+inline ID2D1DeviceContext* direct2d_device_context_cast(
   Renderer* renderer) noexcept {
   const auto direct2dRenderer = direct2d_renderer_cast(renderer);
   if constexpr (Config::HaveSingleBackend) {

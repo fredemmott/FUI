@@ -68,7 +68,7 @@ class SkiaRenderer final : public Renderer {
 #endif
 };
 
-constexpr SkiaRenderer* skia_renderer_cast(Renderer* renderer) noexcept {
+inline SkiaRenderer* skia_renderer_cast(Renderer* renderer) noexcept {
   if constexpr (Config::HaveSingleBackend) {
     static_assert(Config::HaveSkia);
     return static_cast<SkiaRenderer*>(renderer);
@@ -77,7 +77,7 @@ constexpr SkiaRenderer* skia_renderer_cast(Renderer* renderer) noexcept {
   }
 }
 
-constexpr SkCanvas* skia_canvas_cast(Renderer* renderer) noexcept {
+inline SkCanvas* skia_canvas_cast(Renderer* renderer) noexcept {
   const auto skiaRenderer = skia_renderer_cast(renderer);
   if constexpr (Config::HaveSingleBackend) {
     return skiaRenderer->GetSkCanvas();
