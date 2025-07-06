@@ -21,7 +21,7 @@ std::string GetAliasValue(
     && value != "SystemControlDisabledTransparentColor") {
     return std::string {value};
   }
-  return std::format("{}->Resolve(StaticTheme::Theme::{})", value, theme);
+  return std::format("*{}->Resolve(StaticTheme::Theme::{})", value, theme);
 }
 
 void GetAlias(

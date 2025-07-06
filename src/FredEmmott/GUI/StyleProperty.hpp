@@ -27,21 +27,62 @@ struct important_style_property_t {
 constexpr important_style_property_t important;
 
 template <class T, auto TDefault, StylePropertyScope TDefaultScope>
-class BaseStyleProperty : private std::optional<T> {
+class BaseStyleProperty {
  public:
+  using value_type = T;
+  using resource_type = const StaticTheme::Resource<T>*;
+
   static constexpr StylePropertyScope DefaultScope = TDefaultScope;
   static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
   static constexpr auto DefaultValue = TDefault;
 
   friend struct Style;
 
-  using std::optional<T>::optional;
-  using std::optional<T>::operator->;
-  using std::optional<T>::operator*;
-  using std::optional<T>::value;
-  using std::optional<T>::has_value;
-  using std::optional<T>::value_or;
-  using value_type = typename std::optional<T>::value_type;
+  BaseStyleProperty() = default;
+  BaseStyleProperty(std::nullopt_t) {};
+  BaseStyleProperty(std::nullptr_t) = delete;
+
+  template <class U = std::remove_cv_t<T>>
+    requires std::is_constructible_v<T, U>
+    && (!std::same_as<std::remove_cvref_t<U>, BaseStyleProperty>)
+    && (!std::same_as<std::remove_cvref_t<U>, resource_type>)
+  explicit(!std::is_convertible_v<U, T>) constexpr BaseStyleProperty(
+    U&& v) noexcept(std::is_nothrow_constructible_v<T, U>)
+    : mValue(std::in_place_type<T>, std::forward<U>(v)) {}
+  template <std::convertible_to<resource_type> U>
+    requires(!std::same_as<std::nullptr_t, std::decay_t<U>>)
+  BaseStyleProperty(U&& r)
+    : mValue(std::in_place_type<resource_type>, std::forward<U>(r)) {}
+
+  const T& value() const {
+    if (const auto it = get_if<T>(&mValue)) {
+      return *it;
+    }
+    if (const auto it = get_if<resource_type>(&mValue)) {
+      return *(*it)->Resolve();
+    }
+    throw std::bad_variant_access();
+  }
+
+  constexpr bool has_value() const noexcept {
+    return !holds_alternative<std::monostate>(mValue);
+  }
+
+  const T* operator->() const {
+    return &value();
+  }
+
+  const T& operator*() const {
+    return value();
+  }
+
+  template <std::convertible_to<T> U>
+  T value_or(U&& v) const {
+    if (has_value()) {
+      return value();
+    }
+    return std::forward<U>(v);
+  }
 
   constexpr auto value_or_default() const {
     return this->value_or(TDefault);
@@ -51,11 +92,11 @@ class BaseStyleProperty : private std::optional<T> {
     const T& value,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions
-    : std::optional<T>(value),
+    : mValue(std::in_place_type<T>, value),
       mTransition(transition) {
     if constexpr (std::same_as<T, float>) {
       if (YGFloatIsUndefined(value)) {
-        static_cast<std::optional<T>&>(*this) = std::nullopt;
+        mValue = {};
       }
     }
   }
@@ -104,7 +145,10 @@ class BaseStyleProperty : private std::optional<T> {
   constexpr bool operator==(const BaseStyleProperty& other) const noexcept
     = default;
   constexpr bool operator==(const T& other) const noexcept {
-    return static_cast<const std::optional<T>&>(*this) == other;
+    if (!has_value()) {
+      return false;
+    }
+    return value() == other;
   }
 
   constexpr operator bool() const noexcept {
@@ -118,7 +162,7 @@ class BaseStyleProperty : private std::optional<T> {
     }
     mIsImportant = other.mIsImportant;
     if (other.has_value()) {
-      static_cast<std::optional<T>&>(*this) = other.value();
+      mValue = other.mValue;
       mScope = other.mScope;
     }
     if constexpr (SupportsTransitions) {
@@ -143,8 +187,9 @@ class BaseStyleProperty : private std::optional<T> {
     std::monostate>;
 
   StylePropertyScope mScope {TDefaultScope};
-  FUI_NO_UNIQUE_ADDRESS optional_transition_t mTransition;
+  std::variant<std::monostate, T, resource_type> mValue {};
   bool mIsImportant {false};
+  optional_transition_t mTransition;
 };
 
 template <class T, auto TDefault = style_detail::default_v<T>>

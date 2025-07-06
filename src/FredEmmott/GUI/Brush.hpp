@@ -46,7 +46,7 @@ class Brush final {
       return *it;
     }
     if (const auto it = get_if<StaticThemeBrush>(&mBrush)) {
-      return (*it)->Resolve().GetSolidColor();
+      return (*it)->Resolve()->GetSolidColor();
     }
     return std::nullopt;
   }

@@ -170,7 +170,7 @@ class Color final {
       return *it;
     }
     if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
-      return (*it)->Resolve(TTheme).Resolve();
+      return (*it)->Resolve(TTheme)->Resolve();
     }
     throw std::bad_variant_access {};
   }
@@ -193,7 +193,7 @@ class Color final {
       return *it;
     }
     if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
-      return (*it)->Resolve().Resolve();
+      return (*it)->Resolve()->Resolve();
     }
     if (const auto it = get_if<SystemTheme::ColorType>(&mVariant)) {
       return SystemTheme::Resolve(*it).Resolve();

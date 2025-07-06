@@ -16,15 +16,15 @@ struct Resource {
   std::optional<T> mLight {};
   std::optional<T> mHighContrast {};
 
-  constexpr T Resolve(const Theme theme = GetCurrent()) const noexcept {
+  constexpr const T* Resolve(const Theme theme = GetCurrent()) const noexcept {
     using enum Theme;
     switch (theme) {
       case Light:
-        return mLight.value_or(mDefault);
+        return mLight.has_value() ? &mLight.value() : &mDefault;
       case Dark:
-        return mDefault;
+        return &mDefault;
       case HighContrast:
-        return mHighContrast.value_or(mDefault);
+        return mHighContrast.has_value() ? &mHighContrast.value() : &mDefault;
     }
     std::unreachable();
   };
