@@ -40,9 +40,12 @@ ContentDialogResult BeginContentDialog(
       .mPaddingTop = ContentDialogPaddingTop,
     });
 
+  static const auto TitleFont
+    = Font {WidgetFont::ControlContent}.WithSize(20).WithWeight(
+      FontWeight::SemiBold);
   Label(title).Styled(
     Style {
-      .mFont = Font {WidgetFont::ControlContent}.WithSize(20),
+      .mFont = TitleFont,
       .mMarginBottom = ContentDialogTitleMarginBottom,
       .mMarginLeft = ContentDialogTitleMarginLeft,
       .mMarginRight = ContentDialogTitleMarginRight,

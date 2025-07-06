@@ -17,12 +17,6 @@ using namespace FredEmmott::GUI::win32_detail;
 
 namespace FredEmmott::GUI::SystemFont {
 namespace {
-
-namespace FontWeight {
-constexpr auto Normal = DWRITE_FONT_WEIGHT_NORMAL;
-constexpr auto SemiBold = DWRITE_FONT_WEIGHT_SEMI_BOLD;
-}// namespace FontWeight
-
 std::wstring FindFontName(auto name, auto... fallbacks) {
   const auto collection
     = DirectWriteFontProvider::Get()->mSystemFontCollection.get();
@@ -49,7 +43,8 @@ struct Typeface {
 
 struct UsageTypefaces {
 #define DEFINE_TYPEFACE(NAME, WEIGHT, ...) \
-  const Typeface NAME = {FontWeight::WEIGHT, FindFontName(__VA_ARGS__)};
+  const Typeface NAME \
+    = {DirectWriteFontWeight(FontWeight::WEIGHT), FindFontName(__VA_ARGS__)};
   FUI_ENUM_SYSTEM_FONT_TYPEFACES(DEFINE_TYPEFACE)
 #undef DEFINE_TYPEFACE
 };

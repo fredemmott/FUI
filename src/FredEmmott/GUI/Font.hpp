@@ -8,6 +8,7 @@
 #include <string_view>
 #include <variant>
 
+#include "FontWeight.hpp"
 #include "SystemFont.hpp"
 #include "WidgetFont.hpp"
 
@@ -54,6 +55,9 @@ class Font {
 
   [[nodiscard]]
   Font WithSize(float pixels) const noexcept;
+
+  [[nodiscard]]
+  Font WithWeight(FontWeight weight) const noexcept;
 
   [[nodiscard]]
   float MeasureTextWidth(std::string_view) const noexcept;

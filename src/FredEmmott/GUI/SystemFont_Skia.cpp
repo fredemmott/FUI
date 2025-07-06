@@ -17,7 +17,6 @@ sk_sp<SkFontMgr> GetFontManager() noexcept {
   static const auto ret = SkFontMgr_New_DirectWrite();
   return ret;
 }
-}// namespace FredEmmott::GUI::SystemFont
 
 namespace {
 
@@ -34,18 +33,18 @@ auto LoadTypeface(const SkFontStyle& style, auto name, auto... fallbacks) {
   }
 }
 
-namespace FontWeight {
+namespace FontStyle {
 constexpr SkFontStyle Normal = SkFontStyle::Normal();
 constexpr SkFontStyle SemiBold {
-  SkFontStyle::kSemiBold_Weight,
+  SkiaFontWeight(FontWeight::SemiBold),
   SkFontStyle::kNormal_Width,
   SkFontStyle::kUpright_Slant,
 };
-}// namespace FontWeight
+}// namespace FontStyle
 
 struct UsageTypefaces {
 #define DEFINE_TYPEFACE(NAME, WEIGHT, ...) \
-  const sk_sp<SkTypeface> NAME = LoadTypeface(FontWeight::WEIGHT, __VA_ARGS__);
+  const sk_sp<SkTypeface> NAME = LoadTypeface(FontStyle::WEIGHT, __VA_ARGS__);
   FUI_ENUM_SYSTEM_FONT_TYPEFACES(DEFINE_TYPEFACE)
 #undef DEFINE_TYPEFACE
 };
@@ -86,8 +85,6 @@ const UsageFonts& GetUsageFonts() {
 }
 
 }// namespace
-
-namespace FredEmmott::GUI::SystemFont {
 
 Font ResolveSkiaFont(const Usage usage) noexcept {
   switch (usage) {
