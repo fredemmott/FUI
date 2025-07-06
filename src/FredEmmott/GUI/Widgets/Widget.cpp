@@ -259,9 +259,9 @@ void Widget::Paint(Renderer* renderer) const {
   }
 
   PaintBackground(renderer, rect, style);
-  PaintBorder(yoga, renderer, rect, style);
   this->PaintOwnContent(renderer, rect, style);
   this->PaintChildren(renderer);
+  PaintBorder(yoga, renderer, rect, style);
 }
 
 void Widget::PaintChildren(Renderer* renderer) const {
