@@ -32,12 +32,11 @@ struct Style {
   StyleProperty<YGAlign> mAlignSelf;
   StyleProperty<Brush> mBackgroundColor;
   StyleProperty<Brush> mBorderColor;
-  StyleProperty<float> mBorderRadius;
-  StyleProperty<float> mBorderWidth;
-  StyleProperty<float> mBorderBottomWidth;
   StyleProperty<float> mBorderLeftWidth;
+  StyleProperty<float> mBorderRadius;
   StyleProperty<float> mBorderRightWidth;
   StyleProperty<float> mBorderTopWidth;
+  StyleProperty<float> mBorderWidth;
   StyleProperty<float> mBottom;
   InheritableStyleProperty<Brush> mColor;
   StyleProperty<YGDisplay, YGDisplayFlex> mDisplay;

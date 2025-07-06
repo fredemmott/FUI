@@ -29,8 +29,8 @@ ContentDialogResult BeginContentDialog(
   BeginVStackPanel().Styled(
     Style {
       .mBackgroundColor = ContentDialogTopOverlay,
-      .mBorderColor = ContentDialogSeparatorBorderBrush,
       .mBorderBottomWidth = ContentDialogSeparatorThicknessBottom,
+      .mBorderColor = ContentDialogSeparatorBorderBrush,
       .mBorderLeftWidth = ContentDialogSeparatorThicknessLeft,
       .mBorderRightWidth = ContentDialogSeparatorThicknessRight,
       .mBorderTopWidth = ContentDialogSeparatorThicknessTop,
