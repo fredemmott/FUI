@@ -71,9 +71,7 @@ class Result final
       mValue(std::forward<T>(result)) {}
 
  private:
-  FUI_NO_UNIQUE_ADDRESS
   std::conditional_t<HasWidget, Widgets::Widget*, std::monostate> mWidget {};
-  FUI_NO_UNIQUE_ADDRESS
-  std::conditional_t<HasValue, TValue, std::monostate> mValue;
+  std::conditional_t<HasValue, TValue, std::monostate> mValue {};
 };
 }// namespace FredEmmott::GUI::Immediate
