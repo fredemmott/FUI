@@ -13,9 +13,6 @@ SkPaint Brush::GetSkiaPaint(const SkRect& rect) const {
   if (const auto it = get_if<LinearGradientBrush>(&mBrush)) {
     return it->GetSkiaPaint(rect);
   }
-  if (const auto it = get_if<StaticThemeBrush>(&mBrush)) {
-    return (*it)->Resolve()->GetSkiaPaint(rect);
-  }
   if constexpr (Config::Debug) {
     __debugbreak();
   }

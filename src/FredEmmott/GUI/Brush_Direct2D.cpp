@@ -20,9 +20,6 @@ wil::com_ptr<ID2D1Brush> Brush::GetDirect2DBrush(
   if (const auto it = get_if<LinearGradientBrush>(&mBrush)) {
     return it->GetDirect2DBrush(rt, rect);
   }
-  if (const auto it = get_if<StaticThemeBrush>(&mBrush)) {
-    return (*it)->Resolve()->GetDirect2DBrush(rt, rect);
-  }
 
   if constexpr (Config::Debug) {
     __debugbreak();

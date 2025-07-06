@@ -10,8 +10,6 @@
 #include "LinearGradientBrush.hpp"
 #include "Rect.hpp"
 #include "SolidColorBrush.hpp"
-#include "StaticTheme/Resource.hpp"
-#include "StaticTheme/Theme.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <skia/core/SkPaint.h>
@@ -24,8 +22,6 @@
 
 namespace FredEmmott::GUI {
 class Brush final {
-  using StaticThemeBrush = const StaticTheme::Resource<Brush>*;
-
  public:
   Brush() = delete;
   constexpr Brush(const std::convertible_to<Color> auto& color)
@@ -33,20 +29,11 @@ class Brush final {
 
   Brush(const LinearGradientBrush& brush) : mBrush(brush) {}
 
-  Brush(StaticThemeBrush brush) : mBrush(brush) {
-    if (!brush) [[unlikely]] {
-      throw std::logic_error("Static resource brushes must be a valid pointer");
-    }
-  }
-
   /** If this is a SolidColorBrush, returns the backing color.
    */
   [[nodiscard]] std::optional<Color> GetSolidColor() const {
     if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
       return *it;
-    }
-    if (const auto it = get_if<StaticThemeBrush>(&mBrush)) {
-      return (*it)->Resolve()->GetSolidColor();
     }
     return std::nullopt;
   }
@@ -65,7 +52,7 @@ class Brush final {
   // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
   // wanting more than just LinearGradientBrush, but it's worth special-casing
   // SolidColorBrush
-  std::variant<SolidColorBrush, LinearGradientBrush, StaticThemeBrush> mBrush;
+  std::variant<SolidColorBrush, LinearGradientBrush> mBrush;
 #ifdef FUI_ENABLE_DIRECT2D
   // TODO: make SolidColorBrush a class and put this there
   mutable wil::com_ptr<ID2D1SolidColorBrush> mD2DSolidColorBrush;
