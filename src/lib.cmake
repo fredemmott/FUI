@@ -18,6 +18,7 @@ add_library(
   FredEmmott/GUI/Immediate/ComboBoxButton.cpp FredEmmott/GUI/Immediate/ComboBoxButton.hpp
   FredEmmott/GUI/Immediate/ComboBoxItem.cpp FredEmmott/GUI/Immediate/ComboBoxItem.hpp
   FredEmmott/GUI/Immediate/ComboBoxPopup.cpp FredEmmott/GUI/Immediate/ComboBoxPopup.hpp
+  FredEmmott/GUI/Immediate/ContentDialog.cpp FredEmmott/GUI/Immediate/ContentDialog.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.cpp FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
