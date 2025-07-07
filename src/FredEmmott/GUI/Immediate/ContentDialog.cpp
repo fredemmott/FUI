@@ -64,7 +64,7 @@ void EndContentDialog() {
 
 ContentDialogResult BeginContentDialog(const ID id) {
   FUI_ASSERT(!tContext, "ContentDialogs can not be nested");
-  if (!BeginBasicPopupWindow(id).Transparent()) {
+  if (!BeginBasicPopupWindow(id).Transparent().Modal()) {
     return false;
   }
 

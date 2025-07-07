@@ -117,6 +117,7 @@ class Win32Window : public Window {
   std::unique_ptr<Window> CreatePopup() const final;
 
   void WaitForInput() const override;
+  void SetIsModal(bool modal);
 
  protected:
   static constexpr UINT SwapChainLength = 3;

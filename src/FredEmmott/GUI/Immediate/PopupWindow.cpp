@@ -46,6 +46,9 @@ void BasicPopupWindowResultMixin::MakeTransparent(const bool transparent) {
   static_cast<Win32Window*>(tWindow)->SetSystemBackdropType(
     transparent ? DWMSBT_NONE : DWMSBT_TRANSIENTWINDOW);
 }
+void BasicPopupWindowResultMixin::MakeModal(bool modal) {
+  static_cast<Win32Window*>(tWindow)->SetIsModal(modal);
+}
 
 BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
   auto anchor = GetCurrentNode();

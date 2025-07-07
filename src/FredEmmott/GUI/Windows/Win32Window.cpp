@@ -103,6 +103,12 @@ void Win32Window::HideWindow() {
     return;
   }
   ShowWindow(mHwnd.get(), SW_HIDE);
+
+  if (!mParentHwnd) {
+    return;
+  }
+  EnableWindow(mParentHwnd, TRUE);
+  SetForegroundWindow(mParentHwnd);
 }
 
 Win32Window::Win32Window(
@@ -325,6 +331,7 @@ void Win32Window::CreateNativeWindow() {
 }
 
 Win32Window::~Win32Window() {
+  this->HideWindow();
   if (mParentHwnd && gInstances.contains(mParentHwnd)) {
     auto& siblings = gInstances.at(mParentHwnd)->mChildren;
     siblings.erase(std::ranges::find(siblings, mHwnd.get()));
@@ -799,6 +806,11 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
 
 void Win32Window::WaitForInput() const {
   MsgWaitForMultipleObjects(0, nullptr, false, INFINITE, QS_ALLINPUT);
+}
+
+void Win32Window::SetIsModal(bool modal) {
+  FUI_ASSERT(mParentHwnd);
+  EnableWindow(mParentHwnd, !modal);
 }
 
 }// namespace FredEmmott::GUI

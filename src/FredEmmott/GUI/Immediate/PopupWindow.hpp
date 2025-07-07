@@ -10,7 +10,6 @@ namespace FredEmmott::GUI::Immediate {
 namespace immediate_detail {
 struct BasicPopupWindowResultMixin {
   template <class Self>
-    requires(std::same_as<bool, typename Self::value_type>)
   decltype(auto) Transparent(this Self&& self, bool transparent = true) {
     if (self.GetValue()) {
       Self::MakeTransparent(transparent);
@@ -18,8 +17,17 @@ struct BasicPopupWindowResultMixin {
     return std::forward<Self>(self);
   }
 
+  template <class Self>
+  decltype(auto) Modal(this Self&& self, bool modal = true) {
+    if (self.GetValue()) {
+      Self::MakeModal(modal);
+    }
+    return std::forward<Self>(self);
+  }
+
  private:
   static void MakeTransparent(bool transparent);
+  static void MakeModal(bool modal);
 };
 }// namespace immediate_detail
 
