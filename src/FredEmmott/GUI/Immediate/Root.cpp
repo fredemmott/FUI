@@ -81,7 +81,9 @@ void Root::Paint(Renderer* renderer, const Size& size) {
 
   mWidget->UpdateLayout();
   auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
+  YGNodeStyleSetWidth(yoga, size.mWidth);
+  YGNodeStyleSetHeight(yoga, size.mHeight);
+  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
   mWidget->Tick();
   mWidget->Paint(renderer);
 }

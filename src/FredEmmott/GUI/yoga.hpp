@@ -28,6 +28,10 @@ namespace FredEmmott::GUI {
 using namespace FredEmmott::Memory;
 
 YGConfigRef GetYogaConfig();
+float GetMinimumWidth(YGNodeConstRef node);
+float GetMinimumWidth(YGNodeConstRef node, float hint);
+
+float GetIdealHeight(YGNodeConstRef node, float width);
 Size GetMinimumWidthAndIdealHeight(YGNodeConstRef node);
 
 }// namespace FredEmmott::GUI

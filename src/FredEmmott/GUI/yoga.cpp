@@ -4,6 +4,9 @@
 #include "yoga.hpp"
 
 #include <mutex>
+#include <optional>
+
+#include "assert.hpp"
 
 namespace FredEmmott::GUI {
 YGConfigRef GetYogaConfig() {
@@ -17,22 +20,35 @@ YGConfigRef GetYogaConfig() {
   return sInstance.get();
 }
 
-Size GetMinimumWidthAndIdealHeight(YGNodeConstRef original) {
+float GetMinimumWidth(YGNodeConstRef node, float hint) {
   // We clone the node due to caching bugs with YGNodeCalculateLayout with
   // varying sizes, and instead set the width property on the clone.
   //
   // This workaround is suggested here:
   //
   // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
-  const unique_ptr<YGNode> owned {YGNodeClone(original)};
-  const auto yoga = owned.get();
+  unique_ptr<YGNode> owned {YGNodeClone(node)};
+  auto yoga = owned.get();
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
   YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
-  YGNodeStyleSetWidth(yoga, YGUndefined);
+  YGNodeStyleSetWidth(yoga, hint);
   YGNodeStyleSetHeight(yoga, YGUndefined);
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+
   float low = 128;
   float high = YGNodeLayoutGetWidth(yoga);
+
+  if (!YGFloatIsUndefined(hint)) {
+    if (YGNodeLayoutGetHadOverflow(yoga)) {
+      return GetMinimumWidth(node, YGUndefined);
+    }
+    YGNodeStyleSetWidth(yoga, hint - 2);
+    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+    if (YGNodeLayoutGetHadOverflow(yoga)) {
+      return hint;
+    }
+  }
+
   while ((high - low) > 1) {
     const auto mid = std::ceil((low + high) / 2);
     YGNodeStyleSetWidth(yoga, mid);
@@ -49,11 +65,28 @@ Size GetMinimumWidthAndIdealHeight(YGNodeConstRef original) {
       high = mid;
     }
   }
-  YGNodeStyleSetWidth(yoga, high);
+  return high;
+}
+float GetMinimumWidth(YGNodeConstRef node) {
+  return GetMinimumWidth(node, YGUndefined);
+}
+
+float GetIdealHeight(YGNodeConstRef node, float width) {
+  const unique_ptr<YGNode> owned {YGNodeClone(node)};
+  const auto yoga = owned.get();
+  YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
+  YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
+  YGNodeStyleSetWidth(yoga, width);
+  YGNodeStyleSetHeight(yoga, YGUndefined);
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+  return YGNodeLayoutGetHeight(yoga);
+}
+
+Size GetMinimumWidthAndIdealHeight(YGNodeConstRef original) {
+  const auto width = GetMinimumWidth(original);
   return Size {
-    YGNodeLayoutGetWidth(yoga),
-    YGNodeLayoutGetHeight(yoga),
+    width,
+    GetIdealHeight(original, width),
   };
 }
 }// namespace FredEmmott::GUI

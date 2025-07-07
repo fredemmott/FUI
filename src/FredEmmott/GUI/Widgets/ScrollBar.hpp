@@ -21,7 +21,7 @@ class ScrollBar final : public Widget {
 
   void SetMinimum(float value);
   [[nodiscard]] float GetMinimum() const;
-  void SetMaximum(float value);
+  void SetMaximum(float maximum);
   [[nodiscard]] float GetMaximum() const;
   void SetValue(float value);
   [[nodiscard]] float GetValue() const;
