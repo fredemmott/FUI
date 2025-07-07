@@ -35,6 +35,7 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   mContentOuter->SetBuiltInStyles({
     .mAlignSelf = YGAlignStretch,
     .mFlexDirection = YGFlexDirectionColumn,
+    .mFlexGrow = 1,
     .mTranslateX = {0, SmoothScrollingAnimation},
     .mTranslateY = {0, SmoothScrollingAnimation},
   });

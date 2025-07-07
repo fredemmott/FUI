@@ -26,10 +26,12 @@ static void AppTick() {
     fuii::BeginVScrollView().Styled({
       .mBackgroundColor
       = fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush,
+      .mFlexGrow = 1,
     });
   }
 
   fuii::BeginVStackPanel().Styled({
+    .mFlexGrow = 1,
     .mGap = 12,
     .mMargin = 12,
     .mPadding = 8,
