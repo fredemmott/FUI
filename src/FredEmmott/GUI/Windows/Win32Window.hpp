@@ -124,6 +124,7 @@ class Win32Window : public Window {
   Win32Window(HINSTANCE instance, int showCommand, const Options& options);
 
   void InitializeWindow() final;
+  void HideWindow() final;
   void ResizeIfNeeded() final;
   Size GetClientAreaSize() const final;
   float GetDPIScale() const final;

@@ -7,6 +7,7 @@
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#include "EnqueueAdditionalFrame.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 
@@ -72,6 +73,7 @@ BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
 
   PopParentContext();
   EndWidget<PopupWindow>();
+  tStack.back().mNewSiblings.pop_back();
   return false;
 }
 
@@ -82,6 +84,12 @@ BasicPopupWindowResult BeginBasicPopupWindow(bool* open, ID id) {
   *open = BeginBasicPopupWindow(id);
   return *open;
 }
+
+void ClosePopupWindow() {
+  tWindow->RequestStop(EXIT_SUCCESS);
+  EnqueueAdditionalFrame();
+}
+
 void EndBasicPopupWindow() {
   auto window = tPopupStack.back().mWindow;
   window->EndFrame();

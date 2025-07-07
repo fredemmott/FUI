@@ -98,6 +98,13 @@ void Win32Window::InitializeWindow() {
   ShowWindow(mHwnd.get(), mShowCommand);
 }
 
+void Win32Window::HideWindow() {
+  if (!mHwnd) {
+    return;
+  }
+  ShowWindow(mHwnd.get(), SW_HIDE);
+}
+
 Win32Window::Win32Window(
   const HINSTANCE hInstance,
   int nCmdShow,

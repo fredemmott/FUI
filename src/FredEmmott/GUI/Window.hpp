@@ -48,6 +48,9 @@ class Window {
   void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
   void EndFrame();
   FrameRateRequirement GetFrameRateRequirement() const;
+  void RequestStop(int exitCode = EXIT_SUCCESS) {
+    mExitCode = exitCode;
+  }
 
  protected:
   class BasicFramePainter {
@@ -58,6 +61,7 @@ class Window {
   };
 
   virtual void InitializeWindow() = 0;
+  virtual void HideWindow() = 0;
   virtual std::unique_ptr<BasicFramePainter> GetFramePainter(
     uint8_t mFrameIndex)
     = 0;
@@ -81,10 +85,6 @@ class Window {
 
   void DispatchEvent(Event* e) {
     mFUIRoot.DispatchEvent(e);
-  }
-
-  void RequestStop(int exitCode = EXIT_SUCCESS) {
-    mExitCode = exitCode;
   }
 
   void ResetToFirstBackBuffer();

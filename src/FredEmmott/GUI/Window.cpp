@@ -75,6 +75,11 @@ void Window::EndFrame() {
   FUI_ASSERT(tWindow == this, "Improperly nested windows");
   tWindow = nullptr;
 
+  if (mExitCode) {
+    this->HideWindow();
+    return;
+  }
+
   if (!this->GetNativeHandle()) [[unlikely]] {
     this->InitializeWindow();
     if (!this->GetNativeHandle()) {

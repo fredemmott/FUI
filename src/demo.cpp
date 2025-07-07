@@ -100,7 +100,7 @@ static void AppTick() {
     }
     if (fuii::Button("Close")) {
       std::println(stderr, "Close clicked");
-      sShowAccentPopup = false;
+      fuii::ClosePopupWindow();
     }
   }
 

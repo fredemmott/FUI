@@ -65,6 +65,8 @@ BasicPopupWindowResult BeginBasicPopupWindow(
   bool* open,
   ID id = ID {std::source_location::current()});
 
+void ClosePopupWindow();
+
 void EndPopup();
 using PopupResult = Result<
   &EndPopup,
