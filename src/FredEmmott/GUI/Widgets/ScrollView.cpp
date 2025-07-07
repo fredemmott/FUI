@@ -27,20 +27,6 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   });
   mContentOuter->SetChildren({mContentInner = new Widget(0)});
   YGNodeStyleSetOverflow(this->GetLayoutNode(), YGOverflowScroll);
-  YGNodeRemoveChild(
-    this->GetLayoutNode(), mHorizontalScrollBar->GetLayoutNode());
-  YGNodeRemoveChild(this->GetLayoutNode(), mVerticalScrollBar->GetLayoutNode());
-
-  {
-    mScrollBarsYoga.reset(YGNodeNew());
-    const std::array scrollbars {
-      mHorizontalScrollBar->GetLayoutNode(),
-      mVerticalScrollBar->GetLayoutNode(),
-    };
-    YGNodeSetChildren(
-      mScrollBarsYoga.get(), scrollbars.data(), scrollbars.size());
-  }
-
   using StaticTheme::ScrollBar::ScrollBarSize;
 
   constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
@@ -119,8 +105,6 @@ void ScrollView::UpdateLayout() {
     return;
   }
 
-  YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
-
   const auto cw = YGNodeLayoutGetWidth(mContentInner->GetLayoutNode());
   const auto ch = YGNodeLayoutGetHeight(mContentInner->GetLayoutNode());
 
@@ -162,7 +146,6 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
-  YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
   {
     const auto clipTo = renderer->ScopedClipRect(Size {w, h});
@@ -190,6 +173,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   scrollBar->SetValue(value);
   return EventHandlerResult::StopPropagation;
 }
+
 Style ScrollView::GetBuiltInStyles() const {
   return Style {
     .mFlexShrink = 1,

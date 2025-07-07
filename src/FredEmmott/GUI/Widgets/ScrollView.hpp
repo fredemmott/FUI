@@ -39,7 +39,6 @@ class ScrollView final : public Widget {
   unique_ptr<Widget> mContentOuter;
   Widget* mContentInner {nullptr};
 
-  unique_ptr<YGNode> mScrollBarsYoga;
   unique_ptr<ScrollBar> mHorizontalScrollBar;
   unique_ptr<ScrollBar> mVerticalScrollBar;
 
