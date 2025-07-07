@@ -219,6 +219,9 @@ bool Widget::MatchesStyleSelector(Style::Selector selector) const {
     }
     return MatchesStylePseudoClass(*it);
   }
+  if (holds_alternative<std::monostate>(selector)) {
+    return true;
+  }
 #ifndef NDEBUG
   __debugbreak();
 #endif

@@ -29,6 +29,7 @@ constexpr important_style_property_t important;
 template <class T, auto TDefault, StylePropertyScope TDefaultScope>
 class BaseStyleProperty {
  public:
+  using default_type = std::decay_t<decltype(TDefault)>;
   using value_type = T;
   using resource_type = const StaticTheme::Resource<T>*;
 
@@ -146,7 +147,11 @@ class BaseStyleProperty {
     = default;
   constexpr bool operator==(const T& other) const noexcept {
     if (!has_value()) {
-      return false;
+      if constexpr (std::same_as<std::nullopt_t, default_type>) {
+        return false;
+      } else {
+        return TDefault == other;
+      }
     }
     return value() == other;
   }

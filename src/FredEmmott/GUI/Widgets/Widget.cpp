@@ -314,6 +314,10 @@ void Widget::UpdateLayout() {
 
 Widget::EventHandlerResult Widget::DispatchMouseEvent(
   const MouseEvent& parentEvent) {
+  if (GetComputedStyle().mPointerEvents == PointerEvents::None) {
+    return EventHandlerResult::Default;
+  }
+
   auto event = parentEvent;
 
   const auto layout = this->GetLayoutNode();

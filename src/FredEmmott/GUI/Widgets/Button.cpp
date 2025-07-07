@@ -22,6 +22,7 @@ Style Button::GetBuiltInStyles() const {
   static const auto BaseStyle = DefaultButtonStyle
     + Style {
       .mAlignSelf = YGAlignFlexStart,
+      .mDescendants = {{{}, {.mPointerEvents = PointerEvents::None}}},
     };
 
   return BaseStyle;

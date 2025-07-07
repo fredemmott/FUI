@@ -24,8 +24,14 @@ enum class TextAlign {
   Right,
 };
 
+enum class PointerEvents {
+  Auto,
+  None,
+};
+
 struct Style {
-  using Selector = std::variant<StyleClass, const Widgets::Widget*>;
+  using Selector
+    = std::variant<std::monostate, StyleClass, const Widgets::Widget*>;
 
   StyleProperty<YGAlign> mAlignContent;
   StyleProperty<YGAlign> mAlignItems;
@@ -69,6 +75,7 @@ struct Style {
   StyleProperty<float> mPaddingLeft;
   StyleProperty<float> mPaddingRight;
   StyleProperty<float> mPaddingTop;
+  StyleProperty<PointerEvents> mPointerEvents;
   StyleProperty<YGPositionType, YGPositionTypeRelative> mPosition;
   StyleProperty<float> mRight;
   StyleProperty<float, 1.0f> mScaleX;
@@ -80,6 +87,7 @@ struct Style {
   StyleProperty<float> mWidth;
 
   std::vector<std::tuple<Selector, Style>> mAnd;
+  std::vector<std::tuple<Selector, Style>> mDescendants;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
   [[nodiscard]]
@@ -141,6 +149,7 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   X(PaddingLeft) \
   X(PaddingRight) \
   X(PaddingTop) \
+  X(PointerEvents) \
   X(Position) \
   X(Right) \
   X(ScaleX) \

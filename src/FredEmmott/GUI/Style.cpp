@@ -74,6 +74,23 @@ Style Style::InheritableValues() const noexcept {
 #define COPY_IF_INHERITABLE(X) copyIfInheritable(&Style::m##X);
   FUI_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
+#define MAKE_INHERITABLE(X) X.mScope = StylePropertyScope::SelfAndDescendants;
+#define COPY_AS_INHERITABLE(X) \
+  ret.m##X = rhs.m##X; \
+  MAKE_INHERITABLE(ret.m##X)
+  for (auto&& [selector, rhs]: mDescendants) {
+    if (holds_alternative<std::monostate>(selector)) {
+      FUI_STYLE_PROPERTIES(COPY_AS_INHERITABLE);
+      continue;
+    }
+    ret.mAnd.emplace_back(selector, rhs);
+    auto& it = std::get<1>(ret.mAnd.back());
+#define MAKE_IT_INHERITABLE(X) MAKE_INHERITABLE(it.m##X)
+    FUI_STYLE_PROPERTIES(MAKE_IT_INHERITABLE)
+#undef MAKE_IT_INHERITABLE
+  }
+#undef COPY_AS_INHERITABLE
+#undef MAKE_INHERITABLE
   return ret;
 }
 

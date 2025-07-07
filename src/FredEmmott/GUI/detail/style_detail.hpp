@@ -4,6 +4,8 @@
 
 #include <yoga/yoga.h>
 
+#include <type_traits>
+
 namespace FredEmmott::GUI::style_detail {
 
 template <class T>
@@ -14,6 +16,12 @@ struct default_t {
 template <>
 struct default_t<float> {
   static constexpr float value {YGUndefined};
+};
+
+template <class T>
+  requires std::is_scoped_enum_v<T>
+struct default_t<T> {
+  static constexpr T value {};
 };
 
 template <>
