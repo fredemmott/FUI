@@ -108,7 +108,8 @@ ContentDialogResult BeginContentDialog(bool* open, const ID id) {
     return false;
   }
 
-  return BeginContentDialog(id);
+  *open = BeginContentDialog(id);
+  return *open;
 }
 
 void ContentDialogTitle(std::string_view title) {
