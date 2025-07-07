@@ -87,7 +87,6 @@ BasicPopupWindowResult BeginBasicPopupWindow(bool* open, ID id) {
 
 void ClosePopupWindow() {
   tWindow->RequestStop(EXIT_SUCCESS);
-  EnqueueAdditionalFrame();
 }
 
 void EndBasicPopupWindow() {
