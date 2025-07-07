@@ -611,9 +611,6 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       };
 
       const auto root = GetRoot();
-      const auto height = std::ceil(
-        root->GetHeightForWidth(std::floor(clientSize.cx / mDPIScale))
-        * mDPIScale);
 
       if (root->CanFit(
             std::ceil(clientSize.cx / mDPIScale),
@@ -621,11 +618,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         mPendingResize.Set();
         break;
       }
-      if (rect.top == mNCRect.top) {
-        rect.bottom = rect.top + padding.top + height + padding.bottom;
-      } else {
-        rect.top = rect.bottom - (padding.top + height + padding.bottom);
-      }
+      rect = mNCRect;
       break;
     }
     case WM_DPICHANGED: {
