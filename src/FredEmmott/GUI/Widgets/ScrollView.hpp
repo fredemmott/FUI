@@ -36,8 +36,8 @@ class ScrollView final : public Widget {
   Style GetBuiltInStyles() const override;
 
  private:
-  unique_ptr<Widget> mContent;
-  unique_ptr<YGNode> mContentYoga;
+  unique_ptr<Widget> mContentOuter;
+  Widget* mContentInner {nullptr};
 
   unique_ptr<YGNode> mScrollBarsYoga;
   unique_ptr<ScrollBar> mHorizontalScrollBar;
@@ -56,12 +56,5 @@ class ScrollView final : public Widget {
     ScrollBarVisibility visibility,
     float content,
     float container) noexcept;
-
-  static YGSize Measure(
-    YGNodeConstRef node,
-    float width,
-    YGMeasureMode widthMode,
-    float height,
-    YGMeasureMode heightMode);
 };
 }// namespace FredEmmott::GUI::Widgets

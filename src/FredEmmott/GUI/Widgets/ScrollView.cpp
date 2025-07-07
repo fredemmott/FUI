@@ -23,25 +23,14 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   this->ChangeDirectChildren([this] {
     mHorizontalScrollBar.reset(new ScrollBar(0, Orientation::Horizontal));
     mVerticalScrollBar.reset(new ScrollBar(1, Orientation::Vertical));
-    mContent.reset(new Widget(2, {ContentStyleClass}));
+    mContentOuter.reset(new Widget(2, {ContentStyleClass}));
   });
-  YGNodeRemoveAllChildren(this->GetLayoutNode());
-  YGNodeSetMeasureFunc(this->GetLayoutNode(), &ScrollView::Measure);
-  {
-    const auto child = mContent->GetLayoutNode();
-    mContentYoga.reset(YGNodeNew());
-    YGNodeStyleSetOverflow(mContentYoga.get(), YGOverflowScroll);
-    YGNodeSetChildren(mContentYoga.get(), &child, 1);
+  mContentOuter->SetChildren({mContentInner = new Widget(0)});
+  YGNodeStyleSetOverflow(this->GetLayoutNode(), YGOverflowScroll);
+  YGNodeRemoveChild(
+    this->GetLayoutNode(), mHorizontalScrollBar->GetLayoutNode());
+  YGNodeRemoveChild(this->GetLayoutNode(), mVerticalScrollBar->GetLayoutNode());
 
-    YGNodeSetContext(
-      mContentYoga.get(),
-      new widget_detail::YogaContext {
-        widget_detail::DetachedYogaTree {
-          .mLogicalParent = this,
-          .mFosterParent = mContent.get(),
-        },
-      });
-  }
   {
     mScrollBarsYoga.reset(YGNodeNew());
     const std::array scrollbars {
@@ -57,7 +46,7 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
     std::chrono::milliseconds(100),
     StaticTheme::Common::ControlFastOutSlowInKeySpline);
-  mContent->SetBuiltInStyles({
+  mContentOuter->SetBuiltInStyles({
     .mAlignSelf = YGAlignStretch,
     .mFlexDirection = YGFlexDirectionColumn,
     .mTranslateX = {0, SmoothScrollingAnimation},
@@ -82,12 +71,7 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     std::bind_front(&ScrollView::OnVerticalScroll, this));
 }
 
-ScrollView::~ScrollView() {
-  const auto ctx = static_cast<widget_detail::YogaContext*>(
-    YGNodeGetContext(mContentYoga.get()));
-  YGNodeSetContext(mContentYoga.get(), nullptr);
-  delete ctx;
-}
+ScrollView::~ScrollView() {}
 
 ScrollView::ScrollBarVisibility ScrollView::GetHorizontalScrollBarVisibility()
   const noexcept {
@@ -115,29 +99,18 @@ WidgetList ScrollView::GetDirectChildren() const noexcept {
   return {
     mVerticalScrollBar.get(),
     mHorizontalScrollBar.get(),
-    mContent.get(),
+    mContentOuter.get(),
   };
 }
 
 Widget* ScrollView::GetFosterParent() const noexcept {
-  return mContent.get();
+  return mContentInner;
 }
 
 void ScrollView::UpdateLayout() {
   const auto node = this->GetLayoutNode();
-  mContent->UpdateLayout();
-  mContent->ComputeStyles({});
-
-  if (
-    YGNodeGetHasNewLayout(mContentYoga.get()) || YGNodeGetHasNewLayout(node)) {
-    YGNodeSetHasNewLayout(mContentYoga.get(), false);
-    YGNodeSetHasNewLayout(node, false);
-    const auto [w, h] = GetMinimumWidthAndIdealHeight(mContentYoga.get());
-    this->SetAdditionalBuiltInStyles({
-      .mMaxHeight = std::ceil(h),
-      .mMinWidth = std::ceil(w),
-    });
-  }
+  mContentOuter->UpdateLayout();
+  mContentOuter->ComputeStyles({});
 
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
@@ -146,11 +119,10 @@ void ScrollView::UpdateLayout() {
     return;
   }
 
-  YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
-  const auto cw = YGNodeLayoutGetWidth(mContentYoga.get());
-  const auto ch = YGNodeLayoutGetHeight(mContentYoga.get());
+  const auto cw = YGNodeLayoutGetWidth(mContentInner->GetLayoutNode());
+  const auto ch = YGNodeLayoutGetHeight(mContentInner->GetLayoutNode());
 
   const bool showHScroll
     = IsScrollBarVisible(mHorizontalScrollBarVisibility, cw, w);
@@ -190,12 +162,11 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
-  YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
   YGNodeCalculateLayout(mScrollBarsYoga.get(), w, h, YGDirectionLTR);
 
   {
     const auto clipTo = renderer->ScopedClipRect(Size {w, h});
-    mContent->Paint(renderer);
+    mContentOuter->Paint(renderer);
   }
 
   mHorizontalScrollBar->Paint(renderer);
@@ -226,11 +197,11 @@ Style ScrollView::GetBuiltInStyles() const {
 }
 
 void ScrollView::OnHorizontalScroll(float value) {
-  mContent->AddExplicitStyles({.mTranslateX = -value});
+  mContentOuter->AddExplicitStyles({.mTranslateX = -value});
 }
 
 void ScrollView::OnVerticalScroll(float value) {
-  mContent->AddExplicitStyles({.mTranslateY = -value});
+  mContentOuter->AddExplicitStyles({.mTranslateY = -value});
 }
 
 bool ScrollView::IsScrollBarVisible(
@@ -250,34 +221,6 @@ bool ScrollView::IsScrollBarVisible(
   }
 
   return (content - container) > eps;
-}
-YGSize ScrollView::Measure(
-  YGNodeConstRef node,
-  float width,
-  [[maybe_unused]] YGMeasureMode widthMode,
-  float height,
-  YGMeasureMode heightMode) {
-  const auto& self = *static_cast<ScrollView*>(FromYogaNode(node));
-
-  const unique_ptr<YGNode> root {YGNodeClone(self.mContentYoga.get())};
-  const auto yoga = root.get();
-
-  YGNodeStyleSetWidth(yoga, width);
-  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-  width = YGNodeLayoutGetWidth(yoga);
-  switch (heightMode) {
-    case YGMeasureModeExactly:
-      break;
-    case YGMeasureModeAtMost:
-      height = std::min(height, YGNodeLayoutGetHeight(yoga));
-      break;
-    case YGMeasureModeUndefined:
-      height = YGNodeLayoutGetHeight(yoga);
-      break;
-    default:
-      std::unreachable();
-  }
-  return {width, height};
 }
 
 }// namespace FredEmmott::GUI::Widgets

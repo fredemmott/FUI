@@ -64,7 +64,6 @@ void Root::EndFrame() {
     tWindow->ResizeToFit();
   }
 
-  mWidget->Tick();
   mWidget->ComputeStyles({});
   mWidget->UpdateLayout();
 }
@@ -83,6 +82,7 @@ void Root::Paint(Renderer* renderer, const Size& size) {
 
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
+  mWidget->Tick();
   mWidget->Paint(renderer);
 }
 
@@ -101,8 +101,8 @@ bool Root::CanFit(float width, float height) const {
 
 Size Root::GetInitialSize() const {
   if (mWidget) {
-    mWidget->UpdateLayout();
     mWidget->ComputeStyles({});
+    mWidget->UpdateLayout();
   }
 
   return GetMinimumWidthAndIdealHeight(mYogaRoot.get());

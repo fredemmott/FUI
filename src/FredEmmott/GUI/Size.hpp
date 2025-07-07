@@ -12,6 +12,11 @@ template <class T>
 struct BasicSize {
   T mWidth {};
   T mHeight {};
+
+  template <class U>
+  U as() const noexcept {
+    return U {mWidth, mHeight};
+  }
 };
 
 using Size = BasicSize<float>;
