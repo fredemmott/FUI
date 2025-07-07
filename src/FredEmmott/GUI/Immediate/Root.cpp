@@ -12,7 +12,6 @@
 using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Immediate {
-
 using namespace immediate_detail;
 using namespace Widgets;
 
@@ -80,6 +79,7 @@ void Root::Paint(Renderer* renderer, const Size& size) {
   }
   const auto clipRegion = renderer->ScopedClipRect({size});
 
+  mWidget->UpdateLayout();
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
   mWidget->Tick();
@@ -91,10 +91,13 @@ bool Root::CanFit(const Size& size) const {
 }
 
 bool Root::CanFit(float width, float height) const {
+  if (width <= 0 || height <= 0) {
+    return false;
+  }
   const unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
   const auto yoga = testRoot.get();
-  YGNodeStyleSetMaxWidth(yoga, width);
-  YGNodeStyleSetMaxHeight(yoga, height);
+  YGNodeStyleSetWidth(yoga, std::ceil(width));
+  YGNodeStyleSetHeight(yoga, std::ceil(height));
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
   return !YGNodeLayoutGetHadOverflow(yoga);
 }
