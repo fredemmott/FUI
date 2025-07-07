@@ -47,6 +47,9 @@ ButtonResult<&EndButton> BeginButton(
   bool* clicked,
   ID id = ID {std::source_location::current()});
 
+ButtonResult<&EndButton, bool> BeginButton(
+  ID id = ID {std::source_location::current()});
+
 /// Create a button with a text label
 [[nodiscard]]
 ButtonResult<nullptr, bool> Button(

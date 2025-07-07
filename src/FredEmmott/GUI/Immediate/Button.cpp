@@ -15,6 +15,11 @@ ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
   return button;
 }
 
+ButtonResult<&EndButton, bool> BeginButton(ID id) {
+  bool clicked {};
+  return {BeginButton(&clicked, id), clicked};
+}
+
 ButtonResult<nullptr, bool> Button(const std::string_view label, const ID id) {
   bool clicked {};
   const auto button = BeginButton(&clicked, id);
