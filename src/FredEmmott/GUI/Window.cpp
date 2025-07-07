@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 #include "Window.hpp"
 
+#include <FredEmmott/GUI/StaticTheme/Generic.hpp>
 #include <thread>
 
+#include "Immediate/ContentDialog.hpp"
 #include "assert.hpp"
 #include "detail/immediate_detail.hpp"
 
@@ -105,6 +107,11 @@ void Window::Paint() {
     renderer->Clear(this->GetClearColor());
     renderer->Scale(this->GetDPIScale());
     mFUIRoot.Paint(renderer, this->GetClientAreaSize());
+    if (IsDisabled()) {
+      renderer->FillRect(
+        *StaticTheme::Common::SmokeFillColorDefaultBrush->Resolve(),
+        this->GetClientAreaSize());
+    }
   }
 
   mFrameIndex = (mFrameIndex + 1) % mSwapChainLength;

@@ -146,6 +146,10 @@ class Win32Window : public Window {
     return mSwapChain.get();
   }
 
+  bool IsDisabled() const override {
+    return mIsDisabled;
+  }
+
  private:
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};
@@ -174,6 +178,7 @@ class Win32Window : public Window {
   wil::com_ptr<IDCompositionTarget> mCompositionTarget;
   wil::com_ptr<IDCompositionVisual> mCompositionVisual;
   bool mHaveSystemBackdrop {false};
+  bool mIsDisabled {false};
 
   void ResizeSwapchain();
   void AdjustToWindowsTheme();
