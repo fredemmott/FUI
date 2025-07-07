@@ -616,11 +616,8 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         * mDPIScale);
 
       if (root->CanFit(
-            std::floor(clientSize.cx / mDPIScale),
-            std::floor(clientSize.cy / mDPIScale))) {
-        if (const auto dy = clientSize.cy - height; dy > 0) {
-          rect.bottom -= dy;
-        }
+            std::ceil(clientSize.cx / mDPIScale),
+            std::ceil(clientSize.cy / mDPIScale))) {
         mPendingResize.Set();
         break;
       }
