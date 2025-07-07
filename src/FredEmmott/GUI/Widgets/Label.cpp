@@ -24,7 +24,18 @@ void Label::SetText(std::string_view text) {
     return;
   }
   mText = std::string {text};
-  YGNodeMarkDirty(this->GetLayoutNode());
+
+  // Check before calling `YGNodeMarkDirty()` as this will mark
+  // all ancestor nodes as dirty, even if this node layout/size doesn't change
+  const auto yoga = this->GetLayoutNode();
+  const auto availableWidth = YGNodeLayoutGetWidth(yoga)
+    - (YGNodeLayoutGetBorder(yoga, YGEdgeLeft)
+       + YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
+       + YGNodeLayoutGetPadding(yoga, YGEdgeRight)
+       + YGNodeLayoutGetBorder(yoga, YGEdgeRight));
+  if (mFont.MeasureTextWidth(mText) > availableWidth) {
+    YGNodeMarkDirty(this->GetLayoutNode());
+  }
 }
 
 void Label::PaintOwnContent(
@@ -85,8 +96,8 @@ Widget::ComputedStyleFlags Label::OnComputedStyleChange(
 
 YGSize Label::Measure(
   YGNodeConstRef node,
-  [[maybe_unused]] float width,
-  [[maybe_unused]] YGMeasureMode widthMode,
+  float width,
+  YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
   const auto self = static_cast<Label*>(FromYogaNode(node));
@@ -94,8 +105,10 @@ YGSize Label::Measure(
   const auto& font = self->mFont;
   const auto& text = self->mText;
 
+  const auto tw = font.MeasureTextWidth(text);
+
   return {
-    font.MeasureTextWidth(text),
+    (widthMode == YGMeasureModeExactly && tw < width) ? width : tw,
     -font.GetMetrics().mAscent,
   };
 }
