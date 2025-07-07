@@ -28,7 +28,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   static const Style styles {
     .mAlignSelf = YGAlignFlexStart,
     .mBackgroundColor = ComboBoxBackground,
-    .mBorderColor =ComboBoxBorderBrush,
+    .mBorderColor = ComboBoxBorderBrush,
     .mBorderRadius = ControlCornerRadius,
     .mBorderWidth = ComboBoxBorderThemeThickness,
     .mColor = ComboBoxForeground,
@@ -61,6 +61,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
 
   BeginWidget<Widget>(ID {"container"});
   GetCurrentParentNode()->SetAdditionalBuiltInStyles({
+    .mAlignSelf = YGAlignCenter,
     .mFlexGrow = 1,
   });
   button->SetContextIfUnset<PopupAnchorContext>(GetCurrentParentNode());
@@ -86,7 +87,7 @@ void EndComboBoxButton() {
   // MarginRight of 14 is in the Xaml without an alias; MarginLeft
   // is not set in the XAML at all.
   GetCurrentNode()->ReplaceExplicitStyles({
-    .mAlignSelf = YGAlignFlexEnd,
+    .mAlignSelf = YGAlignCenter,
     .mFlexGrow = 0,
     .mMarginLeft = 14,
     .mMarginRight = 14,
