@@ -99,7 +99,7 @@ static void AppTick() {
     fuii::ContentDialogSecondaryButton("Test Disabled");
     fuii::EndDisabled();
     if (fuii::ContentDialogCloseButton()) {
-      fuii::ClosePopupWindow();
+      std::println(stderr, "ContentDialog close button clicked");
     }
   }
 

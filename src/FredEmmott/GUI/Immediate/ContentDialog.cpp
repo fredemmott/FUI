@@ -334,7 +334,11 @@ static ContentDialogButtonResult<TButton> ContentDialogButtonImpl(std::string_vi
     ctx.mFlags |= ButtonsContext::DisabledFlag;
   }
 
-  return {ctx.mBinding && ctx.mBinding->mButton->mClicked.TestAndClear()};
+  const bool clicked = ctx.mBinding && ctx.mBinding->mButton->mClicked.TestAndClear();
+  if (tContext && clicked) {
+    ClosePopupWindow();
+  }
+  return clicked;
 }
 
 ContentDialogButtonResult<ContentDialogButton::Primary>
