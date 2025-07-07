@@ -30,9 +30,9 @@ inline void EndButton() {
   immediate_detail::EndWidget<Widgets::Button>();
 }
 
-template <void (*TEndWidget)() = nullptr, class TValue = void>
+template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
 using ButtonResult
-  = Result<TEndWidget, TValue, immediate_detail::ButtonResultMixin>;
+  = Result<TEndWidget, TValue, immediate_detail::ButtonResultMixin, TMixins...>;
 
 /** Start a button containing a child widget; for multiple widgets, use
  * a layout.
@@ -41,14 +41,29 @@ using ButtonResult
  *
  *   BeginButton(&clicked, [style[, id]]);
  *
- * @see `Button()` if you just want text
+ * @see `Button(...)` if you just want text
  */
 ButtonResult<&EndButton> BeginButton(
   bool* clicked,
   ID id = ID {std::source_location::current()});
 
-ButtonResult<&EndButton, bool> BeginButton(
-  ID id = ID {std::source_location::current()});
+/** Start a button containing a child widget.
+ *
+ * Returns truthy result if the button was clicked.
+ *
+ * The result can not be `Scoped()`, to prevent the following bug:
+ *
+ * ```
+ * if (BeginButton.Scoped()) {
+ *   Label("ButtonText");
+ * }
+ * ```
+ *
+ * This would be a bug because the if block is a click handler, i.e. the button
+ * would not have a label except for the frame in which it is clicked.
+ */
+ButtonResult<&EndButton, bool, immediate_detail::UnscopedResultMixin>
+BeginButton(ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label
 [[nodiscard]]

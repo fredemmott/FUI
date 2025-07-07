@@ -15,7 +15,7 @@ ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
   return button;
 }
 
-ButtonResult<&EndButton, bool> BeginButton(ID id) {
+ButtonResult<&EndButton, bool, UnscopedResultMixin> BeginButton(const ID id) {
   bool clicked {};
   return {BeginButton(&clicked, id), clicked};
 }
