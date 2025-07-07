@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <format>
 #include <source_location>
 #include <string>
 
@@ -27,6 +28,13 @@ class ID final {
 
   explicit constexpr ID(const std::source_location& location)
     : mID((location.line() << 24) | (location.column() & 0xff)) {}
+
+  template <class... TArgs>
+    requires(sizeof...(TArgs) > 0)
+  explicit constexpr ID(std::format_string<TArgs...> fmt, TArgs&&... args) {
+    mID = std::hash<std::string_view> {}(
+      std::format(fmt, std::forward<TArgs>(args)...));
+  }
 
   [[nodiscard]]
   constexpr std::size_t GetValue() const noexcept {

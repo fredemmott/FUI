@@ -18,7 +18,9 @@ inline void EndEnabled() {
 }
 
 Result<&EndDisabled, void, immediate_detail::WidgetlessResultMixin>
-BeginDisabled(bool isDisabled, ID id = ID {std::source_location::current()});
+BeginDisabled(
+  bool isDisabled = true,
+  ID id = ID {std::source_location::current()});
 
 inline Result<&EndEnabled, void, immediate_detail::WidgetlessResultMixin>
 BeginEnabled(

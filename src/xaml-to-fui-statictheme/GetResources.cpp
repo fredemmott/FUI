@@ -66,6 +66,12 @@ void GetResource(
     GetNumber(back, it, "int32_t");
     return;
   }
+  if (tagType == "GridLength") {
+    // This could be 'double', 'starSizing', or 'auto' - for now,
+    // everything we care about is a double
+    GetNumber(back, it, "float");
+    return;
+  }
   if (tagType == "x:Boolean") {
     GetBoolean(back, it);
     return;

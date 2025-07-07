@@ -88,18 +88,17 @@ static void AppTick() {
     sShowAccentPopup = true;
   }
   if (
-    const auto dialog
-    = fuii::BeginContentDialog(&sShowAccentPopup, "Test Popup").Scoped()) {
+    const auto dialog = fuii::BeginContentDialog(&sShowAccentPopup).Scoped()) {
+    fuii::ContentDialogTitle("Demo dialog title");
     fuii::Label("This is a ContentDialog.");
     fuii::TextBlock(LoremIpsum).Styled({.mMinWidth = 400});
 
-    const auto footer = fuii::BeginContentDialogFooter().Scoped();
-    if (fuii::Button("Save").Accent()) {
-      std::println(stderr, "Save clicked");
-      sShowAccentPopup = false;
-    }
-    if (fuii::Button("Close")) {
-      std::println(stderr, "Close clicked");
+    const auto footer = fuii::BeginContentDialogButtons().Scoped();
+    fuii::ContentDialogPrimaryButton("Test").Accent();
+    fuii::BeginDisabled();
+    fuii::ContentDialogSecondaryButton("Test Disabled");
+    fuii::EndDisabled();
+    if (fuii::ContentDialogCloseButton()) {
       fuii::ClosePopupWindow();
     }
   }

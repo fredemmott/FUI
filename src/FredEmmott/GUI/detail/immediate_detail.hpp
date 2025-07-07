@@ -13,8 +13,8 @@
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-using namespace Widgets;
-using namespace widget_detail;
+using Widget = Widgets::Widget;
+using namespace Widgets::widget_detail;
 
 struct StackEntry final {
   std::vector<Widget*> mPending;

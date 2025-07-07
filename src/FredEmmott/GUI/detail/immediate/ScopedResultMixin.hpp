@@ -13,6 +13,7 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
  * Requires `std::same_as<TValue, bool>`
  */
 struct ConditionallyScopedResultMixin {};
+struct UnscopedResultMixin {};
 
 template <void (*TEndWidget)(), class TValue, class... TMixins>
 struct ScopedEndWidget {
@@ -78,6 +79,11 @@ struct ScopedResultMixin {
  private:
   bool mScoped = false;
 };
-template <class T>
-struct ScopedResultMixin<nullptr, T> {};
+
+template <class T, class... TMixins>
+struct ScopedResultMixin<nullptr, T, TMixins...> {};
+
+template <void (*TEndWidget)(), class T, class... TMixins>
+  requires(std::same_as<UnscopedResultMixin, TMixins> || ...)
+struct ScopedResultMixin<TEndWidget, T, TMixins...> {};
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

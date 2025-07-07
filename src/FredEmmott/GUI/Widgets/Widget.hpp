@@ -24,12 +24,6 @@ struct WidgetList;
  */
 class Context {
  public:
-  Context(const Context&) = delete;
-  Context(Context&&) = delete;
-  Context& operator=(const Context&) = delete;
-  Context& operator=(Context&&) = delete;
-
-  Context() = default;
   virtual ~Context() = default;
 };
 
@@ -75,6 +69,16 @@ class Widget {
     mContexts.emplace(key, std::invoke(std::forward<F>(f)));
   }
 
+  template <context T, class... Args>
+    requires std::constructible_from<T, Args...>
+  void SetContextIfUnset(Args&&... args) {
+    const auto key = std::type_index(typeid(T));
+    if (mContexts.contains(key)) {
+      return;
+    }
+    mContexts.emplace(key, std::make_unique<T>(std::forward<Args>(args)...));
+  }
+
   /** Retrieve user-supplied data, derived from the `Context` class.
    *
    * Set with `SetContextIfUnset()`
@@ -86,6 +90,28 @@ class Widget {
       return nullptr;
     }
     return static_cast<T*>(mContexts.at(key).get());
+  }
+
+  template <
+    std::invocable F,
+    context T = typename std::invoke_result_t<F>::element_type>
+    requires std::same_as<std::invoke_result_t<F>, std::unique_ptr<T>>
+  T* GetOrCreateContext(F&& f) {
+    SetContextIfUnset(std::forward<F>(f));
+    return GetContext<T>();
+  }
+
+  template <context T, class... Args>
+    requires std::constructible_from<T, Args...>
+  T* GetOrCreateContext(Args&&... args) {
+    const auto key = std::type_index(typeid(T));
+    if (mContexts.contains(key)) {
+      return static_cast<T*>(mContexts.at(key).get());
+    }
+    auto owned = std::make_unique<T>(std::forward<Args>(args)...);
+    const auto ret = owned.get();
+    mContexts.emplace(key, std::move(owned));
+    return ret;
   }
 
   virtual FrameRateRequirement GetFrameRateRequirement() const noexcept;

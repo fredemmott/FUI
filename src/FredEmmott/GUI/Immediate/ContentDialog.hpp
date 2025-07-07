@@ -1,12 +1,34 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "Button.hpp"
 #include "FredEmmott/GUI/detail/immediate/WidgetlessResultMixin.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "ID.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
+
+namespace immediate_detail {
+
+enum class ContentDialogButton {
+  Primary,
+  Secondary,
+  Close,
+};
+
+void ContentDialogButton_AddAccent(ContentDialogButton);
+
+template <ContentDialogButton T>
+struct ContentDialogButtonResultMixin {
+  template <class Self>
+  decltype(auto) Accent(this Self&& self) {
+    ContentDialogButton_AddAccent(T);
+    return std::forward<Self>(self);
+  }
+};
+
+}// namespace immediate_detail
 
 void EndContentDialog();
 using ContentDialogResult = Result<
@@ -16,40 +38,35 @@ using ContentDialogResult = Result<
   immediate_detail::ConditionallyScopedResultMixin>;
 
 ContentDialogResult BeginContentDialog(
-  std::string_view title,
   ID id = ID {std::source_location::current()});
 
 ContentDialogResult BeginContentDialog(
   bool* open,
-  std::string_view title,
   ID id = ID {std::source_location::current()});
 
+void ContentDialogTitle(std::string_view title);
 template <class... Args>
   requires(sizeof...(Args) > 0)
-ContentDialogResult BeginContentDialog(
-  std::format_string<Args...> titleFormat,
-  Args&&... args) {
-  auto [id, title]
-    = immediate_detail::ParsedID(titleFormat, std::forward<Args>(args)...);
-  return BeginContentDialog(title, id);
+void ContentDialogTitle(std::format_string<Args...> fmt, Args&&... args) {
+  ContentDialogTitle(std::format(fmt, std::forward<Args>(args)...));
 }
 
-template <class... Args>
-  requires(sizeof...(Args) > 0)
-ContentDialogResult BeginContentDialog(
-  bool* open,
-  std::format_string<Args...> titleFormat,
-  Args&&... args) {
-  if (!(open && *open)) {
-    return false;
-  }
-  auto [id, title]
-    = immediate_detail::ParsedID(titleFormat, std::forward<Args>(args)...);
-  return BeginContentDialog(open, title, id);
-}
+void EndContentDialogButtons();
+Result<&EndContentDialogButtons, void, immediate_detail::WidgetlessResultMixin>
+BeginContentDialogButtons();
 
-void EndContentDialogFooter();
-Result<&EndContentDialogFooter, void, immediate_detail::WidgetlessResultMixin>
-BeginContentDialogFooter();
+template <immediate_detail::ContentDialogButton T>
+using ContentDialogButtonResult = Result<
+  nullptr,
+  bool,
+  immediate_detail::ContentDialogButtonResultMixin<T>,
+  immediate_detail::WidgetlessResultMixin>;
+
+ContentDialogButtonResult<immediate_detail::ContentDialogButton::Primary>
+ContentDialogPrimaryButton(std::string_view label);
+ContentDialogButtonResult<immediate_detail::ContentDialogButton::Secondary>
+ContentDialogSecondaryButton(std::string_view label);
+ContentDialogButtonResult<immediate_detail::ContentDialogButton::Close>
+ContentDialogCloseButton(std::string_view label = "Close");
 
 }// namespace FredEmmott::GUI::Immediate

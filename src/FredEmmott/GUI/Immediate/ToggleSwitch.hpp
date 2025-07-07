@@ -19,7 +19,7 @@ struct OnOffTextResultMixin {
    */
   template <class Self>
   decltype(auto) OnText(this Self&& self, const std::string_view label) {
-    Self::SetOnText(widget_from_result<ToggleSwitch>(self), label);
+    Self::SetOnText(widget_from_result<Widgets::ToggleSwitch>(self), label);
     return std::forward<Self>(self);
   }
 
@@ -33,7 +33,7 @@ struct OnOffTextResultMixin {
   decltype(auto)
   OnText(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
     Self::SetOnText(
-      widget_from_result<ToggleSwitch>(self),
+      widget_from_result<Widgets::ToggleSwitch>(self),
       std::format(fmt, std::forward<Args>(args)...));
     return std::forward<Self>(self);
   }
@@ -45,7 +45,7 @@ struct OnOffTextResultMixin {
    */
   template <class Self>
   decltype(auto) OffText(this Self&& self, const std::string_view label) {
-    Self::SetOffText(widget_from_result<ToggleSwitch>(self), label);
+    Self::SetOffText(widget_from_result<Widgets::ToggleSwitch>(self), label);
     return std::forward<Self>(self);
   }
 
@@ -59,7 +59,7 @@ struct OnOffTextResultMixin {
   decltype(auto)
   OffText(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
     Self::SetOffText(
-      widget_from_result<ToggleSwitch>(self),
+      widget_from_result<Widgets::ToggleSwitch>(self),
       std::format(fmt, std::forward<Args>(args)...));
     return std::forward<Self>(self);
   }

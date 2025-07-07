@@ -26,10 +26,8 @@ class Result final
   template <void (*)(), class, class...>
   friend class Result;
   friend struct immediate_detail::ValueResultMixin<TValue>;
-  friend std::conditional_t<
-    HasWidget,
-    immediate_detail::widget_from_result_t<Result>,
-    void>;
+  friend std::
+    conditional_t<HasWidget, immediate_detail::widget_from_result_t, void>;
 
   Result() = delete;
 
