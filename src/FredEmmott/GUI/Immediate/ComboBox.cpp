@@ -41,7 +41,8 @@ ComboBox(std::size_t* selectedIndex, std::span<std::string_view> items, ID id) {
   const auto widget = BeginWidget<ComboBoxWidget>(id);
   widget->SetBuiltInStyles({.mDisplay = YGDisplayContents});
 
-  if (ComboBoxButton("{}", items[*selectedIndex])) {
+  const auto button = ComboBoxButton(items[*selectedIndex]);
+  if (button.GetValue() /* clicked */) {
     widget->mIsPopupOpen = true;
   }
 
@@ -61,7 +62,7 @@ ComboBox(std::size_t* selectedIndex, std::span<std::string_view> items, ID id) {
   }
 
   EndWidget<ComboBoxWidget>();
-  return {widget, changed};
+  return {widget_from_result(button), changed};
 }
 
 }// namespace FredEmmott::GUI::Immediate
