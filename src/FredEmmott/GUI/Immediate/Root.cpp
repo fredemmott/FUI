@@ -91,10 +91,10 @@ bool Root::CanFit(const Size& size) const {
 }
 
 bool Root::CanFit(float width, float height) const {
-  unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
-  auto yoga = testRoot.get();
-  YGNodeStyleSetWidth(yoga, width);
-  YGNodeStyleSetHeight(yoga, height);
+  const unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
+  const auto yoga = testRoot.get();
+  YGNodeStyleSetMaxWidth(yoga, width);
+  YGNodeStyleSetMaxHeight(yoga, height);
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
   return !YGNodeLayoutGetHadOverflow(yoga);
 }
