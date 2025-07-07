@@ -324,11 +324,10 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
   const auto display = YGNodeStyleGetDisplay(layout);
   if (display != YGDisplayContents) {
     event = event.WithOffset({
-      -(mComputedStyle.mTranslateX.value_or(0) + YGNodeLayoutGetLeft(layout)),
-      -(mComputedStyle.mTranslateY.value_or(0) + YGNodeLayoutGetTop(layout)),
+      -YGNodeLayoutGetLeft(layout),
+      -YGNodeLayoutGetTop(layout),
     });
   }
-  mMouseOffset = event.mOffset;
 
   const auto w = YGNodeLayoutGetWidth(layout);
   const auto h = YGNodeLayoutGetHeight(layout);
@@ -349,7 +348,13 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
     }
   } else {
     mDirectStateFlags |= StateFlags::Hovered;
+    event = event.WithOffset({
+      -mComputedStyle.mTranslateX.value_or(0),
+      -mComputedStyle.mTranslateY.value_or(0),
+    });
   }
+
+  mMouseOffset = event.mOffset;
 
   // Always propagate unconditionally to allow correct internal states
   auto result = EventHandlerResult::Default;
