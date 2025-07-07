@@ -276,12 +276,11 @@ void Widget::PaintChildren(Renderer* renderer) const {
 }
 
 void Widget::SetChildren(const std::vector<Widget*>& children) {
-  if (children == mManagedChildrenCacheForGetChildren) {
-    return;
-  }
-
   const auto foster = this->GetFosterParent();
   const auto parent = foster ? foster : this;
+  if (children == parent->mManagedChildrenCacheForGetChildren) {
+    return;
+  }
 
   parent->ChangeDirectChildren(
     std::bind_front(&Widget::SetManagedChildren, parent, std::ref(children)));
