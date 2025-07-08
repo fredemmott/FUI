@@ -193,17 +193,21 @@ void Widget::ReplaceExplicitStyles(const Style& styles) {
     return;
   }
   mExplicitStyles = styles;
+  this->ComputeStyles(mInheritedStyles);
 }
 
 void Widget::AddExplicitStyles(const Style& styles) {
   mExplicitStyles += styles;
+  this->ComputeStyles(mInheritedStyles);
 }
 
 void Widget::SetBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = styles;
+  this->ComputeStyles(mInheritedStyles);
 }
 void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
+  this->ComputeStyles(mInheritedStyles);
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
