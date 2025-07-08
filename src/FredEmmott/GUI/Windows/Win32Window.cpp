@@ -376,6 +376,7 @@ void Win32Window::InitializeDirectComposition() {
     .BufferCount = SwapChainLength,
     .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
     .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
+    .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
   };
 
   CheckHResult(mDXGIFactory->CreateSwapChainForComposition(
@@ -391,7 +392,11 @@ void Win32Window::InitializeDirectComposition() {
 void Win32Window::ResizeSwapchain() {
   this->CleanupFrameContexts();
   CheckHResult(mSwapChain->ResizeBuffers(
-    0, mClientSize.cx, mClientSize.cy, DXGI_FORMAT_UNKNOWN, 0));
+    0,
+    mClientSize.cx,
+    mClientSize.cy,
+    DXGI_FORMAT_UNKNOWN,
+    DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
   this->CreateRenderTargets();
   this->ResetToFirstBackBuffer();
 }

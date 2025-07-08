@@ -180,7 +180,7 @@ void Win32Direct2DWindow::CreateRenderTargets() {
 
 void Win32Direct2DWindow::AfterPaintFrame([[maybe_unused]] uint8_t frameIndex) {
   CheckHResult(mD2DDeviceContext->EndDraw());
-  CheckHResult(GetSwapChain()->Present(0, 0));
+  CheckHResult(GetSwapChain()->Present(0, DXGI_PRESENT_ALLOW_TEARING));
   mD2DDeviceContext->SetTarget(nullptr);
 }
 
@@ -202,7 +202,8 @@ Win32Direct2DWindow::GetFramePainter(uint8_t frameIndex) {
     new FramePainter(this, frameIndex)};
 }
 
-void Win32Direct2DWindow::BeforePaintFrame([[maybe_unused]] uint8_t frameIndex) {
+void Win32Direct2DWindow::BeforePaintFrame(
+  [[maybe_unused]] uint8_t frameIndex) {
   mD2DDeviceContext->SetTarget(mFrame.mD2DTargetBitmap.get());
 
   mD2DDeviceContext->BeginDraw();
