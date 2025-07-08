@@ -41,8 +41,10 @@ struct ScopedResultMixin : UnscopeableResultMixin {
 
   void ReleaseScopedEndWidget() {
     // We already have a 'set to disable' flag, so let's re-use it :)
+    // C++ allows move elision when assigning to non-volatile lvalues, so,
+    // mark it volatile
     [[maybe_unused]]
-    const auto discard
+    const volatile auto discard
       = std::move(mMoved);
   }
 
