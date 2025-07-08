@@ -35,7 +35,7 @@ using ContentDialogResult = Result<
   &EndContentDialog,
   bool,
   immediate_detail::WidgetlessResultMixin,
-  immediate_detail::ConditionallyScopedResultMixin>;
+  immediate_detail::ConditionallyScopeableResultMixin>;
 
 ContentDialogResult BeginContentDialog(
   ID id = ID {std::source_location::current()});

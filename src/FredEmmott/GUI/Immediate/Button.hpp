@@ -62,7 +62,7 @@ ButtonResult<&EndButton> BeginButton(
  * This would be a bug because the if block is a click handler, i.e. the button
  * would not have a label except for the frame in which it is clicked.
  */
-ButtonResult<&EndButton, bool, immediate_detail::UnscopedResultMixin>
+ButtonResult<&EndButton, bool, immediate_detail::UnscopeableResultMixin>
 BeginButton(ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label

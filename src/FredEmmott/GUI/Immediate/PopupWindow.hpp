@@ -37,7 +37,7 @@ using BasicPopupWindowResult = Result<
   &EndBasicPopupWindow,
   bool,
   immediate_detail::WidgetlessResultMixin,
-  immediate_detail::ConditionallyScopedResultMixin,
+  immediate_detail::ConditionallyScopeableResultMixin,
   immediate_detail::BasicPopupWindowResultMixin>;
 
 /** Start a popup window.
@@ -80,7 +80,7 @@ using PopupResult = Result<
   &EndPopup,
   bool,
   immediate_detail::WidgetlessResultMixin,
-  immediate_detail::ConditionallyScopedResultMixin>;
+  immediate_detail::ConditionallyScopeableResultMixin>;
 
 [[nodiscard]]
 PopupResult BeginPopup(ID id = ID {std::source_location::current()});
