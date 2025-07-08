@@ -30,9 +30,7 @@ class ScrollView final : public Widget {
   [[nodiscard]]
   WidgetList GetDirectChildren() const noexcept override;
   Widget* GetFosterParent() const noexcept override;
-  void UpdateLayout() override;
   void PaintChildren(Renderer* renderer) const override;
-  void Tick() override;
   EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
   Style GetBuiltInStyles() const override;
 
@@ -49,13 +47,13 @@ class ScrollView final : public Widget {
   ScrollBarVisibility mVerticalScrollBarVisibility {
     ScrollBarVisibility::Hidden};
 
-  bool mDirtyContentLayout = true;
+  bool mDirtyInner = true;
+  float mContentInnerMinWidth {};
 
   void OnHorizontalScroll(float value);
   void OnVerticalScroll(float value);
 
-  void UpdateContentLayout();
-  void UpdateScrollBars();
+  void UpdateScrollBars(const Size& containerSize);
 
   [[nodiscard]]
   static bool IsScrollBarVisible(
@@ -64,7 +62,6 @@ class ScrollView final : public Widget {
     float container) noexcept;
 
   static void OnInnerContentDirty(YGNodeConstRef);
-  static void OnOuterContentDirty(YGNodeConstRef);
   static YGSize MeasureOuterContent(
     YGNodeConstRef node,
     float width,

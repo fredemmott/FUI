@@ -9,6 +9,7 @@
 #include <print>
 
 #include "FredEmmott/GUI/SystemSettings.hpp"
+#include "FredEmmott/GUI/assert.hpp"
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -47,8 +48,6 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   YGNodeSetDirtiedFunc(
     mContentInner->GetLayoutNode(), &ScrollView::OnInnerContentDirty);
   mContentInner->SetContextIfUnset<ScrollViewContext>(this);
-  YGNodeSetDirtiedFunc(
-    mContentOuter->GetLayoutNode(), &ScrollView::OnOuterContentDirty);
   YGNodeSetMeasureFunc(
     mContentOuter->GetLayoutNode(), &ScrollView::MeasureOuterContent);
   mContentOuter->SetContextIfUnset<ScrollViewContext>(this);
@@ -123,24 +122,15 @@ Widget* ScrollView::GetFosterParent() const noexcept {
   return mContentInner.get();
 }
 
-void ScrollView::UpdateLayout() {
-  Widget::UpdateLayout();
-  this->UpdateContentLayout();
-}
-
-void ScrollView::UpdateScrollBars() {
-  const auto node = this->GetLayoutNode();
-  mContentOuter->ComputeStyles({});
-
-  const auto w = YGNodeLayoutGetWidth(node);
-  const auto h = YGNodeLayoutGetHeight(node);
+void ScrollView::UpdateScrollBars(const Size& containerSize) {
+  const auto [w, h] = containerSize;
 
   if (YGFloatIsUndefined(w) || YGFloatIsUndefined(h)) {
     return;
   }
 
-  const auto cw = YGNodeLayoutGetWidth(mContentInner->GetLayoutNode());
-  const auto ch = YGNodeLayoutGetHeight(mContentInner->GetLayoutNode());
+  const auto cw = YGNodeLayoutGetWidth(mContentYoga.get());
+  const auto ch = YGNodeLayoutGetHeight(mContentYoga.get());
 
   const bool showHScroll
     = IsScrollBarVisible(mHorizontalScrollBarVisibility, cw, w);
@@ -186,11 +176,6 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
 
   mHorizontalScrollBar->Paint(renderer);
   mVerticalScrollBar->Paint(renderer);
-}
-
-void ScrollView::Tick() {
-  Widget::Tick();
-  this->UpdateContentLayout();
 }
 
 Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
@@ -248,13 +233,8 @@ bool ScrollView::IsScrollBarVisible(
 void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
   auto& self
     = *FromYogaNode(node)->GetContext<ScrollViewContext>()->mScrollView;
+  self.mDirtyInner = true;
   YGNodeMarkDirty(self.mContentOuter->GetLayoutNode());
-}
-
-void ScrollView::OnOuterContentDirty(YGNodeConstRef node) {
-  auto& self = *static_cast<ScrollView*>(
-    FromYogaNode(YGNodeGetParent(const_cast<YGNodeRef>(node))));
-  self.mDirtyContentLayout = true;
 }
 
 YGSize ScrollView::MeasureOuterContent(
@@ -262,55 +242,42 @@ YGSize ScrollView::MeasureOuterContent(
   float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   float height,
-  YGMeasureMode heightMode) {
+  [[maybe_unused]] YGMeasureMode heightMode) {
   const auto outer = FromYogaNode(node);
   auto& self = *outer->GetContext<ScrollViewContext>()->mScrollView;
 
+  const bool haveDirtyInner = std::exchange(self.mDirtyInner, false);
+  const bool haveWidthChange
+    = (!std::isnan(width) && std::abs(width - YGNodeLayoutGetWidth(self.GetLayoutNode())) >= 1);
+  const bool haveHeightChange
+    = (!std::isnan(height) && std::abs(height - YGNodeLayoutGetHeight(self.GetLayoutNode())) >= 1);
+  const bool haveSizeChange = haveWidthChange || haveHeightChange;
+
   const auto yoga = self.mContentYoga.get();
-  const auto minWidth = GetMinimumWidth(yoga, YGNodeLayoutGetWidth(node));
-  if (YGFloatIsUndefined(width)) {
-    return {std::ceil(minWidth), std::ceil(GetIdealHeight(yoga, minWidth))};
-  }
 
-  if (width < minWidth) {
-    width = minWidth;
-  }
-
-  if (heightMode == YGMeasureModeUndefined) {
-    const unique_ptr<YGNode> clone {YGNodeClone(self.mContentYoga.get())};
-    const auto yoga = clone.get();
-    YGNodeStyleSetWidth(yoga, width);
-    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-    const auto h = YGNodeLayoutGetHeight(yoga);
-    return {std::ceil(width), std::ceil(h)};
-  }
-
-  return {std::ceil(width), std::ceil(height)};
-}
-
-void ScrollView::UpdateContentLayout() {
-  const auto outer = mContentOuter->GetLayoutNode();
-  const auto w = YGNodeLayoutGetWidth(outer);
-  const auto h = YGNodeLayoutGetHeight(outer);
-
-  if (YGFloatIsUndefined(w) || YGFloatIsUndefined(h)) {
-    mDirtyContentLayout = true;
-    return;
-  }
-
-  const auto contentRoot = mContentYoga.get();
-  if (!std::exchange(mDirtyContentLayout, false)) {
-    const auto cw = YGNodeLayoutGetWidth(contentRoot);
-    const auto ch = YGNodeLayoutGetHeight(contentRoot);
-    if (std::abs(w - cw) > 1 || std::abs(h - ch) > 1) {
-      YGNodeMarkDirty(mContentOuter->GetLayoutNode());
+  float contentWidth = YGNodeLayoutGetWidth(yoga);
+  float contentHeight = YGNodeLayoutGetHeight(yoga);
+  if (haveDirtyInner || haveSizeChange) {
+    contentWidth = self.mContentInnerMinWidth
+      = (haveDirtyInner ? GetMinimumWidth(yoga) : self.mContentInnerMinWidth);
+    if (!std::isnan(width)) {
+      contentWidth = std::max(contentWidth, width);
     }
-    return;
+    YGNodeCalculateLayout(yoga, contentWidth, YGUndefined, YGDirectionLTR);
+    contentHeight = YGNodeLayoutGetHeight(yoga);
   }
 
-  YGNodeCalculateLayout(contentRoot, w, YGUndefined, YGDirectionLTR);
+  width = contentWidth;
+  if (std::isnan(height)) {
+    height = contentHeight;
+  } else {
+    height = std::min(height, contentHeight);
+  }
 
-  this->UpdateScrollBars();
+  if (heightMode != YGMeasureModeUndefined) {
+    self.UpdateScrollBars({width, height});
+  }
+  return {width, height};
 }
 
 }// namespace FredEmmott::GUI::Widgets
