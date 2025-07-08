@@ -13,6 +13,7 @@ namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
 void Widget::ComputeStyles(const Style& inherited) {
+  const auto clean = wil::scope_exit([this] { mDirtyStyles = false; });
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
   Style style = GlobalBaselineStyle

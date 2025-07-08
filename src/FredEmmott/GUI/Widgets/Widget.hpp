@@ -239,6 +239,7 @@ class Widget {
 
   Style mInheritedStyles;
   Style mComputedStyle;
+  bool mDirtyStyles = false;
 
   std::vector<unique_ptr<Widget>> mManagedChildren;
   std::vector<Widget*> mManagedChildrenCacheForGetChildren;

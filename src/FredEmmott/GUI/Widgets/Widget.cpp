@@ -193,21 +193,22 @@ void Widget::ReplaceExplicitStyles(const Style& styles) {
     return;
   }
   mExplicitStyles = styles;
-  this->ComputeStyles(mInheritedStyles);
+  mDirtyStyles = true;
 }
 
 void Widget::AddExplicitStyles(const Style& styles) {
   mExplicitStyles += styles;
-  this->ComputeStyles(mInheritedStyles);
+  mDirtyStyles = true;
 }
 
 void Widget::SetBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = styles;
-  this->ComputeStyles(mInheritedStyles);
+  mDirtyStyles = true;
 }
+
 void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
-  this->ComputeStyles(mInheritedStyles);
+  mDirtyStyles = true;
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
@@ -304,6 +305,9 @@ void Widget::DispatchEvent(const Event* e) {
 }
 
 void Widget::Tick() {
+  if (mDirtyStyles) {
+    this->ComputeStyles(mInheritedStyles);
+  }
   for (auto&& child: this->GetDirectChildren()) {
     child->Tick();
   }
