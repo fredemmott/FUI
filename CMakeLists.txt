@@ -18,6 +18,7 @@ endif ()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(MINIMUM_CPLUSPLUS 202302)
 
 if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
   # https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md

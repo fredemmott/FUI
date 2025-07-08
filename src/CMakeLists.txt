@@ -8,19 +8,20 @@ set(CONFIG_HPP "${CMAKE_CURRENT_BINARY_DIR}/include/FredEmmott/GUI/config.hpp")
 block()
   set(BACKEND_COUNT 0)
   foreach (BACKEND IN ITEMS SKIA DIRECT2D)
-    set("FUI_ENABLE_${BACKEND}" "${ENABLE_${BACKEND}}")
     if (ENABLE_${BACKEND})
       MATH(EXPR BACKEND_COUNT "${BACKEND_COUNT} + 1")
-      set("ENABLE_${BACKEND}_BOOL" true)
-    else ()
-      set("ENABLE_${BACKEND}_BOOL" false)
     endif ()
   endforeach ()
   configure_file(
     "FredEmmott/GUI/config.hpp.in"
-    "${CONFIG_HPP}"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.hpp.configured"
     @ONLY
     NEWLINE_STYLE LF
+  )
+  file(
+    GENERATE
+    OUTPUT "${CONFIG_HPP}"
+    INPUT "${CMAKE_CURRENT_BINARY_DIR}/config.hpp.configured"
   )
 endblock()
 add_library(fredemmott-gui-config INTERFACE)

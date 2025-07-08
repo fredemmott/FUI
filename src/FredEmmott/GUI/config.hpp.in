@@ -4,8 +4,8 @@
 
 #include <string_view>
 
-#cmakedefine FUI_ENABLE_SKIA
-#cmakedefine FUI_ENABLE_DIRECT2D
+#$<IF:$<BOOL:@ENABLE_SKIA@>,define,undef> FUI_ENABLE_SKIA
+#$<IF:$<BOOL:@ENABLE_DIRECT2D>,define,undef> FUI_ENABLE_DIRECT2D
 
 // See notes on no_unique_address here:
 // https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/
@@ -29,8 +29,8 @@ constexpr auto BackendCount = @BACKEND_COUNT@;
 static_assert(BackendCount > 0, "At least one backend must be enabled");
 constexpr bool HaveSingleBackend = (BackendCount == 1);
 
-constexpr bool HaveSkia = @ENABLE_SKIA_BOOL@;
-constexpr bool HaveDirect2D = @ENABLE_DIRECT2D_BOOL@;
+constexpr bool HaveSkia = $<IF:$<BOOL:ENABLE_SKIA>,true,false>;
+constexpr bool HaveDirect2D = $<IF:$<BOOL:ENABLE_DIRECT2D>,true,false>;
 
 }// namespace FredEmmott::GUI::Config
 
