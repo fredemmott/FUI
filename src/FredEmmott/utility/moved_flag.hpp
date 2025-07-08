@@ -10,11 +10,11 @@ struct moved_flag {
   moved_flag& operator=(const moved_flag&) = delete;
 
   constexpr moved_flag(moved_flag&& other) noexcept {
-    other.mMoved = true;
+    mMoved = std::exchange(other.mMoved, true);
   }
 
   constexpr moved_flag& operator=(moved_flag&& other) noexcept {
-    other.mMoved = false;
+    mMoved = std::exchange(other.mMoved, true);
     return *this;
   }
 
