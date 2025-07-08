@@ -305,9 +305,6 @@ void Widget::DispatchEvent(const Event* e) {
 }
 
 void Widget::Tick() {
-  if (mDirtyStyles) {
-    this->ComputeStyles(mInheritedStyles);
-  }
   for (auto&& child: this->GetDirectChildren()) {
     child->Tick();
   }

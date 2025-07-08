@@ -62,9 +62,6 @@ void Root::EndFrame() {
   if (tResizeToFit.TestAndClear()) {
     tWindow->ResizeToFit();
   }
-
-  mWidget->ComputeStyles({});
-  mWidget->UpdateLayout();
 }
 
 void Root::DispatchEvent(const Event* e) {
@@ -81,6 +78,9 @@ void Root::Paint(Renderer* renderer, const Size& size) {
 
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
+
+  mWidget->ComputeStyles({});
+  mWidget->UpdateLayout();
   mWidget->Tick();
   mWidget->Paint(renderer);
 }
