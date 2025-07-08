@@ -44,6 +44,21 @@ Style& Style::operator+=(const Style& other) noexcept {
 #define MERGE_PROPERTY(X) merge(&Style::m##X);
   FUI_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
+  // We originally used `Vector::append_range()` here; profiling showed *a lot*
+  // of time spend on allocations and deallocations, which this approach fixes.
+  //
+  // This is effectively using the tuple-of-vectors as a map; migrating to
+  // `std::unordered_map()` is fairly trivial (as of 2025-07), but creates
+  // its own performance issues, as it is not `constexpr` - so, no style
+  // declarations can be constexpr either, also leading to excessive heap
+  // allocations.
+  //
+  // If you change this, run a profiler while scrolling up and down rapidly with
+  // the mouse.
+  static_assert(
+    Config::CompilerChecks::MinimumCPlusPlus < 202600
+      || !Config::LibraryDeveloper,
+    "Consider migrating `Style::mAnd` to `std::unordered_map` (P3372)");
   if (!other.mAnd.empty()) {
     if (mAnd.empty()) {
       mAnd = other.mAnd;

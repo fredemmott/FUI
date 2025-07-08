@@ -23,6 +23,7 @@ constexpr bool Debug = true;
 #else
 constexpr bool Debug = false;
 #endif
+constexpr bool LibraryDeveloper = $<IF:$<BOOL:@ENABLE_DEVELOPER_OPTIONS@>,true,false>;
 
 // Allows optimizations
 constexpr auto BackendCount = @BACKEND_COUNT@;
@@ -54,5 +55,6 @@ constexpr auto CPlusPlus
 #else
 constexpr auto CPlusPlus = __cplusplus;
 #endif
-static_assert(CPlusPlus >= 202302, "C++23 is required");
+constexpr auto MinimumCPlusPlus = @MINIMUM_CPLUSPLUS@;
+static_assert(CPlusPlus >= MinimumCPlusPlus, "C++ @MINIMUM_CPLUSPLUS@ is required");
 }// namespace FredEmmott::GUI::CompilerChecks
