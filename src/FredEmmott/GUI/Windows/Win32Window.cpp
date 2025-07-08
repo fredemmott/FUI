@@ -610,21 +610,61 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
       padding.left = -padding.left;
       padding.top = -padding.top;
-      const auto clientSize = SIZE {
+      auto clientSize = SIZE {
         (rect.right - padding.right) - (rect.left + padding.left),
         (rect.bottom - padding.bottom) - (rect.top + padding.top),
       };
 
       const auto root = GetRoot();
-
-      if (root->CanFit(
-            std::ceil(clientSize.cx / mDPIScale),
-            std::ceil(clientSize.cy / mDPIScale))) {
+      const auto redraw = wil::scope_exit([this, &rect] {
+        if (memcmp(&rect, &mNCRect, sizeof(RECT)) == 0) {
+          return;
+        }
         mPendingResize.Set();
-        break;
+      });
+
+      const auto yoga = root->GetLayoutNode();
+
+      if (clientSize.cx < mClientSize.cx) {
+        const auto minWidth = std::ceil(
+          GetClampedMinimumWidth(
+            yoga,
+            clientSize.cx / mDPIScale,
+            mClientSize.cy,
+            ClampedMinimumWidthHint::MinimumIsLikely)
+          * mDPIScale);
+        const auto dx = std::ceill(minWidth - clientSize.cx);
+        if (dx > 0) {
+          switch (wParam) {
+            case WMSZ_TOPLEFT:
+            case WMSZ_LEFT:
+            case WMSZ_BOTTOMLEFT:
+              rect.left += dx;
+              break;
+            default:
+              rect.right -= dx;
+          }
+          clientSize.cx -= dx;
+        }
       }
-      rect = mNCRect;
-      break;
+
+      const auto maxHeight = std::ceil(
+        GetIdealHeight(yoga, clientSize.cx / mDPIScale) * mDPIScale);
+      const auto dy = std::ceill(clientSize.cy - maxHeight);
+
+      if (dy > 0) {
+        switch (wParam) {
+          case WMSZ_TOPLEFT:
+          case WMSZ_TOP:
+          case WMSZ_TOPRIGHT:
+            rect.top += dy;
+            break;
+          default:
+            rect.bottom -= dy;
+            break;
+        }
+      }
+      return TRUE;
     }
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);

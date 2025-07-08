@@ -79,11 +79,8 @@ void Root::Paint(Renderer* renderer, const Size& size) {
   }
   const auto clipRegion = renderer->ScopedClipRect({size});
 
-  mWidget->UpdateLayout();
   auto yoga = mYogaRoot.get();
-  YGNodeStyleSetWidth(yoga, size.mWidth);
-  YGNodeStyleSetHeight(yoga, size.mHeight);
-  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+  YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
   mWidget->Tick();
   mWidget->Paint(renderer);
 }
@@ -103,6 +100,9 @@ bool Root::CanFit(float width, float height) const {
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
   return !YGNodeLayoutGetHadOverflow(yoga);
 }
+YGNodeConstRef Root::GetLayoutNode() const {
+  return mYogaRoot.get();
+}
 
 Size Root::GetInitialSize() const {
   if (mWidget) {
@@ -114,12 +114,7 @@ Size Root::GetInitialSize() const {
 }
 
 float Root::GetHeightForWidth(float width) const {
-  unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
-  auto yoga = testRoot.get();
-  YGNodeStyleSetWidth(yoga, width);
-  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-  const auto h = YGNodeLayoutGetHeight(yoga);
-  return h;
+  return GetIdealHeight(mYogaRoot.get(), width);
 }
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {

@@ -30,6 +30,16 @@ using namespace FredEmmott::Memory;
 YGConfigRef GetYogaConfig();
 float GetMinimumWidth(YGNodeConstRef node);
 float GetMinimumWidth(YGNodeConstRef node, float hint);
+enum class ClampedMinimumWidthHint {
+  None,
+  MinimumIsLikely,
+};
+
+float GetClampedMinimumWidth(
+  YGNodeConstRef node,
+  float min,
+  float max,
+  ClampedMinimumWidthHint hint = ClampedMinimumWidthHint::None);
 
 float GetIdealHeight(YGNodeConstRef node, float width);
 Size GetMinimumWidthAndIdealHeight(YGNodeConstRef node);

@@ -26,6 +26,7 @@ class Root final {
   bool CanFit(const Size&) const;
   [[nodiscard]]
   bool CanFit(float width, float height) const;
+  YGNodeConstRef GetLayoutNode() const;
   Size GetInitialSize() const;
 
   float GetHeightForWidth(float) const;

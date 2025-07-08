@@ -35,9 +35,6 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
   YGNodeStyleSetHeight(yoga, YGUndefined);
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
 
-  float low = 128;
-  float high = YGNodeLayoutGetWidth(yoga);
-
   if (!YGFloatIsUndefined(hint)) {
     if (YGNodeLayoutGetHadOverflow(yoga)) {
       return GetMinimumWidth(node, YGUndefined);
@@ -48,24 +45,42 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
       return hint;
     }
   }
+  return GetClampedMinimumWidth(node, 128, YGNodeLayoutGetWidth(yoga));
+}
 
-  while ((high - low) > 1) {
-    const auto mid = std::ceil((low + high) / 2);
+float GetClampedMinimumWidth(
+  YGNodeConstRef node,
+  float min,
+  float max,
+  ClampedMinimumWidthHint hint) {
+  unique_ptr<YGNode> owned {YGNodeClone(node)};
+  const auto yoga = owned.get();
+
+  if (hint == ClampedMinimumWidthHint::MinimumIsLikely) {
+    YGNodeStyleSetWidth(yoga, min);
+    YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
+    if (!YGNodeLayoutGetHadOverflow(yoga)) {
+      return min;
+    }
+  }
+
+  while ((max - min) > 1) {
+    const auto mid = std::ceil((min + max) / 2);
     YGNodeStyleSetWidth(yoga, mid);
     YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
     if (YGNodeLayoutGetHadOverflow(yoga)) {
-      if (mid - low < 1) {
+      if (mid - min < 1) {
         break;
       }
-      low = mid;
+      min = mid;
     } else {
-      if (high - mid < 1) {
+      if (max - mid < 1) {
         break;
       }
-      high = mid;
+      max = mid;
     }
   }
-  return high;
+  return max;
 }
 float GetMinimumWidth(YGNodeConstRef node) {
   return GetMinimumWidth(node, YGUndefined);
