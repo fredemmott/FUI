@@ -44,7 +44,25 @@ Style& Style::operator+=(const Style& other) noexcept {
 #define MERGE_PROPERTY(X) merge(&Style::m##X);
   FUI_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
-  mAnd.append_range(other.mAnd);
+  if (!other.mAnd.empty()) {
+    if (mAnd.empty()) {
+      mAnd = other.mAnd;
+    } else {
+      for (auto&& [selector, style]: other.mAnd) {
+        if (holds_alternative<std::monostate>(selector)) {
+          *this += style;
+          continue;
+        }
+        auto it = std::ranges::find(
+          mAnd, selector, [](auto&& tuple) { return get<0>(tuple); });
+        if (it == mAnd.end()) {
+          mAnd.emplace_back(selector, style);
+        } else {
+          get<1>(*it) += style;
+        }
+      }
+    }
+  }
 
   return *this;
 }
