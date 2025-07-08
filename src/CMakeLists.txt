@@ -6,12 +6,6 @@ find_package(wil CONFIG REQUIRED)
 
 set(CONFIG_HPP "${CMAKE_CURRENT_BINARY_DIR}/include/FredEmmott/GUI/config.hpp")
 block()
-  set(BACKEND_COUNT 0)
-  foreach (BACKEND IN ITEMS SKIA DIRECT2D)
-    if (ENABLE_${BACKEND})
-      MATH(EXPR BACKEND_COUNT "${BACKEND_COUNT} + 1")
-    endif ()
-  endforeach ()
   configure_file(
     "FredEmmott/GUI/config.hpp.in"
     "${CMAKE_CURRENT_BINARY_DIR}/config.hpp.configured"
