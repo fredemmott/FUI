@@ -179,7 +179,7 @@ class Color final {
   constexpr Color(nullptr_t) = delete;
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {}
 
-  constexpr bool operator==(const Color& other) const noexcept {
+  bool operator==(const Color& other) const noexcept {
     return Resolve() == other.Resolve();
   }
 
