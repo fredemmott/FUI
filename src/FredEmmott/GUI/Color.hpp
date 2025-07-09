@@ -58,6 +58,12 @@ class Color final {
         static_cast<uint8_t>(std::round(r * 255)),
         static_cast<uint8_t>(std::round(g * 255)),
         static_cast<uint8_t>(std::round(b * 255)));
+#else
+      const auto r8 = std::clamp<uint8_t>(std::roundl(r * 0xff), 0, 0xff);
+      const auto g8 = std::clamp<uint8_t>(std::roundl(g * 0xff), 0, 0xff);
+      const auto b8 = std::clamp<uint8_t>(std::roundl(b * 0xff), 0, 0xff);
+      const auto a8 = std::clamp<uint8_t>(std::roundl(a * 0xff), 0, 0xff);
+      std::bit_cast<std::array<uint8_t, 4>>(ret.mBGRA32) = {b8, g8, r8, a8};
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
       ret.mD2D = {r, g, b, a};
@@ -73,6 +79,8 @@ class Color final {
       Constant ret {};
 #ifdef FUI_ENABLE_SKIA
       ret.mSkia = SkColorSetARGB(a, r, g, b);
+#else
+      std::bit_cast<std::array<uint8_t, 4>>(ret.mBGRA32) = {b, g, r, a};
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
       ret.mD2D = {
@@ -103,19 +111,6 @@ class Color final {
       return FromRGBA32(r, g, b, a);
     }
 
-    [[nodiscard]] constexpr Constant WithAlphaMultipliedBy(
-      const float mult) const noexcept {
-      Constant ret = *this;
-#ifdef FUI_ENABLE_SKIA
-      ret.mSkia = SkColorSetA(
-        mSkia, static_cast<U8CPU>(std::round(SkColorGetA(mSkia) * mult)));
-#endif
-#ifdef FUI_ENABLE_DIRECT2D
-      ret.mD2D.a *= std::clamp(mult, 0.0f, 1.0f);
-#endif
-      return ret;
-    }
-
     constexpr auto GetRGBAFTuple() const noexcept {
 #ifdef FUI_ENABLE_DIRECT2D
       return std::tuple {mD2D.r, mD2D.g, mD2D.b, mD2D.a};
@@ -129,13 +124,18 @@ class Color final {
 #endif
     }
 
+    [[nodiscard]] constexpr Constant WithAlphaMultipliedBy(
+      const float mult) const noexcept {
+      auto [r, g, b, a] = GetRGBAFTuple();
+      a = std::clamp(a * mult, 0.0f, 1.0f);
+      return FromRGBA128F(r, g, b, a);
+    }
+
     bool operator==(const Constant& other) const noexcept {
 #ifdef FUI_ENABLE_SKIA
       return mSkia == other.mSkia;
-#elifdef FUI_ENABLE_DIRECT2D
-      return memcmp(&mD2D, &other.mD2D, sizeof(mD2D)) == 0;
 #else
-      static_assert(false, "No backends enabled for Colors")
+      return mBGRA32 == other.mBGRA32;
 #endif
     }
 
@@ -157,6 +157,13 @@ class Color final {
    private:
 #ifdef FUI_ENABLE_SKIA
     SkColor mSkia {};
+    static_assert(std::endian::native == std::endian::little);
+    // Equivalently...
+    static_assert(SkColorSetARGB(0, 0xff, 0, 0) == 0x00ff0000);
+#else
+    // Used for optimizations, especially equality when the native type has
+    // floats, to avoid the need to do 'almost equal' checks for every component
+    uint32_t mBGRA32 {};
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
     D2D1_COLOR_F mD2D {};
@@ -172,7 +179,9 @@ class Color final {
   constexpr Color(nullptr_t) = delete;
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {}
 
-  constexpr bool operator==(const Color& other) const noexcept = default;
+  constexpr bool operator==(const Color& other) const noexcept {
+    return Resolve() == other.Resolve();
+  }
 
   template <StaticTheme::Theme TTheme>
   constexpr Constant ResolveForStaticTheme() const {
