@@ -166,26 +166,30 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
 
-  const auto CheckTransition =
-    [&]<auto proj, auto stateProj>(const auto& name) {
-      const auto& targetValue = std::invoke(proj, targetStyle);
-      auto& newValue = std::invoke(proj, newStyle);
-      const auto& oldState = std::invoke(stateProj, originalState);
-      auto& newState = std::invoke(stateProj, this);
-      if (targetValue.has_value() && targetValue.value() != newValue) {
-        std::println(
-          stderr,
-          "Animation result mismatch on {} - value changed, but not animating",
-          name);
-        if (IsDebuggerPresent()) {
-          __debugbreak();
-          // Call it again so we can step through :)
-          newValue = targetValue;
-          newState = oldState;
-          (void)Apply<proj, stateProj>(now, oldStyle, newStyle);
+  const auto CheckTransition
+    = [&]<auto proj, auto stateProj>(const auto& name) {
+        if constexpr (DebugAnimations) {
+          const auto& targetValue = std::invoke(proj, targetStyle);
+          auto& newValue = std::invoke(proj, newStyle);
+          const auto& oldState = std::invoke(stateProj, originalState);
+          auto& newState = std::invoke(stateProj, this);
+          if (targetValue.has_value() && targetValue.value() != newValue) {
+            std::println(
+              stderr,
+              "Animation result mismatch on {} - value changed, but not "
+              "animating",
+              name);
+            if (IsDebuggerPresent()) {
+              __debugbreak();
+              // Call it again so we can step through :)
+              newValue = targetValue;
+              newState = oldState;
+              (void)Apply<proj, stateProj>(now, oldStyle, newStyle);
+            }
+          }
         }
-      }
-    };
+      };
+
   if constexpr (DebugAnimations) {
     if (ret == NotAnimating) {
 #define CHECK_TRANSITION(X) \
