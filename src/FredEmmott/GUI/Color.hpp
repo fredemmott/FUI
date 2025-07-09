@@ -111,15 +111,16 @@ class Color final {
       return FromRGBA32(r, g, b, a);
     }
 
-    constexpr auto GetRGBAFTuple() const noexcept {
+    constexpr std::tuple<float, float, float, float> GetRGBAFTuple()
+      const noexcept {
 #ifdef FUI_ENABLE_DIRECT2D
       return std::tuple {mD2D.r, mD2D.g, mD2D.b, mD2D.a};
 #elifdef FUI_ENABLE_SKIA
       return std::tuple {
-        SkColorGetR(mSkia) / 255.0,
-        SkColorGetG(mSkia) / 255.0,
-        SkColorGetB(mSkia) / 255.0,
-        SkColorGetA(mSkia) / 255.0,
+        SkColorGetR(mSkia) / 255.0f,
+        SkColorGetG(mSkia) / 255.0f,
+        SkColorGetB(mSkia) / 255.0f,
+        SkColorGetA(mSkia) / 255.0f,
       };
 #endif
     }
