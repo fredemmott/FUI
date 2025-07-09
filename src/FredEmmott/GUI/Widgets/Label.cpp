@@ -25,6 +25,10 @@ void Label::SetText(std::string_view text) {
   }
   mText = std::string {text};
 
+  if (!mFont) {
+    return;
+  }
+
   // Check before calling `YGNodeMarkDirty()` as this will mark
   // all ancestor nodes as dirty, even if this node layout/size doesn't change
   const auto yoga = this->GetLayoutNode();
