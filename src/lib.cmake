@@ -114,7 +114,6 @@ add_library(
   FredEmmott/utility/almost_equal.hpp
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/moved_flag.hpp
-  FredEmmott/utility/lazy_init.hpp
   FredEmmott/utility/type_tag.hpp
 )
 set(

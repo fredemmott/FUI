@@ -12,7 +12,6 @@
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
-#include <FredEmmott/utility/lazy_init.hpp>
 
 #include "FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp"
 #include "TextBlock.hpp"
