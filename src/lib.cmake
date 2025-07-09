@@ -69,6 +69,7 @@ add_library(
   FredEmmott/GUI/Widgets/CheckBox.cpp FredEmmott/GUI/Widgets/CheckBox.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp
+  FredEmmott/GUI/Widgets/RadioButton.cpp FredEmmott/GUI/Widgets/RadioButton.hpp
   FredEmmott/GUI/Widgets/ScrollBar.cpp FredEmmott/GUI/Widgets/ScrollBar.hpp
   FredEmmott/GUI/Widgets/ScrollBarButton.cpp FredEmmott/GUI/Widgets/ScrollBarButton.hpp
   FredEmmott/GUI/Widgets/ScrollBarThumb.cpp FredEmmott/GUI/Widgets/ScrollBarThumb.hpp

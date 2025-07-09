@@ -58,6 +58,7 @@ struct Style {
   InheritableStyleProperty<Font> mFont;
   StyleProperty<float> mGap;
   StyleProperty<float> mHeight;
+  StyleProperty<YGJustify> mJustifyContent;
   StyleProperty<float> mLeft;
   StyleProperty<float> mMargin;
   StyleProperty<float> mMarginBottom;
@@ -132,6 +133,7 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   X(FlexGrow) \
   X(Gap) \
   X(Height) \
+  X(JustifyContent) \
   X(Left) \
   X(Margin) \
   X(MarginBottom) \

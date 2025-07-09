@@ -3,6 +3,7 @@
 #pragma once
 
 #include <bit>
+#include <optional>
 #include <string_view>
 #include <unordered_set>
 #include <utility>
@@ -31,6 +32,27 @@ using StyleClasses = std::unordered_set<StyleClass>;
 StyleClasses operator+(const StyleClasses&, StyleClass);
 StyleClasses& operator+=(StyleClasses&, StyleClass);
 
+template <std::size_t N>
+class LiteralStyleClass {
+ public:
+  LiteralStyleClass() = delete;
+  constexpr explicit LiteralStyleClass(const char (&name)[N]) noexcept {
+    std::copy(name, name + N, mName);
+  }
+
+  constexpr operator FredEmmott::GUI::StyleClass() const noexcept {
+    if (!mCache.has_value()) {
+      mCache = StyleClass::Make(mName);
+    }
+    return mCache.value();
+  }
+
+ private:
+  char mName[N];
+  mutable std::optional<StyleClass> mCache;
+}
+
+;
 }// namespace FredEmmott::GUI
 
 template <>

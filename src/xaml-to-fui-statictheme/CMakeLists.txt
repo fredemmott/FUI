@@ -176,6 +176,7 @@ add_winui3_component_theme(ComboBox PARENT Button)
 
 add_winui3_component_theme(CheckBox)
 add_winui3_component_theme(ContentDialog)
+add_winui3_component_theme(RadioButton)
 add_winui3_component_theme(ScrollBar)
 add_winui3_component_theme(ScrollView)
 add_winui3_component_theme(ToggleSwitch)

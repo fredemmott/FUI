@@ -3,6 +3,7 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <FredEmmott/GUI/Widgets/RadioButton.hpp>
 #include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #include <print>
 
@@ -125,6 +126,10 @@ static void AppTick() {
     std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
   }
 
+  fuii::immediate_detail::BeginWidget<fui::Widgets::RadioButton>(
+    fuii::ID {"RadioButtonTest"});
+  fuii::immediate_detail::EndWidget<fui::Widgets::RadioButton>();
+
   fuii::BeginHStackPanel();
   // Glyphs areIUnicode private usage code points from
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
@@ -139,11 +144,11 @@ static void AppTick() {
 
   fuii::TextBlock(LoremIpsum);
 
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 3; ++i) {
     // IDs are automatically generated for formats
     fuii::Label("Formatted label {}", i);
   }
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 3; ++i) {
     // ... but not if we're passing in a variable like below,
     // so we need to explicitly manage state
     const auto scopedID = fuii::PushID(i).Scoped();

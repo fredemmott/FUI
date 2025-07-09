@@ -160,6 +160,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   setYoga(&Style::mFlexShrink, &YGNodeStyleSetFlexShrink);
   setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
   setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
+  setYoga(&Style::mJustifyContent, &YGNodeStyleSetJustifyContent);
   setYoga(&Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);
   setYoga(&Style::mMarginBottom, &YGNodeStyleSetMargin, YGEdgeBottom);
   setYoga(&Style::mMarginLeft, &YGNodeStyleSetMargin, YGEdgeLeft);
