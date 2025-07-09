@@ -40,6 +40,9 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
 
   float MeasureTextWidth(const Font& font, const std::string_view text)
     const override {
+    if (!font) {
+      return std::numeric_limits<float>::quiet_NaN();
+    }
     const auto it = font.as<SkFont>();
     return it.measureText(text.data(), text.size(), SkTextEncoding::kUTF8);
   }
