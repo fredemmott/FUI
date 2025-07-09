@@ -111,6 +111,7 @@ add_library(
   FredEmmott/memory.hpp
   FredEmmott/memory/memory_detail.hpp
   FredEmmott/type_traits/concepts.hpp
+  FredEmmott/utility/almost_equal.hpp
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/moved_flag.hpp
   FredEmmott/utility/lazy_init.hpp

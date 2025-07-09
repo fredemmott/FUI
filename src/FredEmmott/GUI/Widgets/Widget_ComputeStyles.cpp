@@ -109,10 +109,9 @@ void Widget::ComputeStyles(const Style& inherited) {
   }
 
   if (mComputedStyle != Style {}) {
-    auto animated = style;
-    mStyleTransitions->Apply(mComputedStyle, &animated);
-    if (animated != style) {
-      style = std::move(animated);
+    if (
+      mStyleTransitions->Apply(mComputedStyle, &style)
+      == StyleTransitions::ApplyResult::Animating) {
       mDirectStateFlags |= StateFlags::Animating;
     }
   }

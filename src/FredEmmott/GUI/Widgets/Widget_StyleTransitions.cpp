@@ -5,14 +5,19 @@
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/widget_detail.hpp>
+#include <FredEmmott/utility/almost_equal.hpp>
 #include <print>
 
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
+using utility::almost_equal;
 
 namespace {
+constexpr bool DebugAnimations = Config::Debug && Config::LibraryDeveloper;
+constexpr bool SlowAnimations = false;
+
 template <class T>
 struct transition_default_value_t : constant_t<std::nullopt> {};
 template <>
@@ -24,102 +29,173 @@ struct transition_default_value_t<Brush>
 template <class T>
 constexpr auto transition_default_value_v
   = transition_default_value_t<T>::value;
+
+template <class T>
+struct FakeCopy {
+  FakeCopy() = delete;
+  explicit FakeCopy(const T&) {}
+};
+template <class T>
+using DebugCopy = std::conditional_t<DebugAnimations, T, FakeCopy<T>>;
+
 }// namespace
 
 template <auto TStyleProperty, auto TStateProperty>
-void Widget::StyleTransitions::Apply(
+Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   std::chrono::steady_clock::time_point now,
   const Style& oldStyle,
   Style* newStyle)
   requires(supports_transitions_v<TStyleProperty>)
 {
+  using enum ApplyResult;
   using TValue =
     typename std::decay_t<decltype(oldStyle.*TStyleProperty)>::value_type;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  const auto oldOpt = (oldStyle.*TStyleProperty);
-  auto& newOpt = (newStyle->*TStyleProperty);
+  const auto oldProp = (oldStyle.*TStyleProperty);
+  auto& newProp = (newStyle->*TStyleProperty);
 
-  if (!newOpt.has_transition()) {
-    return;
+  if (!newProp.has_transition()) {
+    return NotAnimating;
   }
 
-  auto startOpt = oldOpt;
-  auto endOpt = newOpt;
+  auto startProp = oldProp;
+  auto endProp = newProp;
 
-  if (!startOpt.has_value()) {
-    startOpt += DefaultValue;
+  if (!startProp.has_value()) {
+    startProp += DefaultValue;
   }
 
-  if (!endOpt.has_value()) {
-    endOpt += DefaultValue;
+  if (!endProp.has_value()) {
+    endProp += DefaultValue;
   }
 
-  if (startOpt == endOpt) {
-    return;
+  if (startProp == endProp) {
+    return NotAnimating;
   }
 
-  if (!(startOpt.has_value() && endOpt.has_value())) {
+  if (!(startProp.has_value() && endProp.has_value())) {
 #ifndef NDEBUG
     __debugbreak();
 #endif
-    return;
+    return NotAnimating;
   }
 
-  const TValue startValue = startOpt.value();
-  const TValue endValue = endOpt.value();
+  const TValue startValue = startProp.value();
+  const TValue endValue = endProp.value();
+
+  if (startValue == endValue) {
+    return NotAnimating;
+  }
+
   if constexpr (std::floating_point<TValue>) {
     if (std::isnan(startValue) || std::isnan(endValue)) {
-      return;
+      return NotAnimating;
+    }
+    if (almost_equal(startValue, endValue)) {
+      return NotAnimating;
     }
   }
 
-  const auto& transition = newOpt.transition();
-  constexpr bool DebugAnimations = false;
+  const auto& transition = newProp.transition();
   const auto duration
-    = newOpt.transition().mDuration * (DebugAnimations ? 10 : 1);
+    = newProp.transition().mDuration * (SlowAnimations ? 10 : 1);
 
   auto& transitionState = this->*TStateProperty;
-  if (!transitionState.has_value()) {
+  if (
+    (!transitionState.has_value()) || transitionState->mEndValue != endValue) {
     transitionState = {
       .mStartValue = startValue,
       .mStartTime = now + transition.mDelay,
       .mEndValue = endValue,
       .mEndTime = now + transition.mDelay + duration,
     };
-    newOpt = startValue;
-    return;
+    newProp = startValue;
+    return Animating;
   }
 
   if (transitionState->mEndTime < now) {
     transitionState.reset();
-    return;
+    return NotAnimating;
   }
 
-  newOpt = transitionState->Evaluate(transition, now);
+  newProp = transitionState->Evaluate(transition, now);
 
-  if (transitionState->mEndValue == endValue) {
-    return;
+  if (newProp == transitionState->mEndValue) {
+    transitionState.reset();
+    return NotAnimating;
+  }
+  if constexpr (std::floating_point<TValue>) {
+    if (newProp.has_value() && almost_equal(newProp.value(), endValue)) {
+      newProp = endValue;
+      transitionState.reset();
+      return NotAnimating;
+    }
   }
 
   transitionState = {
-    .mStartValue = newOpt.value(),
+    .mStartValue = newProp.value(),
     .mStartTime = std::max(transitionState->mStartTime, now),
     .mEndValue = endValue,
     .mEndTime = std::max(transitionState->mEndTime, now + duration),
   };
+
+  return Animating;
 }
 
-void Widget::StyleTransitions::Apply(const Style& oldStyle, Style* newStyle) {
+Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
+  const Style& oldStyle,
+  Style* newStyle) {
+  const DebugCopy<Style> targetStyle {*newStyle};
+  const DebugCopy<StyleTransitions> originalState {*this};
+
+  using enum ApplyResult;
   if (!SystemSettings::Get().GetAnimationsEnabled()) {
-    return;
+    return NotAnimating;
   }
   const auto now = std::chrono::steady_clock::now();
 
+  auto ret = NotAnimating;
+
 #define APPLY_TRANSITION(X) \
-  Apply<&Style::m##X, &StyleTransitions::m##X>(now, oldStyle, newStyle);
+  if ( \
+    Apply<&Style::m##X, &StyleTransitions::m##X>(now, oldStyle, newStyle) \
+    == Animating) { \
+    ret = Animating; \
+  }
   FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
+
+  const auto CheckTransition =
+    [&]<auto proj, auto stateProj>(const auto& name) {
+      const auto& targetValue = std::invoke(proj, targetStyle);
+      auto& newValue = std::invoke(proj, newStyle);
+      const auto& oldState = std::invoke(stateProj, originalState);
+      auto& newState = std::invoke(stateProj, this);
+      if (targetValue.has_value() && targetValue.value() != newValue) {
+        std::println(
+          stderr,
+          "Animation result mismatch on {} - value changed, but not animating",
+          name);
+        if (IsDebuggerPresent()) {
+          __debugbreak();
+          // Call it again so we can step through :)
+          newValue = targetValue;
+          newState = oldState;
+          (void)Apply<proj, stateProj>(now, oldStyle, newStyle);
+        }
+      }
+    };
+  if constexpr (DebugAnimations) {
+    if (ret == NotAnimating) {
+#define CHECK_TRANSITION(X) \
+  CheckTransition.template operator()<&Style::m##X, &StyleTransitions::m##X>( \
+    #X);
+      FUI_STYLE_PROPERTIES(CHECK_TRANSITION);
+#undef CHECK_TRANSITION
+    }
+  }
+  return ret;
 }
 
 }// namespace FredEmmott::GUI::Widgets

@@ -44,7 +44,12 @@ struct TransitionState<T> {
 namespace FredEmmott::GUI::Widgets {
 
 struct Widget::StyleTransitions {
-  void Apply(const Style& oldStyle, Style* newStyle);
+  enum class ApplyResult {
+    NotAnimating,
+    Animating,
+  };
+  [[nodiscard]]
+  ApplyResult Apply(const Style& oldStyle, Style* newStyle);
 
  private:
   template <auto TStyleProperty>
@@ -52,19 +57,22 @@ struct Widget::StyleTransitions {
     decltype(std::declval<Style>().*TStyleProperty)>::SupportsTransitions;
 
   template <auto TStyleProperty, auto TStateProperty>
-  void Apply(
+  [[nodiscard]]
+  ApplyResult Apply(
     std::chrono::steady_clock::time_point now,
     const Style& oldStyle,
     Style* newStyle)
     requires(supports_transitions_v<TStyleProperty>);
 
   template <auto TStyleProperty, auto TStateProperty>
-  void Apply(
+  [[nodiscard]]
+  ApplyResult Apply(
     [[maybe_unused]] std::chrono::steady_clock::time_point now,
     [[maybe_unused]] const Style& old,
     [[maybe_unused]] Style* newStyle)
     requires(!supports_transitions_v<TStyleProperty>)
   {
+    return ApplyResult::NotAnimating;
   }
 
 #define DECLARE_TRANSITION_DATA(X) \
