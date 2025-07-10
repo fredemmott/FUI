@@ -18,6 +18,16 @@ RadioButton::RadioButton(std::size_t id) : Widget(id, {RadioButtonStyleClass}) {
   });
   mOuter->SetChildren({mInner = new Widget(0)});
 
+  this->SetBuiltInStyles({
+    .mAlignContent = YGAlignCenter,
+    .mHeight = 32,
+  });
+  mFosterParent->SetBuiltInStyles({
+    .mAlignItems = YGAlignCenter,
+    .mPaddingLeft = 8,
+    .mPaddingTop = 6,
+    .mTranslateY = -2,
+  });
   this->InitializeInnerStyles();
   this->SetStyles();
 }
