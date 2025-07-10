@@ -67,6 +67,7 @@ Result<nullptr, bool> RadioButton(
 }
 
 template <class... Args>
+  requires(sizeof...(Args) > 0)
 Result<nullptr, bool> RadioButton(
   const bool isInitiallyChecked,
   std::format_string<Args...> format,
@@ -77,6 +78,7 @@ Result<nullptr, bool> RadioButton(
 }
 
 template <radio_button_key T, class... Args>
+  requires(sizeof...(Args) > 0)
   && ((!std::same_as<ID, std::decay_t<Args>>) && ...)
 Result<nullptr, bool> RadioButton(
   T* checkedIndex,
