@@ -66,13 +66,17 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     typename std::decay_t<decltype(oldStyle.*TStyleProperty)>::value_type;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  const auto oldProp = (oldStyle.*TStyleProperty);
+  const auto& oldProp = (oldStyle.*TStyleProperty);
   auto& newProp = (newStyle->*TStyleProperty);
-  auto& transitionState = this->*TStateProperty;
 
   ///////////////////////////////////////////////////////
   //  1. Do we have a start, an end, and an animation? //
   ///////////////////////////////////////////////////////
+  if (!(oldProp || newProp)) {
+    return NotAnimating;
+  }
+
+  auto& transitionState = this->*TStateProperty;
 
   if (!newProp.has_transition()) {
     transitionState.reset();
@@ -108,6 +112,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const TValue endValue = endProp.value();
 
   if (almost_equal(startValue, endValue)) {
+    newProp = endValue;
     transitionState.reset();
     return NotAnimating;
   }
