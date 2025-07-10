@@ -29,7 +29,7 @@ void RadioButton::SetIsChecked(const bool value) noexcept {
     return;
   }
   mIsChecked = value;
-  mChanged = true;
+  mClicked = mClicked || value;
   this->SetStyles();
 }
 

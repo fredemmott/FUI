@@ -3,8 +3,6 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
-#include <FredEmmott/GUI/Widgets/RadioButton.hpp>
-#include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #include <print>
 
 #include "FredEmmott/GUI/Immediate/ContentDialog.hpp"
@@ -126,9 +124,10 @@ static void AppTick() {
     std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
   }
 
-  fuii::immediate_detail::BeginWidget<fui::Widgets::RadioButton>(
-    fuii::ID {"RadioButtonTest"});
-  fuii::immediate_detail::EndWidget<fui::Widgets::RadioButton>();
+  static std::size_t selectedOption = 1;
+  for (std::size_t i = 0; i < 3; ++i) {
+    fuii::RadioButton(&selectedOption, i, "Option {}", i);
+  }
 
   fuii::BeginHStackPanel();
   // Glyphs areIUnicode private usage code points from

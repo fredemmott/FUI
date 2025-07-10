@@ -18,7 +18,7 @@ class RadioButton final : public Widget {
 
   void SetIsChecked(bool value) noexcept;
 
-  bool mChanged {false};
+  bool mClicked {false};
 
  protected:
   Widget* GetFosterParent() const noexcept override;
