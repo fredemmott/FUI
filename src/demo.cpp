@@ -125,9 +125,11 @@ static void AppTick() {
   }
 
   static std::size_t selectedOption = 1;
+  fuii::BeginRadioButtons("Radio Buttons Header");
   for (std::size_t i = 0; i < 3; ++i) {
     fuii::RadioButton(&selectedOption, i, "Option {}", i);
   }
+  fuii::EndRadioButtons();
 
   fuii::BeginHStackPanel();
   // Glyphs areIUnicode private usage code points from

@@ -28,6 +28,7 @@ add_library(
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/PushID.cpp FredEmmott/GUI/Immediate/PushID.hpp
   FredEmmott/GUI/Immediate/RadioButton.cpp FredEmmott/GUI/Immediate/RadioButton.hpp
+  FredEmmott/GUI/Immediate/RadioButtons.cpp FredEmmott/GUI/Immediate/RadioButtons.hpp
   FredEmmott/GUI/Immediate/ResizeToFit.cpp FredEmmott/GUI/Immediate/ResizeToFit.hpp
   FredEmmott/GUI/Immediate/Result.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
