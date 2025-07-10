@@ -391,6 +391,9 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
     result = this->OnMouseButtonRelease(event);
   } else if (std::holds_alternative<MouseEvent::MoveEvent>(event.mDetail)) {
     result = this->OnMouseMove(event);
+  } else if (std::holds_alternative<MouseEvent::HorizontalWheelEvent>(
+               event.mDetail)) {
+    result = this->OnMouseHorizontalWheel(event);
   } else if (std::holds_alternative<MouseEvent::VerticalWheelEvent>(
                event.mDetail)) {
     result = this->OnMouseVerticalWheel(event);
