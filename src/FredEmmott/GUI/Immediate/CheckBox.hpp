@@ -17,14 +17,12 @@ Result<&EndCheckBox> BeginCheckBox(
   bool* isChecked,
   ID id = ID {std::source_location::current()});
 
-[[nodiscard]]
 Result<nullptr, bool> CheckBox(
   bool* isChecked,
   std::string_view label,
   ID id = ID {std::source_location::current()});
 
 template <class... Args>
-[[nodiscard]]
 Result<nullptr, bool>
 CheckBox(bool* isChecked, std::format_string<Args...> format, Args&&... args) {
   const auto [id, text]
