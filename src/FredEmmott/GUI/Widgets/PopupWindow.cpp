@@ -9,7 +9,7 @@
 namespace FredEmmott::GUI::Widgets {
 
 PopupWindow::PopupWindow(std::size_t id)
-  : Widget(id),
+  : Widget(id, {PseudoClasses::LayoutOrphan}),
     mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {}
 
 WidgetList PopupWindow::GetDirectChildren() const noexcept {

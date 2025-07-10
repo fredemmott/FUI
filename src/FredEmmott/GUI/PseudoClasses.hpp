@@ -9,4 +9,5 @@ extern const StyleClass Active;
 extern const StyleClass Checked;
 extern const StyleClass Disabled;
 extern const StyleClass Hover;
+extern const StyleClass LayoutOrphan;
 }// namespace FredEmmott::GUI::PseudoClasses

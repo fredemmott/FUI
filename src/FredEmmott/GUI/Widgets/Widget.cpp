@@ -128,17 +128,25 @@ WidgetList Widget::GetDirectChildren() const noexcept {
 }
 
 void Widget::ChangeDirectChildren(const std::function<void()>& mutator) {
-  const auto layout = this->GetLayoutNode();
-  YGNodeRemoveAllChildren(layout);
-
   if (mutator) {
     mutator();
   }
 
-  const auto childLayouts
-    = std::views::transform(this->GetDirectChildren(), &Widget::GetLayoutNode)
-    | std::ranges::to<std::vector>();
-  YGNodeSetChildren(layout, childLayouts.data(), childLayouts.size());
+  const auto children = this->GetDirectChildren();
+  std::vector<YGNodeRef> layoutChildren;
+  layoutChildren.reserve(children.end() - children.begin());
+  for (auto&& child: children) {
+    if (!child->mClassList.contains(PseudoClasses::LayoutOrphan)) {
+      layoutChildren.push_back(child->GetLayoutNode());
+      continue;
+    }
+    auto& ctx
+      = *static_cast<YogaContext*>(YGNodeGetContext(child->GetLayoutNode()));
+    if (holds_alternative<Widget*>(ctx)) {
+      ctx = DetachedYogaTree {this, child};
+    }
+  }
+  YGNodeSetChildren(mYoga.get(), layoutChildren.data(), layoutChildren.size());
 }
 
 Widget* Widget::FromYogaNode(YGNodeConstRef node) {
