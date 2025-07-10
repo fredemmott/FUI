@@ -12,7 +12,6 @@
 
 namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
-using utility::almost_equal;
 
 namespace {
 constexpr bool DebugAnimations = Config::Debug && Config::LibraryDeveloper;
@@ -38,6 +37,21 @@ struct FakeCopy {
 template <class T>
 using DebugCopy = std::conditional_t<DebugAnimations, T, FakeCopy<T>>;
 
+template <class T, class U>
+  requires std::same_as<std::decay_t<T>, std::decay_t<U>>
+constexpr bool almost_equal(T&& a, U&& b) {
+  if (a == b) {
+    return true;
+  }
+  if constexpr (std::floating_point<std::decay_t<T>>) {
+    // 0.1% is close enough for visual animations - we don't need max
+    // float precision. If this ends up true for some property, specialize
+    // like we do for defaults.
+    return utility::almost_equal(a, b, 0.001f);
+  }
+  return false;
+}
+
 }// namespace
 
 template <auto TStyleProperty, auto TStateProperty>
@@ -54,8 +68,14 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
   const auto oldProp = (oldStyle.*TStyleProperty);
   auto& newProp = (newStyle->*TStyleProperty);
+  auto& transitionState = this->*TStateProperty;
+
+  ///////////////////////////////////////////////////////
+  //  1. Do we have a start, an end, and an animation? //
+  ///////////////////////////////////////////////////////
 
   if (!newProp.has_transition()) {
+    transitionState.reset();
     return NotAnimating;
   }
 
@@ -70,40 +90,37 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     endProp += DefaultValue;
   }
 
-  if (startProp == endProp) {
+  if (!(startProp.has_value() && endProp.has_value())) {
+    if constexpr (DebugAnimations) {
+      // Should be unreachable - we should always have a valid DefaultValue
+      // for animatable properties
+      __debugbreak();
+    }
+    transitionState.reset();
     return NotAnimating;
   }
 
-  if (!(startProp.has_value() && endProp.has_value())) {
-#ifndef NDEBUG
-    __debugbreak();
-#endif
-    return NotAnimating;
-  }
+  /////////////////////////////////////////////////////
+  //  2. Are the values different enough to animate? //
+  /////////////////////////////////////////////////////
 
   const TValue startValue = startProp.value();
   const TValue endValue = endProp.value();
 
-  if (startValue == endValue) {
+  if (almost_equal(startValue, endValue)) {
+    transitionState.reset();
     return NotAnimating;
   }
 
-  if constexpr (std::floating_point<TValue>) {
-    if (std::isnan(startValue) || std::isnan(endValue)) {
-      return NotAnimating;
-    }
-    if (almost_equal(startValue, endValue)) {
-      return NotAnimating;
-    }
-  }
+  /////////////////////////////////////
+  //  3. Do we need a new animation? //
+  /////////////////////////////////////
 
   const auto& transition = newProp.transition();
   const auto duration
     = newProp.transition().mDuration * (SlowAnimations ? 10 : 1);
 
-  auto& transitionState = this->*TStateProperty;
-  if (
-    (!transitionState.has_value()) || transitionState->mEndValue != endValue) {
+  if (!transitionState.has_value()) {
     transitionState = {
       .mStartValue = startValue,
       .mStartTime = now + transition.mDelay,
@@ -114,32 +131,39 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     return Animating;
   }
 
-  if (transitionState->mEndTime < now) {
-    transitionState.reset();
-    return NotAnimating;
+  // Target value has changed, so we need to update the animation
+  if (!almost_equal(transitionState->mEndValue, endValue)) {
+    const auto delay = (now >= transitionState->mStartTime)
+      ? StyleTransition::Duration {}
+      : (transition.mDelay - (transitionState->mStartTime - now));
+    transitionState = {
+      .mStartValue = oldProp.value(),
+      .mStartTime = now + delay,
+      .mEndValue = endValue,
+      .mEndTime = std::max(transitionState->mEndTime, now + delay + duration),
+    };
+    newProp = oldProp.value();
+
+    return Animating;
   }
+
+  ///////////////////////////////////
+  //  4. Use the current animation //
+  ///////////////////////////////////
 
   newProp = transitionState->Evaluate(transition, now);
 
-  if (newProp == transitionState->mEndValue) {
+  // Has it finished?
+  if (almost_equal(newProp.value(), endValue)) {
+    newProp = endValue;
     transitionState.reset();
     return NotAnimating;
   }
-  if constexpr (std::floating_point<TValue>) {
-    if (newProp.has_value() && almost_equal(newProp.value(), endValue)) {
-      newProp = endValue;
-      transitionState.reset();
-      return NotAnimating;
-    }
-  }
 
-  transitionState = {
-    .mStartValue = newProp.value(),
-    .mStartTime = std::max(transitionState->mStartTime, now),
-    .mEndValue = endValue,
-    .mEndTime = std::max(transitionState->mEndTime, now + duration),
-  };
-
+  // Nope, current animation is still progress
+  FUI_ASSERT(
+    transitionState->mEndTime > now,
+    "Animations should end at their target value");
   return Animating;
 }
 
