@@ -34,16 +34,22 @@ Style& Style::operator+=(const Style& other) noexcept {
    *  }
    *  ```
    */
-  const auto merge = [this, &other](auto member) {
-    auto& lhs = this->*member;
-    const auto& rhs = other.*member;
 
-    lhs += rhs;
-  };
+// other.m##X##Edge##Y will be added in MERGE_PROPERTY below
+#define MERGE_EDGES(X, Y) \
+  this->m##X##Left##Y = m##X##Y + m##X##Left##Y + other.m##X##Y; \
+  this->m##X##Top##Y = m##X##Y + m##X##Top##Y + other.m##X##Y; \
+  this->m##X##Right##Y = m##X##Y + m##X##Right##Y + other.m##X##Y; \
+  this->m##X##Bottom##Y = m##X##Y + m##X##Bottom##Y + other.m##X##Y;
+  FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES)
+#undef MERGE_EDGES
 
-#define MERGE_PROPERTY(X) merge(&Style::m##X);
+#define MERGE_PROPERTY(X) this->m##X += other.m##X;
   FUI_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
+#define UNSET_ALL_EDGES(X, Y) this->m##X##Y = std::nullopt;
+  FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
+#undef UNSET_ALL_EDGES
   // We originally used `Vector::append_range()` here; profiling showed *a lot*
   // of time spend on allocations and deallocations, which this approach fixes.
   //

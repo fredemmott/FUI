@@ -161,3 +161,12 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   X(TranslateX) \
   X(TranslateY) \
   X(Width)
+
+/** Properties of the form `mPrefixSuffix`, `mPrefixEdgeSuffix`
+ *
+ * e.g. `mMarginLeft`, `mBorderLeftWidth`
+ */
+#define FUI_STYLE_EDGE_PROPERTIES(X) \
+  X(Margin, ) \
+  X(Padding, ) \
+  X(Border, Width)

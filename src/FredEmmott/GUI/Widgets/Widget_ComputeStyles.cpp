@@ -55,22 +55,15 @@ void Widget::ComputeStyles(const Style& inherited) {
     = [&flattenEdge]<class T, std::same_as<T>... TRest>(T all, TRest... rest) {
         (flattenEdge(all, rest), ...);
       };
-#define FLATTEN_EDGES(X) \
+#define FLATTEN_EDGES(X, Y) \
   flattenEdges( \
-    &Style::m##X, \
-    &Style::m##X##Left, \
-    &Style::m##X##Top, \
-    &Style::m##X##Right, \
-    &Style::m##X##Bottom);
-  FLATTEN_EDGES(Margin)
-  FLATTEN_EDGES(Padding)
+    &Style::m##X##Y, \
+    &Style::m##X##Left##Y, \
+    &Style::m##X##Top##Y, \
+    &Style::m##X##Right##Y, \
+    &Style::m##X##Bottom##Y);
+  FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
 #undef FLATTEN_EDGES
-  flattenEdges(
-    &Style::mBorderWidth,
-    &Style::mBorderLeftWidth,
-    &Style::mBorderTopWidth,
-    &Style::mBorderRightWidth,
-    &Style::mBorderBottomWidth);
 
   const auto children = this->GetDirectChildren();
   for (auto&& child: children) {
