@@ -39,16 +39,18 @@ inline void assert_fail(
   if (!(condition)) [[unlikely]] { \
     assert_fail(std::source_location::current(), #condition, ##__VA_ARGS__); \
   }
+#define FUI_ASSERT(condition, ...) \
+  if constexpr (FredEmmott::GUI::Config::Debug) { \
+    FUI_ALWAYS_ASSERT(condition, ##__VA_ARGS__); \
+  }
 #else
 #define FUI_ALWAYS_ASSERT(condition, ...) \
   if (!(condition)) [[unlikely]] { \
     assert_fail( \
       std::source_location::current(), #condition __VA_OPT__(, ) __VA_ARGS__); \
   }
-
-#endif
-
-#define FUI_ASSERT(...) \
+#define FUI_ASSERT(condition, ...) \
   if constexpr (FredEmmott::GUI::Config::Debug) { \
-    FUI_ALWAYS_ASSERT(__VA_ARGS__); \
+    FUI_ALWAYS_ASSERT(condition __VA_OPT__(, ) __VA_ARGS__); \
   }
+#endif
