@@ -52,7 +52,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
     .mMarginRight = ToggleSwitchPreContentMargin,
     .mWidth = Spacing * 10,
   };
-  static const Style offStyles {
+  static const Style offStyles  = baseStyles + Style {
     .mBackgroundColor = ToggleSwitchFillOff,
     .mBorderColor = ToggleSwitchStrokeOff,
     .mAnd = {
@@ -68,7 +68,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
       }},
     },
   };
-  static const Style onStyles {
+  static const Style onStyles = baseStyles + Style {
     .mBackgroundColor = ToggleSwitchFillOn,
     .mBorderColor = ToggleSwitchStrokeOn,
     .mAnd = {
@@ -86,7 +86,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
       }},
     },
   };
-  return baseStyles + (this->IsOn() ? onStyles : offStyles);
+  return (this->IsOn() ? onStyles : offStyles);
 }
 
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {
