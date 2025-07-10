@@ -9,8 +9,18 @@
 
 namespace FredEmmott::GUI::EasingFunctions {
 
+struct Instant {
+  static constexpr float operator()(float) {
+    return 1;
+  }
+
+  constexpr bool operator==(const Instant&) const noexcept {
+    return true;
+  }
+};
+
 struct Linear {
-  constexpr float operator()(float t) const {
+  static constexpr float operator()(float t) {
     return t;
   }
 
@@ -183,8 +193,10 @@ namespace FredEmmott::GUI {
  */
 class EasingFunction {
  public:
-  using variant_t
-    = std::variant<EasingFunctions::Linear, EasingFunctions::CubicBezier>;
+  using variant_t = std::variant<
+    EasingFunctions::Instant,
+    EasingFunctions::Linear,
+    EasingFunctions::CubicBezier>;
 
   EasingFunction() = delete;
   constexpr EasingFunction(const std::convertible_to<variant_t> auto& func)

@@ -83,6 +83,14 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     return NotAnimating;
   }
 
+  // Optimization only, this case should be handled correctly by the code below
+  if (
+    newProp.transition().mDuration.count() == 0
+    && newProp.transition().mDelay.count() == 0) {
+    transitionState.reset();
+    return NotAnimating;
+  }
+
   auto startProp = oldProp;
   auto endProp = newProp;
 
@@ -132,7 +140,11 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
       .mEndValue = endValue,
       .mEndTime = now + transition.mDelay + duration,
     };
-    newProp = startValue;
+    newProp = transitionState->Evaluate(transition, now);
+    if (almost_equal(newProp.value(), endValue)) {
+      transitionState.reset();
+      return NotAnimating;
+    }
     return Animating;
   }
 

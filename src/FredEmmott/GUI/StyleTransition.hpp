@@ -16,6 +16,9 @@ struct StyleTransition {
   constexpr bool operator==(const StyleTransition&) const noexcept = default;
 };
 
+constexpr auto InstantStyleTransition
+  = StyleTransition {.mEasingFunction = EasingFunctions::Instant {}};
+
 constexpr StyleTransition LinearStyleTransition(
   const StyleTransition::Duration delay,
   const StyleTransition::Duration duration) {

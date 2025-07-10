@@ -25,11 +25,11 @@ struct TransitionState<T> {
 
   [[nodiscard]] T Evaluate(const auto& transition, const time_point& now)
     const noexcept {
+    if (now >= mEndTime) {
+      return mEndValue;
+    }
     if (now < mStartTime) {
       return mStartValue;
-    }
-    if (now > mEndTime) {
-      return mEndValue;
     }
     const auto duration = mEndTime - mStartTime;
     const auto elapsed = now - mStartTime;
