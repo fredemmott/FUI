@@ -76,10 +76,10 @@ void Root::Paint(Renderer* renderer, const Size& size) {
   }
   const auto clipRegion = renderer->ScopedClipRect({size});
 
+  mWidget->ComputeStyles({});
   auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
 
-  mWidget->ComputeStyles({});
   mWidget->UpdateLayout();
   mWidget->Tick();
   mWidget->Paint(renderer);

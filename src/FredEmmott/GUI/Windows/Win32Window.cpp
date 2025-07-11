@@ -581,8 +581,59 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       if (!mMinimumWidth) {
         break;
       }
-      auto* minInfo = reinterpret_cast<MINMAXINFO*>(lParam);
-      minInfo->ptMinTrackSize.x = mMinimumWidth;
+
+      if (
+        mHorizontalResizeMode == ResizeMode::Allow
+        && mVerticalResizeMode == ResizeMode::Allow) {
+        break;
+      }
+
+      const auto [minWidth, idealHeight]
+        = GetMinimumWidthAndIdealHeight(this->GetRoot()->GetLayoutNode());
+      RECT rect {
+        .right = std::lround(std::ceil(minWidth * mDPIScale)),
+        .bottom = std::lround(std::ceil(idealHeight * mDPIScale)),
+      };
+      AdjustWindowRectEx(
+        &rect,
+        mOptions.mWindowStyle & ~WS_OVERLAPPED,
+        false,
+        mOptions.mWindowExStyle);
+
+      auto* ret = reinterpret_cast<MINMAXINFO*>(lParam);
+
+      switch (mHorizontalResizeMode) {
+        case ResizeMode::Fixed:
+          ret->ptMinTrackSize.x = rect.right - rect.left;
+          ret->ptMaxTrackSize.x = rect.right - rect.left;
+          break;
+        case ResizeMode::AllowGrow:
+          ret->ptMinTrackSize.x = rect.right - rect.left;
+          break;
+        case ResizeMode::AllowShrink:
+          ret->ptMaxTrackSize.x = rect.right - rect.left;
+          break;
+        case ResizeMode::Allow:
+          ret->ptMinTrackSize.x = 128;
+          break;
+      }
+
+      switch (mVerticalResizeMode) {
+        case ResizeMode::Fixed:
+          ret->ptMinTrackSize.y = rect.bottom - rect.top;
+          ret->ptMaxTrackSize.y = rect.bottom - rect.top;
+          break;
+        case ResizeMode::AllowGrow:
+          ret->ptMinTrackSize.y = rect.bottom - rect.top;
+          break;
+        case ResizeMode::AllowShrink:
+          ret->ptMaxTrackSize.y = rect.bottom - rect.top;
+          break;
+        case ResizeMode::Allow:
+          ret->ptMinTrackSize.y = 128;
+          break;
+      }
+
       return 0;
     }
     case WM_SIZE: {
@@ -591,78 +642,18 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       }
       const auto w = LOWORD(lParam);
       const auto h = HIWORD(lParam);
-      if (w == mClientSize.cx && h == mClientSize.cy) {
-        break;
+      if (w != mClientSize.cx || h != mClientSize.cy) {
+        mPendingResize.Set();
       }
-      mPendingResize.Set();
-      break;
+      return 0;
     }
     case WM_PAINT:
       this->Paint();
       break;
     case WM_SIZING: {
-      // Initially this is the full window size, including the non-client
-      // area
       RECT& rect = *reinterpret_cast<RECT*>(lParam);
-      // Let's figure out how the client relates, and adjust from there
-      RECT padding {};
-      AdjustWindowRectEx(
-        &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
-      padding.left = -padding.left;
-      padding.top = -padding.top;
-      auto clientSize = SIZE {
-        (rect.right - padding.right) - (rect.left + padding.left),
-        (rect.bottom - padding.bottom) - (rect.top + padding.top),
-      };
-
-      const auto root = GetRoot();
-      const auto redraw = wil::scope_exit([this, &rect] {
-        if (memcmp(&rect, &mNCRect, sizeof(RECT)) == 0) {
-          return;
-        }
+      if (memcmp(&rect, &mNCRect, sizeof(RECT)) != 0) {
         mPendingResize.Set();
-      });
-
-      const auto yoga = root->GetLayoutNode();
-
-      if (clientSize.cx < mClientSize.cx) {
-        const auto minWidth = std::ceil(
-          GetClampedMinimumWidth(
-            yoga,
-            clientSize.cx / mDPIScale,
-            mClientSize.cy,
-            ClampedMinimumWidthHint::MinimumIsLikely)
-          * mDPIScale);
-        const auto dx = std::ceill(minWidth - clientSize.cx);
-        if (dx > 0) {
-          switch (wParam) {
-            case WMSZ_TOPLEFT:
-            case WMSZ_LEFT:
-            case WMSZ_BOTTOMLEFT:
-              rect.left += dx;
-              break;
-            default:
-              rect.right -= dx;
-          }
-          clientSize.cx -= dx;
-        }
-      }
-
-      const auto maxHeight = std::ceil(
-        GetIdealHeight(yoga, clientSize.cx / mDPIScale) * mDPIScale);
-      const auto dy = std::ceill(clientSize.cy - maxHeight);
-
-      if (dy > 0) {
-        switch (wParam) {
-          case WMSZ_TOPLEFT:
-          case WMSZ_TOP:
-          case WMSZ_TOPRIGHT:
-            rect.top += dy;
-            break;
-          default:
-            rect.bottom -= dy;
-            break;
-        }
       }
       return TRUE;
     }
@@ -849,6 +840,30 @@ void Win32Window::WaitForInput() const {
 void Win32Window::SetIsModal(bool modal) {
   FUI_ASSERT(mParentHwnd);
   EnableWindow(mParentHwnd, !modal);
+}
+
+void Win32Window::SetResizeMode(
+  const ResizeMode horizontal,
+  const ResizeMode vertical) {
+  if (horizontal == mHorizontalResizeMode && vertical == mVerticalResizeMode) {
+    return;
+  }
+  mHorizontalResizeMode = horizontal;
+  mVerticalResizeMode = vertical;
+  auto rect = mNCRect;
+  SendMessage(
+    mHwnd.get(), WM_SIZING, WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(&rect));
+  if (memcmp(&rect, &mNCRect, sizeof(RECT)) == 0) {
+    return;
+  }
+  SetWindowPos(
+    mHwnd.get(),
+    nullptr,
+    rect.left,
+    rect.top,
+    rect.right - rect.left,
+    rect.bottom - rect.top,
+    SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 }// namespace FredEmmott::GUI

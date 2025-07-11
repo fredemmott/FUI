@@ -118,6 +118,7 @@ class Win32Window : public Window {
 
   void WaitForInput() const override;
   void SetIsModal(bool modal);
+  void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) override;
 
  protected:
   static constexpr UINT SwapChainLength = 3;
@@ -170,6 +171,8 @@ class Win32Window : public Window {
   bool mTrackingMouseEvents = false;
   NativePoint mPosition {};
   int mMinimumWidth {};
+  ResizeMode mHorizontalResizeMode = ResizeMode::AllowGrow;
+  ResizeMode mVerticalResizeMode = ResizeMode::Allow;
 
   wil::com_ptr<IDXGIFactory4> mDXGIFactory;
   wil::com_ptr<IDXGISwapChain1> mSwapChain;

@@ -32,6 +32,12 @@ class Window {
       return mValue != nullptr;
     }
   };
+  enum class ResizeMode {
+    Fixed = 0,
+    AllowShrink = 1,
+    AllowGrow = 2,
+    Allow = AllowShrink | AllowGrow,
+  };
   Window(uint8_t swapChainLength);
   virtual ~Window() = default;
 
@@ -43,6 +49,7 @@ class Window {
   virtual void ResizeToFit() = 0;
   virtual bool IsDisabled() const = 0;
   virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const = 0;
+  virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
