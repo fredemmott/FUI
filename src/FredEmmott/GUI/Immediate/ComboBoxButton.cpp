@@ -34,6 +34,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
     .mColor = ComboBoxForeground,
     .mFlexDirection = YGFlexDirectionRow,
     .mFont = WidgetFont::ControlContent,
+    .mMinHeight = ComboBoxMinHeight,
     .mMinWidth = ComboBoxThemeMinWidth,
     .mPaddingBottom = ComboBoxPaddingBottom,
     .mPaddingLeft = ComboBoxPaddingLeft,
