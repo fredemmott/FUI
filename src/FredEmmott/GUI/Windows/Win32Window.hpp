@@ -166,13 +166,13 @@ class Win32Window : public Window {
   std::optional<DWORD> mDPI;
   RECT mNCRect {};
   SIZE mClientSize {};
+  float mMinimumCanvasWidth {};
   Widgets::Widget* mOffsetToChild {nullptr};
   ActivatedFlag mPendingResize;
   bool mTrackingMouseEvents = false;
   NativePoint mPosition {};
-  int mMinimumWidth {};
   ResizeMode mHorizontalResizeMode = ResizeMode::AllowGrow;
-  ResizeMode mVerticalResizeMode = ResizeMode::Allow;
+  ResizeMode mVerticalResizeMode = ResizeMode::Fixed;
 
   wil::com_ptr<IDXGIFactory4> mDXGIFactory;
   wil::com_ptr<IDXGISwapChain1> mSwapChain;
@@ -188,11 +188,12 @@ class Win32Window : public Window {
   void CreateNativeWindow();
   void InitializeDirectComposition();
   [[nodiscard]]
-  SIZE CalculateInitialWindowSize() const;
+  SIZE GetInitialWindowSize() const;
   void TrackMouseEvent();
   void SetDPI(WORD newDPI);
-  [[nodiscard]] LONG LimitToMonitorHeight(LONG ncHeight) const;
+  void ResizeToFit(RECT* ncRect) const;
 
+  std::optional<LRESULT> WMSizingProc(WPARAM wParam, LPARAM lParam) const;
   LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   static LRESULT

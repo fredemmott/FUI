@@ -19,9 +19,11 @@ constexpr auto LoremIpsum
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.";
 
-static void AppTick() {
+static void AppTick(fui::Window& window) {
   constexpr bool UseScrollView = true;
   if constexpr (UseScrollView) {
+    using enum fui::Window::ResizeMode;
+    window.SetResizeMode(AllowGrow, AllowShrink);
     fuii::BeginVScrollView().Styled({
       .mBackgroundColor
       = fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush,
@@ -176,6 +178,6 @@ int WINAPI wWinMain(
     hPrevInstance,
     lpCmdLine,
     nCmdShow,
-    [](fui::Win32Window&) { AppTick(); },
+    [](fui::Win32Window& window) { AppTick(window); },
     {"FUI Demo"});
 }

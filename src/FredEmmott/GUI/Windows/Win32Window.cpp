@@ -18,6 +18,7 @@
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
+#include <print>
 
 #include "FredEmmott/GUI/ExitException.hpp"
 
@@ -291,38 +292,36 @@ void Win32Window::CreateNativeWindow() {
   this->SetDPI(GetDpiForWindow(mHwnd.get()));
 
   gInstances.emplace(mHwnd.get(), this);
-  this->ResizeToFit();
 
-  RECT clientRect {};
-  GetClientRect(mHwnd.get(), &clientRect);
+  GetWindowRect(mHwnd.get(), &mNCRect);
+  {
+    const auto [cx, cy] = this->GetInitialWindowSize();
+    mNCRect.right = mNCRect.left + cx;
+    mNCRect.bottom = mNCRect.top + cy;
+  }
+
   if (mOffsetToChild) {
-    auto root = mOffsetToChild->GetLayoutNode();
-    while (const auto node = YGNodeGetParent(root)) {
-      root = node;
-    }
-    YGNodeCalculateLayout(
-      root,
-      static_cast<float>(clientRect.right - clientRect.left) / mDPIScale,
-      static_cast<float>(clientRect.bottom - clientRect.top) / mDPIScale,
-      YGDirectionLTR);
     const auto canvas = mOffsetToChild->GetTopLeftCanvasPoint();
     const auto native = CanvasPointToNativePoint(canvas);
     const auto nativeOrigin = mOptions.mInitialPosition;
     FUI_ASSERT(nativeOrigin.mX != CW_USEDEFAULT);
     FUI_ASSERT(nativeOrigin.mY != CW_USEDEFAULT);
 
-    SetWindowPos(
-      mHwnd.get(),
-      nullptr,
-      (2 * nativeOrigin.mX) - native.mX,
-      (2 * nativeOrigin.mY) - native.mY,
-      0,
-      0,
-      SWP_NOSIZE | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER
-        | SWP_NOCOPYBITS);
+    mNCRect.left = (2 * nativeOrigin.mX) - native.mX;
+    mNCRect.top = (2 * nativeOrigin.mX) - native.mX;
   }
+  this->ResizeToFit(&mNCRect);
 
+  SetWindowPos(
+    mHwnd.get(),
+    nullptr,
+    mNCRect.left,
+    mNCRect.top,
+    (mNCRect.right - mNCRect.left),
+    (mNCRect.bottom - mNCRect.top),
+    SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER);
   GetWindowRect(mHwnd.get(), &mNCRect);
+  RECT clientRect {};
   GetClientRect(mHwnd.get(), &clientRect);
   mClientSize = {
     clientRect.right - clientRect.left,
@@ -451,20 +450,10 @@ void Win32Window::OffsetPositionToDescendant(Widgets::Widget* child) {
 }
 
 void Win32Window::ResizeToFit() {
-  const auto [w, h] = CalculateInitialWindowSize();
-
-  RECT rect {};
-  GetWindowRect(mHwnd.get(), &rect);
-
-  const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
-  MONITORINFO monitorInfo {sizeof(monitorInfo)};
-  GetMonitorInfoW(monitor, &monitorInfo);
-
-  if (rect.left + w > monitorInfo.rcWork.right) {
-    rect.left = monitorInfo.rcWork.right - w;
-  }
-  if (rect.top + h > monitorInfo.rcWork.bottom) {
-    rect.top = monitorInfo.rcWork.bottom - h;
+  auto rect = mNCRect;
+  this->ResizeToFit(&rect);
+  if (memcmp(&rect, &mNCRect, sizeof(rect)) == 0) {
+    return;
   }
 
   SetWindowPos(
@@ -472,15 +461,32 @@ void Win32Window::ResizeToFit() {
     nullptr,
     rect.left,
     rect.top,
-    w,
-    h,
+    rect.right - rect.left,
+    rect.bottom - rect.top,
     SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
   GetWindowRect(mHwnd.get(), &mNCRect);
   GetClientRect(mHwnd.get(), &rect);
   mClientSize = {rect.right - rect.left, rect.bottom - rect.top};
-  mMinimumWidth = w;
   if (mSwapChain) {
     this->ResizeSwapchain();
+  }
+}
+
+void Win32Window::ResizeToFit(RECT* ncrect) const {
+  WMSizingProc(WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(ncrect));
+
+  const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
+  MONITORINFO monitorInfo {sizeof(monitorInfo)};
+  GetMonitorInfoW(monitor, &monitorInfo);
+  if (ncrect->right > monitorInfo.rcWork.right) {
+    const auto dx = ncrect->right - monitorInfo.rcWork.right;
+    ncrect->left -= dx;
+    ncrect->right -= dx;
+  }
+  if (ncrect->bottom > monitorInfo.rcWork.bottom) {
+    const auto dy = ncrect->bottom - monitorInfo.rcWork.bottom;
+    ncrect->bottom -= dy;
+    ncrect->top -= dy;
   }
 }
 
@@ -548,12 +554,123 @@ void Win32Window::SetDPI(const WORD newDPI) {
   YGConfigSetPointScaleFactor(GetYogaConfig(), mDPIScale);
 }
 
+std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam)
+  const {
+  if (!mDPI) {
+    return {};
+  }
+
+  if (
+    mHorizontalResizeMode == ResizeMode::Allow
+    && mVerticalResizeMode == ResizeMode::Allow) {
+    return {};
+  }
+
+  RECT& rect = *reinterpret_cast<RECT*>(lParam);
+
+  const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
+  MONITORINFO monitorInfo {sizeof(monitorInfo)};
+  GetMonitorInfoW(monitor, &monitorInfo);
+
+  RECT ncPadding {};
+  AdjustWindowRectExForDpi(
+    &ncPadding,
+    mOptions.mWindowStyle & ~WS_OVERLAPPED,
+    false,
+    mOptions.mWindowExStyle,
+    mDPI.value());
+  // Make all values positive
+  ncPadding.left = -ncPadding.left;
+  ncPadding.top = -ncPadding.top;
+
+  const auto initialWidth = std::lround(
+    std::ceil(
+      std::ceil(GetMinimumWidth(this->GetRoot()->GetLayoutNode()))
+      * mDPIScale));
+  const auto requestedWidth
+    = rect.right - (rect.left + ncPadding.left + ncPadding.right);
+  const auto monitorWidth = monitorInfo.rcWork.right
+    - (monitorInfo.rcWork.left + ncPadding.left + ncPadding.right);
+  auto targetWidth = requestedWidth;
+
+  switch (mHorizontalResizeMode) {
+    case ResizeMode::Fixed:
+      targetWidth = initialWidth;
+      break;
+    case ResizeMode::AllowGrow:
+      targetWidth = std::max(requestedWidth, initialWidth);
+      break;
+    case ResizeMode::AllowShrink:
+      targetWidth = std::min(requestedWidth, initialWidth);
+      targetWidth = std::min(targetWidth, monitorWidth);
+      break;
+    case ResizeMode::Allow:
+      targetWidth = std::min(requestedWidth, monitorWidth);
+      break;
+  }
+  const auto dx = requestedWidth - targetWidth;
+
+  const auto initialHeight = std::lround(
+    std::ceil(
+      std::ceil(GetIdealHeight(
+        this->GetRoot()->GetLayoutNode(), targetWidth / mDPIScale))
+      * mDPIScale));
+  const auto requestedHeight
+    = rect.bottom - (rect.top + ncPadding.top + ncPadding.bottom);
+  const auto monitorHeight = monitorInfo.rcWork.bottom
+    - (monitorInfo.rcWork.top + ncPadding.top + ncPadding.bottom);
+  auto targetHeight = requestedHeight;
+  switch (mVerticalResizeMode) {
+    case ResizeMode::Fixed:
+      targetHeight = initialHeight;
+      break;
+    case ResizeMode::AllowGrow:
+      targetHeight = std::max(requestedHeight, initialHeight);
+      break;
+    case ResizeMode::AllowShrink:
+      targetHeight = std::min(requestedHeight, initialHeight);
+      targetHeight = std::min(targetHeight, monitorHeight);
+      break;
+    case ResizeMode::Allow:
+      targetHeight = std::min(requestedHeight, monitorHeight);
+      break;
+  }
+  const auto dy = requestedHeight - targetHeight;
+
+  if (dx == 0 && dy == 0) {
+    return {TRUE};
+  }
+
+  switch (wParam) {
+    case WMSZ_TOPLEFT:
+    case WMSZ_LEFT:
+    case WMSZ_BOTTOMLEFT:
+      rect.left += dx;
+      break;
+    default:
+      rect.right -= dx;
+      break;
+  }
+
+  switch (wParam) {
+    case WMSZ_TOPLEFT:
+    case WMSZ_TOP:
+    case WMSZ_TOPRIGHT:
+      rect.top += dy;
+      break;
+    default:
+      rect.bottom -= dy;
+  }
+
+  const_cast<Win32Window*>(this)->mPendingResize.Set();
+  return {TRUE};
+}
+
 LRESULT
 Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   if (mHwnd && hwnd != mHwnd.get()) {
     throw std::logic_error("hwnd mismatch");
   }
-  namespace fui = FredEmmott::GUI;
   switch (uMsg) {
     case WM_ENABLE:
       mIsDisabled = !wParam;
@@ -574,68 +691,6 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       this->AdjustToWindowsTheme();
       SystemSettings::Get().ClearWin32(static_cast<UINT>(wParam));
       break;
-    case WM_GETMINMAXINFO: {
-      if (!mDPI) {
-        this->SetDPI(GetDpiForWindow(hwnd));
-      }
-      if (!mMinimumWidth) {
-        break;
-      }
-
-      if (
-        mHorizontalResizeMode == ResizeMode::Allow
-        && mVerticalResizeMode == ResizeMode::Allow) {
-        break;
-      }
-
-      const auto [minWidth, idealHeight]
-        = GetMinimumWidthAndIdealHeight(this->GetRoot()->GetLayoutNode());
-      RECT rect {
-        .right = std::lround(std::ceil(minWidth * mDPIScale)),
-        .bottom = std::lround(std::ceil(idealHeight * mDPIScale)),
-      };
-      AdjustWindowRectEx(
-        &rect,
-        mOptions.mWindowStyle & ~WS_OVERLAPPED,
-        false,
-        mOptions.mWindowExStyle);
-
-      auto* ret = reinterpret_cast<MINMAXINFO*>(lParam);
-
-      switch (mHorizontalResizeMode) {
-        case ResizeMode::Fixed:
-          ret->ptMinTrackSize.x = rect.right - rect.left;
-          ret->ptMaxTrackSize.x = rect.right - rect.left;
-          break;
-        case ResizeMode::AllowGrow:
-          ret->ptMinTrackSize.x = rect.right - rect.left;
-          break;
-        case ResizeMode::AllowShrink:
-          ret->ptMaxTrackSize.x = rect.right - rect.left;
-          break;
-        case ResizeMode::Allow:
-          ret->ptMinTrackSize.x = 128;
-          break;
-      }
-
-      switch (mVerticalResizeMode) {
-        case ResizeMode::Fixed:
-          ret->ptMinTrackSize.y = rect.bottom - rect.top;
-          ret->ptMaxTrackSize.y = rect.bottom - rect.top;
-          break;
-        case ResizeMode::AllowGrow:
-          ret->ptMinTrackSize.y = rect.bottom - rect.top;
-          break;
-        case ResizeMode::AllowShrink:
-          ret->ptMaxTrackSize.y = rect.bottom - rect.top;
-          break;
-        case ResizeMode::Allow:
-          ret->ptMinTrackSize.y = 128;
-          break;
-      }
-
-      return 0;
-    }
     case WM_SIZE: {
       if (wParam == SIZE_MINIMIZED) {
         break;
@@ -651,11 +706,10 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       this->Paint();
       break;
     case WM_SIZING: {
-      RECT& rect = *reinterpret_cast<RECT*>(lParam);
-      if (memcmp(&rect, &mNCRect, sizeof(RECT)) != 0) {
-        mPendingResize.Set();
+      if (const auto ret = WMSizingProc(wParam, lParam)) {
+        return *ret;
       }
-      return TRUE;
+      break;
     }
     case WM_DPICHANGED: {
       const auto newDPI = HIWORD(wParam);
@@ -792,15 +846,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
-LONG Win32Window::LimitToMonitorHeight(LONG ncHeight) const {
-  const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
-  MONITORINFO monitorInfo {sizeof(monitorInfo)};
-  GetMonitorInfoW(monitor, &monitorInfo);
-
-  return std::min(ncHeight, monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
-}
-
-SIZE Win32Window::CalculateInitialWindowSize() const {
+SIZE Win32Window::GetInitialWindowSize() const {
   const auto contentSizeInDIPs = GetRoot()->GetInitialSize();
 
   RECT rect {
@@ -809,15 +855,17 @@ SIZE Win32Window::CalculateInitialWindowSize() const {
     std::lround(std::ceil(contentSizeInDIPs.mWidth * mDPIScale)),
     std::lround(std::ceil(contentSizeInDIPs.mHeight * mDPIScale)),
   };
-  AdjustWindowRectEx(
+  AdjustWindowRectExForDpi(
     &rect,
     mOptions.mWindowStyle & ~WS_OVERLAPPED,
     false,
-    mOptions.mWindowExStyle);
+    mOptions.mWindowExStyle,
+    mDPI.value());
+  this->ResizeToFit(&rect);
 
   return {
     rect.right - rect.left,
-    LimitToMonitorHeight(rect.bottom - rect.top),
+    rect.bottom - rect.top,
   };
 }
 
