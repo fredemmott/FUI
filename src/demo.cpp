@@ -75,7 +75,7 @@ static void AppTick(fui::Window& window) {
     std::println(stderr, "Clicked!");
   }
 
-  if (const auto window = fuii::BeginPopup(&popupVisible).Scoped()) {
+  if (const auto popup = fuii::BeginPopup(&popupVisible).Scoped()) {
     const auto card = fuii::BeginCard().Scoped();
     const auto layout = fuii::BeginVStackPanel().Scoped();
     fuii::Label("This is a popup");
