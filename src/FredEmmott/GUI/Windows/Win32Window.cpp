@@ -299,16 +299,24 @@ void Win32Window::CreateNativeWindow() {
     mNCRect.right = mNCRect.left + cx;
     mNCRect.bottom = mNCRect.top + cy;
   }
-
   if (mOffsetToChild) {
+    YGNodeCalculateLayout(
+      this->GetRoot()->GetLayoutNode(),
+      mNCRect.right - mNCRect.left,
+      YGUndefined,
+      YGDirectionLTR);
     const auto canvas = mOffsetToChild->GetTopLeftCanvasPoint();
     const auto native = CanvasPointToNativePoint(canvas);
-    const auto nativeOrigin = mOptions.mInitialPosition;
+    const auto nativeOrigin = CanvasPointToNativePoint({0, 0});
     FUI_ASSERT(nativeOrigin.mX != CW_USEDEFAULT);
     FUI_ASSERT(nativeOrigin.mY != CW_USEDEFAULT);
 
-    mNCRect.left = (2 * nativeOrigin.mX) - native.mX;
-    mNCRect.top = (2 * nativeOrigin.mX) - native.mX;
+    const auto dx = native.mX - nativeOrigin.mX;
+    const auto dy = native.mY - nativeOrigin.mY;
+    mNCRect.left -= dx;
+    mNCRect.right -= dx;
+    mNCRect.top -= dy;
+    mNCRect.bottom -= dy;
   }
   this->ResizeToFit(&mNCRect);
 

@@ -100,7 +100,7 @@ bool Root::CanFit(float width, float height) const {
   YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
   return !YGNodeLayoutGetHadOverflow(yoga);
 }
-YGNodeConstRef Root::GetLayoutNode() const {
+YGNodeRef Root::GetLayoutNode() const {
   return mYogaRoot.get();
 }
 
