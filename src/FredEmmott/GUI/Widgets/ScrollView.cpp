@@ -11,6 +11,7 @@
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "FredEmmott/GUI/assert.hpp"
 #include "FredEmmott/GUI/detail/widget_detail.hpp"
+#include "FredEmmott/utility/almost_equal.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -171,8 +172,11 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
 
   {
     const auto clipTo = renderer->ScopedClipRect(Size {w, h});
-    if (w != YGNodeLayoutGetWidth(mContentYoga.get())) {
-      YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
+    const auto contentWidth = std::floor(w);
+    if (!utility::almost_equal(
+          contentWidth, YGNodeLayoutGetWidth(mContentYoga.get()))) {
+      YGNodeCalculateLayout(
+        mContentYoga.get(), contentWidth, YGUndefined, YGDirectionLTR);
     }
     UpdateScrollBars({w, h});
     mContentInner->Paint(renderer);
@@ -241,7 +245,10 @@ bool ScrollView::IsScrollBarVisible(
     return false;
   }
 
-  return (content - container) > eps;
+  const bool fits
+    = content < container || utility::almost_equal(content, container);
+
+  return !fits;
 }
 
 void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
@@ -256,7 +263,7 @@ YGSize ScrollView::MeasureOuterContent(
   float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   float height,
-  [[maybe_unused]] YGMeasureMode heightMode) {
+  YGMeasureMode heightMode) {
   const auto outer = FromYogaNode(node);
   auto& self = *outer->GetContext<ScrollViewContext>()->mScrollView;
 
@@ -274,21 +281,25 @@ YGSize ScrollView::MeasureOuterContent(
   if (haveDirtyInner || haveSizeChange) {
     contentWidth = self.mContentInnerMinWidth
       = (haveDirtyInner ? GetMinimumWidth(yoga) : self.mContentInnerMinWidth);
-    if (!std::isnan(width)) {
-      contentWidth = std::max(contentWidth, width);
-    }
     contentHeight = GetIdealHeight(yoga, contentWidth);
   }
 
   width = contentWidth;
-  if (std::isnan(height)) {
-    height = contentHeight;
-  } else {
-    height = std::min(height, contentHeight);
-  }
+  using enum CSSMeasureMode;
+  switch (static_cast<CSSMeasureMode>(heightMode)) {
+    case StretchFit:
+      // Should always use provided height
+      break;
+    case FitContent:
+      height = std::min(height, contentHeight);
+      break;
+    case MaxContent:
+      height = contentHeight;
+      break;
+  };
 
   YGNodeCalculateLayout(yoga, contentWidth, YGUndefined, YGDirectionLTR);
-  return {width, height};
+  return {std::ceil(width), std::ceil(height)};
 }
 
 }// namespace FredEmmott::GUI::Widgets

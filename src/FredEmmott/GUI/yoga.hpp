@@ -44,4 +44,10 @@ float GetClampedMinimumWidth(
 float GetIdealHeight(YGNodeConstRef node, float width);
 Size GetMinimumWidthAndIdealHeight(YGNodeConstRef node);
 
+enum class CSSMeasureMode : std::underlying_type_t<YGMeasureMode> {
+  StretchFit = YGMeasureModeExactly,
+  MaxContent = YGMeasureModeUndefined,
+  FitContent = YGMeasureModeAtMost,
+};
+
 }// namespace FredEmmott::GUI
