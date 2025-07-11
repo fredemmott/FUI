@@ -272,7 +272,7 @@ void ScrollBar::ScrollBarButtonTick(ButtonTickKind kind) {
       break;
   }
   const float clamped = std::clamp(mValue + delta, min, max);
-  this->SetValue(clamped);
+  this->SetValue(clamped, ChangeReason::Discrete);
 }
 
 void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const Point& point) {
@@ -313,6 +313,7 @@ void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const Point& point) {
       std::unreachable();
   }
 }
+
 void ScrollBar::UpdateLayout() {
   mLargeDecrement->ReplaceExplicitStyles({
     .mFlexGrow = mValue - mMinimum,
@@ -351,7 +352,7 @@ void ScrollBar::OnThumbDrag(Point* deltaXY) {
     std::invoke(deltaPtr, deltaXY) += fixPx;
   }
 
-  this->SetValue(clampedValue);
+  this->SetValue(clampedValue, ChangeReason::Continuous);
 }
 
 void ScrollBar::SetMinimum(float value) {
@@ -380,9 +381,16 @@ float ScrollBar::GetValue() const {
 }
 
 void ScrollBar::SetValue(const float value) {
+  this->SetValue(value, ChangeReason::Programmatic);
+}
+
+void ScrollBar::SetValue(const float value, const ChangeReason reason) {
+  if (mValue == value) {
+    return;
+  }
   mValue = value;
   if (mValueChangedCallback) {
-    mValueChangedCallback(value);
+    mValueChangedCallback(value, reason);
   }
   this->UpdateLayout();
 }

@@ -50,10 +50,10 @@ class ScrollView final : public Widget {
   bool mDirtyInner = true;
   float mContentInnerMinWidth {};
 
-  void OnHorizontalScroll(float value);
-  void OnVerticalScroll(float value);
+  void OnHorizontalScroll(float value, ScrollBar::ChangeReason reason);
+  void OnVerticalScroll(float value, ScrollBar::ChangeReason reason);
 
-  void UpdateScrollBars(const Size& containerSize);
+  void UpdateScrollBars(const Size& containerSize) const;
 
   [[nodiscard]]
   static bool IsScrollBarVisible(

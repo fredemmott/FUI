@@ -14,7 +14,12 @@ class ScrollBarThumb;
 
 class ScrollBar final : public Widget {
  public:
-  using ValueChangedCallback = std::function<void(float)>;
+  enum class ChangeReason {
+    Programmatic,
+    Continuous,// e.g. drag
+    Discrete,// e.g. Click
+  };
+  using ValueChangedCallback = std::function<void(float, ChangeReason)>;
 
   ScrollBar(std::size_t id, Orientation);
   ~ScrollBar() override;
@@ -71,6 +76,8 @@ class ScrollBar final : public Widget {
 
   void ScrollBarButtonTick(ButtonTickKind);
   void ScrollBarButtonDown(ButtonTickKind, const Point&);
+
+  void SetValue(float value, ChangeReason);
 
   void UpdateLayout() override;
 

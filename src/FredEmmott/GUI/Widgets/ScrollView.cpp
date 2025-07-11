@@ -122,7 +122,7 @@ Widget* ScrollView::GetFosterParent() const noexcept {
   return mContentInner.get();
 }
 
-void ScrollView::UpdateScrollBars(const Size& containerSize) {
+void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   const auto [w, h] = containerSize;
 
   if (YGFloatIsUndefined(w) || YGFloatIsUndefined(h)) {
@@ -207,12 +207,22 @@ Style ScrollView::GetBuiltInStyles() const {
   };
 }
 
-void ScrollView::OnHorizontalScroll(float value) {
-  mContentInner->AddExplicitStyles({.mTranslateX = -value});
+void ScrollView::OnHorizontalScroll(
+  const float value,
+  const ScrollBar::ChangeReason reason) {
+  std::optional<StyleTransition> transition;
+  if (reason != ScrollBar::ChangeReason::Discrete) {
+    transition = InstantStyleTransition;
+  }
+  mContentInner->AddExplicitStyles({.mTranslateX = {-value, transition}});
 }
 
-void ScrollView::OnVerticalScroll(float value) {
-  mContentInner->AddExplicitStyles({.mTranslateY = -value});
+void ScrollView::OnVerticalScroll(float value, ScrollBar::ChangeReason reason) {
+  std::optional<StyleTransition> transition;
+  if (reason != ScrollBar::ChangeReason::Discrete) {
+    transition = InstantStyleTransition;
+  }
+  mContentInner->AddExplicitStyles({.mTranslateY = {-value, transition}});
 }
 
 bool ScrollView::IsScrollBarVisible(
