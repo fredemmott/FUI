@@ -6,12 +6,13 @@
 #include <FredEmmott/GUI/SystemFont.hpp>
 
 #include "ID.hpp"
+#include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
 using FontIconSize = SystemFont::Usage;
 
-void FontIcon(
+Result<> FontIcon(
   std::string_view glyph,
   FontIconSize size = FontIconSize::Body,
   ID id = ID {std::source_location::current()});
@@ -21,7 +22,7 @@ struct FontIconStackedGlyph {
   Style mStyle;
 };
 
-void FontIcon(
+Result<> FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyph,
   FontIconSize size = FontIconSize::Body,
   ID id = ID {std::source_location::current()});
