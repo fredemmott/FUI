@@ -39,6 +39,7 @@ using DebugCopy = std::conditional_t<DebugAnimations, T, FakeCopy<T>>;
 
 template <class T, class U>
   requires std::same_as<std::decay_t<T>, std::decay_t<U>>
+  && (!requires(T t) { t.value(); })
 constexpr bool almost_equal(T&& a, U&& b) {
   if (a == b) {
     return true;
@@ -54,6 +55,14 @@ constexpr bool almost_equal(T&& a, U&& b) {
     return utility::almost_equal(a, b, 0.001f);
   }
   return false;
+}
+template <class T, class U>
+  requires requires(T t, U u) {
+    almost_equal(t.value(), u.value());
+    { almost_equal(t.value(), u.value()) } -> std::same_as<bool>;
+  }
+constexpr bool almost_equal(T&& a, U&& b) {
+  return almost_equal(std::forward<T>(a).value(), std::forward<U>(b).value());
 }
 
 }// namespace
@@ -218,7 +227,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
           auto& newValue = std::invoke(proj, newStyle);
           const auto& oldState = std::invoke(stateProj, originalState);
           auto& newState = std::invoke(stateProj, this);
-          if (targetValue.has_value() && targetValue.value() != newValue) {
+          if (targetValue.has_value() && !almost_equal(targetValue, newValue)) {
             std::println(
               stderr,
               "Animation result mismatch on {} - value changed, but not "
