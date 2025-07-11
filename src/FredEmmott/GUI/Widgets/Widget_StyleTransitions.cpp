@@ -44,6 +44,10 @@ constexpr bool almost_equal(T&& a, U&& b) {
     return true;
   }
   if constexpr (std::floating_point<std::decay_t<T>>) {
+    // YGUndefined is quiet NaN
+    if (std::isnan(a) && std::isnan(b)) {
+      return true;
+    }
     // 0.1% is close enough for visual animations - we don't need max
     // float precision. If this ends up true for some property, specialize
     // like we do for defaults.
