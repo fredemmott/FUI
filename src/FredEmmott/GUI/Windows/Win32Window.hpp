@@ -110,7 +110,8 @@ class Win32Window : public Window {
   void SetParent(NativeHandle) final;
   void SetInitialPositionInNativeCoords(const NativePoint& native) final;
   void OffsetPositionToDescendant(Widgets::Widget* child) final;
-  void ResizeToFit() override;
+  void ApplySizeConstraints() override;
+  void ResizeToIdeal() override;
 
   NativePoint CanvasPointToNativePoint(const Point& canvas) const final;
 
@@ -191,7 +192,7 @@ class Win32Window : public Window {
   SIZE GetInitialWindowSize() const;
   void TrackMouseEvent();
   void SetDPI(WORD newDPI);
-  void ResizeToFit(RECT* ncRect) const;
+  void ApplySizeConstraints(RECT* ncRect) const;
 
   std::optional<LRESULT> WMSizingProc(WPARAM wParam, LPARAM lParam) const;
   LRESULT

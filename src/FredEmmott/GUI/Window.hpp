@@ -46,7 +46,10 @@ class Window {
   virtual NativeHandle GetNativeHandle() const noexcept = 0;
   virtual void SetInitialPositionInNativeCoords(const NativePoint& native) = 0;
   virtual void OffsetPositionToDescendant(Widgets::Widget* child) = 0;
-  virtual void ResizeToFit() = 0;
+  /// Changes the size as little as possible to meet the constraints
+  virtual void ApplySizeConstraints() = 0;
+  /// Resize to the 'ideal' size
+  virtual void ResizeToIdeal() = 0;
   virtual bool IsDisabled() const = 0;
   virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const = 0;
   virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;

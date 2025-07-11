@@ -59,9 +59,10 @@ void Root::EndFrame() {
     YGNodeSetChildren(mYogaRoot.get(), &node, 1);
   }
 
-  if (tResizeToFit.TestAndClear()) {
-    tWindow->ResizeToFit();
+  if (tResizeThisFrame) {
+    tWindow->ResizeToIdeal();
   }
+  tResizeThisFrame = std::exchange(tResizeNextFrame, false);
 }
 
 void Root::DispatchEvent(const Event* e) {

@@ -318,7 +318,7 @@ void Win32Window::CreateNativeWindow() {
     mNCRect.top -= dy;
     mNCRect.bottom -= dy;
   }
-  this->ResizeToFit(&mNCRect);
+  this->ApplySizeConstraints(&mNCRect);
 
   SetWindowPos(
     mHwnd.get(),
@@ -457,9 +457,9 @@ void Win32Window::OffsetPositionToDescendant(Widgets::Widget* child) {
   mOffsetToChild = child;
 }
 
-void Win32Window::ResizeToFit() {
+void Win32Window::ApplySizeConstraints() {
   auto rect = mNCRect;
-  this->ResizeToFit(&rect);
+  this->ApplySizeConstraints(&rect);
   if (memcmp(&rect, &mNCRect, sizeof(rect)) == 0) {
     return;
   }
@@ -480,7 +480,7 @@ void Win32Window::ResizeToFit() {
   }
 }
 
-void Win32Window::ResizeToFit(RECT* ncrect) const {
+void Win32Window::ApplySizeConstraints(RECT* ncrect) const {
   WMSizingProc(WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(ncrect));
 
   const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
@@ -496,6 +496,24 @@ void Win32Window::ResizeToFit(RECT* ncrect) const {
     ncrect->bottom -= dy;
     ncrect->top -= dy;
   }
+}
+void Win32Window::ResizeToIdeal() {
+  auto rect = mNCRect;
+  const auto size = GetInitialWindowSize();
+  rect.right = rect.left + size.cx;
+  rect.bottom = rect.top + size.cy;
+  WMSizingProc(WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(&rect));
+  SetWindowPos(
+    mHwnd.get(),
+    nullptr,
+    rect.left,
+    rect.top,
+    (rect.right - rect.left),
+    (rect.bottom - rect.top),
+    SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+  GetWindowRect(mHwnd.get(), &mNCRect);
+  GetClientRect(mHwnd.get(), &rect);
+  mClientSize = {rect.right - rect.left, rect.bottom - rect.top};
 }
 
 void Win32Window::SetParent(NativeHandle value) {
@@ -869,7 +887,7 @@ SIZE Win32Window::GetInitialWindowSize() const {
     false,
     mOptions.mWindowExStyle,
     mDPI.value());
-  this->ResizeToFit(&rect);
+  this->ApplySizeConstraints(&rect);
 
   return {
     rect.right - rect.left,

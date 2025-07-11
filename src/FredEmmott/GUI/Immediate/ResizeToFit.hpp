@@ -3,6 +3,6 @@
 #pragma once
 
 namespace FredEmmott::GUI::Immediate {
-/// Enqueues `ResizeToFit()` before the next paint
+/// Enqueues `ResizeToIdeal()` for the next frame
 void ResizeToFit();
 }// namespace FredEmmott::GUI::Immediate
