@@ -171,6 +171,10 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
 
   {
     const auto clipTo = renderer->ScopedClipRect(Size {w, h});
+    if (w != YGNodeLayoutGetWidth(mContentYoga.get())) {
+      YGNodeCalculateLayout(mContentYoga.get(), w, YGUndefined, YGDirectionLTR);
+    }
+    UpdateScrollBars({w, h});
     mContentInner->Paint(renderer);
   }
 
@@ -263,8 +267,7 @@ YGSize ScrollView::MeasureOuterContent(
     if (!std::isnan(width)) {
       contentWidth = std::max(contentWidth, width);
     }
-    YGNodeCalculateLayout(yoga, contentWidth, YGUndefined, YGDirectionLTR);
-    contentHeight = YGNodeLayoutGetHeight(yoga);
+    contentHeight = GetIdealHeight(yoga, contentWidth);
   }
 
   width = contentWidth;
@@ -274,9 +277,7 @@ YGSize ScrollView::MeasureOuterContent(
     height = std::min(height, contentHeight);
   }
 
-  if (heightMode != YGMeasureModeUndefined) {
-    self.UpdateScrollBars({width, height});
-  }
+  YGNodeCalculateLayout(yoga, contentWidth, YGUndefined, YGDirectionLTR);
   return {width, height};
 }
 
