@@ -35,9 +35,6 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
       members.push_back(fmt::format("using {} = {};", type, resource.mType));
     }
 
-    members.push_back(
-      fmt::format("static const {}* Get{}();", type, resource.mName));
-
     if (resource.IsLiteral()) {
       constants.emplace_back(
         resource.mName,
@@ -48,6 +45,9 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
           resource.mValue));
       continue;
     }
+    members.push_back(
+      fmt::format("static const {}* Get{}();", type, resource.mName));
+
     constants.emplace_back(
       resource.mName,
       fmt::format(
