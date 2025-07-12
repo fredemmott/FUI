@@ -9,7 +9,8 @@ std::string GetAliasTargetType(std::string_view value) {
   if (value.starts_with("System") && value.ends_with("Color")) {
     return "Color";
   }
-  return std::format("std::decay_t<decltype(*{})>::value_type", value);
+  return std::format(
+    "std::decay_t<decltype(*Theme::Get{}())>::value_type", value);
 }
 
 std::string GetAliasValue(
@@ -21,7 +22,8 @@ std::string GetAliasValue(
     && value != "SystemControlDisabledTransparentColor") {
     return std::string {value};
   }
-  return std::format("*{}->Resolve(StaticTheme::Theme::{})", value, theme);
+  return std::format(
+    "*Theme::Get{}()->Resolve(StaticTheme::Theme::{})", value, theme);
 }
 
 void GetAlias(

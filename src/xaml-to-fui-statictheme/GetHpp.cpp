@@ -25,7 +25,7 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
   std::vector<std::string> members;
   std::vector<std::string> wrapperTypes;
   constants.reserve(resources.size());
-  members.reserve(resources.size() * 2);
+  members.reserve(resources.size());
   wrapperTypes.reserve(resources.size());
 
   for (auto&& resource: resources) {
@@ -36,9 +36,7 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
     }
 
     members.push_back(
-      fmt::format("const {}* Get{}() const;", type, resource.mName));
-    members.push_back(
-      fmt::format("const {0}* {1} = {{ Get{1}() }};", type, resource.mName));
+      fmt::format("static const {}* Get{}();", type, resource.mName));
 
     if (resource.IsLiteral()) {
       constants.emplace_back(

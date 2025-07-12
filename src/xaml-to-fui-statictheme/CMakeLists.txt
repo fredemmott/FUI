@@ -170,16 +170,16 @@ add_winui3_component_theme(
   PARENT Generic
 )
 
-add_winui3_component_theme(Deprecated)
+add_winui3_component_theme(Deprecated PARENT Common)
 add_winui3_component_theme(Button PARENT Deprecated)
 add_winui3_component_theme(ComboBox PARENT Button)
 
-add_winui3_component_theme(CheckBox)
-add_winui3_component_theme(ContentDialog)
-add_winui3_component_theme(RadioButton)
-add_winui3_component_theme(RadioButtons)
-add_winui3_component_theme(ScrollBar)
-add_winui3_component_theme(ScrollView)
-add_winui3_component_theme(ToggleSwitch)
+add_winui3_component_theme(CheckBox PARENT Common)
+add_winui3_component_theme(ContentDialog PARENT Common)
+add_winui3_component_theme(RadioButton PARENT Common)
+add_winui3_component_theme(RadioButtons PARENT Common)
+add_winui3_component_theme(ScrollBar PARENT Common)
+add_winui3_component_theme(ScrollView PARENT Common)
+add_winui3_component_theme(ToggleSwitch PARENT Common)
 
 install(TARGETS winui3-themes EXPORT exports)

@@ -19,7 +19,7 @@ std::string GetCpp(const Metadata& meta, const std::span<Resource> resources) {
     resourceGetters.push_back(
       fmt::format(
         R"EOF(
-const {TYPE}* Theme::Get{NAME}() const {{
+const {TYPE}* Theme::Get{NAME}() {{
   static const {TYPE} sValue = {VALUE};
   return &sValue;
 }}
@@ -44,6 +44,7 @@ const {TYPE}* Theme::Get{NAME}() const {{
 
   return fmt::format(
     R"EOF(
+{PARENT_INCLUDE}
 #include "{COMPONENT}.hpp"
 
 #include <FredEmmott/GUI/Brush.hpp>
@@ -55,6 +56,8 @@ const {TYPE}* Theme::Get{NAME}() const {{
 #include <thread>
 
 namespace {NAMESPACE}::{DETAIL_NAMESPACE} {{
+
+{PARENT_USING}
 
 using enum SystemTheme::ColorType;
 
@@ -71,9 +74,19 @@ const Theme* Theme::GetInstance() {{
 
 }} // namespace {NAMESPACE}::{DETAIL_NAMESPACE}
 )EOF",
+    fmt::arg(
+      "PARENT_INCLUDE",
+      meta.mParent.empty()
+        ? "// #include PARENT"
+        : fmt::format(
+            "#include <FredEmmott/GUI/StaticTheme/{}.hpp>", meta.mParent)),
     fmt::arg("COMPONENT", meta.mComponent),
     fmt::arg("NAMESPACE", meta.mNamespace),
     fmt::arg("DETAIL_NAMESPACE", meta.mDetailNamespace),
+    fmt::arg(
+      "PARENT_USING",
+      meta.mParent.empty() ? "// using namespace PARENT;"
+                           : fmt::format("using namespace {};", meta.mParent)),
     fmt::arg(
       "RESOURCE_GETTERS",
       std::ranges::to<std::string>(
