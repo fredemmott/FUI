@@ -15,6 +15,7 @@ struct HppData {
   std::string mParent;
   std::vector<std::string> mMembers;
   std::vector<std::string> mConstants;
+  std::vector<std::string> mWrapperTypes;
 };
 
 HppData GetHppData(const Metadata&, const std::span<Resource>&);

@@ -45,6 +45,7 @@ class BaseStyleProperty {
 
   template <class U = std::remove_cv_t<T>>
     requires std::is_constructible_v<T, U>
+    && (!std::convertible_to<U, resource_type>)
     && (!std::same_as<std::remove_cvref_t<U>, BaseStyleProperty>)
     && (!std::same_as<std::remove_cvref_t<U>, resource_type>)
   explicit(!std::is_convertible_v<U, T>) constexpr BaseStyleProperty(

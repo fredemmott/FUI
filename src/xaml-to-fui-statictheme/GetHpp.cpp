@@ -23,6 +23,10 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
   };
   std::vector<Constant> constants;
   std::vector<std::string> members;
+  std::vector<std::string> wrapperTypes;
+  constants.reserve(resources.size());
+  members.reserve(resources.size() * 2);
+  wrapperTypes.reserve(resources.size());
 
   for (auto&& resource: resources) {
     std::string type = resource.mType;
@@ -31,7 +35,8 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
       members.push_back(fmt::format("using {} = {};", type, resource.mType));
     }
 
-    members.push_back(fmt::format("const {}* Get{}();", type, resource.mName));
+    members.push_back(
+      fmt::format("const {}* Get{}() const;", type, resource.mName));
     members.push_back(
       fmt::format("const {0}* {1} = {{ Get{1}() }};", type, resource.mName));
 
@@ -43,14 +48,32 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
           resource.mType,
           resource.mName,
           resource.mValue));
-    } else {
-      constants.emplace_back(
-        resource.mName,
-        fmt::format(
-          "inline const auto {0} = {1}::Theme::GetInstance()->{0};",
-          resource.mName,
-          meta.mDetailNamespace));
+      continue;
     }
+    constants.emplace_back(
+      resource.mName,
+      fmt::format(
+        "constexpr {DETAIL_NS}::{NAME}_t {NAME};",
+        fmt::arg("NAME", resource.mName),
+        fmt::arg("DETAIL_NS", meta.mDetailNamespace)));
+    wrapperTypes.emplace_back(
+      fmt::format(
+        R"EOF(
+struct {NAME}_t {{
+  using type = decltype(Theme::GetInstance()->Get{NAME}());
+  using value_type = std::remove_pointer_t<type>::value_type;
+
+  static type Get();
+
+  operator type() const {{ return Get(); }}
+  operator const value_type&() const {{ return *Get()->Resolve(); }}
+  type operator->() const {{
+    return Get();
+  }}
+}};
+)EOF",
+        fmt::arg("NAME", resource.mName),
+        fmt::arg("TYPE", resource.IsAlias() ? resource.mType : type)));
   }
   std::ranges::sort(constants, {}, &Constant::mName);
   return {
@@ -60,6 +83,7 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
     .mMembers = members,
     .mConstants = constants | std::views::transform(&Constant::mCode)
       | std::ranges::to<std::vector<std::string>>(),
+    .mWrapperTypes = wrapperTypes,
   };
 }
 
@@ -117,6 +141,8 @@ struct Theme {PARENT} {{
     {MEMBERS}
 }}; // struct Theme
 
+{WRAPPER_TYPES}
+
 }} // namespace {NAMESPACE}::{DETAIL_NAMESPACE}
 )EOF",
     fmt::arg("PARENT_INCLUDE", data.mParentInclude),
@@ -126,5 +152,9 @@ struct Theme {PARENT} {{
     fmt::arg(
       "MEMBERS",
       std::ranges::to<std::string>(std::views::join_with(data.mMembers, '\n'))),
+    fmt::arg(
+      "WRAPPER_TYPES",
+      std::ranges::to<std::string>(
+        std::views::join_with(data.mWrapperTypes, '\n'))),
     nullptr);
 }
