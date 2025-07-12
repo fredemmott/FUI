@@ -10,7 +10,7 @@
 
 std::string GetCpp(const Metadata& meta, const std::span<Resource> resources) {
   std::vector<std::string> resourceGetters;
-  resourceGetters.reserve(resources.size() * 2);
+  resourceGetters.reserve(resources.size());
   for (auto&& resource: resources) {
     const std::string type = resource.IsAlias()
       ? fmt::format("Theme::{}_t", resource.mName)
@@ -29,17 +29,6 @@ const {TYPE}* Theme::Get{NAME}() {{
         fmt::arg("NAME", resource.mName),
         fmt::arg("VALUE", resource.mValue),
         nullptr));
-    if (resource.IsLiteral()) {
-      continue;
-    }
-    resourceGetters.push_back(
-      fmt::format(
-        R"EOF(
-{NAME}_t::type {NAME}_t::Get() {{
-  return Theme::Get{NAME}();
-}}
-)EOF",
-        fmt::arg("NAME", resource.mName)));
   }
 
   return fmt::format(

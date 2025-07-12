@@ -61,12 +61,10 @@ struct {NAME}_t {{
   using type = decltype(Theme::Get{NAME}());
   using value_type = std::remove_pointer_t<type>::value_type;
 
-  static type Get();
-
-  operator type() const {{ return Get(); }}
-  operator const value_type&() const {{ return *Get()->Resolve(); }}
+  operator type() const {{ return Theme::Get{NAME}(); }}
+  operator const value_type&() const {{ return *Theme::Get{NAME}()->Resolve(); }}
   type operator->() const {{
-    return Get();
+    return Theme::Get{NAME}();
   }}
 }};
 )EOF",
