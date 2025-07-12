@@ -18,11 +18,27 @@ target_include_directories(
 set(NAME fui-demo)
 if (ENABLE_SKIA)
   string(APPEND NAME "-skia")
-endif()
+endif ()
 if (ENABLE_DIRECT2D)
   string(APPEND NAME "-direct2d")
-endif()
+endif ()
 set_target_properties(
   fredemmott-gui-demo
   PROPERTIES OUTPUT_NAME "${NAME}"
 )
+
+if (MSVC)
+  target_link_options(
+    fredemmott-gui-demo
+    PRIVATE
+    # Incremental linking makes rebuilding quicker, but is a big size increase.
+    # Don't do this in release builds.
+    #
+    # - we generally don't want to rebuild release builds with small changes
+    # - smaller binaries are good
+    # - as well as the direct increase, incremental linking breaks the SizeBench tool
+    "$<$<NOT:$<CONFIG:Debug>>:/INCREMENTAL:NO>"
+    # COMDAT folding; drops off another big chunk
+    "$<$<NOT:$<CONFIG:Debug>>:/OPT:ICF>"
+  )
+endif ()
