@@ -37,7 +37,7 @@ Theme GetCurrent() {
     // Microsoft's recommended approach for detecting dark mode...
     using namespace ABI::Windows::UI::ViewManagement;
     const auto settings = wil::ActivateInstance<IUISettings3>(
-      L"Windows.UI.ViewManagement.UISettings");
+      RuntimeClass_Windows_UI_ViewManagement_UISettings);
     ABI::Windows::UI::Color color {};
     CheckHResult(settings->GetColorValue(UIColorType_Foreground, &color));
     const auto [a, r, g, b] = color;
