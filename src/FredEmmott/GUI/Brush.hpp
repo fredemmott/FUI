@@ -44,6 +44,7 @@ concept native_brush = detail::is_native_brush_t<T>::value;
 class Brush final {
  public:
   Brush() = delete;
+  ~Brush();
   constexpr Brush(const std::convertible_to<Color> auto& color)
     : mBrush(SolidColorBrush {Color {color}}) {}
 
