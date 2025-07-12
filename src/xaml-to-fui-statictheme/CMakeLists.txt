@@ -33,7 +33,7 @@ install(TARGETS xaml-to-fui-statictheme)
 target_link_libraries(
   xaml-to-fui-statictheme
   PRIVATE
-  fmt::fmt
+  fmt::fmt-header-only
   unofficial-tinyxml::unofficial-tinyxml
 )
 
