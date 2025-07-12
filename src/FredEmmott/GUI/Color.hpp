@@ -172,11 +172,6 @@ class Color final {
   };
   Color() = delete;
   constexpr Color(const Constant& color) : mVariant(color) {}
-  constexpr Color(StaticThemeColor color) : mVariant(color) {
-    if (!color) [[unlikely]] {
-      throw std::logic_error("Static resource colors must be a valid pointer");
-    }
-  }
   constexpr Color(nullptr_t) = delete;
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {}
 

@@ -70,7 +70,9 @@ class Brush final {
   std::variant<SolidColorBrush, LinearGradientBrush> mBrush;
 #ifdef FUI_ENABLE_DIRECT2D
   // TODO: make SolidColorBrush a class and put this there
-  mutable wil::com_ptr<ID2D1SolidColorBrush> mD2DSolidColorBrush;
+  // This is optional to allow constexpr construction
+  // https://github.com/microsoft/wil/issues/535
+  mutable std::optional<wil::com_ptr<ID2D1SolidColorBrush>> mD2DSolidColorBrush;
 #endif
 };
 }// namespace FredEmmott::GUI
