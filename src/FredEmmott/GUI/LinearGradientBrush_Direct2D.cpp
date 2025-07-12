@@ -19,14 +19,18 @@ wil::com_ptr<ID2D1Brush> LinearGradientBrush::GetDirect2DBrush(
   }
   m = m * D2D1::Matrix3x2F::Translation(rect.GetLeft(), rect.GetTop());
 
-  mDirect2DBrush->SetTransform(m);
-  return mDirect2DBrush;
+  auto brush = mDirect2DCache->mDirect2DBrush;
+  brush->SetTransform(m);
+  return brush;
 }
 
 void LinearGradientBrush::InitializeDirect2DBrush(ID2D1RenderTarget* rt) {
-  if (mDirect2DBrush) {
+  if (mDirect2DCache) {
     return;
   }
+  mDirect2DCache = std::make_shared<Direct2DCache>();
+  auto& [d2dStops, d2dBrush] = *mDirect2DCache;
+
   std::vector<D2D1_GRADIENT_STOP> stops;
   for (auto&& stop: mStops) {
     stops.push_back({
@@ -40,14 +44,14 @@ void LinearGradientBrush::InitializeDirect2DBrush(ID2D1RenderTarget* rt) {
     stops.size(),
     D2D1_GAMMA_2_2,
     D2D1_EXTEND_MODE_CLAMP,
-    mDirect2DGradientStops.put()));
+    d2dStops.put()));
   CheckHResult(rt->CreateLinearGradientBrush(
     {
       mStart.as<D2D1_POINT_2F>(),
       mEnd.as<D2D1_POINT_2F>(),
     },
-    mDirect2DGradientStops.get(),
-    mDirect2DBrush.put()));
+    d2dStops.get(),
+    d2dBrush.put()));
 }
 
 }// namespace FredEmmott::GUI

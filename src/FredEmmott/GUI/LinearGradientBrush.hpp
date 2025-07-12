@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/config.hpp>
 #include <concepts>
+#include <memory>
 #include <vector>
 
 #include "Rect.hpp"
@@ -47,14 +48,25 @@ class LinearGradientBrush final {
 
   LinearGradientBrush() = delete;
 
-  LinearGradientBrush(
-    MappingMode mode,
+  constexpr LinearGradientBrush(
+    const MappingMode mode,
     const Point& start,
     const Point& end,
     const std::vector<Stop>& stops,
-    ScaleTransform scaleTransform = {});
+    const ScaleTransform scaleTransform = {})
+    : mMappingMode(mode),
+      mStart(start),
+      mEnd(end),
+      mStops(stops),
+      mScaleTransform(scaleTransform) {
+    if (stops.size() < 2) [[unlikely]] {
+      throw std::invalid_argument(
+        "linear gradients must have at least two stops");
+    }
+  }
+  ~LinearGradientBrush();
 
-  bool operator==(const LinearGradientBrush&) const = default;
+  constexpr bool operator==(const LinearGradientBrush&) const = default;
 
 #ifdef FUI_ENABLE_SKIA
   [[nodiscard]] SkPaint GetSkiaPaint(const SkRect&) const;
@@ -77,8 +89,11 @@ class LinearGradientBrush final {
   void InitializeSkiaShader();
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-  wil::com_ptr<ID2D1GradientStopCollection> mDirect2DGradientStops;
-  wil::com_ptr<ID2D1LinearGradientBrush> mDirect2DBrush;
+  struct Direct2DCache {
+    wil::com_ptr<ID2D1GradientStopCollection> mDirect2DGradientStops;
+    wil::com_ptr<ID2D1LinearGradientBrush> mDirect2DBrush;
+  };
+  std::shared_ptr<Direct2DCache> mDirect2DCache;
 
   void InitializeDirect2DBrush(ID2D1RenderTarget*);
 #endif

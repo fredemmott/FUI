@@ -132,7 +132,7 @@ class Color final {
       return FromRGBA128F(r, g, b, a);
     }
 
-    bool operator==(const Constant& other) const noexcept {
+    constexpr bool operator==(const Constant& other) const noexcept {
 #ifdef FUI_ENABLE_SKIA
       return mSkia == other.mSkia;
 #else
@@ -175,7 +175,7 @@ class Color final {
   constexpr Color(nullptr_t) = delete;
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {}
 
-  bool operator==(const Color& other) const noexcept {
+  constexpr bool operator==(const Color& other) const noexcept {
     return Resolve() == other.Resolve();
   }
 

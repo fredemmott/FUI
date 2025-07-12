@@ -49,6 +49,10 @@ class Brush final {
     : mBrush(SolidColorBrush {Color {color}}) {}
 
   Brush(const LinearGradientBrush& brush) : mBrush(brush) {}
+  Brush(const Brush&);
+  Brush(Brush&&) noexcept;
+  Brush& operator=(const Brush&);
+  Brush& operator=(Brush&&) noexcept;
 
   /** If this is a SolidColorBrush, returns the backing color.
    */
