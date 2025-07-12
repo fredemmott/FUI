@@ -40,5 +40,8 @@ if (MSVC)
     "$<$<NOT:$<CONFIG:Debug>>:/INCREMENTAL:NO>"
     # COMDAT folding; drops off another big chunk
     "$<$<NOT:$<CONFIG:Debug>>:/OPT:ICF>"
+    # Remove unused data and variables
+    # In particular, undefine all the RuntimeClass_ and InterfaceName_ constants from WinRT ABI
+    "$<$<NOT:$<CONFIG:Debug>>:/OPT:REF>"
   )
 endif ()
