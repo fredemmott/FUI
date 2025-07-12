@@ -58,7 +58,7 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
       fmt::format(
         R"EOF(
 struct {NAME}_t {{
-  using type = decltype(Theme::GetInstance()->Get{NAME}());
+  using type = decltype(Theme::Get{NAME}());
   using value_type = std::remove_pointer_t<type>::value_type;
 
   static type Get();
@@ -134,7 +134,7 @@ namespace {NAMESPACE}::{DETAIL_NAMESPACE} {{
 
 struct Theme {PARENT} {{
   public:
-    static const Theme* GetInstance();
+    Theme() = delete;
 
     {MEMBERS}
 }}; // struct Theme

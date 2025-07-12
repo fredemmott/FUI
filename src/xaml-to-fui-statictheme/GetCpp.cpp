@@ -36,7 +36,7 @@ const {TYPE}* Theme::Get{NAME}() {{
       fmt::format(
         R"EOF(
 {NAME}_t::type {NAME}_t::Get() {{
-  return Theme::GetInstance()->Get{NAME}();
+  return Theme::Get{NAME}();
 }}
 )EOF",
         fmt::arg("NAME", resource.mName)));
@@ -60,15 +60,6 @@ namespace {NAMESPACE}::{DETAIL_NAMESPACE} {{
 {PARENT_USING}
 
 using enum SystemTheme::ColorType;
-
-const Theme* Theme::GetInstance() {{
-  static std::once_flag sOnce;
-  static std::unique_ptr<Theme> sInstance;
-  std::call_once(sOnce, [&it = sInstance]() {{
-    it = std::make_unique<Theme>();
-  }});
-  return sInstance.get();
-}}
 
 {RESOURCE_GETTERS}
 
