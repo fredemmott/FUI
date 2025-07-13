@@ -39,8 +39,8 @@ class BaseStyleProperty {
 
   friend struct Style;
 
-  BaseStyleProperty() = default;
-  BaseStyleProperty(std::nullopt_t) {};
+  constexpr BaseStyleProperty() = default;
+  constexpr BaseStyleProperty(std::nullopt_t) {};
   BaseStyleProperty(std::nullptr_t) = delete;
 
   template <class U = std::remove_cv_t<T>>
@@ -56,7 +56,7 @@ class BaseStyleProperty {
   BaseStyleProperty(U&& r)
     : mValue(std::in_place_type<resource_type>, std::forward<U>(r)) {}
 
-  const T& value() const {
+  constexpr const T& value() const {
     if (const auto it = get_if<T>(&mValue)) {
       return *it;
     }
@@ -79,7 +79,7 @@ class BaseStyleProperty {
   }
 
   template <std::convertible_to<T> U>
-  T value_or(U&& v) const {
+  constexpr T value_or(U&& v) const {
     if (has_value()) {
       return value();
     }
