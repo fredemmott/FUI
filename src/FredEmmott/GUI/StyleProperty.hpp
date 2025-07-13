@@ -30,7 +30,7 @@ template <
   class T,
   StylePropertyScope TDefaultScope,
   auto TDefault = style_detail::default_v<T>>
-class BaseStyleProperty {
+class StyleProperty {
  public:
   using default_type = std::decay_t<decltype(TDefault)>;
   using value_type = T;
@@ -42,21 +42,21 @@ class BaseStyleProperty {
 
   friend struct Style;
 
-  constexpr BaseStyleProperty() = default;
-  constexpr BaseStyleProperty(std::nullopt_t) {};
-  BaseStyleProperty(std::nullptr_t) = delete;
+  constexpr StyleProperty() = default;
+  constexpr StyleProperty(std::nullopt_t) {};
+  StyleProperty(std::nullptr_t) = delete;
 
   template <class U = std::remove_cv_t<T>>
     requires std::is_constructible_v<T, U>
     && (!std::convertible_to<U, resource_type>)
-    && (!std::same_as<std::remove_cvref_t<U>, BaseStyleProperty>)
+    && (!std::same_as<std::remove_cvref_t<U>, StyleProperty>)
     && (!std::same_as<std::remove_cvref_t<U>, resource_type>)
-  explicit(!std::is_convertible_v<U, T>) constexpr BaseStyleProperty(
+  explicit(!std::is_convertible_v<U, T>) constexpr StyleProperty(
     U&& v) noexcept(std::is_nothrow_constructible_v<T, U>)
     : mValue(std::in_place_type<T>, std::forward<U>(v)) {}
   template <std::convertible_to<resource_type> U>
     requires(!std::same_as<std::nullptr_t, std::decay_t<U>>)
-  BaseStyleProperty(U&& r)
+  StyleProperty(U&& r)
     : mValue(std::in_place_type<resource_type>, std::forward<U>(r)) {}
 
   constexpr const T& value() const {
@@ -93,7 +93,7 @@ class BaseStyleProperty {
     return this->value_or(TDefault);
   }
 
-  BaseStyleProperty(
+  StyleProperty(
     const T& value,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions
@@ -106,31 +106,31 @@ class BaseStyleProperty {
     }
   }
 
-  BaseStyleProperty(
+  StyleProperty(
     std::nullopt_t,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions && std::same_as<T, float>
     : mTransition(transition) {}
 
-  BaseStyleProperty(
+  StyleProperty(
     std::nullopt_t,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions && (!std::same_as<T, float>)
     : mTransition(transition) {}
 
   template <class U>
-  BaseStyleProperty(U&& u, important_style_property_t)
-    requires requires { BaseStyleProperty(std::forward<U>(u)); }
-    : BaseStyleProperty(std::forward<U>(u)) {
+  StyleProperty(U&& u, important_style_property_t)
+    requires requires { StyleProperty(std::forward<U>(u)); }
+    : StyleProperty(std::forward<U>(u)) {
     mIsImportant = true;
   }
 
   template <class U, class V>
-  BaseStyleProperty(U&& u, V&& v, important_style_property_t)
+  StyleProperty(U&& u, V&& v, important_style_property_t)
     requires requires {
-      BaseStyleProperty(std::forward<U>(u), std::forward<V>(v));
+      StyleProperty(std::forward<U>(u), std::forward<V>(v));
     }
-    : BaseStyleProperty(std::forward<U>(u), std::forward<V>(v)) {
+    : StyleProperty(std::forward<U>(u), std::forward<V>(v)) {
     mIsImportant = true;
   }
 
@@ -147,7 +147,7 @@ class BaseStyleProperty {
   {
     return mTransition.value();
   }
-  constexpr bool operator==(const BaseStyleProperty& other) const noexcept
+  constexpr bool operator==(const StyleProperty& other) const noexcept
     = default;
   constexpr bool operator==(const T& other) const noexcept {
     if (!has_value()) {
@@ -164,8 +164,8 @@ class BaseStyleProperty {
     return this->has_value();
   }
 
-  constexpr BaseStyleProperty& operator+=(
-    const BaseStyleProperty& other) noexcept {
+  constexpr StyleProperty& operator+=(
+    const StyleProperty& other) noexcept {
     if (mIsImportant && !other.mIsImportant) {
       return *this;
     }
@@ -182,9 +182,9 @@ class BaseStyleProperty {
     return *this;
   }
 
-  constexpr BaseStyleProperty operator+(
-    const BaseStyleProperty& other) const noexcept {
-    BaseStyleProperty ret {*this};
+  constexpr StyleProperty operator+(
+    const StyleProperty& other) const noexcept {
+    StyleProperty ret {*this};
     ret += other;
     return ret;
   }
@@ -201,9 +201,4 @@ class BaseStyleProperty {
   optional_transition_t mTransition;
 };
 
-template <class T, auto TDefault = style_detail::default_v<T>>
-using StyleProperty = BaseStyleProperty<T, StylePropertyScope::Self, TDefault>;
-template <class T, auto TDefault = style_detail::default_v<T>>
-using InheritableStyleProperty
-  = BaseStyleProperty<T, StylePropertyScope::SelfAndDescendants, TDefault>;
 }// namespace FredEmmott::GUI

@@ -35,7 +35,7 @@ struct Style {
     = std::variant<std::monostate, StyleClass, const Widgets::Widget*>;
 
 #define FUI_DECLARE_STYLE_PROPERTY(NAME, TYPE, SCOPE, ...) \
-  BaseStyleProperty<TYPE, StylePropertyScope::SCOPE, ##__VA_ARGS__> m##NAME;
+  StyleProperty<TYPE, StylePropertyScope::SCOPE, ##__VA_ARGS__> m##NAME;
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY)
 #undef FUI_DECLARE_STYLE_PROPERTIES
 
