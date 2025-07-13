@@ -11,46 +11,27 @@ namespace FredEmmott::GUI::StaticTheme::Generic {
 // Generic_themeresources.xaml, but there's some overlap. Putting them here
 // as we don't use TextBlock_themeresources.xaml for anything else
 
-const style_detail::lazy_init_style BaseTextBlockStyle {[] {
+// This seems like a pointless helper, but it cuts a fair bit off the binary
+// size
+static Style GetFontStyle(const SystemFont::Usage usage) {
   return Style {
-    .mFont = {SystemFont::BodyStrong},
+    .mFont = {usage},
   };
-}};
-const style_detail::lazy_init_style CaptionTextBlockStyle {[] {
-  return BaseTextBlockStyle
-    + Style {
-      .mFont = {SystemFont::Caption},
-    };
-}};
-const style_detail::lazy_init_style BodyTextBlockStyle {[] {
-  return BaseTextBlockStyle
-    + Style {
-      .mFont = {SystemFont::Body},
-    };
-}};
-const style_detail::lazy_init_style SubtitleTextBlockStyle {[] {
-  return BaseTextBlockStyle
-    + Style {
-      .mFont = {SystemFont::Subtitle},
-    };
-}};
-const style_detail::lazy_init_style TitleTextBlockStyle {[] {
-  return BaseTextBlockStyle
-    + Style {
-      .mFont = {SystemFont::Title},
-    };
-}};
-const style_detail::lazy_init_style TitleLargeTextBlockStyle {[] {
-  return BaseTextBlockStyle
-    + Style {
-      .mFont = {SystemFont::TitleLarge},
-    };
-}};
-const style_detail::lazy_init_style DisplayTextBlockStyle {[] {
-  return BaseTextBlockStyle
-    + Style {
-      .mFont = {SystemFont::Display},
-    };
-}};
+}
+
+const style_detail::lazy_init_style BaseTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::BodyStrong); }};
+const style_detail::lazy_init_style CaptionTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::Caption); }};
+const style_detail::lazy_init_style BodyTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::Body); }};
+const style_detail::lazy_init_style SubtitleTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::Subtitle); }};
+const style_detail::lazy_init_style TitleTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::Title); }};
+const style_detail::lazy_init_style TitleLargeTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::TitleLarge); }};
+const style_detail::lazy_init_style DisplayTextBlockStyle {
+  [] { return GetFontStyle(SystemFont::Display); }};
 
 }// namespace FredEmmott::GUI::StaticTheme::Generic
