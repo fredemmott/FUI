@@ -136,11 +136,11 @@ auto GetButtonWidget(const T& v) {
 };
 
 void Hide(auto w) {
-  constexpr Style Hide { .mDisplay = YGDisplayNone };
+  static const Style Hide { .mDisplay = YGDisplayNone };
   GetButtonWidget(w)->AddExplicitStyles(Hide);
 }
 auto Show(auto w) {
-  constexpr Style Show { .mDisplay = YGDisplayFlex };
+  static const Style Show { .mDisplay = YGDisplayFlex };
   GetButtonWidget(w)->AddExplicitStyles(Show);
 };
 
