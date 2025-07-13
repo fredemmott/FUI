@@ -24,8 +24,7 @@ struct Style {
   using Selector
     = std::variant<std::monostate, StyleClass, const Widgets::Widget*>;
 
-#define FUI_DECLARE_STYLE_PROPERTY(NAME, TYPE, SCOPE, ...) \
-  StyleProperty<TYPE, StylePropertyScope::SCOPE> m##NAME;
+#define FUI_DECLARE_STYLE_PROPERTY(NAME, TYPE, ...) StyleProperty<TYPE> m##NAME;
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY)
 #undef FUI_DECLARE_STYLE_PROPERTIES
 

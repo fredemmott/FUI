@@ -13,12 +13,6 @@ namespace FredEmmott::GUI {
 
 struct Style;
 
-enum class StylePropertyScope {
-  Self,
-  SelfAndChildren,
-  SelfAndDescendants,
-};
-
 struct important_style_property_t {
   constexpr const important_style_property_t& operator!() const noexcept {
     return *this;
@@ -26,13 +20,12 @@ struct important_style_property_t {
 };
 constexpr important_style_property_t important;
 
-template <class T, StylePropertyScope TDefaultScope>
+template <class T>
 class StyleProperty {
  public:
   using value_type = T;
   using resource_type = const StaticTheme::Resource<T>*;
 
-  static constexpr StylePropertyScope DefaultScope = TDefaultScope;
   static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
 
   friend struct Style;
@@ -178,7 +171,7 @@ class StyleProperty {
     std::optional<StyleTransition>,
     std::monostate>;
 
-  StylePropertyScope mScope {TDefaultScope};
+  std::optional<StylePropertyScope> mScope;
   std::variant<std::monostate, T, resource_type> mValue {};
   bool mIsImportant {false};
   optional_transition_t mTransition;

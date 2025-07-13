@@ -13,7 +13,7 @@ struct TransitionState {
 };
 
 template <class T>
-  requires StyleProperty<T, StylePropertyScope::Self>::SupportsTransitions
+  requires StyleProperty<T>::SupportsTransitions
 struct TransitionState<T> {
   using option_type = std::optional<TransitionState>;
   using time_point = std::chrono::steady_clock::time_point;

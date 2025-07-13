@@ -104,9 +104,6 @@ enum class StyleProperty {
 #undef FUI_DECLARE_STYLE_PROPERTY
 };
 
-template <StyleProperty P>
-struct default_property_value_t;
-
 consteval auto last_value_v(auto only) {
   return only;
 }
@@ -114,16 +111,23 @@ consteval auto last_value_v(auto, auto second, auto... rest) {
   return last_value_v(second, rest...);
 }
 
+template <StyleProperty P>
+struct property_metadata_t;
+
 #define FUI_DECLARE_DEFAULT_PROPERTY_VALUE(NAME, TYPE, SCOPE, ...) \
   template <> \
-  struct default_property_value_t<StyleProperty::NAME> { \
-    static constexpr auto value { \
+  struct property_metadata_t<StyleProperty::NAME> { \
+    static constexpr auto default_value { \
       last_value_v(default_t<TYPE>::value, ##__VA_ARGS__)}; \
+    static constexpr auto default_scope = StylePropertyScope::SCOPE; \
   };
 FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_DEFAULT_PROPERTY_VALUE)
 #undef FUI_DECLARE_STYLE_PROPERTY
 template <StyleProperty P>
 static constexpr auto default_property_value_v
-  = default_property_value_t<P>::value;
+  = property_metadata_t<P>::default_value;
+template <StyleProperty P>
+static constexpr auto default_property_scope_v
+  = property_metadata_t<P>::default_scope;
 
 }// namespace FredEmmott::GUI::style_detail

@@ -82,27 +82,31 @@ Style& Style::operator+=(const Style& other) noexcept {
 
 Style Style::InheritableValues() const noexcept {
   Style ret;
-  const auto copyIfInheritable = [this, &ret](auto member) {
-    const auto& rhs = this->*member;
-    if (!rhs.has_value()) {
-      return;
-    }
-    auto& lhs = ret.*member;
+  const auto copyIfInheritable
+    = [this, &ret](auto member, const auto defaultScope) {
+        const auto& rhs = this->*member;
+        if (!rhs.has_value()) {
+          return;
+        }
+        auto& lhs = ret.*member;
 
-    using enum StylePropertyScope;
-    switch (rhs.mScope) {
-      case Self:
-        return;
-      case SelfAndChildren:
-        lhs = rhs;
-        lhs.mScope = Self;
-        break;
-      case SelfAndDescendants:
-        lhs = rhs;
-        break;
-    }
-  };
-#define COPY_IF_INHERITABLE(X, ...) copyIfInheritable(&Style::m##X);
+        using enum StylePropertyScope;
+        switch (rhs.mScope.value_or(defaultScope)) {
+          case Self:
+            return;
+          case SelfAndChildren:
+            lhs = rhs;
+            lhs.mScope = Self;
+            break;
+          case SelfAndDescendants:
+            lhs = rhs;
+            break;
+        }
+      };
+#define COPY_IF_INHERITABLE(X, ...) \
+  copyIfInheritable( \
+    &Style::m##X, \
+    style_detail::default_property_scope_v<style_detail::StyleProperty::X>);
   FUI_ENUM_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
 #define MAKE_INHERITABLE(X, ...) \

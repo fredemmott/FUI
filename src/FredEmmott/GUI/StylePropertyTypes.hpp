@@ -13,4 +13,10 @@ enum class TextAlign {
   Center,
   Right,
 };
+
+enum class StylePropertyScope {
+  Self,
+  SelfAndChildren,
+  SelfAndDescendants,
+};
 }// namespace FredEmmott::GUI
