@@ -241,7 +241,7 @@ void Widget::Paint(Renderer* renderer) const {
     return;
   }
 
-  const auto opacity = style.mOpacity.value_or_default();
+  const auto opacity = style.mOpacity.value_or(1.f);
   if (opacity <= std::numeric_limits<float>::epsilon()) {
     return;
   }
@@ -249,15 +249,15 @@ void Widget::Paint(Renderer* renderer) const {
   const auto layer = renderer->ScopedLayer(opacity);
   const auto yoga = this->GetLayoutNode();
   renderer->Translate(
-    YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or_default(),
-    YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or_default());
+    YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or(0),
+    YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or(0));
   Rect rect {Size {
     YGNodeLayoutGetWidth(yoga),
     YGNodeLayoutGetHeight(yoga),
   }};
 
-  const auto scaleX = style.mScaleX.value_or_default();
-  const auto scaleY = style.mScaleY.value_or_default();
+  const auto scaleX = style.mScaleX.value_or(1.f);
+  const auto scaleY = style.mScaleY.value_or(1.f);
   if (
     std::min(scaleX, scaleY) + std::numeric_limits<float>::epsilon() < 1.0f
     || std::max(scaleX, scaleY)

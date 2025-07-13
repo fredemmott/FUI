@@ -12,6 +12,7 @@
 #include "PseudoClasses.hpp"
 #include "StyleClass.hpp"
 #include "StyleProperty.hpp"
+#include "StylePropertyTypes.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 class Widget;
@@ -19,23 +20,12 @@ class Widget;
 
 namespace FredEmmott::GUI {
 
-enum class TextAlign {
-  Left,
-  Center,
-  Right,
-};
-
-enum class PointerEvents {
-  Auto,
-  None,
-};
-
 struct Style {
   using Selector
     = std::variant<std::monostate, StyleClass, const Widgets::Widget*>;
 
 #define FUI_DECLARE_STYLE_PROPERTY(NAME, TYPE, SCOPE, ...) \
-  StyleProperty<TYPE, StylePropertyScope::SCOPE, ##__VA_ARGS__> m##NAME;
+  StyleProperty<TYPE, StylePropertyScope::SCOPE> m##NAME;
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY)
 #undef FUI_DECLARE_STYLE_PROPERTIES
 

@@ -26,19 +26,14 @@ struct important_style_property_t {
 };
 constexpr important_style_property_t important;
 
-template <
-  class T,
-  StylePropertyScope TDefaultScope,
-  auto TDefault = style_detail::default_v<T>>
+template <class T, StylePropertyScope TDefaultScope>
 class StyleProperty {
  public:
-  using default_type = std::decay_t<decltype(TDefault)>;
   using value_type = T;
   using resource_type = const StaticTheme::Resource<T>*;
 
   static constexpr StylePropertyScope DefaultScope = TDefaultScope;
   static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
-  static constexpr auto DefaultValue = TDefault;
 
   friend struct Style;
 
@@ -89,10 +84,6 @@ class StyleProperty {
     return std::forward<U>(v);
   }
 
-  constexpr auto value_or_default() const {
-    return this->value_or(TDefault);
-  }
-
   StyleProperty(
     const T& value,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
@@ -127,9 +118,7 @@ class StyleProperty {
 
   template <class U, class V>
   StyleProperty(U&& u, V&& v, important_style_property_t)
-    requires requires {
-      StyleProperty(std::forward<U>(u), std::forward<V>(v));
-    }
+    requires requires { StyleProperty(std::forward<U>(u), std::forward<V>(v)); }
     : StyleProperty(std::forward<U>(u), std::forward<V>(v)) {
     mIsImportant = true;
   }
@@ -151,11 +140,7 @@ class StyleProperty {
     = default;
   constexpr bool operator==(const T& other) const noexcept {
     if (!has_value()) {
-      if constexpr (std::same_as<std::nullopt_t, default_type>) {
-        return false;
-      } else {
-        return TDefault == other;
-      }
+      return false;
     }
     return value() == other;
   }
@@ -164,8 +149,7 @@ class StyleProperty {
     return this->has_value();
   }
 
-  constexpr StyleProperty& operator+=(
-    const StyleProperty& other) noexcept {
+  constexpr StyleProperty& operator+=(const StyleProperty& other) noexcept {
     if (mIsImportant && !other.mIsImportant) {
       return *this;
     }
@@ -182,8 +166,7 @@ class StyleProperty {
     return *this;
   }
 
-  constexpr StyleProperty operator+(
-    const StyleProperty& other) const noexcept {
+  constexpr StyleProperty operator+(const StyleProperty& other) const noexcept {
     StyleProperty ret {*this};
     ret += other;
     return ret;

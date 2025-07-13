@@ -12,6 +12,11 @@ namespace FredEmmott::GUI::Widgets {
 
 using namespace widget_detail;
 
+namespace {
+template <style_detail::StyleProperty P>
+constexpr auto default_v = style_detail::default_property_value_v<P>;
+}
+
 void Widget::ComputeStyles(const Style& inherited) {
   const auto clean = wil::scope_exit([this] { mDirtyStyles = false; });
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
@@ -118,15 +123,16 @@ void Widget::ComputeStyles(const Style& inherited) {
 
   const auto yoga = this->GetLayoutNode();
   const auto setYoga = [&]<class... FrontArgs>(
-                         auto member, auto setter, FrontArgs&&... frontArgs) {
+                         const auto defaultValue,
+                         auto member,
+                         auto setter,
+                         FrontArgs&&... frontArgs) {
     const auto& optional = mComputedStyle.*member;
     if (optional.has_value()) {
       setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
       return;
     }
 
-    constexpr auto defaultValue
-      = std::decay_t<decltype(optional)>::DefaultValue;
     if constexpr (!std::same_as<
                     std::nullopt_t,
                     std::decay_t<decltype(defaultValue)>>) {
@@ -134,41 +140,100 @@ void Widget::ComputeStyles(const Style& inherited) {
     }
   };
 
-  setYoga(&Style::mPosition, &YGNodeStyleSetPositionType);
+  using enum style_detail::StyleProperty;
+  setYoga(default_v<Position>, &Style::mPosition, &YGNodeStyleSetPositionType);
 
-  setYoga(&Style::mAlignContent, &YGNodeStyleSetAlignContent);
-  setYoga(&Style::mAlignItems, &YGNodeStyleSetAlignItems);
-  setYoga(&Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
-  setYoga(&Style::mBorderBottomWidth, &YGNodeStyleSetBorder, YGEdgeBottom);
-  setYoga(&Style::mBorderLeftWidth, &YGNodeStyleSetBorder, YGEdgeLeft);
-  setYoga(&Style::mBorderRightWidth, &YGNodeStyleSetBorder, YGEdgeRight);
-  setYoga(&Style::mBorderTopWidth, &YGNodeStyleSetBorder, YGEdgeTop);
-  setYoga(&Style::mBottom, &YGNodeStyleSetPosition, YGEdgeBottom);
-  setYoga(&Style::mDisplay, &YGNodeStyleSetDisplay);
-  setYoga(&Style::mFlexBasis, &YGNodeStyleSetFlexBasis);
-  setYoga(&Style::mFlexDirection, &YGNodeStyleSetFlexDirection);
-  setYoga(&Style::mFlexGrow, &YGNodeStyleSetFlexGrow);
-  setYoga(&Style::mFlexShrink, &YGNodeStyleSetFlexShrink);
-  setYoga(&Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
-  setYoga(&Style::mHeight, &YGNodeStyleSetHeight);
-  setYoga(&Style::mJustifyContent, &YGNodeStyleSetJustifyContent);
-  setYoga(&Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);
-  setYoga(&Style::mMarginBottom, &YGNodeStyleSetMargin, YGEdgeBottom);
-  setYoga(&Style::mMarginLeft, &YGNodeStyleSetMargin, YGEdgeLeft);
-  setYoga(&Style::mMarginRight, &YGNodeStyleSetMargin, YGEdgeRight);
-  setYoga(&Style::mMarginTop, &YGNodeStyleSetMargin, YGEdgeTop);
-  setYoga(&Style::mMaxHeight, &YGNodeStyleSetMaxHeight);
-  setYoga(&Style::mMaxWidth, &YGNodeStyleSetMaxWidth);
-  setYoga(&Style::mMinHeight, &YGNodeStyleSetMinHeight);
-  setYoga(&Style::mMinWidth, &YGNodeStyleSetMinWidth);
-  setYoga(&Style::mOverflow, &YGNodeStyleSetOverflow);
-  setYoga(&Style::mPaddingBottom, &YGNodeStyleSetPadding, YGEdgeBottom);
-  setYoga(&Style::mPaddingLeft, &YGNodeStyleSetPadding, YGEdgeLeft);
-  setYoga(&Style::mPaddingRight, &YGNodeStyleSetPadding, YGEdgeRight);
-  setYoga(&Style::mPaddingTop, &YGNodeStyleSetPadding, YGEdgeTop);
-  setYoga(&Style::mRight, &YGNodeStyleSetPosition, YGEdgeRight);
-  setYoga(&Style::mTop, &YGNodeStyleSetPosition, YGEdgeTop);
-  setYoga(&Style::mWidth, &YGNodeStyleSetWidth);
+  setYoga(
+    default_v<AlignContent>,
+    &Style::mAlignContent,
+    &YGNodeStyleSetAlignContent);
+  setYoga(
+    default_v<AlignItems>, &Style::mAlignItems, &YGNodeStyleSetAlignItems);
+  setYoga(default_v<AlignSelf>, &Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
+  setYoga(
+    default_v<BorderBottomWidth>,
+    &Style::mBorderBottomWidth,
+    &YGNodeStyleSetBorder,
+    YGEdgeBottom);
+  setYoga(
+    default_v<BorderLeftWidth>,
+    &Style::mBorderLeftWidth,
+    &YGNodeStyleSetBorder,
+    YGEdgeLeft);
+  setYoga(
+    default_v<BorderRightWidth>,
+    &Style::mBorderRightWidth,
+    &YGNodeStyleSetBorder,
+    YGEdgeRight);
+  setYoga(
+    default_v<BorderTopWidth>,
+    &Style::mBorderTopWidth,
+    &YGNodeStyleSetBorder,
+    YGEdgeTop);
+  setYoga(
+    default_v<Bottom>, &Style::mBottom, &YGNodeStyleSetPosition, YGEdgeBottom);
+  setYoga(default_v<Display>, &Style::mDisplay, &YGNodeStyleSetDisplay);
+  setYoga(default_v<FlexBasis>, &Style::mFlexBasis, &YGNodeStyleSetFlexBasis);
+  setYoga(
+    default_v<FlexDirection>,
+    &Style::mFlexDirection,
+    &YGNodeStyleSetFlexDirection);
+  setYoga(default_v<FlexGrow>, &Style::mFlexGrow, &YGNodeStyleSetFlexGrow);
+  setYoga(
+    default_v<FlexShrink>, &Style::mFlexShrink, &YGNodeStyleSetFlexShrink);
+  setYoga(default_v<Gap>, &Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
+  setYoga(default_v<Height>, &Style::mHeight, &YGNodeStyleSetHeight);
+  setYoga(
+    default_v<JustifyContent>,
+    &Style::mJustifyContent,
+    &YGNodeStyleSetJustifyContent);
+  setYoga(default_v<Left>, &Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);
+  setYoga(
+    default_v<MarginBottom>,
+    &Style::mMarginBottom,
+    &YGNodeStyleSetMargin,
+    YGEdgeBottom);
+  setYoga(
+    default_v<MarginLeft>,
+    &Style::mMarginLeft,
+    &YGNodeStyleSetMargin,
+    YGEdgeLeft);
+  setYoga(
+    default_v<MarginRight>,
+    &Style::mMarginRight,
+    &YGNodeStyleSetMargin,
+    YGEdgeRight);
+  setYoga(
+    default_v<MarginTop>, &Style::mMarginTop, &YGNodeStyleSetMargin, YGEdgeTop);
+  setYoga(default_v<MaxHeight>, &Style::mMaxHeight, &YGNodeStyleSetMaxHeight);
+  setYoga(default_v<MaxWidth>, &Style::mMaxWidth, &YGNodeStyleSetMaxWidth);
+  setYoga(default_v<MinHeight>, &Style::mMinHeight, &YGNodeStyleSetMinHeight);
+  setYoga(default_v<MinWidth>, &Style::mMinWidth, &YGNodeStyleSetMinWidth);
+  setYoga(default_v<Overflow>, &Style::mOverflow, &YGNodeStyleSetOverflow);
+  setYoga(
+    default_v<PaddingBottom>,
+    &Style::mPaddingBottom,
+    &YGNodeStyleSetPadding,
+    YGEdgeBottom);
+  setYoga(
+    default_v<PaddingLeft>,
+    &Style::mPaddingLeft,
+    &YGNodeStyleSetPadding,
+    YGEdgeLeft);
+  setYoga(
+    default_v<PaddingRight>,
+    &Style::mPaddingRight,
+    &YGNodeStyleSetPadding,
+    YGEdgeRight);
+  setYoga(
+    default_v<PaddingTop>,
+    &Style::mPaddingTop,
+    &YGNodeStyleSetPadding,
+    YGEdgeTop);
+  setYoga(
+    default_v<Right>, &Style::mRight, &YGNodeStyleSetPosition, YGEdgeRight);
+  setYoga(default_v<Top>, &Style::mTop, &YGNodeStyleSetPosition, YGEdgeTop);
+  setYoga(default_v<Width>, &Style::mWidth, &YGNodeStyleSetWidth);
 }
 
 Widget::ComputedStyleFlags Widget::OnComputedStyleChange(

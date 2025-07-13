@@ -69,7 +69,7 @@ void Label::PaintOwnContent(
     rect.GetBottom() - metrics.mDescent,
   };
 
-  switch (style.mTextAlign.value_or_default()) {
+  switch (style.mTextAlign.value_or(TextAlign::Left)) {
     case TextAlign::Left:
       break;
     case TextAlign::Center: {
