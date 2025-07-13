@@ -61,6 +61,7 @@ add_library(
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
   FredEmmott/GUI/StyleProperty.hpp
+  FredEmmott/GUI/StylePropertyTypes.hpp
   FredEmmott/GUI/StyleTransition.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
@@ -117,6 +118,7 @@ add_library(
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/moved_flag.hpp
   FredEmmott/utility/type_tag.hpp
+  FredEmmott/utility/unordered_map.hpp
 )
 set(
   SKIA_SOURCES
