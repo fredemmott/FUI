@@ -67,20 +67,21 @@ constexpr bool almost_equal(T&& a, U&& b) {
 
 }// namespace
 
-template <auto TStyleProperty, auto TStateProperty>
 Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   std::chrono::steady_clock::time_point now,
   const Style& oldStyle,
-  Style* newStyle)
-  requires(supports_transitions_v<TStyleProperty>)
+  Style* newStyle,
+  auto styleProperty,
+  auto stateProperty)
+  requires(supports_transitions_v<decltype(styleProperty)>)
 {
   using enum ApplyResult;
   using TValue =
-    typename std::decay_t<decltype(oldStyle.*TStyleProperty)>::value_type;
+    typename std::decay_t<decltype(oldStyle.*styleProperty)>::value_type;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  const auto& oldProp = (oldStyle.*TStyleProperty);
-  auto& newProp = (newStyle->*TStyleProperty);
+  const auto& oldProp = (oldStyle.*styleProperty);
+  auto& newProp = (newStyle->*styleProperty);
 
   ///////////////////////////////////////////////////////
   //  1. Do we have a start, an end, and an animation? //
@@ -89,7 +90,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     return NotAnimating;
   }
 
-  auto& transitionState = this->*TStateProperty;
+  auto& transitionState = this->*stateProperty;
 
   if (!newProp.has_transition()) {
     transitionState.reset();
@@ -213,7 +214,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
 #define APPLY_TRANSITION(X) \
   if ( \
-    Apply<&Style::m##X, &StyleTransitions::m##X>(now, oldStyle, newStyle) \
+    Apply(now, oldStyle, newStyle, &Style::m##X, &StyleTransitions::m##X) \
     == Animating) { \
     ret = Animating; \
   }
@@ -221,7 +222,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 #undef APPLY_TRANSITION
 
   const auto CheckTransition
-    = [&]<auto proj, auto stateProj>(const auto& name) {
+    = [&](const auto& name, auto proj, auto stateProj) {
         if constexpr (DebugAnimations) {
           const auto& targetValue = std::invoke(proj, targetStyle);
           auto& newValue = std::invoke(proj, newStyle);
@@ -238,7 +239,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
               // Call it again so we can step through :)
               newValue = targetValue;
               newState = oldState;
-              (void)Apply<proj, stateProj>(now, oldStyle, newStyle);
+              (void)Apply(now, oldStyle, newStyle, proj, stateProj);
             }
           }
         }
@@ -247,8 +248,8 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   if constexpr (DebugAnimations) {
     if (ret == NotAnimating) {
 #define CHECK_TRANSITION(X) \
-  CheckTransition.template operator()<&Style::m##X, &StyleTransitions::m##X>( \
-    #X);
+  CheckTransition.template operator()( \
+    #X, &Style::m##X, &StyleTransitions::m##X);
       FUI_STYLE_PROPERTIES(CHECK_TRANSITION);
 #undef CHECK_TRANSITION
     }

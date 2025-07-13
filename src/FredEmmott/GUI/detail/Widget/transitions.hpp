@@ -52,25 +52,27 @@ struct Widget::StyleTransitions {
   ApplyResult Apply(const Style& oldStyle, Style* newStyle);
 
  private:
-  template <auto TStyleProperty>
-  static constexpr bool supports_transitions_v = std::decay_t<
-    decltype(std::declval<Style>().*TStyleProperty)>::SupportsTransitions;
+  template <class TProperty>
+  static constexpr bool supports_transitions_v
+    = std::decay_t<std::invoke_result_t<TProperty, Style>>::SupportsTransitions;
 
-  template <auto TStyleProperty, auto TStateProperty>
   [[nodiscard]]
   ApplyResult Apply(
     std::chrono::steady_clock::time_point now,
     const Style& oldStyle,
-    Style* newStyle)
-    requires(supports_transitions_v<TStyleProperty>);
+    Style* newStyle,
+    auto styleProperty,
+    auto stateProperty)
+    requires(supports_transitions_v<decltype(styleProperty)>);
 
-  template <auto TStyleProperty, auto TStateProperty>
   [[nodiscard]]
   ApplyResult Apply(
     [[maybe_unused]] std::chrono::steady_clock::time_point now,
     [[maybe_unused]] const Style& old,
-    [[maybe_unused]] Style* newStyle)
-    requires(!supports_transitions_v<TStyleProperty>)
+    [[maybe_unused]] Style* newStyle,
+    [[maybe_unused]] auto styleProperty,
+    [[maybe_unused]] auto stateProperty)
+    requires(!supports_transitions_v<decltype(styleProperty)>)
   {
     return ApplyResult::NotAnimating;
   }
