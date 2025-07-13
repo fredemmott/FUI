@@ -65,23 +65,15 @@ Style& Style::operator+=(const Style& other) noexcept {
     Config::CompilerChecks::MinimumCPlusPlus < 202600
       || !Config::LibraryDeveloper,
     "Consider migrating `Style::mAnd` to `std::unordered_map` (P3372)");
-  if (!other.mAnd.empty()) {
-    if (mAnd.empty()) {
-      mAnd = other.mAnd;
-    } else {
-      for (auto&& [selector, style]: other.mAnd) {
-        if (holds_alternative<std::monostate>(selector)) {
-          *this += style;
-          continue;
-        }
-        auto it = std::ranges::find(
-          mAnd, selector, [](auto&& tuple) { return get<0>(tuple); });
-        if (it == mAnd.end()) {
-          mAnd.emplace_back(selector, style);
-        } else {
-          get<1>(*it) += style;
-        }
+  if (mAnd.empty()) {
+    mAnd = other.mAnd;
+  } else {
+    for (auto&& [selector, style]: other.mAnd) {
+      if (holds_alternative<std::monostate>(selector)) {
+        *this += style;
+        continue;
       }
+      mAnd[selector] += style;
     }
   }
 
@@ -122,8 +114,8 @@ Style Style::InheritableValues() const noexcept {
       FUI_STYLE_PROPERTIES(COPY_AS_INHERITABLE);
       continue;
     }
-    ret.mAnd.emplace_back(selector, rhs);
-    auto& it = std::get<1>(ret.mAnd.back());
+    auto& it = ret.mAnd[selector];
+    it += rhs;
 #define MAKE_IT_INHERITABLE(X) MAKE_INHERITABLE(it.m##X)
     FUI_STYLE_PROPERTIES(MAKE_IT_INHERITABLE)
 #undef MAKE_IT_INHERITABLE

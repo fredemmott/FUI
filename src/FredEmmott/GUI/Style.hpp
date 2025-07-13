@@ -4,6 +4,7 @@
 
 #include <YGEnums.h>
 
+#include <FredEmmott/utility/unordered_map.hpp>
 #include <unordered_set>
 
 #include "Brush.hpp"
@@ -87,8 +88,8 @@ struct Style {
   StyleProperty<float, 0.0f> mTranslateY;
   StyleProperty<float> mWidth;
 
-  std::vector<std::tuple<Selector, Style>> mAnd;
-  std::vector<std::tuple<Selector, Style>> mDescendants;
+  utility::unordered_map<Selector, Style> mAnd;
+  utility::unordered_map<Selector, Style> mDescendants;
 
   [[nodiscard]] Style InheritableValues() const noexcept;
   [[nodiscard]]

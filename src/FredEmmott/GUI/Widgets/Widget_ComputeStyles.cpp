@@ -35,8 +35,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   bool haveChanges = false;
   do {
     haveChanges = false;
-    for (auto it = style.mAnd.begin(); it != style.mAnd.end(); ++it) {
-      const auto& [selector, rules] = *it;
+    for (auto&& [selector, rules]: style.mAnd) {
       if (this->MatchesStyleSelector(selector)) {
         style += rules;
         haveChanges = true;
