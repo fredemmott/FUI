@@ -26,7 +26,10 @@ struct important_style_property_t {
 };
 constexpr important_style_property_t important;
 
-template <class T, auto TDefault, StylePropertyScope TDefaultScope>
+template <
+  class T,
+  StylePropertyScope TDefaultScope,
+  auto TDefault = style_detail::default_v<T>>
 class BaseStyleProperty {
  public:
   using default_type = std::decay_t<decltype(TDefault)>;
@@ -199,8 +202,8 @@ class BaseStyleProperty {
 };
 
 template <class T, auto TDefault = style_detail::default_v<T>>
-using StyleProperty = BaseStyleProperty<T, TDefault, StylePropertyScope::Self>;
+using StyleProperty = BaseStyleProperty<T, StylePropertyScope::Self, TDefault>;
 template <class T, auto TDefault = style_detail::default_v<T>>
 using InheritableStyleProperty
-  = BaseStyleProperty<T, TDefault, StylePropertyScope::SelfAndDescendants>;
+  = BaseStyleProperty<T, StylePropertyScope::SelfAndDescendants, TDefault>;
 }// namespace FredEmmott::GUI

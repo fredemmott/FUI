@@ -107,6 +107,14 @@ struct unordered_map {
     return mData->operator[](std::forward<T>(key));
   }
 
+  template <class... Args>
+  auto emplace(Args&&... args) {
+    if (!mData) {
+      mData = std::make_unique<map_type>();
+    }
+    return mData->emplace(std::forward<Args>(args)...);
+  }
+
  private:
   std::unique_ptr<map_type> mData;
 };

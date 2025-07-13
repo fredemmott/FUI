@@ -212,13 +212,13 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
   auto ret = NotAnimating;
 
-#define APPLY_TRANSITION(X) \
+#define APPLY_TRANSITION(X, ...) \
   if ( \
     Apply(now, oldStyle, newStyle, &Style::m##X, &StyleTransitions::m##X) \
     == Animating) { \
     ret = Animating; \
   }
-  FUI_STYLE_PROPERTIES(APPLY_TRANSITION)
+  FUI_ENUM_STYLE_PROPERTIES(APPLY_TRANSITION)
 #undef APPLY_TRANSITION
 
   const auto CheckTransition
@@ -247,10 +247,10 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
   if constexpr (DebugAnimations) {
     if (ret == NotAnimating) {
-#define CHECK_TRANSITION(X) \
+#define CHECK_TRANSITION(X, ...) \
   CheckTransition.template operator()( \
     #X, &Style::m##X, &StyleTransitions::m##X);
-      FUI_STYLE_PROPERTIES(CHECK_TRANSITION);
+      FUI_ENUM_STYLE_PROPERTIES(CHECK_TRANSITION);
 #undef CHECK_TRANSITION
     }
   }

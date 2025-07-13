@@ -44,8 +44,8 @@ Style& Style::operator+=(const Style& other) noexcept {
   FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES)
 #undef MERGE_EDGES
 
-#define MERGE_PROPERTY(X) this->m##X += other.m##X;
-  FUI_STYLE_PROPERTIES(MERGE_PROPERTY)
+#define MERGE_PROPERTY(X, ...) this->m##X += other.m##X;
+  FUI_ENUM_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
 #define UNSET_ALL_EDGES(X, Y) this->m##X##Y = std::nullopt;
   FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
@@ -102,22 +102,23 @@ Style Style::InheritableValues() const noexcept {
         break;
     }
   };
-#define COPY_IF_INHERITABLE(X) copyIfInheritable(&Style::m##X);
-  FUI_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
+#define COPY_IF_INHERITABLE(X, ...) copyIfInheritable(&Style::m##X);
+  FUI_ENUM_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
-#define MAKE_INHERITABLE(X) X.mScope = StylePropertyScope::SelfAndDescendants;
-#define COPY_AS_INHERITABLE(X) \
+#define MAKE_INHERITABLE(X, ...) \
+  X.mScope = StylePropertyScope::SelfAndDescendants;
+#define COPY_AS_INHERITABLE(X, ...) \
   ret.m##X = rhs.m##X; \
   MAKE_INHERITABLE(ret.m##X)
   for (auto&& [selector, rhs]: mDescendants) {
     if (holds_alternative<std::monostate>(selector)) {
-      FUI_STYLE_PROPERTIES(COPY_AS_INHERITABLE);
+      FUI_ENUM_STYLE_PROPERTIES(COPY_AS_INHERITABLE);
       continue;
     }
     auto& it = ret.mAnd[selector];
     it += rhs;
-#define MAKE_IT_INHERITABLE(X) MAKE_INHERITABLE(it.m##X)
-    FUI_STYLE_PROPERTIES(MAKE_IT_INHERITABLE)
+#define MAKE_IT_INHERITABLE(X, ...) MAKE_INHERITABLE(it.m##X)
+    FUI_ENUM_STYLE_PROPERTIES(MAKE_IT_INHERITABLE)
 #undef MAKE_IT_INHERITABLE
   }
 #undef COPY_AS_INHERITABLE
@@ -134,12 +135,13 @@ Style Style::BuiltinBaseline() {
       }},
     },
   };
-#define PREVENT_INHERITANCE(X) ret.m##X.mScope = StylePropertyScope::Self;
-  FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
+#define PREVENT_INHERITANCE(X, ...) ret.m##X.mScope = StylePropertyScope::Self;
+  FUI_ENUM_STYLE_PROPERTIES(PREVENT_INHERITANCE)
 #undef PREVENT_INHERITANCE
   for (auto& [selector, style]: ret.mAnd) {
-#define PREVENT_INHERITANCE(X) style.m##X.mScope = StylePropertyScope::Self;
-    FUI_STYLE_PROPERTIES(PREVENT_INHERITANCE)
+#define PREVENT_INHERITANCE(X, ...) \
+  style.m##X.mScope = StylePropertyScope::Self;
+    FUI_ENUM_STYLE_PROPERTIES(PREVENT_INHERITANCE)
     FUI_ASSERT(style.mAnd.empty());
 #undef PREVENT_INHERITANCE
   }

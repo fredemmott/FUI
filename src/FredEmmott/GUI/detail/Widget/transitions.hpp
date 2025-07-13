@@ -77,11 +77,10 @@ struct Widget::StyleTransitions {
     return ApplyResult::NotAnimating;
   }
 
-#define DECLARE_TRANSITION_DATA(X) \
-  FUI_NO_UNIQUE_ADDRESS \
-  widget_detail::TransitionState< \
-    decltype(Style::m##X)::value_type>::option_type m##X;
-  FUI_STYLE_PROPERTIES(DECLARE_TRANSITION_DATA)
+#define DECLARE_TRANSITION_DATA(NAME, TYPE, ...) \
+  FUI_NO_UNIQUE_ADDRESS widget_detail::TransitionState<TYPE>::option_type \
+    m##NAME;
+  FUI_ENUM_STYLE_PROPERTIES(DECLARE_TRANSITION_DATA)
 #undef TRANSITION_DATA
 };
 }// namespace FredEmmott::GUI::Widgets
