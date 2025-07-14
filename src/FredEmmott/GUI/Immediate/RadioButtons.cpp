@@ -18,30 +18,23 @@ Result<&EndRadioButtons> BeginRadioButtons(
   using namespace StaticTheme::RadioButtons;
   using namespace PseudoClasses;
 
-  auto outer = BeginVStackPanel(id).Styled({
-    .mFlexDirection = YGFlexDirectionColumn,
-    .mGap = 0,
-  });
+  const auto outer = BeginVStackPanel(id).Styled(
+    Style().FlexDirection(YGFlexDirectionColumn).Gap(0));
 
   if (!title.empty()) {
-    Label(title, ID {"RadioButtons/Title"}).Styled({
-      .mColor = RadioButtonsHeaderForeground,
-      .mMarginBottom = RadioButtonsTopHeaderMarginBottom,
-      .mMarginLeft = RadioButtonsTopHeaderMarginLeft,
-      .mMarginRight = RadioButtonsTopHeaderMarginRight,
-      .mMarginTop = RadioButtonsTopHeaderMarginTop,
-      .mAnd = {
-        { Disabled, {
-          .mColor = RadioButtonsHeaderForegroundDisabled,
-        }},
-      },
-    });
+    static const auto TitleStyle
+      = Style()
+          .Color(RadioButtonsHeaderForeground)
+          .MarginBottom(RadioButtonsTopHeaderMarginBottom)
+          .MarginLeft(RadioButtonsTopHeaderMarginLeft)
+          .MarginRight(RadioButtonsTopHeaderMarginRight)
+          .MarginTop(RadioButtonsTopHeaderMarginTop)
+          .And(Disabled, Style().Color(RadioButtonsHeaderForegroundDisabled));
+    Label(title, ID {"RadioButtons/Title"}).Styled(TitleStyle);
   }
 
   BeginVStackPanel(ID {"RadioButtons/Content"})
-    .Styled({
-      .mGap = RadioButtonsRowSpacing,
-    });
+    .Styled(Style().Gap(RadioButtonsRowSpacing));
   return outer;
 }
 

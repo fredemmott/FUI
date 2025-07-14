@@ -24,19 +24,15 @@ static void AppTick(fui::Window& window) {
   if constexpr (UseScrollView) {
     using enum fui::Window::ResizeMode;
     window.SetResizeMode(AllowGrow, AllowShrink);
-    fuii::BeginVScrollView().Styled({
-      .mBackgroundColor
-      = fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush,
-      .mFlexGrow = 1,
-    });
+    fuii::BeginVScrollView().Styled(
+      fui::Style()
+        .BackgroundColor(
+          fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush)
+        .FlexGrow(1));
   }
 
-  fuii::BeginVStackPanel().Styled({
-    .mFlexGrow = 1,
-    .mGap = 12,
-    .mMargin = 12,
-    .mPadding = 8,
-  });
+  fuii::BeginVStackPanel().Styled(
+    fui::Style().FlexGrow(1).Gap(12).Margin(12).Padding(8));
 
   fuii::Label("FUI Details").Subtitle();
   {
@@ -70,7 +66,7 @@ static void AppTick(fui::Window& window) {
   static bool popupVisible = false;
   if (fuii::Button("Click Me!")
         .Caption("Button")
-        .Styled({.mMinWidth = 200.f})) {
+        .Styled(fui::Style().MinWidth(200.f))) {
     popupVisible = true;
     std::println(stderr, "Clicked!");
   }
@@ -94,7 +90,7 @@ static void AppTick(fui::Window& window) {
     const auto dialog = fuii::BeginContentDialog(&sShowAccentPopup).Scoped()) {
     fuii::ContentDialogTitle("Demo dialog title");
     fuii::Label("This is a ContentDialog.");
-    fuii::TextBlock(LoremIpsum).Styled({.mMinWidth = 400});
+    fuii::TextBlock(LoremIpsum).Styled(fui::Style().MinWidth(400));
 
     const auto footer = fuii::BeginContentDialogButtons().Scoped();
     fuii::ContentDialogPrimaryButton("Test").Accent();
@@ -139,7 +135,7 @@ static void AppTick(fui::Window& window) {
   fuii::FontIcon("\ueb51");// Heart
   fuii::FontIcon("\ueb52");// HeartFill
   fuii::FontIcon({
-    {"\ueb52", {.mColor = fui::Colors::Red}},
+    {"\ueb52", fui::Style().Color(fui::Colors::Red)},
     {"\ueb51"},
   });
   fuii::Label("After stack");

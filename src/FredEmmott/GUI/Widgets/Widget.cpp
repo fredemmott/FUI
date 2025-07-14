@@ -21,17 +21,17 @@ struct MouseCapture {
 std::optional<MouseCapture> gMouseCapture;
 
 void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
-  if (!style.mBackgroundColor) {
+  if (!style.BackgroundColor()) {
     return;
   }
 
-  auto brush = *style.mBackgroundColor;
+  auto brush = *style.BackgroundColor();
 
-  const auto baseRadius = style.mBorderRadius.value_or(0);
-  const auto tlRadius = style.mBorderTopLeftRadius.value_or(baseRadius);
-  const auto trRadius = style.mBorderTopRightRadius.value_or(baseRadius);
-  const auto brRadius = style.mBorderBottomRightRadius.value_or(baseRadius);
-  const auto blRadius = style.mBorderBottomLeftRadius.value_or(baseRadius);
+  const auto baseRadius = style.BorderRadius().value_or(0);
+  const auto tlRadius = style.BorderTopLeftRadius().value_or(baseRadius);
+  const auto trRadius = style.BorderTopRightRadius().value_or(baseRadius);
+  const auto brRadius = style.BorderBottomRightRadius().value_or(baseRadius);
+  const auto blRadius = style.BorderBottomLeftRadius().value_or(baseRadius);
 
   constexpr auto Eps = std::numeric_limits<float>::epsilon();
 
@@ -43,8 +43,7 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
     && (brRadius == blRadius);
 
   if (allSameRadii) {
-    auto radius = style.mBorderRadius.value();
-    renderer->FillRoundedRect(brush, rect, radius);
+    renderer->FillRoundedRect(brush, rect, baseRadius);
     return;
   }
 
@@ -57,7 +56,7 @@ void PaintBorder(
   Renderer* renderer,
   const Rect& contentRect,
   const Style& style) {
-  if (!(style.mBorderColor)) {
+  if (!style.BorderColor()) {
     return;
   }
 
@@ -75,9 +74,10 @@ void PaintBorder(
   const auto borderRect
     = contentRect.WithInset(left / 2, top / 2, right / 2, bottom / 2);
 
-  const auto brush = *style.mBorderColor;
+  const auto brush = *style.BorderColor();
 
-  if (style.mBorderRadius.value_or(0) < std::numeric_limits<float>::epsilon()) {
+  if (
+    style.BorderRadius().value_or(0) < std::numeric_limits<float>::epsilon()) {
     if (allSame) {
       renderer->StrokeRect(brush, borderRect);
       return;
@@ -110,7 +110,7 @@ void PaintBorder(
       "is set");
   }
 
-  const auto radius = style.mBorderRadius.value();
+  const auto radius = style.BorderRadius().value();
   renderer->StrokeRoundedRect(brush, borderRect, radius);
 }
 }// namespace
@@ -237,11 +237,11 @@ void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
 void Widget::Paint(Renderer* renderer) const {
   const auto& style = mComputedStyle;
 
-  if (style.mDisplay == YGDisplayNone) {
+  if (style.Display() == YGDisplayNone) {
     return;
   }
 
-  const auto opacity = style.mOpacity.value_or(1.f);
+  const auto opacity = style.Opacity().value_or(1.f);
   if (opacity <= std::numeric_limits<float>::epsilon()) {
     return;
   }
@@ -249,15 +249,15 @@ void Widget::Paint(Renderer* renderer) const {
   const auto layer = renderer->ScopedLayer(opacity);
   const auto yoga = this->GetLayoutNode();
   renderer->Translate(
-    YGNodeLayoutGetLeft(yoga) + style.mTranslateX.value_or(0),
-    YGNodeLayoutGetTop(yoga) + style.mTranslateY.value_or(0));
+    YGNodeLayoutGetLeft(yoga) + style.TranslateX().value_or(0),
+    YGNodeLayoutGetTop(yoga) + style.TranslateY().value_or(0));
   Rect rect {Size {
     YGNodeLayoutGetWidth(yoga),
     YGNodeLayoutGetHeight(yoga),
   }};
 
-  const auto scaleX = style.mScaleX.value_or(1.f);
-  const auto scaleY = style.mScaleY.value_or(1.f);
+  const auto scaleX = style.ScaleX().value_or(1.f);
+  const auto scaleY = style.ScaleY().value_or(1.f);
   if (
     std::min(scaleX, scaleY) + std::numeric_limits<float>::epsilon() < 1.0f
     || std::max(scaleX, scaleY)
@@ -326,7 +326,7 @@ void Widget::UpdateLayout() {
 
 Widget::EventHandlerResult Widget::DispatchMouseEvent(
   const MouseEvent& parentEvent) {
-  if (GetComputedStyle().mPointerEvents == PointerEvents::None) {
+  if (GetComputedStyle().PointerEvents() == PointerEvents::None) {
     return EventHandlerResult::Default;
   }
 
@@ -361,8 +361,8 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
   } else {
     mDirectStateFlags |= StateFlags::Hovered;
     event = event.WithOffset({
-      -mComputedStyle.mTranslateX.value_or(0),
-      -mComputedStyle.mTranslateY.value_or(0),
+      -mComputedStyle.TranslateX().value_or(0),
+      -mComputedStyle.TranslateY().value_or(0),
     });
   }
 
@@ -478,8 +478,8 @@ Point Widget::GetTopLeftCanvasPoint() const {
     }
     if (widget) {
       const auto& style = widget->GetComputedStyle();
-      position.mX += style.mTranslateX.value_or(0);
-      position.mY += style.mTranslateY.value_or(0);
+      position.mX += style.TranslateX().value_or(0);
+      position.mY += style.TranslateY().value_or(0);
       yoga = YGNodeGetParent(widget->GetLayoutNode());
     } else {
       yoga = YGNodeGetParent(yoga);

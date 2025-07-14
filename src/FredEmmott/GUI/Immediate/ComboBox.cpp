@@ -39,7 +39,7 @@ ComboBox(std::size_t* selectedIndex, std::span<std::string_view> items, ID id) {
     *selectedIndex,
     items.size());
   const auto widget = BeginWidget<ComboBoxWidget>(id);
-  widget->SetBuiltInStyles({.mDisplay = YGDisplayContents});
+  widget->SetBuiltInStyles(Style().Display(YGDisplayContents));
 
   const auto button = ComboBoxButton(items[*selectedIndex]);
   if (button.GetValue() /* clicked */) {

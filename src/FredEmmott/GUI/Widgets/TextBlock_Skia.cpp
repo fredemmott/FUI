@@ -74,7 +74,7 @@ void TextBlock::PaintOwnContent(
   SkCanvas* canvas,
   const Rect& rect,
   const Style& style) const {
-  auto paint = style.mColor->as<SkPaint>(renderer, rect);
+  auto paint = style.Color()->as<SkPaint>(renderer, rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   mSkiaParagraph->updateForegroundPaint(0, mText.size(), paint);
   mSkiaParagraph->layout(rect.GetWidth());

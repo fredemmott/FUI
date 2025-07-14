@@ -18,6 +18,15 @@ constexpr bool DebugAnimations = Config::Debug && Config::LibraryDeveloper;
 constexpr bool SlowAnimations = false;
 
 template <class T>
+auto& as_ref(T&& value) {
+  if constexpr (std::is_pointer_v<std::remove_reference_t<T>>) {
+    return *value;
+  } else if constexpr (std::is_reference_v<T>) {
+    return value;
+  }
+}
+
+template <class T>
 struct transition_default_value_t : constant_t<std::nullopt> {};
 template <>
 struct transition_default_value_t<float> : constant_t<0> {};
@@ -76,12 +85,12 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   requires(supports_transitions_v<decltype(styleProperty)>)
 {
   using enum ApplyResult;
-  using TValue =
-    typename std::decay_t<decltype(oldStyle.*styleProperty)>::value_type;
+  using TValue = typename std::decay_t<
+    std::invoke_result_t<decltype(styleProperty), const Style&>>::value_type;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  const auto& oldProp = (oldStyle.*styleProperty);
-  auto& newProp = (newStyle->*styleProperty);
+  const auto& oldProp = std::invoke(styleProperty, oldStyle);
+  auto& newProp = std::invoke(styleProperty, *newStyle);
 
   ///////////////////////////////////////////////////////
   //  1. Do we have a start, an end, and an animation? //
@@ -214,7 +223,12 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
 #define APPLY_TRANSITION(X, ...) \
   if ( \
-    Apply(now, oldStyle, newStyle, &Style::m##X, &StyleTransitions::m##X) \
+    Apply( \
+      now, \
+      oldStyle, \
+      newStyle, \
+      [](auto&& it) -> auto& { return it.X(); }, \
+      &StyleTransitions::m##X) \
     == Animating) { \
     ret = Animating; \
   }
@@ -249,12 +263,14 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     if (ret == NotAnimating) {
 #define CHECK_TRANSITION(X, ...) \
   CheckTransition.template operator()( \
-    #X, &Style::m##X, &StyleTransitions::m##X);
+    #X, \
+    [](auto&& it) -> auto& { return as_ref(it).X(); }, \
+    &StyleTransitions::m##X);
       FUI_ENUM_STYLE_PROPERTIES(CHECK_TRANSITION);
 #undef CHECK_TRANSITION
     }
   }
   return ret;
-}
+}// namespace FredEmmott::GUI::Widgets
 
 }// namespace FredEmmott::GUI::Widgets

@@ -17,7 +17,7 @@ WidgetList PopupWindow::GetDirectChildren() const noexcept {
 }
 
 Style PopupWindow::GetBuiltInStyles() const {
-  return {.mDisplay = YGDisplayNone};
+  return Style().Display(YGDisplayNone);
 }
 
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(

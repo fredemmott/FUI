@@ -25,51 +25,48 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   using namespace PseudoClasses;
-  static const Style styles {
-    .mAlignSelf = YGAlignFlexStart,
-    .mBackgroundColor = ComboBoxBackground,
-    .mBorderColor = ComboBoxBorderBrush,
-    .mBorderRadius = ControlCornerRadius,
-    .mBorderWidth = ComboBoxBorderThemeThickness,
-    .mColor = ComboBoxForeground,
-    .mFlexDirection = YGFlexDirectionRow,
-    .mFont = WidgetFont::ControlContent,
-    .mMinHeight = ComboBoxMinHeight,
-    .mMinWidth = ComboBoxThemeMinWidth,
-    .mPaddingBottom = ComboBoxPaddingBottom,
-    .mPaddingLeft = ComboBoxPaddingLeft,
-    .mPaddingRight = ComboBoxPaddingRight,
-    .mPaddingTop = ComboBoxPaddingTop,
-    .mAnd = {
-      { Disabled, Style {
-          .mBackgroundColor = ComboBoxBackgroundDisabled,
-          .mBorderColor = ComboBoxBorderBrushDisabled,
-          .mColor = ComboBoxForegroundDisabled,
-      }},
-      { Hover, Style {
-          .mBackgroundColor = ComboBoxBackgroundPointerOver,
-          .mBorderColor = ComboBoxBorderBrushPointerOver,
-          .mColor = ComboBoxForegroundPointerOver,
-      }},
-      { Active, Style {
-          .mBackgroundColor = ComboBoxBackgroundPressed,
-          .mBorderColor = ComboBoxBorderBrushPressed,
-          .mColor = ComboBoxForegroundPressed,
-      }},
-    },
-  };
+  static const Style styles
+    = Style()
+        .AlignSelf(YGAlignFlexStart)
+        .BackgroundColor(ComboBoxBackground)
+        .BorderColor(ComboBoxBorderBrush)
+        .BorderRadius(ControlCornerRadius)
+        .BorderWidth(ComboBoxBorderThemeThickness)
+        .Color(ComboBoxForeground)
+        .FlexDirection(YGFlexDirectionRow)
+        .Font(WidgetFont::ControlContent)
+        .MinHeight(ComboBoxMinHeight)
+        .MinWidth(ComboBoxThemeMinWidth)
+        .PaddingBottom(ComboBoxPaddingBottom)
+        .PaddingLeft(ComboBoxPaddingLeft)
+        .PaddingRight(ComboBoxPaddingRight)
+        .PaddingTop(ComboBoxPaddingTop)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(ComboBoxBackgroundDisabled)
+            .BorderColor(ComboBoxBorderBrushDisabled)
+            .Color(ComboBoxForegroundDisabled))
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(ComboBoxBackgroundPointerOver)
+            .BorderColor(ComboBoxBorderBrushPointerOver)
+            .Color(ComboBoxForegroundPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(ComboBoxBackgroundPressed)
+            .BorderColor(ComboBoxBorderBrushPressed)
+            .Color(ComboBoxForegroundPressed));
   button->SetBuiltInStyles({styles});
 
   BeginWidget<Widget>(ID {"container"});
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles({
-    .mAlignSelf = YGAlignCenter,
-    .mFlexGrow = 1,
-  });
+  GetCurrentParentNode()->SetAdditionalBuiltInStyles(
+    Style().AlignSelf(YGAlignCenter).FlexGrow(1));
   button->SetContextIfUnset<PopupAnchorContext>(GetCurrentParentNode());
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->SetBuiltInStyles({
-    .mDisplay = YGDisplayContents,
-  });
+  GetCurrentParentNode()->SetBuiltInStyles(Style().Display(YGDisplayContents));
   return {button};
 };
 
@@ -87,20 +84,14 @@ void EndComboBoxButton() {
   FontIcon("\ue70d", FontIconSize::Body, ID {"glyph"});// ChevronDown
   // MarginRight of 14 is in the Xaml without an alias; MarginLeft
   // is not set in the XAML at all.
-  GetCurrentNode()->ReplaceExplicitStyles({
-    .mAlignSelf = YGAlignCenter,
-    .mFlexGrow = 0,
-    .mMarginLeft = 14,
-    .mMarginRight = 14,
-    .mTop = {
-      0, FasterAnimation,
-    },
-    .mAnd = {
-      { Active, Style {
-        .mTop = 2,
-      }},
-    },
-  });
+  GetCurrentNode()->ReplaceExplicitStyles(
+    Style()
+      .AlignSelf(YGAlignCenter)
+      .FlexGrow(0)
+      .MarginLeft(14)
+      .MarginRight(14)
+      .Top(0, FasterAnimation)
+      .And(Active, Style().Top(2)));
 
   EndWidget<Button>();
 }

@@ -20,11 +20,9 @@ Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
 Style Button::GetBuiltInStyles() const {
   using namespace StaticTheme::Button;
   static const auto BaseStyle = DefaultButtonStyle
-    + Style {
-      .mAlignSelf = YGAlignFlexStart,
-      .mDescendants = {{{}, {.mPointerEvents = PointerEvents::None}}},
-    };
-
+    + Style()
+        .AlignSelf(YGAlignFlexStart)
+        .Descendants({}, Style().PointerEvents(PointerEvents::None));
   return BaseStyle;
 }
 

@@ -38,84 +38,78 @@ constexpr auto ActiveWidth = 17;
 constexpr auto ParentWidth = 40;
 
 const Style& OuterOff() {
-  static const Style lazyInit {
-    .mHeight = NormalHeight,
-    .mLeft = {Margin, NormalAnimation},
-    .mPosition = YGPositionTypeAbsolute,
-    .mTop = Margin,
-    .mWidth = NormalWidth,
-  };
+  static const Style lazyInit = Style()
+                                  .Height(NormalHeight)
+                                  .Left(Margin, NormalAnimation)
+                                  .Position(YGPositionTypeAbsolute)
+                                  .Top(Margin)
+                                  .Width(NormalWidth);
   return lazyInit;
 }
+
 const Style& OuterOn() {
-  static const Style lazyInit = OuterOff()
-    + Style {
-      .mLeft = ParentWidth - ((2 * Margin) + NormalWidth),
-    };
+  static const Style lazyInit
+    = OuterOff() + Style().Left(ParentWidth - ((2 * Margin) + NormalWidth));
   return lazyInit;
 }
 
 const Style& InnerBase() {
-  static const Style lazyInit {
-    .mAlignSelf = YGAlignStretch,
-    .mBackgroundColor = {std::nullopt, ColorAnimation},
-    .mBorderColor = {std::nullopt, ColorAnimation},
-    .mBorderRadius = {NormalHeight / 2, FasterAnimation},
-    .mFlexGrow = 1,
-    .mMargin = {std::nullopt, FasterAnimation},
-    .mAnd = {
-      { Hover, Style {
-        .mBorderRadius = HoverHeight / 2,
-        .mMarginBottom = -HoverMarginDiff,
-        .mMarginLeft = -HoverMarginDiff,
-        .mMarginRight = -HoverMarginDiff,
-        .mMarginTop = -HoverMarginDiff,
-      }}
-    },
-  };
+  static const Style lazyInit
+    = Style()
+        .AlignSelf(YGAlignStretch)
+        .BackgroundColor(std::nullopt, ColorAnimation)
+        .BorderColor(std::nullopt, ColorAnimation)
+        .BorderRadius(NormalHeight / 2, FasterAnimation)
+        .FlexGrow(1)
+        .Margin(std::nullopt, FasterAnimation)
+        .And(
+          Hover,
+          Style()
+            .BorderRadius(HoverHeight / 2)
+            .MarginBottom(-HoverMarginDiff)
+            .MarginLeft(-HoverMarginDiff)
+            .MarginRight(-HoverMarginDiff)
+            .MarginTop(-HoverMarginDiff));
   return lazyInit;
 }
 
 const Style& InnerOn() {
-  static const Style lazyInit = InnerBase() + Style {
-    .mBackgroundColor = ToggleSwitchKnobFillOn,
-    .mBorderColor = ToggleSwitchStrokeOn,
-    .mAnd = {
-      { Disabled, Style {
-        .mBackgroundColor = ToggleSwitchKnobFillOnDisabled,
-        .mBorderColor = ToggleSwitchStrokeOnDisabled,
-      }},
-      { Hover, Style {
-        .mBackgroundColor = ToggleSwitchKnobFillOnPointerOver,
-        .mBorderColor = ToggleSwitchStrokeOnPointerOver,
-      }},
-      { Active, Style {
-        .mBackgroundColor = ToggleSwitchKnobFillOnPressed,
-        .mBorderColor = ToggleSwitchStrokeOnPressed,
-        .mMarginLeft = NormalWidth - ActiveWidth, // negative
-        .mMarginRight = (2 * -HoverMarginDiff),
-      }},
-    },
-  };
+  static const Style lazyInit = InnerBase()
+    + Style()
+        .BackgroundColor(ToggleSwitchKnobFillOn)
+        .BorderColor(ToggleSwitchStrokeOn)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(ToggleSwitchKnobFillOnDisabled)
+            .BorderColor(ToggleSwitchStrokeOnDisabled))
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(ToggleSwitchKnobFillOnPointerOver)
+            .BorderColor(ToggleSwitchStrokeOnPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(ToggleSwitchKnobFillOnPressed)
+            .BorderColor(ToggleSwitchStrokeOnPressed)
+            .MarginLeft(NormalWidth - ActiveWidth)
+            .MarginRight(2 * -HoverMarginDiff));
   return lazyInit;
 }
+
 const Style& InnerOff() {
-  static const Style lazyInit = InnerBase() + Style {
-    .mBackgroundColor = ToggleSwitchKnobFillOff,
-    .mAnd = {
-      { Disabled, Style {
-        .mBackgroundColor = ToggleSwitchKnobFillOffDisabled,
-      }},
-      { Hover, Style {
-        .mBackgroundColor = ToggleSwitchKnobFillOffPointerOver,
-      }},
-      { Active, Style {
-        .mBackgroundColor = ToggleSwitchKnobFillOffPressed,
-        .mMarginLeft = 0,
-        .mMarginRight = NormalWidth - ActiveWidth, // negative
-      }},
-    },
-  };
+  static const Style lazyInit = InnerBase()
+    + Style()
+        .BackgroundColor(ToggleSwitchKnobFillOff)
+        .And(Disabled, Style().BackgroundColor(ToggleSwitchKnobFillOffDisabled))
+        .And(Hover, Style().BackgroundColor(ToggleSwitchKnobFillOffPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(ToggleSwitchKnobFillOffPressed)
+            .MarginLeft(0)
+            .MarginRight(NormalWidth - ActiveWidth));
   return lazyInit;
 }
 }// namespace Styles

@@ -6,6 +6,7 @@
 #include <memory>
 #include <optional>
 #include <ranges>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace FredEmmott::utility {
@@ -107,12 +108,35 @@ struct unordered_map {
     return mData->operator[](std::forward<T>(key));
   }
 
+  template <std::convertible_to<K> T>
+  const auto& operator[](T&& key) const {
+    if (!mData) {
+      throw std::out_of_range("Container is empty for const []");
+    }
+    return mData->at(std::forward<T>(key));
+  }
+
+  template <class... Args>
+  auto insert_or_assign(Args&&... args) {
+    if (!mData) {
+      mData = std::make_unique<map_type>();
+    }
+    return mData->insert_or_assign(std::forward<Args>(args)...);
+  }
+
   template <class... Args>
   auto emplace(Args&&... args) {
     if (!mData) {
       mData = std::make_unique<map_type>();
     }
     return mData->emplace(std::forward<Args>(args)...);
+  }
+
+  void erase(const K&& k) {
+    if (!mData) {
+      return;
+    }
+    mData->erase(k);
   }
 
  private:

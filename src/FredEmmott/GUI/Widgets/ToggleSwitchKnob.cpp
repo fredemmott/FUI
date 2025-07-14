@@ -39,53 +39,51 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
   constexpr auto ColorAnimation
     = LinearStyleTransition(Common::ControlFasterAnimationDuration);
-
   using namespace PseudoClasses;
-  static const Style baseStyles {
-    .mBackgroundColor = {std::nullopt, ColorAnimation},
-    .mBorderColor = {std::nullopt, ColorAnimation},
-    .mBorderRadius = Spacing * 2.5f,
-    .mBorderWidth = ToggleSwitchOuterBorderStrokeThickness,
-    .mFlexBasis = Spacing * 10,
-    .mFlexDirection = YGFlexDirectionColumn,
-    .mHeight = 20,
-    .mMarginRight = ToggleSwitchPreContentMargin,
-    .mWidth = Spacing * 10,
-  };
-  static const Style offStyles  = baseStyles + Style {
-    .mBackgroundColor = ToggleSwitchFillOff,
-    .mBorderColor = ToggleSwitchStrokeOff,
-    .mAnd = {
-      {Disabled, Style {
-        .mBackgroundColor = ToggleSwitchFillOffDisabled,
-        .mBorderColor = ToggleSwitchStrokeOffDisabled,
-      }},
-      {Hover, Style {
-        .mBackgroundColor = ToggleSwitchFillOffPointerOver,
-      }},
-      {Active, Style {
-        .mBackgroundColor = ToggleSwitchFillOffPressed,
-      }},
-    },
-  };
-  static const Style onStyles = baseStyles + Style {
-    .mBackgroundColor = ToggleSwitchFillOn,
-    .mBorderColor = ToggleSwitchStrokeOn,
-    .mAnd = {
-      { Disabled , Style {
-        .mBackgroundColor = ToggleSwitchFillOnDisabled,
-        .mBorderColor = ToggleSwitchStrokeOnDisabled,
-      }},
-      { Hover, Style {
-        .mBackgroundColor = ToggleSwitchFillOnPointerOver,
-        .mBorderColor = ToggleSwitchStrokeOnPointerOver,
-      }},
-      { Active, Style {
-        .mBackgroundColor = ToggleSwitchFillOnPressed,
-        .mBorderColor = ToggleSwitchStrokeOnPressed,
-      }},
-    },
-  };
+  static const auto baseStyles
+    = Style()
+        .BackgroundColor(std::nullopt, ColorAnimation)
+        .BorderColor(std::nullopt, ColorAnimation)
+        .BorderRadius(Spacing * 2.5f)
+        .BorderWidth(ToggleSwitchOuterBorderStrokeThickness)
+        .FlexBasis(Spacing * 10)
+        .FlexDirection(YGFlexDirectionColumn)
+        .Height(20)
+        .MarginRight(ToggleSwitchPreContentMargin)
+        .Width(Spacing * 10);
+
+  static const auto offStyles = baseStyles
+    + Style()
+        .BackgroundColor(ToggleSwitchFillOff)
+        .BorderColor(ToggleSwitchStrokeOff)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(ToggleSwitchFillOffDisabled)
+            .BorderColor(ToggleSwitchStrokeOffDisabled))
+        .And(Hover, Style().BackgroundColor(ToggleSwitchFillOffPointerOver))
+        .And(Active, Style().BackgroundColor(ToggleSwitchFillOffPressed));
+
+  static const auto onStyles = baseStyles
+    + Style()
+        .BackgroundColor(ToggleSwitchFillOn)
+        .BorderColor(ToggleSwitchStrokeOn)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(ToggleSwitchFillOnDisabled)
+            .BorderColor(ToggleSwitchStrokeOnDisabled))
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(ToggleSwitchFillOnPointerOver)
+            .BorderColor(ToggleSwitchStrokeOnPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(ToggleSwitchFillOnPressed)
+            .BorderColor(ToggleSwitchStrokeOnPressed));
+
   return (this->IsOn() ? onStyles : offStyles);
 }
 

@@ -112,13 +112,13 @@ PopupResult BeginPopup(const ID id) {
   const auto widget = BeginWidget<Widget>(ID {0});
 
   using namespace StaticTheme::Common;
-  widget->SetBuiltInStyles({
-    .mBackgroundColor = AcrylicBackgroundFillColorDefaultBrush,
-    .mBorderColor = SurfaceStrokeColorDefaultBrush,
-    .mBorderRadius = OverlayCornerRadius,
-    .mBorderWidth = 2,
-    .mPadding = 20,
-  });
+  widget->SetBuiltInStyles(
+    Style()
+      .BackgroundColor(AcrylicBackgroundFillColorDefaultBrush)
+      .BorderColor(SurfaceStrokeColorDefaultBrush)
+      .BorderRadius(OverlayCornerRadius)
+      .BorderWidth(2)
+      .Padding(20));
 
   return {true};
 }

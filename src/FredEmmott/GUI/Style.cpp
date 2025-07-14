@@ -11,7 +11,8 @@
 
 namespace FredEmmott::GUI {
 
-Style& Style::operator+=(const Style& other) noexcept {
+StyleProperties& StyleProperties::operator+=(
+  const StyleProperties& other) noexcept {
   /* Set the lhs to the rhs, if the rhs is set.
    * e.g. with:
    *
@@ -35,36 +36,31 @@ Style& Style::operator+=(const Style& other) noexcept {
    *  ```
    */
 
-// other.m##X##Edge##Y will be added in MERGE_PROPERTY below
+  // other.m##X##Edge##Y will be added in MERGE_PROPERTY below
 #define MERGE_EDGES(X, Y) \
-  this->m##X##Left##Y = m##X##Y + m##X##Left##Y + other.m##X##Y; \
-  this->m##X##Top##Y = m##X##Y + m##X##Top##Y + other.m##X##Y; \
-  this->m##X##Right##Y = m##X##Y + m##X##Right##Y + other.m##X##Y; \
-  this->m##X##Bottom##Y = m##X##Y + m##X##Bottom##Y + other.m##X##Y;
+  this->X##Left##Y() = X##Y() + X##Left##Y() + other.X##Y(); \
+  this->X##Top##Y() = X##Y() + X##Top##Y() + other.X##Y(); \
+  this->X##Right##Y() = X##Y() + X##Right##Y() + other.X##Y(); \
+  this->X##Bottom##Y() = X##Y() + X##Bottom##Y() + other.X##Y();
   FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES)
 #undef MERGE_EDGES
 
-#define MERGE_PROPERTY(X, ...) this->m##X += other.m##X;
+#define MERGE_PROPERTY(X, ...) \
+  if (other.Has##X()) { \
+    this->X() += other.X(); \
+  }
   FUI_ENUM_STYLE_PROPERTIES(MERGE_PROPERTY)
 #undef MERGE_PROPERTIES
-#define UNSET_ALL_EDGES(X, Y) this->m##X##Y = std::nullopt;
+#define UNSET_ALL_EDGES(X, Y) this->Unset##X##Y();
   FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
 #undef UNSET_ALL_EDGES
-  // We originally used `Vector::append_range()` here; profiling showed *a lot*
-  // of time spend on allocations and deallocations, which this approach fixes.
-  //
-  // This is effectively using the tuple-of-vectors as a map; migrating to
-  // `std::unordered_map()` is fairly trivial (as of 2025-07), but creates
-  // its own performance issues, as it is not `constexpr` - so, no style
-  // declarations can be constexpr either, also leading to excessive heap
-  // allocations.
-  //
-  // If you change this, run a profiler while scrolling up and down rapidly with
-  // the mouse.
-  static_assert(
-    Config::CompilerChecks::MinimumCPlusPlus < 202600
-      || !Config::LibraryDeveloper,
-    "Consider migrating `Style::mAnd` to `std::unordered_map` (P3372)");
+
+  return *this;
+}
+
+Style& Style::operator+=(const Style& other) noexcept {
+  StyleProperties::operator+=(other);
+
   if (mAnd.empty()) {
     mAnd = other.mAnd;
   } else {
@@ -77,6 +73,14 @@ Style& Style::operator+=(const Style& other) noexcept {
     }
   }
 
+  if (mDescendants.empty()) {
+    mDescendants = other.mDescendants;
+  } else {
+    for (auto&& [selector, style]: other.mDescendants) {
+      mDescendants[selector] += style;
+    }
+  }
+
   return *this;
 }
 
@@ -84,11 +88,11 @@ Style Style::InheritableValues() const noexcept {
   Style ret;
   const auto copyIfInheritable
     = [this, &ret](auto member, const auto defaultScope) {
-        const auto& rhs = this->*member;
+        const auto& rhs = std::invoke(member, *this);
         if (!rhs.has_value()) {
           return;
         }
-        auto& lhs = ret.*member;
+        auto& lhs = std::invoke(member, ret);
 
         using enum StylePropertyScope;
         switch (rhs.mScope.value_or(defaultScope)) {
@@ -105,15 +109,15 @@ Style Style::InheritableValues() const noexcept {
       };
 #define COPY_IF_INHERITABLE(X, ...) \
   copyIfInheritable( \
-    &Style::m##X, \
+    [](auto&& style) -> auto& { return style.X(); }, \
     style_detail::default_property_scope_v<style_detail::StyleProperty::X>);
   FUI_ENUM_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
 #undef COPY_IF_INHERITABLE
 #define MAKE_INHERITABLE(X, ...) \
   X.mScope = StylePropertyScope::SelfAndDescendants;
 #define COPY_AS_INHERITABLE(X, ...) \
-  ret.m##X = rhs.m##X; \
-  MAKE_INHERITABLE(ret.m##X)
+  ret.X() = rhs.X(); \
+  MAKE_INHERITABLE(ret.X())
   for (auto&& [selector, rhs]: mDescendants) {
     if (holds_alternative<std::monostate>(selector)) {
       FUI_ENUM_STYLE_PROPERTIES(COPY_AS_INHERITABLE);
@@ -121,7 +125,7 @@ Style Style::InheritableValues() const noexcept {
     }
     auto& it = ret.mAnd[selector];
     it += rhs;
-#define MAKE_IT_INHERITABLE(X, ...) MAKE_INHERITABLE(it.m##X)
+#define MAKE_IT_INHERITABLE(X, ...) MAKE_INHERITABLE(it.X())
     FUI_ENUM_STYLE_PROPERTIES(MAKE_IT_INHERITABLE)
 #undef MAKE_IT_INHERITABLE
   }
@@ -131,22 +135,18 @@ Style Style::InheritableValues() const noexcept {
 }
 
 Style Style::BuiltinBaseline() {
-  auto ret = StaticTheme::Generic::BodyTextBlockStyle + Style {
-    .mColor = StaticTheme::TextFillColorPrimaryBrush,
-    .mAnd = {
-      { PseudoClasses::Disabled, Style {
-        .mColor = StaticTheme::TextFillColorDisabledBrush,
-      }},
-    },
-  };
-#define PREVENT_INHERITANCE(X, ...) ret.m##X.mScope = StylePropertyScope::Self;
+  auto ret = StaticTheme::Generic::BodyTextBlockStyle
+    + Style()
+        .Color(StaticTheme::TextFillColorPrimaryBrush)
+        .And(
+          PseudoClasses::Disabled,
+          Style().Color(StaticTheme::TextFillColorDisabledBrush));
+#define PREVENT_INHERITANCE(X, ...) ret.X().mScope = StylePropertyScope::Self;
   FUI_ENUM_STYLE_PROPERTIES(PREVENT_INHERITANCE)
 #undef PREVENT_INHERITANCE
-  for (auto& [selector, style]: ret.mAnd) {
-#define PREVENT_INHERITANCE(X, ...) \
-  style.m##X.mScope = StylePropertyScope::Self;
+  for (auto&& [selector, style]: ret.mAnd) {
+#define PREVENT_INHERITANCE(X, ...) style.X().mScope = StylePropertyScope::Self;
     FUI_ENUM_STYLE_PROPERTIES(PREVENT_INHERITANCE)
-    FUI_ASSERT(style.mAnd.empty());
 #undef PREVENT_INHERITANCE
   }
   return ret;

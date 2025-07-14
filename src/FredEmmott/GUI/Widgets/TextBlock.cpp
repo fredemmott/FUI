@@ -64,7 +64,7 @@ void TextBlock::PaintOwnContent(
   const Rect& outerRect,
   const Style& style) const {
   FUI_ASSERT(
-    style.mFont == mFont,
+    style.Font() == mFont,
     "Stylesheet font does not match mFont; computed style not updated");
 
   const auto yoga = this->GetLayoutNode();
@@ -96,8 +96,8 @@ void TextBlock::PaintOwnContent(
 Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   const Style& style,
   StateFlags) {
-  if (mFont != style.mFont) {
-    mFont = style.mFont.value();
+  if (mFont != style.Font()) {
+    mFont = style.Font().value();
   }
 
 #ifdef FUI_ENABLE_SKIA

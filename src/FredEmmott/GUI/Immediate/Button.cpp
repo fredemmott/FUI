@@ -15,7 +15,8 @@ ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
   return button;
 }
 
-ButtonResult<&EndButton, bool, UnscopeableResultMixin> BeginButton(const ID id) {
+ButtonResult<&EndButton, bool, UnscopeableResultMixin> BeginButton(
+  const ID id) {
   bool clicked {};
   return {BeginButton(&clicked, id), clicked};
 }
@@ -23,7 +24,7 @@ ButtonResult<&EndButton, bool, UnscopeableResultMixin> BeginButton(const ID id) 
 ButtonResult<nullptr, bool> Button(const std::string_view label, const ID id) {
   bool clicked {};
   const auto button = BeginButton(&clicked, id);
-  Label(label, ID {0}).Styled({.mFlexGrow = 1});
+  Label(label, ID {0}).Styled(Style().FlexGrow(1));
   EndButton();
   return {button, clicked};
 }

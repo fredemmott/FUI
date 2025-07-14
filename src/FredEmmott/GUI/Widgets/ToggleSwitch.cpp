@@ -29,7 +29,7 @@ ToggleSwitch::ToggleSwitch(std::size_t id)
     mKnob.reset(new ToggleSwitchKnob({}));
     mFosterParent.reset(new Widget({}, {ToggleSwitchContentStyleClass}));
   });
-  mFosterParent->ReplaceExplicitStyles({.mDisplay = YGDisplayContents});
+  mFosterParent->ReplaceExplicitStyles(Style().Display(YGDisplayContents));
 }
 
 bool ToggleSwitch::IsOn() const noexcept {
@@ -46,17 +46,13 @@ void ToggleSwitch::SetIsOn(bool value) noexcept {
 Style ToggleSwitch::GetBuiltInStyles() const {
   using namespace StaticTheme::ToggleSwitch;
   using namespace PseudoClasses;
-  static const Style ret {
-    .mAlignSelf = YGAlignFlexStart,
-    .mColor = ToggleSwitchContentForeground,
-    .mFlexDirection = YGFlexDirectionRow,
-    .mMarginRight = ToggleSwitchPostContentMargin,
-    .mAnd = {
-      { Disabled, Style {
-        .mColor = ToggleSwitchContentForegroundDisabled,
-      }},
-    },
-  };
+  static const Style ret
+    = Style()
+        .AlignSelf(YGAlignFlexStart)
+        .Color(ToggleSwitchContentForeground)
+        .FlexDirection(YGFlexDirectionRow)
+        .MarginRight(ToggleSwitchPostContentMargin)
+        .And(Disabled, Style().Color(ToggleSwitchContentForegroundDisabled));
   return {ret};
 }
 Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(

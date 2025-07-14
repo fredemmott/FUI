@@ -14,9 +14,7 @@ namespace FredEmmott::GUI::StaticTheme::Generic {
 // This seems like a pointless helper, but it cuts a fair bit off the binary
 // size
 static Style GetFontStyle(const SystemFont::Usage usage) {
-  return Style {
-    .mFont = {usage},
-  };
+  return Style().Font(usage);
 }
 
 const style_detail::lazy_init_style BaseTextBlockStyle {

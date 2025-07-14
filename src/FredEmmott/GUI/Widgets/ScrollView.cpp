@@ -58,22 +58,19 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
     std::chrono::milliseconds(100),
     StaticTheme::Common::ControlFastOutSlowInKeySpline);
-  mContentInner->SetBuiltInStyles({
-    .mTranslateX = {0, SmoothScrollingAnimation},
-    .mTranslateY = {0, SmoothScrollingAnimation},
-  });
-  mVerticalScrollBar->SetAdditionalBuiltInStyles({
-    .mPosition = YGPositionTypeAbsolute,
-    .mRight = 4,
-    .mTop = 4,
-  });
-  mHorizontalScrollBar->SetAdditionalBuiltInStyles({
-    .mBottom = 4,
-    .mFlexGrow = 1,
-    .mLeft = 0.f,
-    .mPosition = YGPositionTypeAbsolute,
-    .mRight = ScrollBarSize,
-  });
+  mContentInner->SetBuiltInStyles(
+    Style()
+      .TranslateX(0, SmoothScrollingAnimation)
+      .TranslateY(0, SmoothScrollingAnimation));
+  mVerticalScrollBar->SetAdditionalBuiltInStyles(
+    Style().Position(YGPositionTypeAbsolute).Right(4).Top(4));
+  mHorizontalScrollBar->SetAdditionalBuiltInStyles(
+    Style()
+      .Bottom(4)
+      .FlexGrow(1)
+      .Left(0.f)
+      .Position(YGPositionTypeAbsolute)
+      .Right(ScrollBarSize));
 
   mHorizontalScrollBar->OnValueChanged(
     std::bind_front(&ScrollView::OnHorizontalScroll, this));
@@ -141,27 +138,24 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
     mHorizontalScrollBar->SetMaximum(cw - w);
-    mHorizontalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayFlex});
-    mVerticalScrollBar->AddExplicitStyles({
-      .mBottom = StaticTheme::ScrollBar::ScrollBarSize + 4,
-    });
+    mHorizontalScrollBar->AddExplicitStyles(Style().Display(YGDisplayFlex));
+    mVerticalScrollBar->AddExplicitStyles(
+      Style().Bottom(StaticTheme::ScrollBar::ScrollBarSize + 4));
   } else {
     mHorizontalScrollBar->SetValue(0);
     mHorizontalScrollBar->SetMaximum(0);
-    mHorizontalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayNone});
-    mVerticalScrollBar->AddExplicitStyles({
-      .mBottom = 4,
-    });
+    mHorizontalScrollBar->AddExplicitStyles(Style().Display(YGDisplayNone));
+    mVerticalScrollBar->AddExplicitStyles(Style().Bottom(4));
   }
 
   if (showVScroll) {
     mVerticalScrollBar->SetThumbSize(h);
     mVerticalScrollBar->SetMaximum(ch - h);
-    mVerticalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayFlex});
+    mVerticalScrollBar->AddExplicitStyles(Style().Display(YGDisplayFlex));
   } else {
     mVerticalScrollBar->SetValue(0);
     mVerticalScrollBar->SetMaximum(0);
-    mVerticalScrollBar->AddExplicitStyles({.mDisplay = YGDisplayNone});
+    mVerticalScrollBar->AddExplicitStyles(Style().Display(YGDisplayNone));
   }
 }
 
@@ -205,10 +199,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
 }
 
 Style ScrollView::GetBuiltInStyles() const {
-  return Style {
-    .mMinHeight = 128,
-    .mMinWidth = 128,
-  };
+  return Style().MinHeight(128).MinWidth(128);
 }
 
 void ScrollView::OnHorizontalScroll(
@@ -218,7 +209,7 @@ void ScrollView::OnHorizontalScroll(
   if (reason != ScrollBar::ChangeReason::Discrete) {
     transition = InstantStyleTransition;
   }
-  mContentInner->AddExplicitStyles({.mTranslateX = {-value, transition}});
+  mContentInner->AddExplicitStyles(Style().TranslateX(-value, transition));
 }
 
 void ScrollView::OnVerticalScroll(float value, ScrollBar::ChangeReason reason) {
@@ -226,7 +217,7 @@ void ScrollView::OnVerticalScroll(float value, ScrollBar::ChangeReason reason) {
   if (reason != ScrollBar::ChangeReason::Discrete) {
     transition = InstantStyleTransition;
   }
-  mContentInner->AddExplicitStyles({.mTranslateY = {-value, transition}});
+  mContentInner->AddExplicitStyles(Style().TranslateY(-value, transition));
 }
 
 bool ScrollView::IsScrollBarVisible(

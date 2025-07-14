@@ -16,7 +16,7 @@ void CaptionResultMixin::AttachCaption(
   const ID& id) {
   const auto target = GetCurrentNode();
   const auto caption = widget_from_result(
-    Label(label, id).Caption().Styled({.mMarginBottom = -4}));
+    Label(label, id).Caption().Styled(Style().MarginBottom(-4)));
   auto& siblings = tStack.back().mNewSiblings;
 
   FUI_ASSERT(siblings.size() >= 2);

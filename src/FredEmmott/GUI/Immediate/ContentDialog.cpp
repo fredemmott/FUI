@@ -68,38 +68,35 @@ ContentDialogResult BeginContentDialog(const ID id) {
     return false;
   }
 
-  static const Style OuterStyle = DefaultContentDialogStyle + Style {.mGap = 0};
+  static const Style OuterStyle = DefaultContentDialogStyle + Style().Gap(0);
   const auto outer = BeginVStackPanel().Styled(OuterStyle);
   tContext = widget_from_result(outer)->GetOrCreateContext<Context>();
 
-  BeginVStackPanel().Styled(
-    Style {
-      .mBackgroundColor = ContentDialogTopOverlay,
-      .mBorderBottomWidth = ContentDialogSeparatorThicknessBottom,
-      .mBorderColor = ContentDialogSeparatorBorderBrush,
-      .mBorderLeftWidth = ContentDialogSeparatorThicknessLeft,
-      .mBorderRightWidth = ContentDialogSeparatorThicknessRight,
-      .mBorderTopWidth = ContentDialogSeparatorThicknessTop,
-      .mPaddingBottom = ContentDialogPaddingBottom,
-      .mPaddingLeft = ContentDialogPaddingLeft,
-      .mPaddingRight = ContentDialogPaddingRight,
-      .mPaddingTop = ContentDialogPaddingTop,
-    });
+  static const auto InnerStyle
+    = Style()
+        .BackgroundColor(ContentDialogTopOverlay)
+        .BorderBottomWidth(ContentDialogSeparatorThicknessBottom)
+        .BorderColor(ContentDialogSeparatorBorderBrush)
+        .BorderLeftWidth(ContentDialogSeparatorThicknessLeft)
+        .BorderRightWidth(ContentDialogSeparatorThicknessRight)
+        .BorderTopWidth(ContentDialogSeparatorThicknessTop)
+        .PaddingBottom(ContentDialogPaddingBottom)
+        .PaddingLeft(ContentDialogPaddingLeft)
+        .PaddingRight(ContentDialogPaddingRight)
+        .PaddingTop(ContentDialogPaddingTop);
+  BeginVStackPanel().Styled(InnerStyle);
 
-  static const auto TitleFont
-    = Font {WidgetFont::ControlContent}.WithSize(20).WithWeight(
-      FontWeight::SemiBold);
-  Label(tContext->mTitleText)
-    .Styled(
-      Style {
-        .mFont = TitleFont,
-        .mMarginBottom = ContentDialogTitleMarginBottom,
-        .mMarginLeft = ContentDialogTitleMarginLeft,
-        .mMarginRight = ContentDialogTitleMarginRight,
-        .mMarginTop = ContentDialogTitleMarginTop,
-      });
+  static const auto TitleStyle
+    = Style()
+        .Font(
+          Font {WidgetFont::ControlContent}.WithSize(20).WithWeight(
+            FontWeight::SemiBold))
+        .MarginBottom(ContentDialogTitleMarginBottom)
+        .MarginLeft(ContentDialogTitleMarginLeft)
+        .MarginRight(ContentDialogTitleMarginRight)
+        .MarginTop(ContentDialogTitleMarginTop);
+  Label(tContext->mTitleText).Styled(TitleStyle);
   tContext->mTitleLabel = GetCurrentNode<Widgets::Label>();
-
   return true;
 }
 
@@ -121,26 +118,26 @@ void ContentDialogTitle(std::string_view title) {
   tContext->mTitleLabel->SetText(title);
 }
 
-template<class T>
+template <class T>
 auto GetButtonWidget(const T& v) {
   if constexpr (std::convertible_to<Widgets::Widget*, T>) {
     return v;
   }
-  if constexpr(std::convertible_to<ButtonsContext::LayoutButton*, T>) {
+  if constexpr (std::convertible_to<ButtonsContext::LayoutButton*, T>) {
     return v->mButton;
   }
-  if constexpr(std::convertible_to<ButtonsContext::LayoutButton&, T>) {
+  if constexpr (std::convertible_to<ButtonsContext::LayoutButton&, T>) {
     return v.mButton;
   }
   std::unreachable();
 };
 
 void Hide(auto w) {
-  static const Style Hide { .mDisplay = YGDisplayNone };
+  static const auto Hide = Style().Display(YGDisplayNone);
   GetButtonWidget(w)->AddExplicitStyles(Hide);
 }
 auto Show(auto w) {
-  static const Style Show { .mDisplay = YGDisplayFlex };
+  static const auto Show = Style().Display(YGDisplayFlex);
   GetButtonWidget(w)->AddExplicitStyles(Show);
 };
 
@@ -153,8 +150,8 @@ void SingleButton(ButtonsContext::LogicalButton& b) {
   Show(ctx->mThirdColumn);
 
   ctx->mPrimary.mBinding = nullptr;
-  ctx->mSecondary.mBinding= nullptr;
-  ctx->mClose.mBinding= nullptr;
+  ctx->mSecondary.mBinding = nullptr;
+  ctx->mClose.mBinding = nullptr;
   b.mBinding = &ctx->mThirdColumn;
 };
 
@@ -250,7 +247,8 @@ void EndContentDialogButtons() {
       button.mFlags & ButtonsContext::DisabledFlag);
     it->mButton->ReplaceExplicitStyles(
       (button.mFlags & ButtonsContext::AccentFlag)
-      ? StaticTheme::Button::AccentButtonStyle : Style {});
+        ? StaticTheme::Button::AccentButtonStyle
+        : Style {});
   }
 }
 
@@ -259,16 +257,15 @@ BeginContentDialogButtons() {
   if (tContext) {
     EndVStackPanel();
   }
-  static const Style OuterStyle {
-    .mBackgroundColor = ContentDialogBackground,
-    .mBorderBottomLeftRadius = OverlayCornerRadius,
-    .mBorderBottomRightRadius = OverlayCornerRadius,
-    .mGap = 0,
-    .mPaddingBottom = ContentDialogPaddingBottom,
-    .mPaddingLeft = ContentDialogPaddingLeft,
-    .mPaddingRight = ContentDialogPaddingRight,
-    .mPaddingTop = ContentDialogPaddingTop,
-  };
+  static const auto OuterStyle = Style()
+                                   .BackgroundColor(ContentDialogBackground)
+                                   .BorderBottomLeftRadius(OverlayCornerRadius)
+                                   .BorderBottomRightRadius(OverlayCornerRadius)
+                                   .Gap(0)
+                                   .PaddingBottom(ContentDialogPaddingBottom)
+                                   .PaddingLeft(ContentDialogPaddingLeft)
+                                   .PaddingRight(ContentDialogPaddingRight)
+                                   .PaddingTop(ContentDialogPaddingTop);
   const auto ctx = tButtonsContext
     = GetCurrentParentNode()->GetOrCreateContext<ButtonsContext>();
   const auto outer = BeginHStackPanel().Styled(OuterStyle).Scoped();
@@ -282,19 +279,18 @@ BeginContentDialogButtons() {
                         const ID& id = ID {std::source_location::current()}) {
     it.mButton = BeginWidget<Widgets::Button>(id);
     it.mLabel = BeginWidget<Widgets::Label>(ID {0});
-    it.mLabel->ReplaceExplicitStyles({.mFlexGrow = 1.0});
+    it.mLabel->ReplaceExplicitStyles(Style().FlexGrow(1.0));
     EndWidget<Widgets::Label>();
     EndWidget<Widgets::Button>();
 
-    it.mButton->SetAdditionalBuiltInStyles({.mFlexGrow = 1});
+    it.mButton->SetAdditionalBuiltInStyles(Style().FlexGrow(1));
   };
-  const auto spacer
-    = [](const ID& id = ID {std::source_location::current()}) {
-        auto w = BeginWidget<Widgets::Widget>(id);
-        w->SetBuiltInStyles({.mWidth = ContentDialogButtonSpacing});
-        EndWidget<Widgets::Widget>();
-      return w;
-      };
+  const auto spacer = [](const ID& id = ID {std::source_location::current()}) {
+    auto w = BeginWidget<Widgets::Widget>(id);
+    w->SetBuiltInStyles(Style().Width(ContentDialogButtonSpacing));
+    EndWidget<Widgets::Widget>();
+    return w;
+  };
 
   button(ctx->mFirstColumn);
   ctx->mFirstSpacer = spacer();
@@ -320,12 +316,14 @@ static constexpr auto GetButtonProjection(ContentDialogButton button) {
 static auto& GetButton(ContentDialogButton button) {
   FUI_ASSERT(
     tButtonsContext,
-    "ContentDialog buttons can only be used inside a ContentDialogButtons scope");
+    "ContentDialog buttons can only be used inside a ContentDialogButtons "
+    "scope");
   return std::invoke(GetButtonProjection(button), tButtonsContext);
 }
 
-template<ContentDialogButton TButton>
-static ContentDialogButtonResult<TButton> ContentDialogButtonImpl(std::string_view title) {
+template <ContentDialogButton TButton>
+static ContentDialogButtonResult<TButton> ContentDialogButtonImpl(
+  std::string_view title) {
   auto& ctx = GetButton(TButton);
   ctx.mFlags |= ButtonsContext::VisibleFlag;
   ctx.mText = std::string {title};
@@ -334,7 +332,8 @@ static ContentDialogButtonResult<TButton> ContentDialogButtonImpl(std::string_vi
     ctx.mFlags |= ButtonsContext::DisabledFlag;
   }
 
-  const bool clicked = ctx.mBinding && ctx.mBinding->mButton->mClicked.TestAndClear();
+  const bool clicked
+    = ctx.mBinding && ctx.mBinding->mButton->mClicked.TestAndClear();
   if (tContext && clicked) {
     ClosePopupWindow();
   }
@@ -351,13 +350,15 @@ ContentDialogSecondaryButton(std::string_view label) {
   return ContentDialogButtonImpl<ContentDialogButton::Secondary>(label);
 }
 
-ContentDialogButtonResult<ContentDialogButton::Close>
-ContentDialogCloseButton(std::string_view label) {
+ContentDialogButtonResult<ContentDialogButton::Close> ContentDialogCloseButton(
+  std::string_view label) {
   return ContentDialogButtonImpl<ContentDialogButton::Close>(label);
 }
 
-void immediate_detail::ContentDialogButton_AddAccent(ContentDialogButton button) {
-  GetButton(button).mFlags |= ButtonsContext::AccentFlag;;
+void immediate_detail::ContentDialogButton_AddAccent(
+  ContentDialogButton button) {
+  GetButton(button).mFlags |= ButtonsContext::AccentFlag;
+  ;
 }
 
 }// namespace FredEmmott::GUI::Immediate

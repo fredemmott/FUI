@@ -49,23 +49,23 @@ void Widget::ComputeStyles(const Style& inherited) {
     style.mAnd.clear();
   } while (haveChanges);
 
-  const auto flattenEdge = [&style]<class T>(T allEdges, T thisEdge) {
-    auto& thisEdgeOpt = style.*thisEdge;
-    const auto& allEdgesOpt = style.*allEdges;
+  const auto flattenEdge = [&style]<class T, class U>(T allEdges, U thisEdge) {
+    auto& thisEdgeOpt = std::invoke(thisEdge, style);
+    const auto& allEdgesOpt = std::invoke(allEdges, style);
 
     thisEdgeOpt = allEdgesOpt + thisEdgeOpt;
   };
   const auto flattenEdges
-    = [&flattenEdge]<class T, std::same_as<T>... TRest>(T all, TRest... rest) {
+    = [&flattenEdge]<class T, class... TRest>(T all, TRest... rest) {
         (flattenEdge(all, rest), ...);
       };
 #define FLATTEN_EDGES(X, Y) \
   flattenEdges( \
-    &Style::m##X##Y, \
-    &Style::m##X##Left##Y, \
-    &Style::m##X##Top##Y, \
-    &Style::m##X##Right##Y, \
-    &Style::m##X##Bottom##Y);
+    [](auto&& it) -> auto& { return it.X##Y(); }, \
+    [](auto&& it) -> auto& { return it.X##Left##Y(); }, \
+    [](auto&& it) -> auto& { return it.X##Top##Y(); }, \
+    [](auto&& it) -> auto& { return it.X##Right##Y(); }, \
+    [](auto&& it) -> auto& { return it.X##Bottom##Y(); });
   FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
 #undef FLATTEN_EDGES
 
@@ -124,10 +124,10 @@ void Widget::ComputeStyles(const Style& inherited) {
   const auto yoga = this->GetLayoutNode();
   const auto setYoga = [&]<class... FrontArgs>(
                          const auto defaultValue,
-                         auto member,
+                         std::invocable<Style&> auto member,
                          auto setter,
                          FrontArgs&&... frontArgs) {
-    const auto& optional = mComputedStyle.*member;
+    const auto& optional = std::invoke(member, mComputedStyle);
     if (optional.has_value()) {
       setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
       return;
@@ -141,99 +141,47 @@ void Widget::ComputeStyles(const Style& inherited) {
   };
 
   using enum style_detail::StyleProperty;
-  setYoga(default_v<Position>, &Style::mPosition, &YGNodeStyleSetPositionType);
-
-  setYoga(
-    default_v<AlignContent>,
-    &Style::mAlignContent,
-    &YGNodeStyleSetAlignContent);
-  setYoga(
-    default_v<AlignItems>, &Style::mAlignItems, &YGNodeStyleSetAlignItems);
-  setYoga(default_v<AlignSelf>, &Style::mAlignSelf, &YGNodeStyleSetAlignSelf);
-  setYoga(
-    default_v<BorderBottomWidth>,
-    &Style::mBorderBottomWidth,
-    &YGNodeStyleSetBorder,
-    YGEdgeBottom);
-  setYoga(
-    default_v<BorderLeftWidth>,
-    &Style::mBorderLeftWidth,
-    &YGNodeStyleSetBorder,
-    YGEdgeLeft);
-  setYoga(
-    default_v<BorderRightWidth>,
-    &Style::mBorderRightWidth,
-    &YGNodeStyleSetBorder,
-    YGEdgeRight);
-  setYoga(
-    default_v<BorderTopWidth>,
-    &Style::mBorderTopWidth,
-    &YGNodeStyleSetBorder,
-    YGEdgeTop);
-  setYoga(
-    default_v<Bottom>, &Style::mBottom, &YGNodeStyleSetPosition, YGEdgeBottom);
-  setYoga(default_v<Display>, &Style::mDisplay, &YGNodeStyleSetDisplay);
-  setYoga(default_v<FlexBasis>, &Style::mFlexBasis, &YGNodeStyleSetFlexBasis);
-  setYoga(
-    default_v<FlexDirection>,
-    &Style::mFlexDirection,
-    &YGNodeStyleSetFlexDirection);
-  setYoga(default_v<FlexGrow>, &Style::mFlexGrow, &YGNodeStyleSetFlexGrow);
-  setYoga(
-    default_v<FlexShrink>, &Style::mFlexShrink, &YGNodeStyleSetFlexShrink);
-  setYoga(default_v<Gap>, &Style::mGap, &YGNodeStyleSetGap, YGGutterAll);
-  setYoga(default_v<Height>, &Style::mHeight, &YGNodeStyleSetHeight);
-  setYoga(
-    default_v<JustifyContent>,
-    &Style::mJustifyContent,
-    &YGNodeStyleSetJustifyContent);
-  setYoga(default_v<Left>, &Style::mLeft, &YGNodeStyleSetPosition, YGEdgeLeft);
-  setYoga(
-    default_v<MarginBottom>,
-    &Style::mMarginBottom,
-    &YGNodeStyleSetMargin,
-    YGEdgeBottom);
-  setYoga(
-    default_v<MarginLeft>,
-    &Style::mMarginLeft,
-    &YGNodeStyleSetMargin,
-    YGEdgeLeft);
-  setYoga(
-    default_v<MarginRight>,
-    &Style::mMarginRight,
-    &YGNodeStyleSetMargin,
-    YGEdgeRight);
-  setYoga(
-    default_v<MarginTop>, &Style::mMarginTop, &YGNodeStyleSetMargin, YGEdgeTop);
-  setYoga(default_v<MaxHeight>, &Style::mMaxHeight, &YGNodeStyleSetMaxHeight);
-  setYoga(default_v<MaxWidth>, &Style::mMaxWidth, &YGNodeStyleSetMaxWidth);
-  setYoga(default_v<MinHeight>, &Style::mMinHeight, &YGNodeStyleSetMinHeight);
-  setYoga(default_v<MinWidth>, &Style::mMinWidth, &YGNodeStyleSetMinWidth);
-  setYoga(default_v<Overflow>, &Style::mOverflow, &YGNodeStyleSetOverflow);
-  setYoga(
-    default_v<PaddingBottom>,
-    &Style::mPaddingBottom,
-    &YGNodeStyleSetPadding,
-    YGEdgeBottom);
-  setYoga(
-    default_v<PaddingLeft>,
-    &Style::mPaddingLeft,
-    &YGNodeStyleSetPadding,
-    YGEdgeLeft);
-  setYoga(
-    default_v<PaddingRight>,
-    &Style::mPaddingRight,
-    &YGNodeStyleSetPadding,
-    YGEdgeRight);
-  setYoga(
-    default_v<PaddingTop>,
-    &Style::mPaddingTop,
-    &YGNodeStyleSetPadding,
-    YGEdgeTop);
-  setYoga(
-    default_v<Right>, &Style::mRight, &YGNodeStyleSetPosition, YGEdgeRight);
-  setYoga(default_v<Top>, &Style::mTop, &YGNodeStyleSetPosition, YGEdgeTop);
-  setYoga(default_v<Width>, &Style::mWidth, &YGNodeStyleSetWidth);
+#define X(PROPERTY, YG_SETTER, ...) \
+  setYoga( \
+    default_v<PROPERTY>, \
+    [](auto&& it) -> auto& { return it.PROPERTY(); }, \
+    &YGNodeStyleSet##YG_SETTER, \
+    ##__VA_ARGS__);
+  X(Position, PositionType)
+  X(AlignContent, AlignContent)
+  X(AlignItems, AlignItems)
+  X(AlignSelf, AlignSelf)
+  X(BorderBottomWidth, Border, YGEdgeBottom)
+  X(BorderLeftWidth, Border, YGEdgeLeft)
+  X(BorderRightWidth, Border, YGEdgeRight)
+  X(BorderTopWidth, Border, YGEdgeTop)
+  X(Bottom, Position, YGEdgeBottom)
+  X(Display, Display)
+  X(FlexBasis, FlexBasis)
+  X(FlexDirection, FlexDirection)
+  X(FlexGrow, FlexGrow)
+  X(FlexShrink, FlexShrink)
+  X(Gap, Gap, YGGutterAll)
+  X(Height, Height)
+  X(JustifyContent, JustifyContent)
+  X(Left, Position, YGEdgeLeft)
+  X(MarginBottom, Margin, YGEdgeBottom)
+  X(MarginLeft, Margin, YGEdgeLeft)
+  X(MarginRight, Margin, YGEdgeRight)
+  X(MarginTop, Margin, YGEdgeTop)
+  X(MaxHeight, MaxHeight)
+  X(MaxWidth, MaxWidth)
+  X(MinHeight, MinHeight)
+  X(MinWidth, MinWidth)
+  X(Overflow, Overflow)
+  X(PaddingBottom, Padding, YGEdgeBottom)
+  X(PaddingLeft, Padding, YGEdgeLeft)
+  X(PaddingRight, Padding, YGEdgeRight)
+  X(PaddingTop, Padding, YGEdgeTop)
+  X(Right, Position, YGEdgeRight)
+  X(Top, Position, YGEdgeTop)
+  X(Width, Width)
+#undef X
 }
 
 Widget::ComputedStyleFlags Widget::OnComputedStyleChange(

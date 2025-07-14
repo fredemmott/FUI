@@ -47,7 +47,7 @@ void Label::PaintOwnContent(
   const Rect& outerRect,
   const Style& style) const {
 #ifndef NDEBUG
-  if (style.mFont != mFont) [[unlikely]] {
+  if (style.Font() != mFont) [[unlikely]] {
     throw std::logic_error(
       "Stylesheet font does not match mFont; computed style not updated");
   }
@@ -69,7 +69,7 @@ void Label::PaintOwnContent(
     rect.GetBottom() - metrics.mDescent,
   };
 
-  switch (style.mTextAlign.value_or(TextAlign::Left)) {
+  switch (style.TextAlign().value_or(TextAlign::Left)) {
     case TextAlign::Left:
       break;
     case TextAlign::Center: {
@@ -84,14 +84,14 @@ void Label::PaintOwnContent(
     }
   }
 
-  renderer->DrawText(style.mColor.value(), rect, mFont, mText, baseline);
+  renderer->DrawText(style.Color().value(), rect, mFont, mText, baseline);
 }
 
 Widget::ComputedStyleFlags Label::OnComputedStyleChange(
   const Style& style,
   StateFlags) {
-  if (mFont != style.mFont) {
-    mFont = style.mFont.value();
+  if (mFont != style.Font()) {
+    mFont = style.Font().value();
     YGNodeMarkDirty(this->GetLayoutNode());
   }
 

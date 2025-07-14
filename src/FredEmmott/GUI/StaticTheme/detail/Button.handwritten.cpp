@@ -12,36 +12,36 @@ using namespace StaticTheme::Common;
 using namespace PseudoClasses;
 
 const style_detail::lazy_init_style DefaultButtonStyle {[] {
-  return Style {
-    .mBackgroundColor = ButtonBackground,
-    .mBorderColor = ButtonBorderBrush,
-    .mBorderRadius = ControlCornerRadius,
-    .mBorderWidth = ButtonBorderThemeThickness,
-    .mColor = ButtonForeground,
-    .mFont = WidgetFont::ControlContent,
-    .mPaddingBottom = ButtonPaddingBottom,
-    .mPaddingLeft = ButtonPaddingLeft,
-    .mPaddingRight = ButtonPaddingRight,
-    .mPaddingTop = ButtonPaddingTop,
-    .mTextAlign = TextAlign::Center,
-    .mAnd = {
-      { Disabled, Style {
-        .mBackgroundColor = ButtonBackgroundDisabled,
-        .mBorderColor = ButtonBorderBrushDisabled,
-        .mColor = ButtonForegroundDisabled,
-      }},
-      { Hover, Style {
-        .mBackgroundColor = ButtonBackgroundPointerOver,
-        .mBorderColor = ButtonBorderBrushPointerOver,
-        .mColor = ButtonForegroundPointerOver,
-        }},
-        { Active, Style {
-          .mBackgroundColor = ButtonBackgroundPressed,
-          .mBorderColor = ButtonBorderBrushPressed,
-          .mColor = ButtonForegroundPressed,
-        }},
-      },
-    };
+  return Style()
+    .BackgroundColor(ButtonBackground)
+    .BorderColor(ButtonBorderBrush)
+    .BorderRadius(ControlCornerRadius)
+    .BorderWidth(ButtonBorderThemeThickness)
+    .Color(ButtonForeground)
+    .Font(WidgetFont::ControlContent)
+    .PaddingBottom(ButtonPaddingBottom)
+    .PaddingLeft(ButtonPaddingLeft)
+    .PaddingRight(ButtonPaddingRight)
+    .PaddingTop(ButtonPaddingTop)
+    .TextAlign(TextAlign::Center)
+    .And(
+      Disabled,
+      Style()
+        .BackgroundColor(ButtonBackgroundDisabled)
+        .BorderColor(ButtonBorderBrushDisabled)
+        .Color(ButtonForegroundDisabled))
+    .And(
+      Hover,
+      Style()
+        .BackgroundColor(ButtonBackgroundPointerOver)
+        .BorderColor(ButtonBorderBrushPointerOver)
+        .Color(ButtonForegroundPointerOver))
+    .And(
+      Active,
+      Style()
+        .BackgroundColor(ButtonBackgroundPressed)
+        .BorderColor(ButtonBorderBrushPressed)
+        .Color(ButtonForegroundPressed));
 }};
 
 const style_detail::lazy_init_style AccentButtonStyle {[] {
@@ -49,27 +49,27 @@ const style_detail::lazy_init_style AccentButtonStyle {[] {
   using namespace StaticTheme::Button;
   using namespace PseudoClasses;
   return DefaultButtonStyle
-    + Style {
-      .mBackgroundColor = AccentButtonBackground,
-      .mBorderColor = AccentButtonBorderBrush,
-      .mColor = AccentButtonForeground,
-      .mAnd = {
-        { Disabled, Style {
-          .mBackgroundColor = AccentButtonBackgroundDisabled,
-          .mBorderColor = AccentButtonBorderBrushDisabled,
-          .mColor = AccentButtonForegroundDisabled,
-        }},
-        { Hover, Style {
-          .mBackgroundColor = AccentButtonBackgroundPointerOver,
-          .mBorderColor = AccentButtonBorderBrushPointerOver,
-          .mColor = AccentButtonForegroundPointerOver,
-        }},
-        { Active, Style {
-          .mBackgroundColor = AccentButtonBackgroundPressed,
-          .mBorderColor = AccentButtonBorderBrushPressed,
-          .mColor = AccentButtonForegroundPressed,
-        }},
-      },
-    };
+    + Style()
+        .BackgroundColor(AccentButtonBackground)
+        .BorderColor(AccentButtonBorderBrush)
+        .Color(AccentButtonForeground)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(AccentButtonBackgroundDisabled)
+            .BorderColor(AccentButtonBorderBrushDisabled)
+            .Color(AccentButtonForegroundDisabled))
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(AccentButtonBackgroundPointerOver)
+            .BorderColor(AccentButtonBorderBrushPointerOver)
+            .Color(AccentButtonForegroundPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(AccentButtonBackgroundPressed)
+            .BorderColor(AccentButtonBorderBrushPressed)
+            .Color(AccentButtonForegroundPressed));
 }};
 }// namespace FredEmmott::GUI::StaticTheme::Button

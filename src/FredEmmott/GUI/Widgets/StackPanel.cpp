@@ -9,18 +9,11 @@ namespace {
 const auto HorizontalStyleClass = StyleClass::Make("HorizontalStackPanel");
 const auto VerticalStyleClass = StyleClass::Make("VerticalStackPanel");
 
-const Style BaseStyles = {
-  .mFlexGrow = 0,
-  .mGap = 16,
-};
-const auto HorizontalStyles = BaseStyles
-  + Style {
-    .mFlexDirection = YGFlexDirectionRow,
-  };
-const auto VerticalStyles = BaseStyles
-  + Style {
-    .mFlexDirection = YGFlexDirectionColumn,
-  };
+const auto BaseStyles = Style().FlexGrow(0).Gap(16);
+const auto HorizontalStyles
+  = BaseStyles + Style().FlexDirection(YGFlexDirectionRow);
+const auto VerticalStyles
+  = BaseStyles + Style().FlexDirection(YGFlexDirectionColumn);
 }// namespace
 
 StackPanel::StackPanel(std::size_t id, Orientation orientation)

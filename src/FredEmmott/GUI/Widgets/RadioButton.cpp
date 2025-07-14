@@ -18,16 +18,13 @@ RadioButton::RadioButton(std::size_t id) : Widget(id, {RadioButtonStyleClass}) {
   });
   mOuter->SetChildren({mInner = new Widget(0)});
 
-  this->SetBuiltInStyles({
-    .mAlignContent = YGAlignCenter,
-    .mHeight = 32,
-  });
-  mFosterParent->SetBuiltInStyles({
-    .mAlignItems = YGAlignCenter,
-    .mPaddingLeft = 8,
-    .mPaddingTop = 6,
-    .mTranslateY = -2,
-  });
+  this->SetBuiltInStyles(Style().AlignContent(YGAlignCenter).Height(32));
+  mFosterParent->SetBuiltInStyles(
+    Style()
+      .AlignItems(YGAlignCenter)
+      .PaddingLeft(8)
+      .PaddingTop(6)
+      .TranslateY(-2));
   this->InitializeInnerStyles();
   this->SetStyles();
 }
@@ -74,59 +71,64 @@ void RadioButton::SetStyles() {
 void RadioButton::SetOuterStyles() {
   using namespace StaticTheme::RadioButton;
   using namespace PseudoClasses;
-  static const Style BaseStyle {
-    .mAlignContent = YGAlignCenter,
-    .mAlignItems = YGAlignCenter,
-    .mAlignSelf = YGAlignCenter,
-    .mBorderRadius = 10,
-    .mBorderWidth = RadioButtonBorderThemeThickness,
-    .mHeight = 20,
-    .mJustifyContent = YGJustifyCenter,
-    .mWidth = 20,
-  };
+  static const Style BaseStyle = Style()
+                                   .AlignContent(YGAlignCenter)
+                                   .AlignItems(YGAlignCenter)
+                                   .AlignSelf(YGAlignCenter)
+                                   .BorderRadius(10)
+                                   .BorderWidth(RadioButtonBorderThemeThickness)
+                                   .Height(20)
+                                   .JustifyContent(YGJustifyCenter)
+                                   .Width(20);
+
   YGNodeStyleSetBoxSizing(mOuter->GetLayoutNode(), YGBoxSizingContentBox);
-  static const Style UncheckedStyle = BaseStyle + Style {
-    .mBackgroundColor = RadioButtonOuterEllipseFill,
-    .mBorderColor = RadioButtonOuterEllipseStroke,
-    .mAnd = {
-      { Hover, Style {
-        .mBackgroundColor = RadioButtonOuterEllipseFillPointerOver,
-        .mBorderColor = RadioButtonOuterEllipseStrokePointerOver,
-      }},
-      { Active , Style {
-        .mBackgroundColor = RadioButtonOuterEllipseFillPressed,
-        .mBorderColor = RadioButtonOuterEllipseStrokePressed,
-      }},
-      { Disabled, Style {
-        .mBackgroundColor = RadioButtonOuterEllipseFillDisabled,
-        .mBorderColor = RadioButtonOuterEllipseStrokeDisabled,
-      }}
-    },
-  };
-  static const Style CheckedStyle = BaseStyle + Style {
-    .mBackgroundColor = RadioButtonOuterEllipseCheckedFill,
-    .mBorderColor = RadioButtonOuterEllipseCheckedStroke,
-    .mAnd = {
-      { Hover, Style {
-        .mBackgroundColor = RadioButtonOuterEllipseCheckedFillPointerOver,
-        .mBorderColor = RadioButtonOuterEllipseCheckedStrokePointerOver,
-      }},
-      { Active , Style {
-        .mBackgroundColor = RadioButtonOuterEllipseCheckedFillPressed,
-        .mBorderColor = RadioButtonOuterEllipseCheckedStrokePressed,
-      }},
-      { Disabled, Style {
-        .mBackgroundColor = RadioButtonOuterEllipseCheckedFillDisabled,
-        .mBorderColor = RadioButtonOuterEllipseCheckedStrokeDisabled,
-      }}
-    },
-  };
+
+  static const Style UncheckedStyle = BaseStyle
+    + Style()
+        .BackgroundColor(RadioButtonOuterEllipseFill)
+        .BorderColor(RadioButtonOuterEllipseStroke)
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(RadioButtonOuterEllipseFillPointerOver)
+            .BorderColor(RadioButtonOuterEllipseStrokePointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(RadioButtonOuterEllipseFillPressed)
+            .BorderColor(RadioButtonOuterEllipseStrokePressed))
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(RadioButtonOuterEllipseFillDisabled)
+            .BorderColor(RadioButtonOuterEllipseStrokeDisabled));
+
+  static const Style CheckedStyle = BaseStyle
+    + Style()
+        .BackgroundColor(RadioButtonOuterEllipseCheckedFill)
+        .BorderColor(RadioButtonOuterEllipseCheckedStroke)
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(RadioButtonOuterEllipseCheckedFillPointerOver)
+            .BorderColor(RadioButtonOuterEllipseCheckedStrokePointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(RadioButtonOuterEllipseCheckedFillPressed)
+            .BorderColor(RadioButtonOuterEllipseCheckedStrokePressed))
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(RadioButtonOuterEllipseCheckedFillDisabled)
+            .BorderColor(RadioButtonOuterEllipseCheckedStrokeDisabled));
+
   mOuter->SetBuiltInStyles(mIsChecked ? CheckedStyle : UncheckedStyle);
 }
 
 void RadioButton::SetInnerStyles() {
   mInner->ReplaceExplicitStyles(
-    {.mDisplay = (mIsChecked ? YGDisplayFlex : YGDisplayNone)});
+    Style().Display(mIsChecked ? YGDisplayFlex : YGDisplayNone));
 }
 
 void RadioButton::InitializeInnerStyles() {
@@ -135,38 +137,38 @@ void RadioButton::InitializeInnerStyles() {
   using namespace PseudoClasses;
   constexpr auto SizeAnimation = CubicBezierStyleTransition(
     ControlNormalAnimationDuration, ControlFastOutSlowInKeySpline);
-  static const Style GlyphStyle {
-    .mAlignContent = YGAlignCenter,
-    .mAlignItems = YGAlignCenter,
-    .mAlignSelf = YGAlignCenter,
-    .mBackgroundColor = RadioButtonCheckGlyphFill,
-    .mBorderColor = RadioButtonCheckGlyphStroke,
-    .mBorderRadius = 7,
-    .mHeight = {RadioButtonCheckGlyphSize, SizeAnimation},
-    .mWidth = {RadioButtonCheckGlyphSize, SizeAnimation},
-    .mAnd = {
-      {Hover, Style {
-        .mBackgroundColor = RadioButtonCheckGlyphFillPointerOver,
-        .mBorderColor = RadioButtonCheckGlyphStrokePointerOver,
-        .mHeight = 14,
-        .mWidth = 14,
-      }},
-      {Active, Style {
-        .mBackgroundColor = RadioButtonCheckGlyphFillPressed,
-        .mBorderColor = RadioButtonCheckGlyphStrokePressed,
-        .mBorderRadius = 6,
-        .mHeight = 10,
-        .mWidth = 10,
-      }},
-      {Disabled, Style {
-        .mBackgroundColor = RadioButtonCheckGlyphFillDisabled,
-        .mBorderColor = RadioButtonCheckGlyphStrokeDisabled,
-        .mHeight = 14,
-        .mWidth = 14,
-      }},
-    },
-  };
+  static const Style GlyphStyle
+    = Style()
+        .AlignContent(YGAlignCenter)
+        .AlignItems(YGAlignCenter)
+        .AlignSelf(YGAlignCenter)
+        .BackgroundColor(RadioButtonCheckGlyphFill)
+        .BorderColor(RadioButtonCheckGlyphStroke)
+        .BorderRadius(7)
+        .Height(RadioButtonCheckGlyphSize, SizeAnimation)
+        .Width(RadioButtonCheckGlyphSize, SizeAnimation)
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(RadioButtonCheckGlyphFillPointerOver)
+            .BorderColor(RadioButtonCheckGlyphStrokePointerOver)
+            .Height(14)
+            .Width(14))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(RadioButtonCheckGlyphFillPressed)
+            .BorderColor(RadioButtonCheckGlyphStrokePressed)
+            .BorderRadius(6)
+            .Height(10)
+            .Width(10))
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(RadioButtonCheckGlyphFillDisabled)
+            .BorderColor(RadioButtonCheckGlyphStrokeDisabled)
+            .Height(14)
+            .Width(14));
   mInner->SetBuiltInStyles(GlyphStyle);
 }
-
 }// namespace FredEmmott::GUI::Widgets

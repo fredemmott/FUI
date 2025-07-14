@@ -8,6 +8,20 @@
 
 #include "FredEmmott/GUI/StylePropertyTypes.hpp"
 
+#define FUI_ENUM_STYLE_PROPERTY_TYPES(X) \
+  X(Brush, Brush) \
+  X(GUI::Font, Font) \
+  X(float, Float) \
+  X(YGAlign, YGAlign) \
+  X(YGDisplay, YGDisplay) \
+  X(YGFlexDirection, YGFlexDirection) \
+  X(YGJustify, YGJustify) \
+  X(YGOverflow, YGOverflow) \
+  X(YGPositionType, YGPositionType) \
+  X(YGWrap, YGWrap) \
+  X(GUI::PointerEvents, PointerEvents) \
+  X(GUI::TextAlign, TextAlign)
+
 #define FUI_ENUM_STYLE_PROPERTIES(X) \
   X(AlignContent, YGAlign, Self) \
   X(AlignItems, YGAlign, Self) \
@@ -31,7 +45,7 @@
   X(FlexDirection, YGFlexDirection, Self) \
   X(FlexGrow, float, Self, 0.0f) \
   X(FlexShrink, float, Self, 0.0f) \
-  X(Font, Font, SelfAndDescendants) \
+  X(Font, GUI::Font, SelfAndDescendants) \
   X(Gap, float, Self) \
   X(Height, float, Self) \
   X(JustifyContent, YGJustify, Self) \
@@ -52,12 +66,12 @@
   X(PaddingLeft, float, Self) \
   X(PaddingRight, float, Self) \
   X(PaddingTop, float, Self) \
-  X(PointerEvents, PointerEvents, Self) \
+  X(PointerEvents, GUI::PointerEvents, Self) \
   X(Position, YGPositionType, Self, YGPositionTypeRelative) \
   X(Right, float, Self) \
   X(ScaleX, float, Self, 1.0f) \
   X(ScaleY, float, Self, 1.0f) \
-  X(TextAlign, TextAlign, SelfAndDescendants, TextAlign::Left) \
+  X(TextAlign, GUI::TextAlign, SelfAndDescendants, TextAlign::Left) \
   X(Top, float, Self) \
   X(TranslateX, float, Self, 0.0f) \
   X(TranslateY, float, Self, 0.0f) \
@@ -117,6 +131,7 @@ struct property_metadata_t;
 #define FUI_DECLARE_DEFAULT_PROPERTY_VALUE(NAME, TYPE, SCOPE, ...) \
   template <> \
   struct property_metadata_t<StyleProperty::NAME> { \
+    using value_type = TYPE; \
     static constexpr auto default_value { \
       last_value_v(default_t<TYPE>::value, ##__VA_ARGS__)}; \
     static constexpr auto default_scope = StylePropertyScope::SCOPE; \
@@ -129,5 +144,7 @@ static constexpr auto default_property_value_v
 template <StyleProperty P>
 static constexpr auto default_property_scope_v
   = property_metadata_t<P>::default_scope;
+template <StyleProperty P>
+using property_value_t = typename property_metadata_t<P>::value_type;
 
 }// namespace FredEmmott::GUI::style_detail
