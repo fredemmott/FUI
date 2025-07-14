@@ -409,7 +409,7 @@ void Win32Window::ResizeSwapchain() {
 }
 
 void Win32Window::ResizeIfNeeded() {
-  if (!mPendingResize.TestAndClear()) {
+  if (!std::exchange(mPendingResize, false)) {
     return;
   }
 
@@ -481,7 +481,8 @@ void Win32Window::ApplySizeConstraints() {
 }
 
 void Win32Window::ApplySizeConstraints(RECT* ncrect) const {
-  WMSizingProc(WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(ncrect));
+  const_cast<Win32Window*>(this)->WMSizingProc(
+    WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(ncrect));
 
   const auto monitor = MonitorFromWindow(mHwnd.get(), MONITOR_DEFAULTTONEAREST);
   MONITORINFO monitorInfo {sizeof(monitorInfo)};
@@ -580,8 +581,7 @@ void Win32Window::SetDPI(const WORD newDPI) {
   YGConfigSetPointScaleFactor(GetYogaConfig(), mDPIScale);
 }
 
-std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam)
-  const {
+std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
   if (!mDPI) {
     return {};
   }
@@ -688,7 +688,7 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam)
       rect.bottom -= dy;
   }
 
-  const_cast<Win32Window*>(this)->mPendingResize.Set();
+  mPendingResize = true;
   return {TRUE};
 }
 
@@ -724,7 +724,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       const auto w = LOWORD(lParam);
       const auto h = HIWORD(lParam);
       if (w != mClientSize.cx || h != mClientSize.cy) {
-        mPendingResize.Set();
+        mPendingResize = true;
       }
       return 0;
     }

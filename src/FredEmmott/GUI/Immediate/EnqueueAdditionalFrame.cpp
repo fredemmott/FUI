@@ -8,7 +8,7 @@
 namespace FredEmmott::GUI::Immediate {
 
 void EnqueueAdditionalFrame() {
-  immediate_detail::tNeedAdditionalFrame.Set();
+  immediate_detail::tNeedAdditionalFrame = true;
 }
 
 }// namespace FredEmmott::GUI::Immediate

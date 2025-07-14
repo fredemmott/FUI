@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/ActivatedFlag.hpp>
 #include <FredEmmott/GUI/Widgets/Label.hpp>
 
 #include "Widget.hpp"
@@ -17,7 +16,7 @@ class CheckBox final : public Widget {
   bool IsChecked() const noexcept;
   void SetIsChecked(bool) noexcept;
 
-  ActivatedFlag mChanged;
+  bool mChanged {false};
 
  protected:
   Style GetBuiltInStyles() const override;

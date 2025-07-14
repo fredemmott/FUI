@@ -4,7 +4,6 @@ add_library(
   fredemmott-gui
   STATIC
   FredEmmott/GUI.hpp
-  FredEmmott/GUI/ActivatedFlag.hpp
   FredEmmott/GUI/Brush.cpp FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/EasingFunctions.hpp

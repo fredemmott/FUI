@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/ActivatedFlag.hpp>
-
 #include "ToggleSwitchThumb.hpp"
 #include "Widget.hpp"
 

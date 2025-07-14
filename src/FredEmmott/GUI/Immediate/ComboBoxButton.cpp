@@ -19,7 +19,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   using Widget = Widgets::Widget;
   const auto button = BeginWidget<Button>(id);
   if (clicked) {
-    *clicked = button->mClicked.TestAndClear();
+    *clicked = std::exchange(button->mClicked, false);
   }
 
   using namespace StaticTheme::Common;

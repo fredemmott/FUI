@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Immediate {
 
 void ResizeToFit() {
   immediate_detail::tResizeNextFrame = true;
-  immediate_detail::tNeedAdditionalFrame.Set();
+  immediate_detail::tNeedAdditionalFrame = true;
 }
 
 }// namespace FredEmmott::GUI::Immediate

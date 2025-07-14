@@ -6,7 +6,7 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 
 thread_local std::vector<StackEntry> tStack;
 thread_local Window* tWindow {nullptr};
-thread_local ActivatedFlag tNeedAdditionalFrame;
+thread_local bool tNeedAdditionalFrame {false};
 thread_local bool tResizeThisFrame {false};
 thread_local bool tResizeNextFrame {false};
 

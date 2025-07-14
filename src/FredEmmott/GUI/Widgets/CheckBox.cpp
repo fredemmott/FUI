@@ -195,7 +195,7 @@ Style CheckBox::GetBuiltInStyles() const {
 
 Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
   SetIsChecked(!IsChecked());
-  mChanged.Set();
+  mChanged = true;
   return EventHandlerResult::StopPropagation;
 }
 

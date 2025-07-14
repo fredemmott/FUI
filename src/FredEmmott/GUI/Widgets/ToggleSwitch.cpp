@@ -66,7 +66,7 @@ Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(
 Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent&) {
   this->SetIsOn(!this->IsOn());
   // This is used to detect user-triggered changes, not any change
-  mChanged.Set();
+  mChanged = true;
   return EventHandlerResult::StopPropagation;
 }
 

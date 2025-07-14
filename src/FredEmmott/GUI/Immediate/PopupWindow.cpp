@@ -21,7 +21,7 @@ struct ParentContext {
   Window* mPreviousWindow {nullptr};
   Window* mWindow {nullptr};
   decltype(tStack) mWindowStack;
-  ActivatedFlag mNeedAdditionalFrame;
+  bool mNeedAdditionalFrame {false};
 };
 thread_local std::vector<ParentContext> tPopupStack;
 
@@ -30,11 +30,8 @@ void PopParentContext() {
   tWindow = back.mPreviousWindow;
   tStack = std::move(back.mWindowStack);
 
-  const bool popupNeedsFrame = tNeedAdditionalFrame.TestAndClear();
-
-  tNeedAdditionalFrame = back.mNeedAdditionalFrame;
-  if (popupNeedsFrame) {
-    tNeedAdditionalFrame.Set();
+  if (back.mNeedAdditionalFrame) {
+    tNeedAdditionalFrame = true;
   }
 
   tPopupStack.pop_back();

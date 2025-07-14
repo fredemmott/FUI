@@ -27,7 +27,7 @@ Style Button::GetBuiltInStyles() const {
 }
 
 Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {
-  mClicked.Set();
+  mClicked = true;
   return EventHandlerResult::StopPropagation;
 }
 Widget::ComputedStyleFlags Button::OnComputedStyleChange(

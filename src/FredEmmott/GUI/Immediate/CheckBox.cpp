@@ -13,7 +13,7 @@ BeginCheckBox(bool* pIsChanged, bool* pIsChecked, const ID id) {
   using Widgets::CheckBox;
 
   const auto checkbox = BeginWidget<CheckBox>(id);
-  const auto isChanged = checkbox->mChanged.TestAndClear();
+  const auto isChanged = std::exchange(checkbox->mChanged, false);
   if (pIsChanged) {
     *pIsChanged = isChanged;
   }

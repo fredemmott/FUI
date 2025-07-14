@@ -6,7 +6,6 @@
 #include <dwmapi.h>
 #include <wil/com.h>
 
-#include <FredEmmott/GUI/ActivatedFlag.hpp>
 #include <FredEmmott/GUI/Immediate/Root.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <chrono>
@@ -169,8 +168,8 @@ class Win32Window : public Window {
   SIZE mClientSize {};
   float mMinimumCanvasWidth {};
   Widgets::Widget* mOffsetToChild {nullptr};
-  ActivatedFlag mPendingResize;
-  bool mTrackingMouseEvents = false;
+  bool mPendingResize {false};
+  bool mTrackingMouseEvents {false};
   NativePoint mPosition {};
   ResizeMode mHorizontalResizeMode = ResizeMode::AllowGrow;
   ResizeMode mVerticalResizeMode = ResizeMode::Fixed;
@@ -194,7 +193,7 @@ class Win32Window : public Window {
   void SetDPI(WORD newDPI);
   void ApplySizeConstraints(RECT* ncRect) const;
 
-  std::optional<LRESULT> WMSizingProc(WPARAM wParam, LPARAM lParam) const;
+  std::optional<LRESULT> WMSizingProc(WPARAM wParam, LPARAM lParam);
   LRESULT
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   static LRESULT

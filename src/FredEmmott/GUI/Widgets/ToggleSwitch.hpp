@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/ActivatedFlag.hpp>
-
 #include "ToggleSwitchKnob.hpp"
 #include "Widget.hpp"
 
@@ -16,7 +14,7 @@ class ToggleSwitch final : public Widget {
   bool IsOn() const noexcept;
   void SetIsOn(bool) noexcept;
 
-  ActivatedFlag mChanged;
+  bool mChanged {false};
 
  protected:
   Style GetBuiltInStyles() const override;
