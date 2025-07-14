@@ -112,7 +112,7 @@ struct default_t<YGOverflow> {
 template <class T>
 constexpr auto default_v = default_t<T>::value;
 
-enum class StyleProperty {
+enum class StylePropertyKey {
 #define FUI_DECLARE_STYLE_PROPERTY(NAME, ...) NAME,
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY)
 #undef FUI_DECLARE_STYLE_PROPERTY
@@ -125,12 +125,12 @@ consteval auto last_value_v(auto, auto second, auto... rest) {
   return last_value_v(second, rest...);
 }
 
-template <StyleProperty P>
+template <StylePropertyKey P>
 struct property_metadata_t;
 
 #define FUI_DECLARE_DEFAULT_PROPERTY_VALUE(NAME, TYPE, SCOPE, ...) \
   template <> \
-  struct property_metadata_t<StyleProperty::NAME> { \
+  struct property_metadata_t<StylePropertyKey::NAME> { \
     using value_type = TYPE; \
     static constexpr auto default_value { \
       last_value_v(default_t<TYPE>::value, ##__VA_ARGS__)}; \
@@ -138,19 +138,20 @@ struct property_metadata_t;
   };
 FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_DEFAULT_PROPERTY_VALUE)
 #undef FUI_DECLARE_STYLE_PROPERTY
-template <StyleProperty P>
+template <StylePropertyKey P>
 static constexpr auto default_property_value_v
   = property_metadata_t<P>::default_value;
-template <StyleProperty P>
+template <StylePropertyKey P>
 static constexpr auto default_property_scope_v
   = property_metadata_t<P>::default_scope;
-template <StyleProperty P>
+template <StylePropertyKey P>
 using property_value_t = typename property_metadata_t<P>::value_type;
 
-constexpr StylePropertyScope GetDefaultPropertyScope(const StyleProperty prop) {
+constexpr StylePropertyScope GetDefaultPropertyScope(
+  const StylePropertyKey prop) {
   switch (prop) {
 #define FUI_DECLARE_PROPERTY_CASE(NAME, TYPE, SCOPE, ...) \
-  case StyleProperty::NAME: \
+  case StylePropertyKey::NAME: \
     return StylePropertyScope::SCOPE;
     FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_CASE)
 #undef FUI_DECLARE_PROPERTY_CASE

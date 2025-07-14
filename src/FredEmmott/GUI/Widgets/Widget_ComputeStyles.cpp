@@ -13,7 +13,7 @@ namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
 namespace {
-template <style_detail::StyleProperty P>
+template <style_detail::StylePropertyKey P>
 constexpr auto default_v = style_detail::default_property_value_v<P>;
 }
 
@@ -140,7 +140,7 @@ void Widget::ComputeStyles(const Style& inherited) {
     }
   };
 
-  using enum style_detail::StyleProperty;
+  using enum style_detail::StylePropertyKey;
 #define X(PROPERTY, YG_SETTER, ...) \
   setYoga( \
     default_v<PROPERTY>, \

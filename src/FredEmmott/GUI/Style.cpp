@@ -94,8 +94,8 @@ Style& Style::operator+=(const Style& other) noexcept {
 
 template <class T>
 void Style::CopyInheritableValues(
-  utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>& dest,
-  const utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>&
+  utility::unordered_map<style_detail::StylePropertyKey, StyleProperty<T>>& dest,
+  const utility::unordered_map<style_detail::StylePropertyKey, StyleProperty<T>>&
     source) {
   for (auto&& [key, value]: source) {
     if (!value.has_value()) {

@@ -21,10 +21,11 @@ class Widget;
 
 namespace FredEmmott::GUI {
 
+using style_detail::StylePropertyKey;
+
 struct StyleProperties {
   template <class T>
-  using storage_t
-    = utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>;
+  using storage_t = utility::unordered_map<StylePropertyKey, StyleProperty<T>>;
 #define FUI_DECLARE_STYLE_PROPERTY_STORAGE(TYPE, NAME) \
   storage_t<TYPE> m##NAME##Storage; \
   constexpr storage_t<TYPE>& Storage(utility::type_tag_t<TYPE>) noexcept { \
@@ -36,33 +37,32 @@ struct StyleProperties {
   }
   FUI_ENUM_STYLE_PROPERTY_TYPES(FUI_DECLARE_STYLE_PROPERTY_STORAGE)
 #undef FUI_DECLARE_STYLE_PROPERTY_STORAGE
-  template <style_detail::StyleProperty P>
+  template <StylePropertyKey P>
   constexpr auto& Storage(this auto&& self, utility::value_tag_t<P>) noexcept {
     using value_type = style_detail::property_value_t<P>;
     return self.Storage(utility::type_tag<value_type>);
   }
 
   template <class T>
-  constexpr const auto& GetProperty(
-    const style_detail::StyleProperty P) const noexcept {
+  constexpr const auto& GetProperty(const StylePropertyKey P) const noexcept {
     static constexpr StyleProperty<T> Empty {};
     const auto& storage = Storage(utility::type_tag<T>);
     return storage.contains(P) ? storage[P] : Empty;
   }
 
   template <class T>
-  constexpr auto& GetProperty(const style_detail::StyleProperty P) noexcept {
+  constexpr auto& GetProperty(const StylePropertyKey P) noexcept {
     return Storage(utility::type_tag<T>)[P];
   }
 
 #define FUI_DECLARE_PROPERTY_GETTER(NAME, ...) \
   [[nodiscard]] constexpr decltype(auto) NAME(this auto&& self) noexcept { \
-    constexpr auto key = style_detail::StyleProperty::NAME; \
+    constexpr auto key = StylePropertyKey::NAME; \
     using value_type = style_detail::property_value_t<key>; \
     return self.template GetProperty<value_type>(key); \
   } \
   [[nodiscard]] constexpr bool Has##NAME() const noexcept { \
-    constexpr auto key = style_detail::StyleProperty::NAME; \
+    constexpr auto key = StylePropertyKey::NAME; \
     return Storage(utility::value_tag<key>).contains(key); \
   }
 #define FUI_DECLARE_PROPERTY_SETTER(NAME, ...) \
@@ -70,7 +70,7 @@ struct StyleProperties {
     requires(sizeof...(Args) > 0) \
   [[nodiscard]] \
   decltype(auto) NAME(this Self&& self, Args&&... args) noexcept { \
-    constexpr auto key = style_detail::StyleProperty::NAME; \
+    constexpr auto key = StylePropertyKey::NAME; \
     using type = style_detail::property_value_t<key>; \
     Self ret = std::forward<Self>(self); \
     ret.Storage(utility::type_tag<type>) \
@@ -79,9 +79,8 @@ struct StyleProperties {
     return ret; \
   } \
   decltype(auto) Unset##NAME() noexcept { \
-    using type \
-      = style_detail::property_value_t<style_detail::StyleProperty::NAME>; \
-    Storage(utility::type_tag<type>).erase(style_detail::StyleProperty::NAME); \
+    using type = style_detail::property_value_t<StylePropertyKey::NAME>; \
+    Storage(utility::type_tag<type>).erase(StylePropertyKey::NAME); \
   }
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_GETTER)
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_SETTER)
@@ -135,9 +134,8 @@ struct Style : StyleProperties {
  private:
   template <class T>
   static void CopyInheritableValues(
-    utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>& dest,
-    const utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>&
-      source);
+    utility::unordered_map<StylePropertyKey, StyleProperty<T>>& dest,
+    const utility::unordered_map<StylePropertyKey, StyleProperty<T>>& source);
 };
 
 inline Style operator+(const Style& lhs, const Style& rhs) noexcept {

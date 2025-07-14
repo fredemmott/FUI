@@ -95,7 +95,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const Style& oldStyle,
   Style* newStyle,
   TransitionStorage_t<TValue>& transitions,
-  const style_detail::StyleProperty key) {
+  const style_detail::StylePropertyKey key) {
   using enum ApplyResult;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 

@@ -42,7 +42,7 @@ template <class T>
   requires StyleProperty<T>::SupportsTransitions
 struct TransitionStorage<T> {
   using type
-    = std::unordered_map<style_detail::StyleProperty, TransitionState<T>>;
+    = std::unordered_map<style_detail::StylePropertyKey, TransitionState<T>>;
 };
 template <class t>
 using TransitionStorage_t = typename TransitionStorage<t>::type;
@@ -71,7 +71,7 @@ struct Widget::StyleTransitions {
     const Style& oldStyle,
     Style* newStyle,
     widget_detail::TransitionStorage_t<TValue>& transitions,
-    style_detail::StyleProperty);
+    style_detail::StylePropertyKey);
 
   template <class TValue>
   [[nodiscard]]
