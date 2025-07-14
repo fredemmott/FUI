@@ -147,4 +147,15 @@ static constexpr auto default_property_scope_v
 template <StyleProperty P>
 using property_value_t = typename property_metadata_t<P>::value_type;
 
+constexpr StylePropertyScope GetDefaultPropertyScope(const StyleProperty prop) {
+  switch (prop) {
+#define FUI_DECLARE_PROPERTY_CASE(NAME, TYPE, SCOPE, ...) \
+  case StyleProperty::NAME: \
+    return StylePropertyScope::SCOPE;
+    FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_CASE)
+#undef FUI_DECLARE_PROPERTY_CASE
+  }
+  std::unreachable();
+}
+
 }// namespace FredEmmott::GUI::style_detail

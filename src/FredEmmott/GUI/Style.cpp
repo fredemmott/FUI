@@ -45,12 +45,20 @@ StyleProperties& StyleProperties::operator+=(
   FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES)
 #undef MERGE_EDGES
 
-#define MERGE_PROPERTY(X, ...) \
-  if (other.Has##X()) { \
-    this->X() += other.X(); \
+#define COPY_STORAGE_VALUES(TYPE, NAME) \
+  if (m##NAME##Storage.empty()) { \
+    m##NAME##Storage = other.m##NAME##Storage; \
+  } else { \
+    for (auto&& [key, value]: other.m##NAME##Storage) { \
+      if (m##NAME##Storage.contains(key)) { \
+        m##NAME##Storage[key] += value; \
+      } else { \
+        m##NAME##Storage.emplace(key, value); \
+      } \
+    } \
   }
-  FUI_ENUM_STYLE_PROPERTIES(MERGE_PROPERTY)
-#undef MERGE_PROPERTIES
+  FUI_ENUM_STYLE_PROPERTY_TYPES(COPY_STORAGE_VALUES)
+#undef COPY_STORAGE_VALUES
 #define UNSET_ALL_EDGES(X, Y) this->Unset##X##Y();
   FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
 #undef UNSET_ALL_EDGES
@@ -84,53 +92,54 @@ Style& Style::operator+=(const Style& other) noexcept {
   return *this;
 }
 
-Style Style::InheritableValues() const noexcept {
-  Style ret;
-  const auto copyIfInheritable
-    = [this, &ret](auto member, const auto defaultScope) {
-        const auto& rhs = std::invoke(member, *this);
-        if (!rhs.has_value()) {
-          return;
-        }
-        auto& lhs = std::invoke(member, ret);
-
-        using enum StylePropertyScope;
-        switch (rhs.mScope.value_or(defaultScope)) {
-          case Self:
-            return;
-          case SelfAndChildren:
-            lhs = rhs;
-            lhs.mScope = Self;
-            break;
-          case SelfAndDescendants:
-            lhs = rhs;
-            break;
-        }
-      };
-#define COPY_IF_INHERITABLE(X, ...) \
-  copyIfInheritable( \
-    [](auto&& style) -> auto& { return style.X(); }, \
-    style_detail::default_property_scope_v<style_detail::StyleProperty::X>);
-  FUI_ENUM_STYLE_PROPERTIES(COPY_IF_INHERITABLE)
-#undef COPY_IF_INHERITABLE
-#define MAKE_INHERITABLE(X, ...) \
-  X.mScope = StylePropertyScope::SelfAndDescendants;
-#define COPY_AS_INHERITABLE(X, ...) \
-  ret.X() = rhs.X(); \
-  MAKE_INHERITABLE(ret.X())
-  for (auto&& [selector, rhs]: mDescendants) {
-    if (holds_alternative<std::monostate>(selector)) {
-      FUI_ENUM_STYLE_PROPERTIES(COPY_AS_INHERITABLE);
+template <class T>
+void Style::CopyInheritableValues(
+  utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>> dest,
+  const utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>&
+    source) {
+  for (auto&& [key, value]: source) {
+    if (!value.has_value()) {
       continue;
     }
-    auto& it = ret.mAnd[selector];
-    it += rhs;
-#define MAKE_IT_INHERITABLE(X, ...) MAKE_INHERITABLE(it.X())
-    FUI_ENUM_STYLE_PROPERTIES(MAKE_IT_INHERITABLE)
-#undef MAKE_IT_INHERITABLE
+    const auto scope = value.mScope.has_value()
+      ? value.mScope.value()
+      : style_detail::GetDefaultPropertyScope(key);
+    switch (scope) {
+      case StylePropertyScope::Self:
+        break;
+      case StylePropertyScope::SelfAndChildren: {
+        auto dup = value;
+        dup.mScope = StylePropertyScope::Self;
+        dest.insert_or_assign(key, dup);
+        break;
+      }
+      case StylePropertyScope::SelfAndDescendants:
+        dest.insert_or_assign(key, value);
+        break;
+    }
   }
-#undef COPY_AS_INHERITABLE
+}
+
+Style Style::InheritableValues() const noexcept {
+  Style ret;
+#define COPY_STORAGE(TYPE, NAME) \
+  CopyInheritableValues(ret.m##NAME##Storage, m##NAME##Storage);
+  FUI_ENUM_STYLE_PROPERTY_TYPES(COPY_STORAGE)
+#undef COPY_STORAGE
+  for (auto&& [selector, rhs]: mDescendants) {
+    if (holds_alternative<std::monostate>(selector)) {
+      ret += rhs;
+      continue;
+    }
+    auto dup = rhs;
+#define MAKE_INHERITABLE(TYPE, NAME) \
+  for (auto&& [key, value]: dup.m##NAME##Storage) { \
+    value.mScope = StylePropertyScope::SelfAndDescendants; \
+  }
+    FUI_ENUM_STYLE_PROPERTY_TYPES(MAKE_INHERITABLE)
 #undef MAKE_INHERITABLE
+    ret.mAnd[selector] += dup;
+  }
   return ret;
 }
 
@@ -141,14 +150,12 @@ Style Style::BuiltinBaseline() {
         .And(
           PseudoClasses::Disabled,
           Style().Color(StaticTheme::TextFillColorDisabledBrush));
-#define PREVENT_INHERITANCE(X, ...) ret.X().mScope = StylePropertyScope::Self;
-  FUI_ENUM_STYLE_PROPERTIES(PREVENT_INHERITANCE)
-#undef PREVENT_INHERITANCE
-  for (auto&& [selector, style]: ret.mAnd) {
-#define PREVENT_INHERITANCE(X, ...) style.X().mScope = StylePropertyScope::Self;
-    FUI_ENUM_STYLE_PROPERTIES(PREVENT_INHERITANCE)
-#undef PREVENT_INHERITANCE
+#define PREVENT_INHERITANCE(TYPE, NAME) \
+  for (auto&& [_, value]: ret.m##NAME##Storage) { \
+    value.mScope = StylePropertyScope::Self; \
   }
+  FUI_ENUM_STYLE_PROPERTY_TYPES(PREVENT_INHERITANCE)
+#undef PREVENT_INHERITANCE
   return ret;
 }
 

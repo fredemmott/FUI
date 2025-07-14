@@ -131,6 +131,13 @@ struct Style : StyleProperties {
       std::forward<T>(selector), values);
     return copyOrMoved;
   }
+
+ private:
+  template <class T>
+  static void CopyInheritableValues(
+    utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>> dest,
+    const utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>&
+      source);
 };
 
 inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
