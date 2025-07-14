@@ -201,22 +201,18 @@ void Widget::ReplaceExplicitStyles(const Style& styles) {
     return;
   }
   mExplicitStyles = styles;
-  mDirtyStyles = true;
 }
 
 void Widget::AddExplicitStyles(const Style& styles) {
   mExplicitStyles += styles;
-  mDirtyStyles = true;
 }
 
 void Widget::SetBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = styles;
-  mDirtyStyles = true;
 }
 
 void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
   mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
-  mDirtyStyles = true;
 }
 
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {

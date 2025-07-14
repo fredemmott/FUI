@@ -18,7 +18,6 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 }
 
 void Widget::ComputeStyles(const Style& inherited) {
-  const auto clean = wil::scope_exit([this] { mDirtyStyles = false; });
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
   Style style = GlobalBaselineStyle
