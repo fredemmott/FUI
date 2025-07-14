@@ -38,14 +38,6 @@ template <class T>
 constexpr auto transition_default_value_v
   = transition_default_value_t<T>::value;
 
-template <class T>
-struct FakeCopy {
-  FakeCopy() = delete;
-  explicit FakeCopy(const T&) {}
-};
-template <class T>
-using DebugCopy = std::conditional_t<DebugAnimations, T, FakeCopy<T>>;
-
 template <class T, class U>
   requires std::same_as<std::decay_t<T>, std::decay_t<U>>
   && (!requires(T t) { t.value(); })
@@ -76,33 +68,60 @@ constexpr bool almost_equal(T&& a, U&& b) {
 
 }// namespace
 
+template <class TValue>
+[[nodiscard]]
 Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   std::chrono::steady_clock::time_point now,
   const Style& oldStyle,
   Style* newStyle,
-  auto styleProperty,
-  auto stateProperty)
-  requires(supports_transitions_v<decltype(styleProperty)>)
+  widget_detail::TransitionStorage_t<TValue>& transitions)
+  requires(supports_transitions_v<TValue>)
 {
+  const auto& properties = newStyle->Storage(utility::type_tag<TValue>);
+
   using enum ApplyResult;
-  using TValue = typename std::decay_t<
-    std::invoke_result_t<decltype(styleProperty), const Style&>>::value_type;
+  auto ret = NotAnimating;
+  for (auto&& key: std::views::keys(properties)) {
+    if (Apply<TValue>(now, oldStyle, newStyle, transitions, key) == Animating) {
+      ret = Animating;
+    }
+  }
+  return ret;
+}
+
+template <class TValue>
+Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
+  std::chrono::steady_clock::time_point now,
+  const Style& oldStyle,
+  Style* newStyle,
+  TransitionStorage_t<TValue>& transitions,
+  const style_detail::StyleProperty key) {
+  using enum ApplyResult;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  const auto& oldProp = std::invoke(styleProperty, oldStyle);
-  auto& newProp = std::invoke(styleProperty, *newStyle);
+  if (!oldStyle.Storage(utility::type_tag<TValue>).contains(key)) {
+    transitions.erase(key);
+    return NotAnimating;
+  }
+
+  if (!newStyle->Storage(utility::type_tag<TValue>).contains(key)) {
+    transitions.erase(key);
+    return NotAnimating;
+  }
+
+  const auto& oldProp = oldStyle.Storage(utility::type_tag<TValue>)[key];
+  auto& newProp = newStyle->Storage(utility::type_tag<TValue>)[key];
 
   ///////////////////////////////////////////////////////
   //  1. Do we have a start, an end, and an animation? //
   ///////////////////////////////////////////////////////
   if (!(oldProp || newProp)) {
+    transitions.erase(key);
     return NotAnimating;
   }
 
-  auto& transitionState = this->*stateProperty;
-
   if (!newProp.has_transition()) {
-    transitionState.reset();
+    transitions.erase(key);
     return NotAnimating;
   }
 
@@ -110,7 +129,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   if (
     newProp.transition().mDuration.count() == 0
     && newProp.transition().mDelay.count() == 0) {
-    transitionState.reset();
+    transitions.erase(key);
     return NotAnimating;
   }
 
@@ -131,7 +150,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
       // for animatable properties
       __debugbreak();
     }
-    transitionState.reset();
+    transitions.erase(key);
     return NotAnimating;
   }
 
@@ -144,7 +163,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
   if (almost_equal(startValue, endValue)) {
     newProp = endValue;
-    transitionState.reset();
+    transitions.erase(key);
     return NotAnimating;
   }
 
@@ -156,31 +175,33 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const auto duration
     = newProp.transition().mDuration * (SlowAnimations ? 10 : 1);
 
-  if (!transitionState.has_value()) {
-    transitionState = {
+  if (!transitions.contains(key)) {
+    TransitionState<TValue> state {
       .mStartValue = startValue,
       .mStartTime = now + transition.mDelay,
       .mEndValue = endValue,
       .mEndTime = now + transition.mDelay + duration,
     };
-    newProp = transitionState->Evaluate(transition, now);
+    newProp = state.Evaluate(transition, now);
     if (almost_equal(newProp.value(), endValue)) {
-      transitionState.reset();
       return NotAnimating;
     }
+    transitions.emplace(key, std::move(state));
     return Animating;
   }
 
+  auto& transitionState = transitions.at(key);
+
   // Target value has changed, so we need to update the animation
-  if (!almost_equal(transitionState->mEndValue, endValue)) {
-    const auto delay = (now >= transitionState->mStartTime)
+  if (!almost_equal(transitionState.mEndValue, endValue)) {
+    const auto delay = (now >= transitionState.mStartTime)
       ? StyleTransition::Duration {}
-      : (transition.mDelay - (transitionState->mStartTime - now));
+      : (transition.mDelay - (transitionState.mStartTime - now));
     transitionState = {
       .mStartValue = oldProp.value(),
       .mStartTime = now + delay,
       .mEndValue = endValue,
-      .mEndTime = std::max(transitionState->mEndTime, now + delay + duration),
+      .mEndTime = std::max(transitionState.mEndTime, now + delay + duration),
     };
     newProp = oldProp.value();
 
@@ -191,18 +212,18 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   //  4. Use the current animation //
   ///////////////////////////////////
 
-  newProp = transitionState->Evaluate(transition, now);
+  newProp = transitionState.Evaluate(transition, now);
 
   // Has it finished?
   if (almost_equal(newProp.value(), endValue)) {
     newProp = endValue;
-    transitionState.reset();
+    transitions.erase(key);
     return NotAnimating;
   }
 
   // Nope, current animation is still progress
   FUI_ASSERT(
-    transitionState->mEndTime > now,
+    transitionState.mEndTime > now,
     "Animations should end at their target value");
   return Animating;
 }
@@ -210,9 +231,6 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const Style& oldStyle,
   Style* newStyle) {
-  const DebugCopy<Style> targetStyle {*newStyle};
-  const DebugCopy<StyleTransitions> originalState {*this};
-
   using enum ApplyResult;
   if (!SystemSettings::Get().GetAnimationsEnabled()) {
     return NotAnimating;
@@ -220,56 +238,13 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const auto now = std::chrono::steady_clock::now();
 
   auto ret = NotAnimating;
-
-#define APPLY_TRANSITION(X, ...) \
+#define APPLY_TRANSITIONS(TYPE, NAME) \
   if ( \
-    Apply( \
-      now, \
-      oldStyle, \
-      newStyle, \
-      [](auto&& it) -> auto& { return it.X(); }, \
-      &StyleTransitions::m##X) \
-    == Animating) { \
+    Apply<TYPE>(now, oldStyle, newStyle, m##NAME##Transitions) == Animating) { \
     ret = Animating; \
   }
-  FUI_ENUM_STYLE_PROPERTIES(APPLY_TRANSITION)
-#undef APPLY_TRANSITION
-
-  const auto CheckTransition
-    = [&](const auto& name, auto proj, auto stateProj) {
-        if constexpr (DebugAnimations) {
-          const auto& targetValue = std::invoke(proj, targetStyle);
-          auto& newValue = std::invoke(proj, newStyle);
-          const auto& oldState = std::invoke(stateProj, originalState);
-          auto& newState = std::invoke(stateProj, this);
-          if (targetValue.has_value() && !almost_equal(targetValue, newValue)) {
-            std::println(
-              stderr,
-              "Animation result mismatch on {} - value changed, but not "
-              "animating",
-              name);
-            if (IsDebuggerPresent()) {
-              __debugbreak();
-              // Call it again so we can step through :)
-              newValue = targetValue;
-              newState = oldState;
-              (void)Apply(now, oldStyle, newStyle, proj, stateProj);
-            }
-          }
-        }
-      };
-
-  if constexpr (DebugAnimations) {
-    if (ret == NotAnimating) {
-#define CHECK_TRANSITION(X, ...) \
-  CheckTransition.template operator()( \
-    #X, \
-    [](auto&& it) -> auto& { return as_ref(it).X(); }, \
-    &StyleTransitions::m##X);
-      FUI_ENUM_STYLE_PROPERTIES(CHECK_TRANSITION);
-#undef CHECK_TRANSITION
-    }
-  }
+  FUI_ENUM_STYLE_PROPERTY_TYPES(APPLY_TRANSITIONS)
+#undef APPLY_TRANSITIONS
   return ret;
 }// namespace FredEmmott::GUI::Widgets
 
