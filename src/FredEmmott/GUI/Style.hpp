@@ -135,7 +135,7 @@ struct Style : StyleProperties {
  private:
   template <class T>
   static void CopyInheritableValues(
-    utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>> dest,
+    utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>& dest,
     const utility::unordered_map<style_detail::StyleProperty, StyleProperty<T>>&
       source);
 };
