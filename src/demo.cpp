@@ -125,7 +125,9 @@ static void AppTick(fui::Window& window) {
   static std::size_t selectedOption = 1;
   fuii::BeginRadioButtons("Radio Buttons Header");
   for (std::size_t i = 0; i < 3; ++i) {
-    fuii::RadioButton(&selectedOption, i, "Option {}", i);
+    if (fuii::RadioButton(&selectedOption, i, "Option {}", i)) {
+      std::println(stderr, "Radio changed to {}", i);
+    }
   }
   fuii::EndRadioButtons();
 

@@ -36,7 +36,6 @@ void RadioButton::SetIsChecked(const bool value) noexcept {
     return;
   }
   mIsChecked = value;
-  mClicked = mClicked || value;
   this->SetStyles();
 }
 
@@ -61,6 +60,7 @@ Widget::ComputedStyleFlags RadioButton::OnComputedStyleChange(
 
 Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {
   this->SetIsChecked(true);
+  mChanged = true;
   return EventHandlerResult::StopPropagation;
 }
 void RadioButton::SetStyles() {
