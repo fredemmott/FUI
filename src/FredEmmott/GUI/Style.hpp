@@ -60,24 +60,29 @@ struct StyleProperties {
     constexpr auto key = StylePropertyKey::NAME; \
     return mStorage.contains(key); \
   }
-#define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, ...) \
+#define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, PARAM_TYPE) \
   template <class Self, class... Args> \
-    requires(sizeof...(Args) > 0) \
   [[nodiscard]] \
-  decltype(auto) NAME(this Self&& self, Args&&... args) noexcept { \
+  decltype(auto) NAME( \
+    this Self&& self, PARAM_TYPE value, Args&&... args) noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
     Self ret = std::forward<Self>(self); \
     ret.mStorage.insert_or_assign( \
-      key, StyleProperty<TYPE>(std::forward<Args>(args)...)); \
+      key, StyleProperty<TYPE>(value, std::forward<Args>(args)...)); \
     return ret; \
-  } \
+  }
+#define FUI_DECLARE_PROPERTY_SETTERS(NAME, TYPE, ...) \
+  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const TYPE&); \
+  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const StaticTheme::Resource<TYPE>&); \
+  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, std::nullopt_t) \
   decltype(auto) Unset##NAME() noexcept { \
     mStorage.erase(StylePropertyKey::NAME); \
   }
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_GETTER)
-  FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_SETTER)
+  FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_SETTERS)
 #undef FUI_DECLARE_PROPERTY_GETTER
 #undef FUI_DECLARE_PROPERTY_SETTER
+#undef FUI_DECLARE_PROPERTY_SETTERS
 
   StyleProperties& operator+=(const StyleProperties& other);
   bool operator==(const StyleProperties& other) const noexcept = default;
