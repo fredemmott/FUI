@@ -227,6 +227,10 @@ class Widget {
   void EndMouseCapture();
 
  private:
+  struct MouseEventResult {
+    EventHandlerResult mResult {EventHandlerResult::Default};
+    Widget* mTarget {nullptr};
+  };
   struct StyleTransitions;
   unique_ptr<StyleTransitions> mStyleTransitions;
 
@@ -251,7 +255,7 @@ class Widget {
 
   // Returns the innermost widget that received the event.
   [[nodiscard]]
-  Widget* DispatchMouseEvent(const MouseEvent&);
+  MouseEventResult DispatchMouseEvent(const MouseEvent&);
   void SetManagedChildren(const std::vector<Widget*>& children);
 
   [[nodiscard]]

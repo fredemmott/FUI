@@ -7,6 +7,7 @@
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <ranges>
 
+#include "FredEmmott/GUI/assert.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -299,10 +300,10 @@ Widget* Widget::DispatchEvent(const Event* e) {
   if (const auto it = dynamic_cast<const MouseEvent*>(e)) [[likely]] {
     if (gMouseCapture) {
       auto translated = it->WithOffset(gMouseCapture->mOffset);
-      return gMouseCapture->mWidget->DispatchMouseEvent(translated);
+      return gMouseCapture->mWidget->DispatchMouseEvent(translated).mTarget;
     }
 
-    return this->DispatchMouseEvent(*it);
+    return this->DispatchMouseEvent(*it).mTarget;
   }
   throw std::logic_error("Unhandled event type");
 }
@@ -319,9 +320,10 @@ void Widget::UpdateLayout() {
   }
 }
 
-Widget* Widget::DispatchMouseEvent(const MouseEvent& parentEvent) {
+Widget::MouseEventResult Widget::DispatchMouseEvent(
+  const MouseEvent& parentEvent) {
   if (GetComputedStyle().PointerEvents() == PointerEvents::None) {
-    return nullptr;
+    return {};
   }
 
   auto event = parentEvent;
@@ -340,6 +342,7 @@ Widget* Widget::DispatchMouseEvent(const MouseEvent& parentEvent) {
 
   const auto [x, y] = event.GetPosition();
 
+  MouseEventResult result;
   if (
     (x < 0 || y < 0 || x > w || y > h)
     && !(gMouseCapture && gMouseCapture->mWidget == this)) {
@@ -353,6 +356,7 @@ Widget* Widget::DispatchMouseEvent(const MouseEvent& parentEvent) {
       event.mOffset = {};
     }
   } else {
+    result.mTarget = this;
     mDirectStateFlags |= StateFlags::Hovered;
     event = event.WithOffset({
       -mComputedStyle.TranslateX().value_or(0),
@@ -363,34 +367,36 @@ Widget* Widget::DispatchMouseEvent(const MouseEvent& parentEvent) {
   mMouseOffset = event.mOffset;
 
   // Always propagate unconditionally to allow correct internal states
-  Widget* receiver = nullptr;
   for (auto&& child: this->GetDirectChildren()) {
     if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
       continue;
     }
-    if (auto widget = child->DispatchMouseEvent(event)) {
-      receiver = widget;
+    const auto it = child->DispatchMouseEvent(event);
+    if (it.mResult == EventHandlerResult::StopPropagation) {
+      result = it;
+    } else if (it.mTarget) {
+      result.mTarget = it.mTarget;
     }
   }
 
-  if (receiver) {
-    return receiver;
+  if (result.mResult == EventHandlerResult::StopPropagation) {
+    FUI_ASSERT(result.mTarget);
+    return result;
   }
 
-  auto result = EventHandlerResult::Default;
   if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
-    result = this->OnMouseButtonPress(event);
+    result.mResult = this->OnMouseButtonPress(event);
   } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
                event.mDetail)) {
-    result = this->OnMouseButtonRelease(event);
+    result.mResult = this->OnMouseButtonRelease(event);
   } else if (std::holds_alternative<MouseEvent::MoveEvent>(event.mDetail)) {
-    result = this->OnMouseMove(event);
+    result.mResult = this->OnMouseMove(event);
   } else if (std::holds_alternative<MouseEvent::HorizontalWheelEvent>(
                event.mDetail)) {
-    result = this->OnMouseHorizontalWheel(event);
+    result.mResult = this->OnMouseHorizontalWheel(event);
   } else if (std::holds_alternative<MouseEvent::VerticalWheelEvent>(
                event.mDetail)) {
-    result = this->OnMouseVerticalWheel(event);
+    result.mResult = this->OnMouseVerticalWheel(event);
 #ifndef NDEBUG
   } else {
     OutputDebugStringA("Unhandled mouse event type\n");
@@ -398,14 +404,12 @@ Widget* Widget::DispatchMouseEvent(const MouseEvent& parentEvent) {
 #endif
   }
 
-  if (result == EventHandlerResult::StopPropagation) {
-    return this;
-  }
-  if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
-    return this;
-  }
+  FUI_ASSERT(result.mResult == EventHandlerResult::Default || result.mTarget);
+  FUI_ASSERT(
+    result.mTarget
+    || (mDirectStateFlags & StateFlags::Hovered) != StateFlags::Hovered);
 
-  return nullptr;
+  return result;
 }
 
 Widget::EventHandlerResult Widget::OnMouseMove(const MouseEvent&) {
