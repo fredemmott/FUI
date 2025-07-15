@@ -69,59 +69,37 @@ constexpr bool almost_equal(T&& a, U&& b) {
 }// namespace
 
 template <class TValue>
-[[nodiscard]]
 Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
-  std::chrono::steady_clock::time_point now,
+  const std::chrono::steady_clock::time_point now,
   const Style& oldStyle,
   Style* newStyle,
-  widget_detail::TransitionStorage_t<TValue>& transitions)
-  requires(supports_transitions_v<TValue>)
-{
-  const auto& properties = newStyle->Storage(utility::type_tag<TValue>);
-
-  using enum ApplyResult;
-  auto ret = NotAnimating;
-  for (auto&& key: std::views::keys(properties)) {
-    if (Apply<TValue>(now, oldStyle, newStyle, transitions, key) == Animating) {
-      ret = Animating;
-    }
-  }
-  return ret;
-}
-
-template <class TValue>
-Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
-  std::chrono::steady_clock::time_point now,
-  const Style& oldStyle,
-  Style* newStyle,
-  TransitionStorage_t<TValue>& transitions,
-  const style_detail::StylePropertyKey key) {
+  const StylePropertyKey key) {
   using enum ApplyResult;
   constexpr auto DefaultValue = transition_default_value_v<TValue>;
 
-  if (!oldStyle.Storage(utility::type_tag<TValue>).contains(key)) {
-    transitions.erase(key);
+  if (!oldStyle.mStorage.contains(key)) {
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
-  if (!newStyle->Storage(utility::type_tag<TValue>).contains(key)) {
-    transitions.erase(key);
+  if (!newStyle->mStorage.contains(key)) {
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
-  const auto& oldProp = oldStyle.Storage(utility::type_tag<TValue>)[key];
-  auto& newProp = newStyle->Storage(utility::type_tag<TValue>)[key];
+  const auto& oldProp = get<StyleProperty<TValue>>(oldStyle.mStorage[key]);
+  auto& newProp = get<StyleProperty<TValue>>(newStyle->mStorage[key]);
 
   ///////////////////////////////////////////////////////
   //  1. Do we have a start, an end, and an animation? //
   ///////////////////////////////////////////////////////
   if (!(oldProp || newProp)) {
-    transitions.erase(key);
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
   if (!newProp.has_transition()) {
-    transitions.erase(key);
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
@@ -129,7 +107,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   if (
     newProp.transition().mDuration.count() == 0
     && newProp.transition().mDelay.count() == 0) {
-    transitions.erase(key);
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
@@ -150,7 +128,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
       // for animatable properties
       __debugbreak();
     }
-    transitions.erase(key);
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
@@ -163,7 +141,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
   if (almost_equal(startValue, endValue)) {
     newProp = endValue;
-    transitions.erase(key);
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
@@ -175,7 +153,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const auto duration
     = newProp.transition().mDuration * (SlowAnimations ? 10 : 1);
 
-  if (!transitions.contains(key)) {
+  if (!mTransitions.contains(key)) {
     TransitionState<TValue> state {
       .mStartValue = startValue,
       .mStartTime = now + transition.mDelay,
@@ -186,11 +164,11 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     if (almost_equal(newProp.value(), endValue)) {
       return NotAnimating;
     }
-    transitions.emplace(key, std::move(state));
+    mTransitions.emplace(key, std::move(state));
     return Animating;
   }
 
-  auto& transitionState = transitions.at(key);
+  auto& transitionState = get<TransitionState<TValue>>(mTransitions.at(key));
 
   // Target value has changed, so we need to update the animation
   if (!almost_equal(transitionState.mEndValue, endValue)) {
@@ -217,7 +195,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   // Has it finished?
   if (almost_equal(newProp.value(), endValue)) {
     newProp = endValue;
-    transitions.erase(key);
+    mTransitions.erase(key);
     return NotAnimating;
   }
 
@@ -238,13 +216,19 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   const auto now = std::chrono::steady_clock::now();
 
   auto ret = NotAnimating;
-#define APPLY_TRANSITIONS(TYPE, NAME) \
-  if ( \
-    Apply<TYPE>(now, oldStyle, newStyle, m##NAME##Transitions) == Animating) { \
-    ret = Animating; \
+
+  for (auto&& [key, value]: newStyle->mStorage) {
+    style_detail::VisitStyleProperty(
+      key,
+      [&]<class T>(const StyleProperty<T>&) {
+        if constexpr (StyleProperty<T>::SupportsTransitions) {
+          if (Apply<T>(now, oldStyle, newStyle, key) == Animating) {
+            ret = Animating;
+          }
+        }
+      },
+      value);
   }
-  FUI_ENUM_STYLE_PROPERTY_TYPES(APPLY_TRANSITIONS)
-#undef APPLY_TRANSITIONS
   return ret;
 }// namespace FredEmmott::GUI::Widgets
 

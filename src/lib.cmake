@@ -119,6 +119,7 @@ add_library(
   FredEmmott/type_traits/concepts.hpp
   FredEmmott/utility/almost_equal.hpp
   FredEmmott/utility/bitflag_enums.hpp
+  FredEmmott/utility/drop_last_t.hpp
   FredEmmott/utility/moved_flag.hpp
   FredEmmott/utility/type_tag.hpp
   FredEmmott/utility/unordered_map.hpp

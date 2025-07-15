@@ -109,11 +109,24 @@ struct unordered_map {
   }
 
   template <std::convertible_to<K> T>
-  const auto& operator[](T&& key) const {
+  const auto& at(T&& key) const {
     if (!mData) {
-      throw std::out_of_range("Container is empty for const []");
+      throw std::out_of_range("Container is empty for const at()");
     }
     return mData->at(std::forward<T>(key));
+  }
+
+  template <std::convertible_to<K> T>
+  auto& at(T&& key) {
+    if (!mData) {
+      throw std::out_of_range("Container is empty for at()");
+    }
+    return mData->at(std::forward<T>(key));
+  }
+
+  template <std::convertible_to<K> T>
+  const auto& operator[](T&& key) const {
+    return at(std::forward<T>(key));
   }
 
   template <class... Args>
@@ -132,11 +145,12 @@ struct unordered_map {
     return mData->emplace(std::forward<Args>(args)...);
   }
 
-  void erase(const K&& k) {
+  template <std::convertible_to<K> U = K>
+  void erase(U&& k) {
     if (!mData) {
       return;
     }
-    mData->erase(k);
+    mData->erase(std::forward<U>(k));
   }
 
  private:

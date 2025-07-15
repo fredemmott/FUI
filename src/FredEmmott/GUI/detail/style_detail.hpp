@@ -8,9 +8,14 @@
 
 #include "FredEmmott/GUI/StylePropertyTypes.hpp"
 
+namespace FredEmmott::GUI {
+template <class T>
+class StyleProperty;
+}
+
 #define FUI_ENUM_STYLE_PROPERTY_TYPES(X) \
   X(Brush, Brush) \
-  X(Cursor, Cursor) \
+  X(GUI::Cursor, Cursor) \
   X(GUI::Font, Font) \
   X(float, Float) \
   X(YGAlign, YGAlign) \
@@ -41,7 +46,7 @@
   X(BorderWidth, float, Self) \
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
-  X(Cursor, Cursor, SelfAndDescendants) \
+  X(Cursor, GUI::Cursor, SelfAndDescendants) \
   X(Display, YGDisplay, Self, YGDisplayFlex) \
   X(FlexBasis, float, Self) \
   X(FlexDirection, YGFlexDirection, Self) \
@@ -164,6 +169,23 @@ constexpr StylePropertyScope GetDefaultPropertyScope(
 #undef FUI_DECLARE_PROPERTY_CASE
   }
   std::unreachable();
+}
+
+template <class... Value>
+void VisitStyleProperty(
+  const StylePropertyKey key,
+  auto&& visitor,
+  Value&&... value) {
+  switch (key) {
+#define PROPERTY_CASE(NAME, TYPE, ...) \
+  case StylePropertyKey::NAME: \
+    std::invoke( \
+      visitor, get<StyleProperty<TYPE>>(std::forward<Value>(value))...); \
+    return;
+    FUI_ENUM_STYLE_PROPERTIES(PROPERTY_CASE)
+#undef PROPERTY_CASE
+  }
+  throw std::logic_error("Invalid property key");
 }
 
 }// namespace FredEmmott::GUI::style_detail

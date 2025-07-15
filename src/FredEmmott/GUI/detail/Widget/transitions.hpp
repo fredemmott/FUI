@@ -8,8 +8,16 @@
 namespace FredEmmott::GUI::Widgets::widget_detail {
 
 template <class T>
+struct TransitionState;
+
+template <class T>
+  requires(!StyleProperty<T>::SupportsTransitions)
+struct TransitionState<T> : std::monostate {};
+
+template <class T>
   requires StyleProperty<T>::SupportsTransitions
-struct TransitionState {
+struct TransitionState<T> {
+  using value_type = T;
   using time_point = std::chrono::steady_clock::time_point;
 
   T mStartValue;
@@ -32,20 +40,6 @@ struct TransitionState {
     return Interpolation::Linear(mStartValue, mEndValue, eased);
   }
 };
-
-template <class T>
-struct TransitionStorage {
-  using type = std::monostate;
-};
-
-template <class T>
-  requires StyleProperty<T>::SupportsTransitions
-struct TransitionStorage<T> {
-  using type
-    = std::unordered_map<style_detail::StylePropertyKey, TransitionState<T>>;
-};
-template <class t>
-using TransitionStorage_t = typename TransitionStorage<t>::type;
 
 }// namespace FredEmmott::GUI::Widgets::widget_detail
 
@@ -70,34 +64,17 @@ struct Widget::StyleTransitions {
     std::chrono::steady_clock::time_point now,
     const Style& oldStyle,
     Style* newStyle,
-    widget_detail::TransitionStorage_t<TValue>& transitions,
     style_detail::StylePropertyKey);
 
-  template <class TValue>
-  [[nodiscard]]
-  ApplyResult Apply(
-    std::chrono::steady_clock::time_point now,
-    const Style& oldStyle,
-    Style* newStyle,
-    widget_detail::TransitionStorage_t<TValue>& transitions)
-    requires(supports_transitions_v<TValue>);
-
-  template <class TValue>
-  [[nodiscard]]
-  ApplyResult Apply(
-    [[maybe_unused]] std::chrono::steady_clock::time_point now,
-    [[maybe_unused]] const Style& oldStyle,
-    [[maybe_unused]] Style* newStyle,
-    [[maybe_unused]] widget_detail::TransitionStorage_t<TValue>& transitions)
-    requires(!supports_transitions_v<TValue>)
-  {
-    return ApplyResult::NotAnimating;
-  }
-
+  utility::unordered_map<
+    style_detail::StylePropertyKey,
+    utility::drop_last_t<
+      std::variant,
 #define DECLARE_TRANSITION_DATA(TYPE, NAME) \
-  FUI_NO_UNIQUE_ADDRESS widget_detail::TransitionStorage_t<TYPE> \
-    m##NAME##Transitions;
-  FUI_ENUM_STYLE_PROPERTY_TYPES(DECLARE_TRANSITION_DATA)
+  widget_detail::TransitionState<TYPE>,
+      FUI_ENUM_STYLE_PROPERTY_TYPES(DECLARE_TRANSITION_DATA)
 #undef DECLARE_TRANSITION_DATA
+        void>>
+    mTransitions;
 };
 }// namespace FredEmmott::GUI::Widgets

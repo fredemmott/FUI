@@ -11,8 +11,7 @@
 
 namespace FredEmmott::GUI {
 
-StyleProperties& StyleProperties::operator+=(
-  const StyleProperties& other) noexcept {
+StyleProperties& StyleProperties::operator+=(const StyleProperties& other) {
   /* Set the lhs to the rhs, if the rhs is set.
    * e.g. with:
    *
@@ -45,28 +44,31 @@ StyleProperties& StyleProperties::operator+=(
   FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES)
 #undef MERGE_EDGES
 
-#define COPY_STORAGE_VALUES(TYPE, NAME) \
-  if (m##NAME##Storage.empty()) { \
-    m##NAME##Storage = other.m##NAME##Storage; \
-  } else { \
-    for (auto&& [key, value]: other.m##NAME##Storage) { \
-      if (m##NAME##Storage.contains(key)) { \
-        m##NAME##Storage[key] += value; \
-      } else { \
-        m##NAME##Storage.emplace(key, value); \
-      } \
-    } \
+  if (mStorage.empty()) {
+    mStorage = other.mStorage;
+  } else {
+    for (auto&& [key, value]: other.mStorage) {
+      if (!mStorage.contains(key)) {
+        mStorage.emplace(key, value);
+        continue;
+      }
+      VisitStyleProperty(
+        key,
+        [](auto& dest, const auto& src) { dest += src; },
+        mStorage[key],
+        value);
+    }
   }
-  FUI_ENUM_STYLE_PROPERTY_TYPES(COPY_STORAGE_VALUES)
 #undef COPY_STORAGE_VALUES
-#define UNSET_ALL_EDGES(X, Y) this->Unset##X##Y();
+#define UNSET_ALL_EDGES(X, Y) \
+  mStorage.erase(StylePropertyKey::X##Y); \
   FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
 #undef UNSET_ALL_EDGES
 
   return *this;
 }
 
-Style& Style::operator+=(const Style& other) noexcept {
+Style& Style::operator+=(const Style& other) {
   StyleProperties::operator+=(other);
 
   if (mAnd.empty()) {
@@ -94,10 +96,14 @@ Style& Style::operator+=(const Style& other) noexcept {
 
 template <class T>
 void Style::CopyInheritableValues(
-  utility::unordered_map<style_detail::StylePropertyKey, StyleProperty<T>>& dest,
-  const utility::unordered_map<style_detail::StylePropertyKey, StyleProperty<T>>&
-    source) {
-  for (auto&& [key, value]: source) {
+  decltype(mStorage)& dest,
+  const decltype(mStorage)& source) {
+  for (auto&& [key, untypedValue]: source) {
+    if (!holds_alternative<StyleProperty<T>>(untypedValue)) {
+      continue;
+    }
+    const auto& value = get<StyleProperty<T>>(untypedValue);
+
     if (!value.has_value()) {
       continue;
     }
@@ -123,7 +129,7 @@ void Style::CopyInheritableValues(
 Style Style::InheritableValues() const noexcept {
   Style ret;
 #define COPY_STORAGE(TYPE, NAME) \
-  CopyInheritableValues(ret.m##NAME##Storage, m##NAME##Storage);
+  CopyInheritableValues<TYPE>(ret.mStorage, mStorage);
   FUI_ENUM_STYLE_PROPERTY_TYPES(COPY_STORAGE)
 #undef COPY_STORAGE
   for (auto&& [selector, rhs]: mDescendants) {
@@ -132,12 +138,14 @@ Style Style::InheritableValues() const noexcept {
       continue;
     }
     auto dup = rhs;
-#define MAKE_INHERITABLE(TYPE, NAME) \
-  for (auto&& [key, value]: dup.m##NAME##Storage) { \
-    value.mScope = StylePropertyScope::SelfAndDescendants; \
-  }
-    FUI_ENUM_STYLE_PROPERTY_TYPES(MAKE_INHERITABLE)
-#undef MAKE_INHERITABLE
+    for (auto&& [key, value]: dup.mStorage) {
+      VisitStyleProperty(
+        key,
+        [](auto& prop) {
+          prop.mScope = StylePropertyScope::SelfAndDescendants;
+        },
+        value);
+    }
     ret.mAnd[selector] += dup;
   }
   return ret;
@@ -150,12 +158,10 @@ Style Style::BuiltinBaseline() {
         .And(
           PseudoClasses::Disabled,
           Style().Color(StaticTheme::TextFillColorDisabledBrush));
-#define PREVENT_INHERITANCE(TYPE, NAME) \
-  for (auto&& [_, value]: ret.m##NAME##Storage) { \
-    value.mScope = StylePropertyScope::Self; \
+  for (auto&& [key, value]: ret.mStorage) {
+    VisitStyleProperty(
+      key, [](auto& prop) { prop.mScope = StylePropertyScope::Self; }, value);
   }
-  FUI_ENUM_STYLE_PROPERTY_TYPES(PREVENT_INHERITANCE)
-#undef PREVENT_INHERITANCE
   return ret;
 }
 

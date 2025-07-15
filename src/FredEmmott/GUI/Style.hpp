@@ -4,6 +4,7 @@
 
 #include <YGEnums.h>
 
+#include <FredEmmott/utility/drop_last_t.hpp>
 #include <FredEmmott/utility/type_tag.hpp>
 #include <FredEmmott/utility/unordered_map.hpp>
 #include <unordered_set>
@@ -24,70 +25,61 @@ namespace FredEmmott::GUI {
 using style_detail::StylePropertyKey;
 
 struct StyleProperties {
-  template <class T>
-  using storage_t = utility::unordered_map<StylePropertyKey, StyleProperty<T>>;
-#define FUI_DECLARE_STYLE_PROPERTY_STORAGE(TYPE, NAME) \
-  storage_t<TYPE> m##NAME##Storage; \
-  constexpr storage_t<TYPE>& Storage(utility::type_tag_t<TYPE>) noexcept { \
-    return m##NAME##Storage; \
-  } \
-  constexpr const storage_t<TYPE>& Storage(utility::type_tag_t<TYPE>) \
-    const noexcept { \
-    return m##NAME##Storage; \
-  }
-  FUI_ENUM_STYLE_PROPERTY_TYPES(FUI_DECLARE_STYLE_PROPERTY_STORAGE)
+  utility::unordered_map<
+    StylePropertyKey,
+    utility::drop_last_t<
+      std::variant,
+#define FUI_DECLARE_STYLE_PROPERTY_STORAGE(TYPE, NAME) StyleProperty<TYPE>,
+      FUI_ENUM_STYLE_PROPERTY_TYPES(FUI_DECLARE_STYLE_PROPERTY_STORAGE)
 #undef FUI_DECLARE_STYLE_PROPERTY_STORAGE
-  template <StylePropertyKey P>
-  constexpr auto& Storage(this auto&& self, utility::value_tag_t<P>) noexcept {
-    using value_type = style_detail::property_value_t<P>;
-    return self.Storage(utility::type_tag<value_type>);
-  }
+        void>>
+    mStorage;
+  ;
 
   template <class T>
   constexpr const auto& GetProperty(const StylePropertyKey P) const noexcept {
     static constexpr StyleProperty<T> Empty {};
-    const auto& storage = Storage(utility::type_tag<T>);
-    return storage.contains(P) ? storage[P] : Empty;
+    return mStorage.contains(P) ? std::get<StyleProperty<T>>(mStorage[P])
+                                : Empty;
   }
 
   template <class T>
   constexpr auto& GetProperty(const StylePropertyKey P) noexcept {
-    return Storage(utility::type_tag<T>)[P];
+    if (!mStorage.contains(P)) {
+      mStorage.emplace(P, StyleProperty<T> {});
+    }
+    return std::get<StyleProperty<T>>(mStorage[P]);
   }
 
-#define FUI_DECLARE_PROPERTY_GETTER(NAME, ...) \
+#define FUI_DECLARE_PROPERTY_GETTER(NAME, TYPE, ...) \
   [[nodiscard]] constexpr decltype(auto) NAME(this auto&& self) noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
-    using value_type = style_detail::property_value_t<key>; \
-    return self.template GetProperty<value_type>(key); \
+    return self.template GetProperty<TYPE>(key); \
   } \
   [[nodiscard]] constexpr bool Has##NAME() const noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
-    return Storage(utility::value_tag<key>).contains(key); \
+    return mStorage.contains(key); \
   }
-#define FUI_DECLARE_PROPERTY_SETTER(NAME, ...) \
+#define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, ...) \
   template <class Self, class... Args> \
     requires(sizeof...(Args) > 0) \
   [[nodiscard]] \
   decltype(auto) NAME(this Self&& self, Args&&... args) noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
-    using type = style_detail::property_value_t<key>; \
     Self ret = std::forward<Self>(self); \
-    ret.Storage(utility::type_tag<type>) \
-      .insert_or_assign( \
-        key, StyleProperty<type>(std::forward<Args>(args)...)); \
+    ret.mStorage.insert_or_assign( \
+      key, StyleProperty<TYPE>(std::forward<Args>(args)...)); \
     return ret; \
   } \
   decltype(auto) Unset##NAME() noexcept { \
-    using type = style_detail::property_value_t<StylePropertyKey::NAME>; \
-    Storage(utility::type_tag<type>).erase(StylePropertyKey::NAME); \
+    mStorage.erase(StylePropertyKey::NAME); \
   }
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_GETTER)
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_SETTER)
 #undef FUI_DECLARE_PROPERTY_GETTER
 #undef FUI_DECLARE_PROPERTY_SETTER
 
-  StyleProperties& operator+=(const StyleProperties& other) noexcept;
+  StyleProperties& operator+=(const StyleProperties& other);
   bool operator==(const StyleProperties& other) const noexcept = default;
 };// namespace FredEmmott::GUI
 
@@ -110,7 +102,7 @@ struct Style : StyleProperties {
   [[nodiscard]]
   static Style BuiltinBaseline();
 
-  Style& operator+=(const Style& other) noexcept;
+  Style& operator+=(const Style& other);
   bool operator==(const Style& other) const noexcept = default;
 
   template <class Self, std::convertible_to<Selector> T = Selector>
@@ -134,8 +126,8 @@ struct Style : StyleProperties {
  private:
   template <class T>
   static void CopyInheritableValues(
-    utility::unordered_map<StylePropertyKey, StyleProperty<T>>& dest,
-    const utility::unordered_map<StylePropertyKey, StyleProperty<T>>& source);
+    decltype(mStorage)& dest,
+    const decltype(mStorage)& source);
 };
 
 inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
