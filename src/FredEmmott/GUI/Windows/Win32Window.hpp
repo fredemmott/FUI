@@ -183,6 +183,9 @@ class Win32Window : public Window {
   bool mHaveSystemBackdrop {false};
   bool mIsDisabled {false};
 
+  const wil::unique_hcursor mDefaultCursor {LoadCursorW(nullptr, IDC_ARROW)};
+  const wil::unique_hcursor mPointerCursor {LoadCursorW(nullptr, IDC_HAND)};
+
   void ResizeSwapchain();
   void AdjustToWindowsTheme();
   void CreateNativeWindow();

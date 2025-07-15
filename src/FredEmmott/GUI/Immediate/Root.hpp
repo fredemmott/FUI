@@ -27,12 +27,15 @@ class Root final {
   [[nodiscard]]
   bool CanFit(float width, float height) const;
   YGNodeRef GetLayoutNode() const;
+  Widgets::Widget* GetWidget() const {
+    return mWidget.get();
+  }
   Size GetInitialSize() const;
 
   float GetHeightForWidth(float) const;
   FrameRateRequirement GetFrameRateRequirement() const;
 
-  void DispatchEvent(const Event*);
+  Widgets::Widget* DispatchEvent(const Event*);
 
  private:
   unique_ptr<Widgets::Widget> mWidget;

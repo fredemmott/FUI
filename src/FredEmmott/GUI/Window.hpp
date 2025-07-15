@@ -94,8 +94,8 @@ class Window {
     return &mFUIRoot;
   }
 
-  void DispatchEvent(Event* e) {
-    mFUIRoot.DispatchEvent(e);
+  Widgets::Widget* DispatchEvent(Event* e) {
+    return mFUIRoot.DispatchEvent(e);
   }
 
   void ResetToFirstBackBuffer();

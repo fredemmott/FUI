@@ -19,4 +19,10 @@ enum class StylePropertyScope {
   SelfAndChildren,
   SelfAndDescendants,
 };
+
+enum class Cursor {
+  Default,
+  Pointer,// Hand
+};
+
 }// namespace FredEmmott::GUI

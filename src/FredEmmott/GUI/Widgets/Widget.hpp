@@ -142,7 +142,9 @@ class Widget {
   }
   void SetChildren(const std::vector<Widget*>& children);
 
-  void DispatchEvent(const Event*);
+  /// Returns the Widget that ultimately handled the event, or nullptr
+  [[nodiscard]]
+  Widget* DispatchEvent(const Event*);
 
   const Style& GetComputedStyle() const {
     return mComputedStyle;
@@ -247,8 +249,9 @@ class Widget {
 
   Point mMouseOffset {};
 
+  // Returns the innermost widget that received the event.
   [[nodiscard]]
-  EventHandlerResult DispatchMouseEvent(const MouseEvent&);
+  Widget* DispatchMouseEvent(const MouseEvent&);
   void SetManagedChildren(const std::vector<Widget*>& children);
 
   [[nodiscard]]

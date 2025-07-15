@@ -25,6 +25,7 @@ const style_detail::lazy_init_style DefaultHyperlinkButtonStyle {[] {
     .PaddingTop(HyperlinkButtonPaddingTop)
     .PaddingBottom(HyperlinkButtonPaddingBottom)
     .BorderRadius(ControlCornerRadius)
+    .Cursor(Cursor::Pointer)// hand
     .And(
       Hover,
       Style()

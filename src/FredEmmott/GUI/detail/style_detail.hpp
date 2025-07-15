@@ -10,6 +10,7 @@
 
 #define FUI_ENUM_STYLE_PROPERTY_TYPES(X) \
   X(Brush, Brush) \
+  X(Cursor, Cursor) \
   X(GUI::Font, Font) \
   X(float, Float) \
   X(YGAlign, YGAlign) \
@@ -40,6 +41,7 @@
   X(BorderWidth, float, Self) \
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
+  X(Cursor, Cursor, SelfAndDescendants) \
   X(Display, YGDisplay, Self, YGDisplayFlex) \
   X(FlexBasis, float, Self) \
   X(FlexDirection, YGFlexDirection, Self) \
@@ -91,6 +93,11 @@ namespace FredEmmott::GUI::style_detail {
 template <class T>
 struct default_t {
   static constexpr auto value = std::nullopt;
+};
+
+template <>
+struct default_t<Cursor> {
+  static constexpr auto value = Cursor::Default;
 };
 
 template <>

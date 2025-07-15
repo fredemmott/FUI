@@ -294,18 +294,17 @@ void Widget::SetChildren(const std::vector<Widget*>& children) {
   parent->ChangeDirectChildren(
     std::bind_front(&Widget::SetManagedChildren, parent, std::ref(children)));
 }
-void Widget::DispatchEvent(const Event* e) {
-  if (const auto it = dynamic_cast<const MouseEvent*>(e)) {
+
+Widget* Widget::DispatchEvent(const Event* e) {
+  if (const auto it = dynamic_cast<const MouseEvent*>(e)) [[likely]] {
     if (gMouseCapture) {
       auto translated = it->WithOffset(gMouseCapture->mOffset);
-      (void)gMouseCapture->mWidget->DispatchMouseEvent(translated);
-    } else {
-      (void)this->DispatchMouseEvent(*it);
+      return gMouseCapture->mWidget->DispatchMouseEvent(translated);
     }
-    return;
+
+    return this->DispatchMouseEvent(*it);
   }
-  // whut?
-  __debugbreak();
+  throw std::logic_error("Unhandled event type");
 }
 
 void Widget::Tick() {
@@ -320,10 +319,9 @@ void Widget::UpdateLayout() {
   }
 }
 
-Widget::EventHandlerResult Widget::DispatchMouseEvent(
-  const MouseEvent& parentEvent) {
+Widget* Widget::DispatchMouseEvent(const MouseEvent& parentEvent) {
   if (GetComputedStyle().PointerEvents() == PointerEvents::None) {
-    return EventHandlerResult::Default;
+    return nullptr;
   }
 
   auto event = parentEvent;
@@ -365,21 +363,21 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
   mMouseOffset = event.mOffset;
 
   // Always propagate unconditionally to allow correct internal states
-  auto result = EventHandlerResult::Default;
+  Widget* receiver = nullptr;
   for (auto&& child: this->GetDirectChildren()) {
     if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
       continue;
     }
-    if (
-      child->DispatchMouseEvent(event) == EventHandlerResult::StopPropagation) {
-      result = EventHandlerResult::StopPropagation;
+    if (auto widget = child->DispatchMouseEvent(event)) {
+      receiver = widget;
     }
   }
 
-  if (result == EventHandlerResult::StopPropagation) {
-    return result;
+  if (receiver) {
+    return receiver;
   }
 
+  auto result = EventHandlerResult::Default;
   if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
     result = this->OnMouseButtonPress(event);
   } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
@@ -400,7 +398,14 @@ Widget::EventHandlerResult Widget::DispatchMouseEvent(
 #endif
   }
 
-  return result;
+  if (result == EventHandlerResult::StopPropagation) {
+    return this;
+  }
+  if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
+    return this;
+  }
+
+  return nullptr;
 }
 
 Widget::EventHandlerResult Widget::OnMouseMove(const MouseEvent&) {

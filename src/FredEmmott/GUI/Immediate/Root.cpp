@@ -65,10 +65,11 @@ void Root::EndFrame() {
   tResizeThisFrame = std::exchange(tResizeNextFrame, false);
 }
 
-void Root::DispatchEvent(const Event* e) {
+Widget* Root::DispatchEvent(const Event* e) {
   if (mWidget) {
-    mWidget->DispatchEvent(e);
+    return mWidget->DispatchEvent(e);
   }
+  return nullptr;
 }
 
 void Root::Paint(Renderer* renderer, const Size& size) {

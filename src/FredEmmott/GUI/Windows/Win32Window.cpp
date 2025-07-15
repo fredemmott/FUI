@@ -773,7 +773,15 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_MOUSEMOVE: {
       TrackMouseEvent();
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      this->DispatchEvent(&e);
+      auto receiver = this->DispatchEvent(&e);
+      switch (receiver->GetComputedStyle().Cursor().value_or(Cursor::Default)) {
+        case Cursor::Default:
+          SetCursor(mDefaultCursor.get());
+          break;
+        case Cursor::Pointer:
+          SetCursor(mPointerCursor.get());
+          break;
+      }
       break;
     }
     case WM_MOUSELEAVE: {
