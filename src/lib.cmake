@@ -23,6 +23,7 @@ add_library(
   FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.cpp FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
   FredEmmott/GUI/Immediate/ID.hpp
+  FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/PushID.cpp FredEmmott/GUI/Immediate/PushID.hpp
@@ -57,6 +58,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/ContentDialog.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
   FredEmmott/GUI/StyleProperty.hpp
@@ -69,6 +72,7 @@ add_library(
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
   FredEmmott/GUI/Widgets/CheckBox.cpp FredEmmott/GUI/Widgets/CheckBox.hpp
+  FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp
   FredEmmott/GUI/Widgets/RadioButton.cpp FredEmmott/GUI/Widgets/RadioButton.hpp

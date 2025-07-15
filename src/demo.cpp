@@ -156,6 +156,10 @@ static void AppTick(fui::Window& window) {
     fuii::Label(std::format("String label {}", i));
   }
 
+  if (fuii::HyperlinkButton("I'm a HyperlinkButton!")) {
+    std::println(stderr, "Hyperlink clicked");
+  }
+
   fuii::EndDisabled();
 
   fuii::EndStackPanel();

@@ -176,6 +176,7 @@ add_winui3_component_theme(ComboBox PARENT Button)
 
 add_winui3_component_theme(CheckBox PARENT Common)
 add_winui3_component_theme(ContentDialog PARENT Common)
+add_winui3_component_theme(HyperlinkButton PARENT Common)
 add_winui3_component_theme(RadioButton PARENT Common)
 add_winui3_component_theme(RadioButtons PARENT Common)
 add_winui3_component_theme(ScrollBar PARENT Common)

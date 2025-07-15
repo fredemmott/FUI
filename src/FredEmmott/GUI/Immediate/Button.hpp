@@ -73,6 +73,7 @@ ButtonResult<nullptr, bool> Button(
 
 /// Create a button with a text label
 template <class... Args>
+  requires(sizeof...(Args) >= 1)
 [[nodiscard]] ButtonResult<nullptr, bool> Button(
   std::format_string<Args...> format,
   Args&&... args) {
