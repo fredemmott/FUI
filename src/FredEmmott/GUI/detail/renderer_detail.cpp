@@ -29,7 +29,7 @@ bool HaveRenderAPI(RenderAPI required) {
   return storage->mRenderAPI == required;
 }
 
-RenderAPI GetRenderAPI() {
+RenderAPI GetRuntimeRenderAPI() {
   if (const auto& ret = GetStorage(); ret.has_value()) [[likely]] {
     return ret->mRenderAPI;
   }

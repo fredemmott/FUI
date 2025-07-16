@@ -27,7 +27,20 @@ void SetRenderAPI(
   std::string_view details,
   std::unique_ptr<FontMetricsProvider>);
 /// Throws an std::logic_error if the renderer has not yet been set
-RenderAPI GetRenderAPI();
+RenderAPI GetRuntimeRenderAPI();
+constexpr RenderAPI GetRenderAPI() {
+  if constexpr (Config::HaveSingleBackend) {
+    if constexpr (Config::HaveDirect2D) {
+      return RenderAPI::Direct2D;
+    }
+    if constexpr (Config::HaveSkia) {
+      return RenderAPI::Skia;
+    }
+  } else {
+    return GetRuntimeRenderAPI();
+  }
+}
+
 FontMetricsProvider* GetFontMetricsProvider();
 /// Human-readable detailed name
 std::string_view GetRenderAPIDetails();
