@@ -51,6 +51,7 @@ void TextBlock::UpdateDirectWriteTextLayout() {
     std::numeric_limits<FLOAT>::infinity(),
     std::numeric_limits<FLOAT>::infinity(),
     mDirectWriteTextLayout.put()));
+  YGNodeMarkDirty(this->GetLayoutNode());
 }
 
 void TextBlock::PaintOwnContent(
