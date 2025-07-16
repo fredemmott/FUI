@@ -374,6 +374,7 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
     const auto it = child->DispatchMouseEvent(event);
     if (it.mResult == EventHandlerResult::StopPropagation) {
       result = it;
+      FUI_ASSERT(it.mTarget);
     } else if (it.mTarget) {
       result.mTarget = it.mTarget;
     }
@@ -402,6 +403,11 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
     OutputDebugStringA("Unhandled mouse event type\n");
     __debugbreak();
 #endif
+  }
+
+  if (
+    result.mResult == EventHandlerResult::StopPropagation && !result.mTarget) {
+    result.mTarget = this;
   }
 
   FUI_ASSERT(
