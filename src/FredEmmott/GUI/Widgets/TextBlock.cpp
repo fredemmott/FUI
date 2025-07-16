@@ -47,11 +47,13 @@ void TextBlock::SetText(const std::string_view text) {
 #ifdef FUI_ENABLE_SKIA
   if (GetRenderAPI() == RenderAPI::Skia) {
     this->UpdateSkiaParagraph();
+    return;
   }
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
   if (GetRenderAPI() == RenderAPI::Direct2D) {
     this->UpdateDirectWriteTextLayout();
+    return;
   }
 #endif
   if constexpr (Config::Debug) {
