@@ -404,7 +404,6 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
 #endif
   }
 
-  FUI_ASSERT(result.mResult == EventHandlerResult::Default || result.mTarget);
   FUI_ASSERT(
     result.mTarget
     || (mDirectStateFlags & StateFlags::Hovered) != StateFlags::Hovered);
