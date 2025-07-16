@@ -28,7 +28,7 @@ void SetRenderAPI(
   std::unique_ptr<FontMetricsProvider>);
 /// Throws an std::logic_error if the renderer has not yet been set
 RenderAPI GetRuntimeRenderAPI();
-constexpr RenderAPI GetRenderAPI() {
+inline RenderAPI GetRenderAPI() {
   if constexpr (Config::HaveSingleBackend) {
     if constexpr (Config::HaveDirect2D) {
       return RenderAPI::Direct2D;
