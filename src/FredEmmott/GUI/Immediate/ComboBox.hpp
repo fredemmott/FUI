@@ -46,8 +46,14 @@ ComboBoxResult<bool> ComboBox(
     = ComboBox(&buf, std::span {std::forward<TContainer>(items)}, id);
   *selectedIndex = static_cast<TIndex>(buf);
   return ret;
-}// namespace FredEmmott::GUI::Immediate
+}
 
+/** Produce a combobox from a container of items
+ *
+ * For example, the default projection supports an `std::vector<const char*>`
+ * or anything similar - but a custom projection can be used, e.g.
+ * `&MyItemClass::mLabel`
+ */
 template <std::integral TIndex, class TLabelProj = std::identity>
 ComboBoxResult<bool> ComboBox(
   TIndex* selectedIndex,
@@ -77,6 +83,12 @@ struct nth_element {
   }
 };
 
+/** Produce a combobox from a container, and a set of key-value projections.
+ *
+ * Keys are not required to be contiguous.
+ *
+ * The default projections allow use with keyed containers, like an `std::map`
+ */
 template <
   selectable_key T,
   class TLabelProj = nth_element<1>,
