@@ -3,6 +3,7 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <map>
 #include <print>
 
 #include "FredEmmott/GUI/Immediate/ContentDialog.hpp"
@@ -157,12 +158,12 @@ static void AppTick(fui::Window& window) {
   }
   {
     static int selectedIndex = 1;
-    const auto comboItems = std::unordered_map<int, std::string_view> {
+    const auto comboItems = std::map<int, std::string_view> {
       {123, "Foo"},
       {456, "Bar"},
       {789, "echo echo echo"},
     };
-    if (fuii::ComboBox(&selectedIndex, comboItems).Caption("unordered_map")) {
+    if (fuii::ComboBox(&selectedIndex, comboItems).Caption("std::map")) {
       std::println(stderr, "value is {}", selectedIndex);
     }
   }
