@@ -14,25 +14,85 @@
 #include "selectable_key.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-
 template <class TValue = void>
 using ComboBoxResult
   = Result<nullptr, TValue, immediate_detail::CaptionResultMixin>;
 
 ComboBoxResult<bool> ComboBox(
   std::size_t* selectedIndex,
-  std::span<std::string_view> items,
+  std::span<const std::string_view> items,
   ID id = ID {std::source_location::current()});
 
-template <selectable_key T>
+template <std::convertible_to<std::span<const std::string_view>> TContainer>
+ComboBoxResult<bool> ComboBox(
+  std::size_t* selectedIndex,
+  TContainer&& items,
+  const ID id = ID {std::source_location::current()}) {
+  return ComboBox(
+    selectedIndex,
+    std::span<const std::string_view> {std::forward<TContainer>(items)},
+    id);
+}
+
+template <
+  std::integral TIndex,
+  std::convertible_to<std::span<const std::string_view>> TContainer>
+ComboBoxResult<bool> ComboBox(
+  TIndex* selectedIndex,
+  TContainer&& items,
+  const ID id = ID {std::source_location::current()}) {
+  auto buf = static_cast<std::size_t>(*selectedIndex);
+  const auto ret
+    = ComboBox(&buf, std::span {std::forward<TContainer>(items)}, id);
+  *selectedIndex = static_cast<TIndex>(buf);
+  return ret;
+}// namespace FredEmmott::GUI::Immediate
+
+template <std::integral TIndex, class TLabelProj = std::identity>
+ComboBoxResult<bool> ComboBox(
+  TIndex* selectedIndex,
+  const std::ranges::range auto& items,
+  TLabelProj labelProj = {},
+  ID id = ID {std::source_location::current()})
+  requires requires {
+    {
+      std::invoke(labelProj, *std::ranges::cbegin(items))
+    } -> std::convertible_to<std::string_view>;
+  }
+{
+  const auto labels = items | std::views::transform([&labelProj](auto&& it) {
+                        return std::string_view {std::invoke(labelProj, it)};
+                      })
+    | std::ranges::to<std::vector>();
+
+  return ComboBox(selectedIndex, labels, id);
+}
+
+template <std::size_t N>
+struct nth_element {
+  template <class T>
+    requires requires(std::decay_t<T> v) { std::get<N>(v); }
+  static decltype(auto) operator()(T&& it) {
+    return std::get<N>(std::forward<T>(it));
+  }
+};
+
+template <
+  selectable_key T,
+  class TLabelProj = nth_element<1>,
+  class TKeyProj = nth_element<0>>
 ComboBoxResult<bool> ComboBox(
   T* selectedKey,
   const std::ranges::range auto& items,
-  ID id = ID {std::source_location::current()})
+  TLabelProj labelProj = {},
+  TKeyProj keyProj = {},
+  const ID id = ID {std::source_location::current()})
   requires requires {
-    { std::get<0>(*std::ranges::cbegin(items)) } -> std::convertible_to<T>;
     {
-      std::get<1>(*std::ranges::cbegin(items))
+      std::invoke(keyProj, *std::ranges::cbegin(items))
+    } -> std::convertible_to<T>;
+    {
+      std::invoke(labelProj, *std::ranges::cbegin(items))
     } -> std::convertible_to<std::string_view>;
   }
 {
@@ -40,7 +100,9 @@ ComboBoxResult<bool> ComboBox(
   std::vector<std::string_view> vec;
   vec.reserve(vec.size());
   std::size_t selectedIndex = 0;
-  for (auto&& [key, value]: items) {
+  for (auto&& it: items) {
+    const auto key = std::invoke(keyProj, it);
+    const auto value = std::string_view {std::invoke(labelProj, it)};
     if (key == *selectedKey) {
       selectedIndex = vec.size();
     }
@@ -48,22 +110,10 @@ ComboBoxResult<bool> ComboBox(
   }
   const auto changed = ComboBox(&selectedIndex, vec, id);
   if (changed) {
-    *selectedKey
-      = *(std::ranges::cbegin(std::views::keys(items)) + selectedIndex);
+    *selectedKey = std::invoke(
+      keyProj, *std::next(std::ranges::cbegin(items), +selectedIndex));
   }
   return changed;
-}
-
-template <selectable_key T>
-ComboBoxResult<bool> ComboBox(
-  T* selectedKey,
-  const std::ranges::range auto& items,
-  ID id = ID {std::source_location::current()})
-  requires requires {
-    { *std::ranges::cbegin(items) } -> std::convertible_to<std::string_view>;
-  }
-{
-  return ComboBox(selectedKey, std::views::enumerate(items), id);
 }
 
 }// namespace FredEmmott::GUI::Immediate

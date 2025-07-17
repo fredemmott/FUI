@@ -111,15 +111,60 @@ static void AppTick(fui::Window& window) {
            .OnText("Foo (on)")
            .OffText("Bar (off)"));
 
-  static int selectedIndex = 1;
-  constexpr auto comboItems = std::array {
-    "foo",
-    "bar",
-    "baz",
-    "I am a much much much longer entry",
-  };
-  if (fuii::ComboBox(&selectedIndex, comboItems).Caption("ComboBox")) {
-    std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
+  {
+    static int selectedIndex = 1;
+    constexpr auto comboItems = std::array {
+      "foo",
+      "bar",
+      "baz",
+      "I am a much much much longer entry",
+    };
+    if (fuii::ComboBox(&selectedIndex, comboItems)
+          .Caption("Array of strings")) {
+      std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
+    }
+  }
+  {
+    struct Item {
+      std::string_view mLabel;
+    };
+    static int selectedIndex = 1;
+    constexpr auto comboItems = std::array {
+      Item {"a"},
+      Item {"b"},
+      Item {"c"},
+      Item {"echo echo echo"},
+    };
+    (void)fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel)
+      .Caption("Array of structs");
+  }
+  {
+    struct Item {
+      int mKey;
+      std::string_view mLabel;
+    };
+    static int selectedIndex = 1;
+    constexpr auto comboItems = std::array {
+      Item {123, "a"},
+      Item {456, "b"},
+      Item {789, "c"},
+      Item {123456, "echo echo echo"},
+    };
+    if (fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel, &Item::mKey)
+          .Caption("Key-value structs")) {
+      std::println(stderr, "value is {}", selectedIndex);
+    }
+  }
+  {
+    static int selectedIndex = 1;
+    const auto comboItems = std::unordered_map<int, std::string_view> {
+      {123, "Foo"},
+      {456, "Bar"},
+      {789, "echo echo echo"},
+    };
+    if (fuii::ComboBox(&selectedIndex, comboItems).Caption("unordered_map")) {
+      std::println(stderr, "value is {}", selectedIndex);
+    }
   }
 
   static std::size_t selectedOption = 1;
