@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/assert.hpp>
 #include <ranges>
 #include <span>
 #include <string>
 #include <vector>
 
+#include "FredEmmott/GUI/assert.hpp"
 #include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
 #include "ID.hpp"
 #include "Result.hpp"
+#include "selectable_key.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
@@ -23,7 +24,7 @@ ComboBoxResult<bool> ComboBox(
   std::span<std::string_view> items,
   ID id = ID {std::source_location::current()});
 
-template <class T>
+template <selectable_key T>
 ComboBoxResult<bool> ComboBox(
   T* selectedKey,
   const std::ranges::range auto& items,
@@ -53,7 +54,7 @@ ComboBoxResult<bool> ComboBox(
   return changed;
 }
 
-template <class T>
+template <selectable_key T>
 ComboBoxResult<bool> ComboBox(
   T* selectedKey,
   const std::ranges::range auto& items,
