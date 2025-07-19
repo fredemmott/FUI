@@ -9,6 +9,8 @@
 #endif
 
 #include <FredEmmott/GUI/Style.hpp>
+#include <FredEmmott/utility/bitflag_enums.hpp>
+#include <FredEmmott/utility/type_tag.hpp>
 
 #include "Widget.hpp"
 
@@ -27,6 +29,14 @@ class TextBlock final : public Widget {
     override;
 
  private:
+  enum class DirtyFlags {
+    None = 0,
+    Text = 1 << 0,
+    Font = 1 << 1,
+    // https://issues.skia.org/issues/389111535
+    Skia_Color = 1 << 2,
+  };
+  friend consteval bool is_bitflag_enum(utility::type_tag_t<DirtyFlags>);
 #ifdef FUI_ENABLE_SKIA
   std::unique_ptr<skia::textlayout::Paragraph> mSkiaParagraph;
 #endif
@@ -37,7 +47,9 @@ class TextBlock final : public Widget {
   Font mFont;
   float mMeasuredHeight {};
 
+  void UpdateTextLayout(DirtyFlags);
 #ifdef FUI_ENABLE_SKIA
+  std::optional<Style::PropertyTypes::Color_t> mSkiaColor;
   void UpdateSkiaParagraph();
   YGSize MeasureWithSkia(
     float width,

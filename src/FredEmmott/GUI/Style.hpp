@@ -25,6 +25,12 @@ namespace FredEmmott::GUI {
 using style_detail::StylePropertyKey;
 
 struct StyleProperties {
+  struct PropertyTypes {
+    PropertyTypes() = delete;
+#define FUI_DECLARE_STYLE_PROPERTY_TYPE(NAME, TYPE, ...) using NAME##_t = TYPE;
+    FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY_TYPE)
+#undef FUI_DECLARE_STYLE_PROPERTY_TYPE
+  };
   utility::unordered_map<
     StylePropertyKey,
     utility::drop_last_t<

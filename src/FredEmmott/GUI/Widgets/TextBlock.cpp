@@ -29,18 +29,17 @@ using namespace FredEmmott::GUI::renderer_detail;
 
 namespace FredEmmott::GUI::Widgets {
 
+consteval bool is_bitflag_enum(utility::type_tag_t<TextBlock::DirtyFlags>) {
+  return true;
+}
+
 TextBlock::TextBlock(std::size_t id) : Widget(id) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBlock::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
 
-void TextBlock::SetText(const std::string_view text) {
-  if (text == mText) {
-    return;
-  }
-  mText = std::string {text};
-
-  if (!mFont) {
+void TextBlock::UpdateTextLayout(const DirtyFlags flags) {
+  if (flags == DirtyFlags::None) {
     return;
   }
 
@@ -59,6 +58,20 @@ void TextBlock::SetText(const std::string_view text) {
   if constexpr (Config::Debug) {
     __debugbreak();
   }
+  std::unreachable();
+}
+
+void TextBlock::SetText(const std::string_view text) {
+  if (text == mText) {
+    return;
+  }
+  mText = std::string {text};
+
+  if (!mFont) {
+    return;
+  }
+
+  this->UpdateTextLayout(DirtyFlags::Text);
 }
 
 void TextBlock::PaintOwnContent(
@@ -97,23 +110,25 @@ void TextBlock::PaintOwnContent(
 
 Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
   const Style& style,
-  StateFlags) {
+  const StateFlags flags) {
+  const auto ret = Widget::OnComputedStyleChange(style, flags);
+
+  auto dirtyFlags = DirtyFlags::None;
   if (mFont != style.Font()) {
+    dirtyFlags |= DirtyFlags::Font;
     mFont = style.Font().value();
   }
 
 #ifdef FUI_ENABLE_SKIA
-  if (GetRenderAPI() == RenderAPI::Skia) {
-    this->UpdateSkiaParagraph();
-  }
-#endif
-#ifdef FUI_ENABLE_DIRECT2D
-  if (GetRenderAPI() == RenderAPI::Direct2D) {
-    this->UpdateDirectWriteTextLayout();
+  if (mSkiaParagraph && mSkiaColor != style.Color().value()) {
+    dirtyFlags |= DirtyFlags::Skia_Color;
+    mSkiaColor = style.Color().value();
   }
 #endif
 
-  return ComputedStyleFlags::Empty;
+  this->UpdateTextLayout(dirtyFlags);
+
+  return ret;
 }
 
 YGSize TextBlock::Measure(
