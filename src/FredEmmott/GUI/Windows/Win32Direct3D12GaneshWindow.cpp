@@ -77,6 +77,7 @@ void ConfigureD3DDebugLayer(
   // keep breaking on everything WARNING or above
   D3D12_MESSAGE_ID skiaIssues[] = {
     D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
+    D3D12_MESSAGE_ID_CREATE_SAMPLER_COMPARISON_FUNC_IGNORED,
   };
   for (const auto id: skiaIssues) {
     infoQueue->SetBreakOnID(id, false);
