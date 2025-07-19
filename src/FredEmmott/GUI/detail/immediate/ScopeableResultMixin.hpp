@@ -54,6 +54,7 @@ struct ScopedResultMixin : UnscopeableResultMixin {
 template <void (*TEndWidget)(), class TValue, class... TMixins>
 struct ScopeableResultMixin {
   template <class Self>
+  [[nodiscard]]
   decltype(auto) Scoped(this Self&& self)
     requires std::is_rvalue_reference_v<decltype(self)>
   {
