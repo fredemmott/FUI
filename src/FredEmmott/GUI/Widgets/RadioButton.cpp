@@ -19,25 +19,18 @@ RadioButton::RadioButton(std::size_t id) : Widget(id, {RadioButtonStyleClass}) {
   mOuter->SetChildren({mInner = new Widget(0)});
 
   this->BuiltInStyles() += Style().AlignContent(YGAlignCenter).Height(32);
-  static const auto FosterParentStyles = Style()
-                                           .AlignItems(YGAlignCenter)
-                                           .PaddingLeft(8)
-                                           .PaddingTop(6)
-                                           .TranslateY(-2);
+  static const auto FosterParentStyles
+    = Style()
+        .AlignItems(YGAlignCenter)
+        .PaddingLeft(8)
+        .PaddingTop(6)
+        .TranslateY(-2);
   mFosterParent->BuiltInStyles() = FosterParentStyles;
+  this->InitializeOuterStyles();
   this->InitializeInnerStyles();
-  this->SetStyles();
 }
 
 RadioButton::~RadioButton() = default;
-
-void RadioButton::SetIsChecked(const bool value) noexcept {
-  if (mIsChecked == value) {
-    return;
-  }
-  mIsChecked = value;
-  this->SetStyles();
-}
 
 Widget* RadioButton::GetFosterParent() const noexcept {
   return mFosterParent.get();
@@ -63,28 +56,25 @@ Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {
   mChanged = true;
   return EventHandlerResult::StopPropagation;
 }
-void RadioButton::SetStyles() {
-  this->SetOuterStyles();
-  this->SetInnerStyles();
-}
 
-void RadioButton::SetOuterStyles() {
+void RadioButton::InitializeOuterStyles() {
   using namespace StaticTheme::RadioButton;
   using namespace PseudoClasses;
-  static const Style BaseStyle = Style()
-                                   .AlignContent(YGAlignCenter)
-                                   .AlignItems(YGAlignCenter)
-                                   .AlignSelf(YGAlignCenter)
-                                   .BorderRadius(10)
-                                   .BorderWidth(RadioButtonBorderThemeThickness)
-                                   .Height(20)
-                                   .JustifyContent(YGJustifyCenter)
-                                   .Width(20);
+  static const Style BaseStyle
+    = Style()
+        .AlignContent(YGAlignCenter)
+        .AlignItems(YGAlignCenter)
+        .AlignSelf(YGAlignCenter)
+        .BorderRadius(10)
+        .BorderWidth(RadioButtonBorderThemeThickness)
+        .Height(20)
+        .JustifyContent(YGJustifyCenter)
+        .Width(20);
 
   YGNodeStyleSetBoxSizing(mOuter->GetLayoutNode(), YGBoxSizingContentBox);
 
-  static const Style UncheckedStyle = BaseStyle
-    + Style()
+  static const Style UncheckedStyle
+    = Style()
         .BackgroundColor(RadioButtonOuterEllipseFill)
         .BorderColor(RadioButtonOuterEllipseStroke)
         .And(
@@ -103,8 +93,8 @@ void RadioButton::SetOuterStyles() {
             .BackgroundColor(RadioButtonOuterEllipseFillDisabled)
             .BorderColor(RadioButtonOuterEllipseStrokeDisabled));
 
-  static const Style CheckedStyle = BaseStyle
-    + Style()
+  static const Style CheckedStyle
+    = Style()
         .BackgroundColor(RadioButtonOuterEllipseCheckedFill)
         .BorderColor(RadioButtonOuterEllipseCheckedStroke)
         .And(
@@ -123,12 +113,8 @@ void RadioButton::SetOuterStyles() {
             .BackgroundColor(RadioButtonOuterEllipseCheckedFillDisabled)
             .BorderColor(RadioButtonOuterEllipseCheckedStrokeDisabled));
 
-  mOuter->BuiltInStyles() = mIsChecked ? CheckedStyle : UncheckedStyle;
-}
-
-void RadioButton::SetInnerStyles() {
-  mInner->ReplaceExplicitStyles(
-    Style().Display(mIsChecked ? YGDisplayFlex : YGDisplayNone));
+  mOuter->BuiltInStyles() = BaseStyle
+    + Style().And(Checked, CheckedStyle).And(!Checked, UncheckedStyle);
 }
 
 void RadioButton::InitializeInnerStyles() {
@@ -168,7 +154,8 @@ void RadioButton::InitializeInnerStyles() {
             .BackgroundColor(RadioButtonCheckGlyphFillDisabled)
             .BorderColor(RadioButtonCheckGlyphStrokeDisabled)
             .Height(14)
-            .Width(14));
+            .Width(14))
+        .And(!Checked, Style().Display(YGDisplayNone));
   mInner->BuiltInStyles() = GlyphStyle;
 }
 }// namespace FredEmmott::GUI::Widgets

@@ -11,12 +11,8 @@ class RadioButton final : public Widget {
   explicit RadioButton(std::size_t id);
   ~RadioButton() override;
 
-  [[nodiscard]]
-  bool IsChecked() const noexcept {
-    return mIsChecked;
-  }
-
-  void SetIsChecked(bool value) noexcept;
+  using Widget::IsChecked;
+  using Widget::SetIsChecked;
 
   bool mChanged {false};
 
@@ -28,12 +24,8 @@ class RadioButton final : public Widget {
   [[nodiscard]] EventHandlerResult OnClick(const MouseEvent&) override;
 
  private:
-  void SetStyles();
-  void SetOuterStyles();
-  void SetInnerStyles();
+  void InitializeOuterStyles();
   void InitializeInnerStyles();
-
-  bool mIsChecked {false};
 
   unique_ptr<Widget> mOuter;
   Widget* mInner {nullptr};
