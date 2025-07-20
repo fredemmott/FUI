@@ -22,25 +22,31 @@ using namespace widget_detail;
 
 ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id)
   : Widget(id, {ToggleSwitchKnobStyleClass}) {
-  this->ChangeDirectChildren(
-    [this] { mThumb.reset(new ToggleSwitchThumb({})); });
+  this->ChangeDirectChildren([this] {
+    mThumb.reset(new ToggleSwitchThumb({}));
+  });
+  this->UpdateStyles();
 }
 
 bool ToggleSwitchKnob::IsOn() const noexcept {
   return mThumb->IsOn();
 }
 
-void ToggleSwitchKnob::SetIsOn(bool value) noexcept {
+void ToggleSwitchKnob::SetIsOn(const bool value) noexcept {
+  if (value == IsOn()) {
+    return;
+  }
   mThumb->SetIsOn(value);
+  this->UpdateStyles();
 }
 
-Style ToggleSwitchKnob::GetBuiltInStyles() const {
+void ToggleSwitchKnob::UpdateStyles() {
   namespace Common = StaticTheme::Common;
   using namespace StaticTheme::ToggleSwitch;
   constexpr auto ColorAnimation
     = LinearStyleTransition(Common::ControlFasterAnimationDuration);
   using namespace PseudoClasses;
-  static const auto baseStyles
+  static const auto BaseStyles
     = Style()
         .BackgroundColor(std::nullopt, ColorAnimation)
         .BorderColor(std::nullopt, ColorAnimation)
@@ -52,7 +58,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
         .MarginRight(ToggleSwitchPreContentMargin)
         .Width(Spacing * 10);
 
-  static const auto offStyles = baseStyles
+  static const auto OffStyles = BaseStyles
     + Style()
         .BackgroundColor(ToggleSwitchFillOff)
         .BorderColor(ToggleSwitchStrokeOff)
@@ -64,7 +70,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
         .And(Hover, Style().BackgroundColor(ToggleSwitchFillOffPointerOver))
         .And(Active, Style().BackgroundColor(ToggleSwitchFillOffPressed));
 
-  static const auto onStyles = baseStyles
+  static const auto OnStyles = BaseStyles
     + Style()
         .BackgroundColor(ToggleSwitchFillOn)
         .BorderColor(ToggleSwitchStrokeOn)
@@ -84,7 +90,7 @@ Style ToggleSwitchKnob::GetBuiltInStyles() const {
             .BackgroundColor(ToggleSwitchFillOnPressed)
             .BorderColor(ToggleSwitchStrokeOnPressed));
 
-  return (this->IsOn() ? onStyles : offStyles);
+  BuiltInStyles() = this->IsOn() ? OnStyles : OffStyles;
 }
 
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {

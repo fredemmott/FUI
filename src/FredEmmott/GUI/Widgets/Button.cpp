@@ -15,15 +15,13 @@ namespace {
 const auto ButtonStyleClass = StyleClass::Make("Button");
 }
 
-Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {}
-
-Style Button::GetBuiltInStyles() const {
+Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {
   using namespace StaticTheme::Button;
   static const auto BaseStyle = DefaultButtonStyle
     + Style()
         .AlignSelf(YGAlignFlexStart)
         .Descendants({}, Style().PointerEvents(PointerEvents::None));
-  return BaseStyle;
+  BuiltInStyles() = BaseStyle;
 }
 
 Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {

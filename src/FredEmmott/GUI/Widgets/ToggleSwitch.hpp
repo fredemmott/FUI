@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ToggleSwitch final : public Widget {
  public:
-  ToggleSwitch(std::size_t id);
+  explicit ToggleSwitch(std::size_t id);
 
   [[nodiscard]]
   bool IsOn() const noexcept;
@@ -17,7 +17,6 @@ class ToggleSwitch final : public Widget {
   bool mChanged {false};
 
  protected:
-  Style GetBuiltInStyles() const override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
   Widget* GetFosterParent() const noexcept override {

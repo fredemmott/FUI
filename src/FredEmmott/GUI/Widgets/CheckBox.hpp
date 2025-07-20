@@ -19,7 +19,7 @@ class CheckBox final : public Widget {
   bool mChanged {false};
 
  protected:
-  Style GetBuiltInStyles() const override;
+  void UpdateStyles();
   EventHandlerResult OnClick(const MouseEvent& event) override;
   Widget* GetFosterParent() const noexcept override;
   WidgetList GetDirectChildren() const noexcept override;

@@ -9,10 +9,11 @@
 namespace FredEmmott::GUI::Immediate {
 
 Result<> FontIcon(std::string_view glyph, FontIconSize size, const ID id) {
-  const auto styles
-    = Style().AlignSelf(YGAlignCenter).Font(ResolveGlyphFont(size), !important);
   const auto ret = Label(glyph, id);
-  immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(styles);
+  immediate_detail::GetCurrentNode()->BuiltInStyles()
+    += Style()
+         .AlignSelf(YGAlignCenter)
+         .Font(ResolveGlyphFont(size), !important);
   return {ret};
 }
 
@@ -40,7 +41,7 @@ Result<> FontIcon(
     }
 
     Label(glyph, ID {count++});
-    immediate_detail::GetCurrentNode()->SetAdditionalBuiltInStyles(thisStyle);
+    immediate_detail::GetCurrentNode()->BuiltInStyles() += thisStyle;
   }
 
   immediate_detail::EndWidget<Widgets::Widget>();

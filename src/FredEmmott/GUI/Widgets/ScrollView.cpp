@@ -58,24 +58,32 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
     std::chrono::milliseconds(100),
     StaticTheme::Common::ControlFastOutSlowInKeySpline);
-  mContentInner->SetBuiltInStyles(
-    Style()
-      .TranslateX(0, SmoothScrollingAnimation)
-      .TranslateY(0, SmoothScrollingAnimation));
-  mVerticalScrollBar->SetAdditionalBuiltInStyles(
-    Style().Position(YGPositionTypeAbsolute).Right(4).Top(4));
-  mHorizontalScrollBar->SetAdditionalBuiltInStyles(
-    Style()
-      .Bottom(4)
-      .FlexGrow(1)
-      .Left(0.f)
-      .Position(YGPositionTypeAbsolute)
-      .Right(ScrollBarSize));
+
+  static const auto InnerStyle
+    = Style()
+        .TranslateX(0, SmoothScrollingAnimation)
+        .TranslateY(0, SmoothScrollingAnimation);
+  mContentInner->BuiltInStyles() = InnerStyle;
+
+  static const auto VerticalScrollStyle
+    = Style().Position(YGPositionTypeAbsolute).Right(4).Top(4);
+  mVerticalScrollBar->BuiltInStyles() += VerticalScrollStyle;
+
+  static const auto HorizontalScrollStyle
+    = Style()
+        .Bottom(4)
+        .FlexGrow(1)
+        .Left(0.f)
+        .Position(YGPositionTypeAbsolute)
+        .Right(ScrollBarSize);
+  mHorizontalScrollBar->BuiltInStyles() += HorizontalScrollStyle;
 
   mHorizontalScrollBar->OnValueChanged(
     std::bind_front(&ScrollView::OnHorizontalScroll, this));
   mVerticalScrollBar->OnValueChanged(
     std::bind_front(&ScrollView::OnVerticalScroll, this));
+
+  BuiltInStyles() = Style().MinHeight(128).MinWidth(128);
 }
 
 ScrollView::~ScrollView() {
@@ -196,10 +204,6 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
     scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
   scrollBar->SetValue(value);
   return EventHandlerResult::StopPropagation;
-}
-
-Style ScrollView::GetBuiltInStyles() const {
-  return Style().MinHeight(128).MinWidth(128);
 }
 
 void ScrollView::OnHorizontalScroll(

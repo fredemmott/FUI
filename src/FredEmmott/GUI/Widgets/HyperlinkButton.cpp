@@ -8,8 +8,8 @@
 namespace FredEmmott::GUI::Widgets {
 HyperlinkButton::HyperlinkButton(std::size_t id, const StyleClasses& classes)
   : Widget(id, classes + LiteralStyleClass {"HyperlinkButton"}) {
-  this->SetBuiltInStyles(
-    StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle);
+  this->BuiltInStyles()
+    = StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle;
 }
 
 HyperlinkButton::~HyperlinkButton() = default;

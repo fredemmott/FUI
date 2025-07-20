@@ -38,8 +38,6 @@ class ScrollBar final : public Widget {
   [[nodiscard]]
   WidgetList GetDirectChildren() const noexcept override;
   [[nodiscard]]
-  Style GetBuiltInStyles() const override;
-  [[nodiscard]]
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
 
@@ -50,8 +48,6 @@ class ScrollBar final : public Widget {
   float mMaximum {1.0f};
   float mValue {0.0f};
   float mThumbSize {0.0f};
-
-  Style mBuiltinStyles;
 
   unique_ptr<ScrollBarButton> mSmallDecrement;// Arrow
   unique_ptr<Widget> mTrack;

@@ -21,6 +21,7 @@ DerivePointerAlignment: false
 IndentRequiresClause: true
 IndentWidth: 2
 MaxEmptyLinesToKeep: 1
+PenaltyIndentedWhitespace: 1
 PointerAlignment: Left
 ReflowComments: true
 SpaceBeforeCpp11BracedList: true

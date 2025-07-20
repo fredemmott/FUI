@@ -20,85 +20,91 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
   const bool isSelected = initiallySelected || (clicked && *clicked);
 
   using namespace PseudoClasses;
-  auto buttonStyles = Style()
-                        .BackgroundColor(ComboBoxItemBackground)
-                        .BorderColor(ComboBoxItemBorderBrush)
-                        .BorderRadius(ComboBoxItemCornerRadius)
-                        .Color(ComboBoxItemForeground)
-                        .MarginBottom(2)
-                        .MarginLeft(5)
-                        .MarginRight(5)
-                        .MarginTop(2)
-                        .PaddingBottom(ComboBoxItemThemePaddingBottom)
-                        .PaddingRight(ComboBoxItemThemePaddingRight)
-                        .PaddingTop(ComboBoxItemThemePaddingTop)
-                        .And(
-                          Disabled,
-                          Style()
-                            .BackgroundColor(ComboBoxItemBackgroundDisabled)
-                            .BorderColor(ComboBoxItemBorderBrushDisabled)
-                            .Color(ComboBoxItemForegroundDisabled))
-                        .And(
-                          Hover,
-                          Style()
-                            .BackgroundColor(ComboBoxItemBackgroundPointerOver)
-                            .BorderColor(ComboBoxItemBorderBrushPointerOver)
-                            .Color(ComboBoxItemForegroundPointerOver))
-                        .And(
-                          Active,
-                          Style()
-                            .BackgroundColor(ComboBoxItemBackgroundPressed)
-                            .BorderColor(ComboBoxItemBorderBrushPressed)
-                            .Color(ComboBoxItemForegroundPressed));
-  if (isSelected) {
-    buttonStyles
-      += Style()
-           .BackgroundColor(ComboBoxItemBackgroundSelected)
-           .BorderColor(ComboBoxItemBorderBrushSelected)
-           .Color(ComboBoxItemForegroundSelected)
-           .And(
-             Disabled,
-             Style()
-               .BackgroundColor(ComboBoxItemBackgroundSelectedDisabled)
-               .BorderColor(ComboBoxItemBorderBrushSelectedDisabled)
-               .Color(ComboBoxItemForegroundSelectedDisabled))
-           .And(
-             Hover,
-             Style()
-               .BackgroundColor(ComboBoxItemBackgroundSelectedPointerOver)
-               .BorderColor(ComboBoxItemBorderBrushSelectedPointerOver)
-               .Color(ComboBoxItemForegroundSelectedPointerOver))
-           .And(
-             Active,
-             Style()
-               .BackgroundColor(ComboBoxItemBackgroundSelectedPressed)
-               .BorderColor(ComboBoxItemBorderBrushSelectedPressed)
-               .Color(ComboBoxItemForegroundSelectedPressed));
-  }
+  static const auto BaseStyles
+    = Style()
+        .BackgroundColor(ComboBoxItemBackground)
+        .BorderColor(ComboBoxItemBorderBrush)
+        .BorderRadius(ComboBoxItemCornerRadius)
+        .Color(ComboBoxItemForeground)
+        .MarginBottom(2)
+        .MarginLeft(5)
+        .MarginRight(5)
+        .MarginTop(2)
+        .PaddingBottom(ComboBoxItemThemePaddingBottom)
+        .PaddingRight(ComboBoxItemThemePaddingRight)
+        .PaddingTop(ComboBoxItemThemePaddingTop)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(ComboBoxItemBackgroundDisabled)
+            .BorderColor(ComboBoxItemBorderBrushDisabled)
+            .Color(ComboBoxItemForegroundDisabled))
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(ComboBoxItemBackgroundPointerOver)
+            .BorderColor(ComboBoxItemBorderBrushPointerOver)
+            .Color(ComboBoxItemForegroundPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(ComboBoxItemBackgroundPressed)
+            .BorderColor(ComboBoxItemBorderBrushPressed)
+            .Color(ComboBoxItemForegroundPressed));
+  static const auto SelectedStyles = BaseStyles
+    + Style()
+        .BackgroundColor(ComboBoxItemBackgroundSelected)
+        .BorderColor(ComboBoxItemBorderBrushSelected)
+        .Color(ComboBoxItemForegroundSelected)
+        .And(
+          Disabled,
+          Style()
+            .BackgroundColor(ComboBoxItemBackgroundSelectedDisabled)
+            .BorderColor(ComboBoxItemBorderBrushSelectedDisabled)
+            .Color(ComboBoxItemForegroundSelectedDisabled))
+        .And(
+          Hover,
+          Style()
+            .BackgroundColor(ComboBoxItemBackgroundSelectedPointerOver)
+            .BorderColor(ComboBoxItemBorderBrushSelectedPointerOver)
+            .Color(ComboBoxItemForegroundSelectedPointerOver))
+        .And(
+          Active,
+          Style()
+            .BackgroundColor(ComboBoxItemBackgroundSelectedPressed)
+            .BorderColor(ComboBoxItemBorderBrushSelectedPressed)
+            .Color(ComboBoxItemForegroundSelectedPressed));
 
-  GetCurrentParentNode()->SetBuiltInStyles({buttonStyles});
+  GetCurrentParentNode()->BuiltInStyles()
+    = isSelected ? SelectedStyles : BaseStyles;
   BeginHStackPanel();
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles(Style().Gap(0.f));
-  BeginWidget<Widget>(ID {"pill"});
+  GetCurrentParentNode()->BuiltInStyles() += Style().Gap(0.f);
+  const auto pill = BeginWidget<Widget>(ID {"pill"});
 
-  const auto pillHeightAnimation = CubicBezierStyleTransition(
+  constexpr auto PillHeightAnimation = CubicBezierStyleTransition(
     ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
-  const float height = isSelected ? ComboBoxItemPillHeight : 0;
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles(
-    Style()
-      .BackgroundColor(ComboBoxItemPillFillBrush)
-      .BorderRadius(ComboBoxItemPillCornerRadius)
-      .Height(height, pillHeightAnimation)
-      .MarginLeft(0.5)
-      .MarginRight(6)
-      .MarginTop(2.5)
-      .Top(0, pillHeightAnimation)
-      .Width(ComboBoxItemPillWidth)
-      .And(
-        Active,
-        Style()
-          .Height(height * ComboBoxItemPillMinScale)
-          .Top((height - (height * ComboBoxItemPillMinScale)) / 2)));
+  static const auto PillStyles
+    = Style()
+        .BackgroundColor(ComboBoxItemPillFillBrush)
+        .BorderRadius(ComboBoxItemPillCornerRadius)
+        .Height(0, PillHeightAnimation)
+        .MarginLeft(0.5)
+        .MarginRight(6)
+        .MarginTop(2.5)
+        .Top(0, PillHeightAnimation)
+        .Width(ComboBoxItemPillWidth);
+  static const auto PillSelectedStyles = PillStyles
+    + Style()
+        .Height(ComboBoxItemPillHeight)
+        .And(
+          Active,
+          Style()
+            .Height(ComboBoxItemPillHeight * ComboBoxItemPillMinScale)
+            .Top(
+              (ComboBoxItemPillHeight
+               - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
+              / 2));
+  pill->BuiltInStyles() = isSelected ? PillSelectedStyles : PillStyles;
   EndWidget<Widget>();
   BeginWidget<Widget>(ID {"content"});
 

@@ -8,10 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class Card final : public Widget {
  public:
-  Card(std::size_t id);
-
- protected:
-  Style GetBuiltInStyles() const override;
+  explicit Card(std::size_t id);
 };
 
 }// namespace FredEmmott::GUI::Widgets

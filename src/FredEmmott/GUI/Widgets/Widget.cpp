@@ -208,14 +208,6 @@ void Widget::AddExplicitStyles(const Style& styles) {
   mExplicitStyles += styles;
 }
 
-void Widget::SetBuiltInStyles(const Style& styles) {
-  mReplacedBuiltInStyles = styles;
-}
-
-void Widget::SetAdditionalBuiltInStyles(const Style& styles) {
-  mReplacedBuiltInStyles = this->GetBuiltInStyles() + styles;
-}
-
 void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
   std::vector<unique_ptr<Widget>> newChildren;
   for (auto child: children) {

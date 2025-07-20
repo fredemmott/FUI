@@ -20,11 +20,8 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 void Widget::ComputeStyles(const Style& inherited) {
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
-  Style style = GlobalBaselineStyle
-    + (mReplacedBuiltInStyles ? mReplacedBuiltInStyles.value()
-                              : this->GetBuiltInStyles());
-  style += inherited;
-  style += mExplicitStyles;
+  auto style
+    = GlobalBaselineStyle + mBuiltInStyles + inherited + mExplicitStyles;
 
   mDirectStateFlags &= ~StateFlags::Animating;
   const auto stateFlags = mDirectStateFlags | mInheritedStateFlags;
@@ -121,23 +118,24 @@ void Widget::ComputeStyles(const Style& inherited) {
   }
 
   const auto yoga = this->GetLayoutNode();
-  const auto setYoga = [&]<class... FrontArgs>(
-                         const auto defaultValue,
-                         std::invocable<Style&> auto member,
-                         auto setter,
-                         FrontArgs&&... frontArgs) {
-    const auto& optional = std::invoke(member, mComputedStyle);
-    if (optional.has_value()) {
-      setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
-      return;
-    }
+  const auto setYoga
+    = [&]<class... FrontArgs>(
+        const auto defaultValue,
+        std::invocable<Style&> auto member,
+        auto setter,
+        FrontArgs&&... frontArgs) {
+        const auto& optional = std::invoke(member, mComputedStyle);
+        if (optional.has_value()) {
+          setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
+          return;
+        }
 
-    if constexpr (!std::same_as<
-                    std::nullopt_t,
-                    std::decay_t<decltype(defaultValue)>>) {
-      setter(yoga, std::forward<FrontArgs>(frontArgs)..., defaultValue);
-    }
-  };
+        if constexpr (!std::same_as<
+                        std::nullopt_t,
+                        std::decay_t<decltype(defaultValue)>>) {
+          setter(yoga, std::forward<FrontArgs>(frontArgs)..., defaultValue);
+        }
+      };
 
   using enum style_detail::StylePropertyKey;
 #define X(PROPERTY, YG_SETTER, ...) \

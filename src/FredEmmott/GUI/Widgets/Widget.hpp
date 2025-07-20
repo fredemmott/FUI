@@ -131,11 +131,14 @@ class Widget {
   /// User-provided styles
   void ReplaceExplicitStyles(const Style& styles);
   void AddExplicitStyles(const Style& styles);
-  // For immediate API - fake a widget by replacing its built-in styles
-  void SetBuiltInStyles(const Style& styles);
-  void SetAdditionalBuiltInStyles(const Style& styles);
+
+  auto& BuiltInStyles(this auto&& self) {
+    return std::forward<decltype(self)>(self).mBuiltInStyles;
+  }
+
   void Paint(Renderer* renderer) const;
 
+  [[nodiscard]]
   auto GetChildren() const noexcept {
     const auto foster = this->GetFosterParent();
     return (foster ? foster : this)->mManagedChildrenCacheForGetChildren;
@@ -177,11 +180,6 @@ class Widget {
 
   // Base spacing unit - see https://fluent2.microsoft.design/layout
   static constexpr float Spacing = 4;
-
-  [[nodiscard]]
-  virtual Style GetBuiltInStyles() const {
-    return {};
-  }
 
   [[nodiscard]]
   virtual ComputedStyleFlags OnComputedStyleChange(
@@ -240,8 +238,8 @@ class Widget {
 
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
+  Style mBuiltInStyles {};
   Style mExplicitStyles {};
-  std::optional<Style> mReplacedBuiltInStyles;
 
   Style mInheritedStyles;
   Style mComputedStyle;

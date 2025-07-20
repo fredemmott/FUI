@@ -11,16 +11,14 @@ namespace {
 const auto CardStyleClass = StyleClass::Make("Card");
 }
 
-Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {}
-
-Style Card::GetBuiltInStyles() const {
+Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {
   using namespace StaticTheme::Common;
-  static const auto ret
+  static const auto CardStyle
     = Style()
         .BackgroundColor(CardBackgroundFillColorDefaultBrush)
         .BorderRadius(OverlayCornerRadius)
         .Padding(Spacing * 4);
-  return ret;
+  BuiltInStyles() = CardStyle;
 }
 
 }// namespace FredEmmott::GUI::Widgets

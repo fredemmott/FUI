@@ -25,7 +25,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   using namespace PseudoClasses;
-  static const Style styles
+  static const Style ComboBoxButtonStyles
     = Style()
         .AlignSelf(YGAlignFlexStart)
         .BackgroundColor(ComboBoxBackground)
@@ -59,14 +59,14 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
             .BackgroundColor(ComboBoxBackgroundPressed)
             .BorderColor(ComboBoxBorderBrushPressed)
             .Color(ComboBoxForegroundPressed));
-  button->SetBuiltInStyles({styles});
+  button->BuiltInStyles() = ComboBoxButtonStyles;
 
   BeginWidget<Widget>(ID {"container"});
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles(
-    Style().AlignSelf(YGAlignCenter).FlexGrow(1));
+  GetCurrentParentNode()->BuiltInStyles()
+    = Style().AlignSelf(YGAlignCenter).FlexGrow(1);
   button->SetContextIfUnset<PopupAnchorContext>(GetCurrentParentNode());
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->SetBuiltInStyles(Style().Display(YGDisplayContents));
+  GetCurrentParentNode()->BuiltInStyles() = Style().Display(YGDisplayContents);
   return {button};
 };
 

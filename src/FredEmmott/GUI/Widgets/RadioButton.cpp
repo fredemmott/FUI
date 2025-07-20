@@ -18,13 +18,13 @@ RadioButton::RadioButton(std::size_t id) : Widget(id, {RadioButtonStyleClass}) {
   });
   mOuter->SetChildren({mInner = new Widget(0)});
 
-  this->SetBuiltInStyles(Style().AlignContent(YGAlignCenter).Height(32));
-  mFosterParent->SetBuiltInStyles(
-    Style()
-      .AlignItems(YGAlignCenter)
-      .PaddingLeft(8)
-      .PaddingTop(6)
-      .TranslateY(-2));
+  this->BuiltInStyles() += Style().AlignContent(YGAlignCenter).Height(32);
+  static const auto FosterParentStyles = Style()
+                                           .AlignItems(YGAlignCenter)
+                                           .PaddingLeft(8)
+                                           .PaddingTop(6)
+                                           .TranslateY(-2);
+  mFosterParent->BuiltInStyles() = FosterParentStyles;
   this->InitializeInnerStyles();
   this->SetStyles();
 }
@@ -123,7 +123,7 @@ void RadioButton::SetOuterStyles() {
             .BackgroundColor(RadioButtonOuterEllipseCheckedFillDisabled)
             .BorderColor(RadioButtonOuterEllipseCheckedStrokeDisabled));
 
-  mOuter->SetBuiltInStyles(mIsChecked ? CheckedStyle : UncheckedStyle);
+  mOuter->BuiltInStyles() = mIsChecked ? CheckedStyle : UncheckedStyle;
 }
 
 void RadioButton::SetInnerStyles() {
@@ -169,6 +169,6 @@ void RadioButton::InitializeInnerStyles() {
             .BorderColor(RadioButtonCheckGlyphStrokeDisabled)
             .Height(14)
             .Width(14));
-  mInner->SetBuiltInStyles(GlyphStyle);
+  mInner->BuiltInStyles() = GlyphStyle;
 }
 }// namespace FredEmmott::GUI::Widgets

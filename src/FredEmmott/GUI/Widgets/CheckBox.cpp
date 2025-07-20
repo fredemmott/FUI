@@ -18,19 +18,20 @@ CheckBox::CheckBox(std::size_t id) : Widget(id) {
       = std::make_unique<Widget>(1, StyleClasses {FosterParentClass});
   });
 
+  static const auto GlyphStyles = Style().TranslateX(4).TranslateY(-2);
+
   mCheckGlyph = new Label(0, StyleClasses {CheckGlyphClass});
-  mCheckGlyph->SetAdditionalBuiltInStyles(Style().TranslateX(4).TranslateY(-2));
+  mCheckGlyph->BuiltInStyles() += GlyphStyles;
   mCheckGlyphBackground->SetChildren({mCheckGlyph});
 
   using namespace StaticTheme::CheckBox;
-  mFosterParent->SetBuiltInStyles(
-    Style()
-      .PaddingBottom(CheckBoxPaddingBottom + 6)
-      .PaddingLeft(CheckBoxPaddingLeft)
-      .PaddingRight(CheckBoxPaddingRight)
-      .PaddingTop(CheckBoxPaddingTop));
+  mFosterParent->BuiltInStyles() = Style()
+                                     .PaddingBottom(CheckBoxPaddingBottom + 6)
+                                     .PaddingLeft(CheckBoxPaddingLeft)
+                                     .PaddingRight(CheckBoxPaddingRight)
+                                     .PaddingTop(CheckBoxPaddingTop);
 
-  this->UpdateCheckGlyphStyles();
+  this->UpdateStyles();
 }
 
 void CheckBox::UpdateCheckGlyphStyles() {
@@ -120,10 +121,10 @@ void CheckBox::SetIsChecked(const bool checked) noexcept {
     return;
   }
   mState = checked ? State::Checked : State::Unchecked;
-  this->UpdateCheckGlyphStyles();
+  this->UpdateStyles();
 }
 
-Style CheckBox::GetBuiltInStyles() const {
+void CheckBox::UpdateStyles() {
   using namespace StaticTheme::Common;
   using namespace StaticTheme::CheckBox;
   using namespace PseudoClasses;
@@ -190,7 +191,8 @@ Style CheckBox::GetBuiltInStyles() const {
         .And(Active, CheckPressed)
         .And(Disabled, CheckedDisabled);
 
-  return IsChecked() ? CheckedStyle : UncheckedStyle;
+  BuiltInStyles() = IsChecked() ? CheckedStyle : UncheckedStyle;
+  this->UpdateCheckGlyphStyles();
 }
 
 Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {

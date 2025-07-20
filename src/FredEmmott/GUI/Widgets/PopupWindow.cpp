@@ -10,14 +10,12 @@ namespace FredEmmott::GUI::Widgets {
 
 PopupWindow::PopupWindow(std::size_t id)
   : Widget(id, {PseudoClasses::LayoutOrphan}),
-    mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {}
+    mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {
+  BuiltInStyles().Display() = YGDisplayNone;
+}
 
 WidgetList PopupWindow::GetDirectChildren() const noexcept {
   return WidgetList::MakeEmpty();
-}
-
-Style PopupWindow::GetBuiltInStyles() const {
-  return Style().Display(YGDisplayNone);
 }
 
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(

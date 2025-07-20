@@ -115,7 +115,7 @@ const Style& InnerOff() {
 }// namespace Styles
 }// namespace
 
-ToggleSwitchThumb::ToggleSwitchThumb(std::size_t id)
+ToggleSwitchThumb::ToggleSwitchThumb(const std::size_t id)
   : Widget(id, {ToggleSwitchThumbStyleClass}) {
   this->SetChildren({mInner = new Widget(0)});
 
@@ -131,8 +131,8 @@ void ToggleSwitchThumb::SetIsOn(const bool value) noexcept {
 }
 
 void ToggleSwitchThumb::UpdateStyles() {
-  this->SetBuiltInStyles(mIsOn ? Styles::OuterOn() : Styles::OuterOff());
-  mInner->SetBuiltInStyles(mIsOn ? Styles::InnerOn() : Styles::InnerOff());
+  this->BuiltInStyles() = mIsOn ? Styles::OuterOn() : Styles::OuterOff();
+  mInner->BuiltInStyles() = mIsOn ? Styles::InnerOn() : Styles::InnerOff();
 }
 
 }// namespace FredEmmott::GUI::Widgets

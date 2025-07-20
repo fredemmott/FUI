@@ -257,15 +257,16 @@ BeginContentDialogButtons() {
   if (tContext) {
     EndVStackPanel();
   }
-  static const auto OuterStyle = Style()
-                                   .BackgroundColor(ContentDialogBackground)
-                                   .BorderBottomLeftRadius(OverlayCornerRadius)
-                                   .BorderBottomRightRadius(OverlayCornerRadius)
-                                   .Gap(0)
-                                   .PaddingBottom(ContentDialogPaddingBottom)
-                                   .PaddingLeft(ContentDialogPaddingLeft)
-                                   .PaddingRight(ContentDialogPaddingRight)
-                                   .PaddingTop(ContentDialogPaddingTop);
+  static const auto OuterStyle
+    = Style()
+        .BackgroundColor(ContentDialogBackground)
+        .BorderBottomLeftRadius(OverlayCornerRadius)
+        .BorderBottomRightRadius(OverlayCornerRadius)
+        .Gap(0)
+        .PaddingBottom(ContentDialogPaddingBottom)
+        .PaddingLeft(ContentDialogPaddingLeft)
+        .PaddingRight(ContentDialogPaddingRight)
+        .PaddingTop(ContentDialogPaddingTop);
   const auto ctx = tButtonsContext
     = GetCurrentParentNode()->GetOrCreateContext<ButtonsContext>();
   const auto outer = BeginHStackPanel().Styled(OuterStyle).Scoped();
@@ -283,11 +284,11 @@ BeginContentDialogButtons() {
     EndWidget<Widgets::Label>();
     EndWidget<Widgets::Button>();
 
-    it.mButton->SetAdditionalBuiltInStyles(Style().FlexGrow(1));
+    it.mButton->BuiltInStyles() += Style().FlexGrow(1);
   };
   const auto spacer = [](const ID& id = ID {std::source_location::current()}) {
-    auto w = BeginWidget<Widgets::Widget>(id);
-    w->SetBuiltInStyles(Style().Width(ContentDialogButtonSpacing));
+    const auto w = BeginWidget<Widgets::Widget>(id);
+    w->BuiltInStyles() = Style().Width(ContentDialogButtonSpacing);
     EndWidget<Widgets::Widget>();
     return w;
   };

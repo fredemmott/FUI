@@ -15,10 +15,10 @@ class ToggleSwitchKnob final : public Widget {
   void SetIsOn(bool) noexcept;
 
  protected:
-  Style GetBuiltInStyles() const override;
   WidgetList GetDirectChildren() const noexcept override;
 
  private:
+  void UpdateStyles();
   unique_ptr<ToggleSwitchThumb> mThumb {nullptr};
 };
 

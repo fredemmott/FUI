@@ -41,7 +41,7 @@ ComboBoxResult<bool> ComboBox(
     *selectedIndex,
     items.size());
   const auto widget = BeginWidget<ComboBoxWidget>(id);
-  widget->SetBuiltInStyles(Style().Display(YGDisplayContents));
+  widget->BuiltInStyles().Display() = YGDisplayContents;
 
   const auto button = ComboBoxButton(items[*selectedIndex]);
   if (button.GetValue() /* clicked */) {

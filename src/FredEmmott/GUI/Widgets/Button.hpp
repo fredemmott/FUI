@@ -8,12 +8,11 @@ namespace FredEmmott::GUI::Widgets {
 
 class Button final : public Widget {
  public:
-  Button(std::size_t id);
+  explicit Button(std::size_t id);
 
   bool mClicked {false};
 
  protected:
-  Style GetBuiltInStyles() const override;
   EventHandlerResult OnClick(const MouseEvent& e) override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;

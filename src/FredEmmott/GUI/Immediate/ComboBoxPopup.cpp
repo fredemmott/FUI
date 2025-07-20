@@ -27,32 +27,36 @@ ComboBoxPopupResult BeginComboBoxPopup(ID id) {
   if (!BeginBasicPopupWindow(id).Transparent()) {
     return false;
   }
+  static const auto OuterStyles
+    = Style()
+        .BackgroundColor(ComboBoxDropDownBackground)
+        .BorderColor(ComboBoxDropDownBorderBrush)
+        .BorderRadius(OverlayCornerRadius)
+        .BorderWidth(ComboBoxDropdownBorderThickness)
+        .Padding(ComboBoxDropdownBorderPadding);
+  static const auto InnerStyles
+    = Style()
+        .BorderRadius(OverlayCornerRadius)
+        .Color(ComboBoxDropDownForeground)
+        .FlexGrow(1.0)
+        .Gap(0.0)
+        .MarginBottom(-1.0)
+        .MarginLeft(0.0)
+        .MarginRight(0)
+        .MarginTop(-0.5)
+        .PaddingBottom(ComboBoxDropdownContentMarginBottom)
+        .PaddingLeft(ComboBoxDropdownContentMarginLeft)
+        .PaddingRight(ComboBoxDropdownContentMarginRight)
+        .PaddingTop(ComboBoxDropdownContentMarginTop);
+
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
   BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles(
-    Style()
-      .BackgroundColor(ComboBoxDropDownBackground)
-      .BorderColor(ComboBoxDropDownBorderBrush)
-      .BorderRadius(OverlayCornerRadius)
-      .BorderWidth(ComboBoxDropdownBorderThickness)
-      .Padding(ComboBoxDropdownBorderPadding));
+  GetCurrentParentNode()->BuiltInStyles() = OuterStyles;
   BeginVStackPanel();
-  GetCurrentParentNode()->SetAdditionalBuiltInStyles(
-    Style()
-      .BorderRadius(OverlayCornerRadius)
-      .Color(ComboBoxDropDownForeground)
-      .FlexGrow(1.0)
-      .Gap(0.0)
-      .MarginBottom(-1.0)
-      .MarginLeft(0.0)
-      .MarginRight(0)
-      .MarginTop(-0.5)
-      .MinWidth(width)
-      .PaddingBottom(ComboBoxDropdownContentMarginBottom)
-      .PaddingLeft(ComboBoxDropdownContentMarginLeft)
-      .PaddingRight(ComboBoxDropdownContentMarginRight)
-      .PaddingTop(ComboBoxDropdownContentMarginTop));
+  auto& innerStyles = GetCurrentParentNode()->BuiltInStyles();
+  innerStyles += InnerStyles;
+  innerStyles.MinWidth() = width;
   return true;
 }
 

@@ -14,7 +14,7 @@ void PopID() {
 Result<&PopID, void, immediate_detail::WidgetlessResultMixin> PushID(
   const ID id) {
   auto w = immediate_detail::BeginWidget<Widgets::Widget>(id);
-  w->SetBuiltInStyles(Style().Display(YGDisplayContents));
+  w->BuiltInStyles().Display() = YGDisplayContents;
   return {};
 }
 

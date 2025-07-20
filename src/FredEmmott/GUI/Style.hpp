@@ -67,15 +67,16 @@ struct StyleProperties {
     return mStorage.contains(key); \
   }
 #define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, PARAM_TYPE) \
-  template <class Self, class... Args> \
+  template <class... Args> \
   [[nodiscard]] \
   decltype(auto) NAME( \
-    this Self&& self, PARAM_TYPE value, Args&&... args) noexcept { \
+    this auto&& self, PARAM_TYPE value, Args&&... args) noexcept \
+    requires std::is_rvalue_reference_v<decltype(self)> \
+  { \
     constexpr auto key = StylePropertyKey::NAME; \
-    Self ret = std::forward<Self>(self); \
-    ret.mStorage.insert_or_assign( \
+    self.mStorage.insert_or_assign( \
       key, StyleProperty<TYPE>(value, std::forward<Args>(args)...)); \
-    return ret; \
+    return std::move(self); \
   }
 #define FUI_DECLARE_PROPERTY_SETTERS(NAME, TYPE, ...) \
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const TYPE&); \
