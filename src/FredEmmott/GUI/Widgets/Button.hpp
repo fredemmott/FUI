@@ -6,7 +6,7 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-class Button final : public Widget {
+class Button : public Widget {
  public:
   explicit Button(std::size_t id);
 

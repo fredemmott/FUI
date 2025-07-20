@@ -11,15 +11,21 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-Result<&EndComboBoxItem>
-BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
-  using namespace immediate_detail;
+namespace {
+
+class ComboBoxItemButton : public Widgets::Button {
+ public:
+  using Button::Button;
+
+  using Widget::IsChecked;
+  using Widget::SetIsChecked;
+};
+
+const Style& ComboBoxItemStyles() {
+  using namespace PseudoClasses;
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
-  const auto ret = BeginButton(clicked, id);
-  const bool isSelected = initiallySelected || (clicked && *clicked);
 
-  using namespace PseudoClasses;
   static const auto BaseStyles
     = Style()
         .BackgroundColor(ComboBoxItemBackground)
@@ -51,8 +57,8 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
             .BackgroundColor(ComboBoxItemBackgroundPressed)
             .BorderColor(ComboBoxItemBorderBrushPressed)
             .Color(ComboBoxItemForegroundPressed));
-  static const auto SelectedStyles = BaseStyles
-    + Style()
+  static const auto SelectedStyles
+    = Style()
         .BackgroundColor(ComboBoxItemBackgroundSelected)
         .BorderColor(ComboBoxItemBorderBrushSelected)
         .Color(ComboBoxItemForegroundSelected)
@@ -75,11 +81,14 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
             .BorderColor(ComboBoxItemBorderBrushSelectedPressed)
             .Color(ComboBoxItemForegroundSelectedPressed));
 
-  GetCurrentParentNode()->BuiltInStyles()
-    = isSelected ? SelectedStyles : BaseStyles;
-  BeginHStackPanel();
-  GetCurrentParentNode()->BuiltInStyles() += Style().Gap(0.f);
-  const auto pill = BeginWidget<Widget>(ID {"pill"});
+  static auto Combined = BaseStyles + Style().And(Checked, SelectedStyles);
+  return Combined;
+}
+
+const Style& ComboBoxItemPillStyles() {
+  using namespace PseudoClasses;
+  using namespace StaticTheme::Common;
+  using namespace StaticTheme::ComboBox;
 
   constexpr auto PillHeightAnimation = CubicBezierStyleTransition(
     ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
@@ -105,27 +114,48 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
                   (ComboBoxItemPillHeight
                    - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
                   / 2)));
-  pill->BuiltInStyles() = PillStyles;
-  pill->ToggleStyleClass(Checked, isSelected);
+  return PillStyles;
+}
+
+}// namespace
+
+Result<&EndComboBoxItem>
+BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
+  using namespace immediate_detail;
+  const auto item = BeginWidget<ComboBoxItemButton>(id);
+  item->BuiltInStyles() = ComboBoxItemStyles();
+  if (clicked) {
+    *clicked = std::exchange(item->mClicked, false);
+  }
+
+  const bool isSelected = initiallySelected || (clicked && *clicked);
+  item->SetIsChecked(isSelected);
+
+  BeginHStackPanel();
+  GetCurrentParentNode()->BuiltInStyles() += Style().Gap(0.f);
+  const auto pill = BeginWidget<Widget>(ID {"pill"});
+  pill->BuiltInStyles() = ComboBoxItemPillStyles();
 
   EndWidget<Widget>();
-  BeginWidget<Widget>(ID {"content"})->BuiltInStyles() = Style().MinHeight(
-    ComboBoxItemPillHeight + PillStyles.MarginTop().value_or(0)
-    + PillStyles.MarginBottom().value_or(0));
+  static const auto ContentStyles = Style() = Style().MinHeight(
+    StaticTheme::ComboBox::ComboBoxItemPillHeight
+    + ComboBoxItemPillStyles().MarginTop().value_or(0)
+    + ComboBoxItemPillStyles().MarginBottom().value_or(0));
+  BeginWidget<Widget>(ID {"content"})->BuiltInStyles() = ContentStyles;
 
   if (isSelected) {
     FUI_ASSERT(tWindow);
     tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
   }
 
-  return {ret};
+  return {item};
 }
 
 void EndComboBoxItem() {
   using namespace immediate_detail;
   EndWidget<Widget>();// content
   EndStackPanel();
-  EndButton();
+  EndWidget<ComboBoxItemButton>();
 }
 
 Result<nullptr, bool>

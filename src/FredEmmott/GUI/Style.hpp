@@ -112,21 +112,22 @@ struct Style {
   Style& operator+=(const Style& other);
   bool operator==(const Style& other) const noexcept = default;
 
-  template <class Self, std::convertible_to<Selector> T = Selector>
+  template <std::convertible_to<Selector> T = Selector>
   [[nodiscard]]
-  auto And(this Self&& self, T&& selector, const Style& values) {
-    Self copyOrMoved = std::forward<Self>(self);
-    copyOrMoved.mAnd.insert_or_assign(std::forward<T>(selector), values);
-    return copyOrMoved;
+  auto And(this auto&& self, T&& selector, const Style& values)
+    requires std::is_rvalue_reference_v<decltype(self)>
+  {
+    self.mAnd.insert_or_assign(std::forward<T>(selector), values);
+    return self;
   }
 
-  template <class Self, std::convertible_to<Selector> T = Selector>
+  template <std::convertible_to<Selector> T = Selector>
   [[nodiscard]]
-  auto Descendants(this Self&& self, T&& selector, const Style& values) {
-    Self copyOrMoved = std::forward<Self>(self);
-    copyOrMoved.mDescendants.insert_or_assign(
-      std::forward<T>(selector), values);
-    return copyOrMoved;
+  auto Descendants(this auto&& self, T&& selector, const Style& values)
+    requires std::is_rvalue_reference_v<decltype(self)>
+  {
+    self.mDescendants.insert_or_assign(std::forward<T>(selector), values);
+    return self;
   }
 
  private:
