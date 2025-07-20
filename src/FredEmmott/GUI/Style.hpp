@@ -24,7 +24,7 @@ namespace FredEmmott::GUI {
 
 using style_detail::StylePropertyKey;
 
-struct StyleProperties {
+struct Style {
   struct PropertyTypes {
     PropertyTypes() = delete;
 #define FUI_DECLARE_STYLE_PROPERTY_TYPE(NAME, TYPE, ...) using NAME##_t = TYPE;
@@ -45,8 +45,9 @@ struct StyleProperties {
   template <class T>
   constexpr const auto& GetProperty(const StylePropertyKey P) const noexcept {
     static constexpr StyleProperty<T> Empty {};
-    return mStorage.contains(P) ? std::get<StyleProperty<T>>(mStorage[P])
-                                : Empty;
+    return mStorage.contains(P)
+      ? std::get<StyleProperty<T>>(mStorage[P])
+      : Empty;
   }
 
   template <class T>
@@ -91,24 +92,16 @@ struct StyleProperties {
 #undef FUI_DECLARE_PROPERTY_SETTER
 #undef FUI_DECLARE_PROPERTY_SETTERS
 
-  StyleProperties& operator+=(const StyleProperties& other);
-  bool operator==(const StyleProperties& other) const noexcept = default;
-};// namespace FredEmmott::GUI
-
-struct Style : StyleProperties {
   using Selector
     = std::variant<std::monostate, StyleClass, const Widgets::Widget*>;
-  utility::unordered_map<Selector, StyleProperties> mAnd;
-  utility::unordered_map<Selector, StyleProperties> mDescendants;
+  utility::unordered_map<Selector, Style> mAnd;
+  utility::unordered_map<Selector, Style> mDescendants;
 
   constexpr Style() = default;
   constexpr Style(const Style& other) noexcept = default;
   constexpr Style(Style&& other) noexcept = default;
   constexpr Style& operator=(const Style& other) noexcept = default;
   constexpr Style& operator=(Style&& other) noexcept = default;
-
-  constexpr Style(const StyleProperties& other) noexcept
-    : StyleProperties(other) {}
 
   [[nodiscard]] Style InheritableValues() const noexcept;
   [[nodiscard]]
@@ -119,7 +112,7 @@ struct Style : StyleProperties {
 
   template <class Self, std::convertible_to<Selector> T = Selector>
   [[nodiscard]]
-  auto And(this Self&& self, T&& selector, const StyleProperties& values) {
+  auto And(this Self&& self, T&& selector, const Style& values) {
     Self copyOrMoved = std::forward<Self>(self);
     copyOrMoved.mAnd.insert_or_assign(std::forward<T>(selector), values);
     return copyOrMoved;
@@ -127,8 +120,7 @@ struct Style : StyleProperties {
 
   template <class Self, std::convertible_to<Selector> T = Selector>
   [[nodiscard]]
-  auto
-  Descendants(this Self&& self, T&& selector, const StyleProperties& values) {
+  auto Descendants(this Self&& self, T&& selector, const Style& values) {
     Self copyOrMoved = std::forward<Self>(self);
     copyOrMoved.mDescendants.insert_or_assign(
       std::forward<T>(selector), values);

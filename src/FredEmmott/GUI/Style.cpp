@@ -11,7 +11,7 @@
 
 namespace FredEmmott::GUI {
 
-StyleProperties& StyleProperties::operator+=(const StyleProperties& other) {
+Style& Style::operator+=(const Style& other) {
   /* Set the lhs to the rhs, if the rhs is set.
    * e.g. with:
    *
@@ -64,12 +64,6 @@ StyleProperties& StyleProperties::operator+=(const StyleProperties& other) {
   mStorage.erase(StylePropertyKey::X##Y); \
   FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
 #undef UNSET_ALL_EDGES
-
-  return *this;
-}
-
-Style& Style::operator+=(const Style& other) {
-  StyleProperties::operator+=(other);
 
   if (mAnd.empty()) {
     mAnd = other.mAnd;
