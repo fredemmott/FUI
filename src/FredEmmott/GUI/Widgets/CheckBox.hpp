@@ -11,10 +11,8 @@ class CheckBox final : public Widget {
  public:
   explicit CheckBox(std::size_t id);
 
-  // Indeterminate (half-checked) checkboxes are not currently supported.
-  [[nodiscard]]
-  bool IsChecked() const noexcept;
-  void SetIsChecked(bool) noexcept;
+  using Widget::IsChecked;
+  using Widget::SetIsChecked;
 
   bool mChanged {false};
 
@@ -27,14 +25,6 @@ class CheckBox final : public Widget {
     override;
 
  private:
-  // Using an enum here to make things clearer if support for Indeterminate
-  // is added in the future
-  enum class State {
-    Checked,
-    Unchecked,
-  };
-  State mState {State::Unchecked};
-
   std::unique_ptr<Widget> mCheckGlyphBackground;
   Label* mCheckGlyph {nullptr};
   std::unique_ptr<Widget> mFosterParent;

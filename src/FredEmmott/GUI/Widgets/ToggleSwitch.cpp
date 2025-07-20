@@ -44,14 +44,14 @@ ToggleSwitch::ToggleSwitch(std::size_t id)
 }
 
 bool ToggleSwitch::IsOn() const noexcept {
-  return mKnob->IsOn();
+  return this->IsChecked();
 }
 
-void ToggleSwitch::SetIsOn(bool value) noexcept {
+void ToggleSwitch::SetIsOn(const bool value) noexcept {
   if (value == IsOn()) {
     return;
   }
-  mKnob->SetIsOn(value);
+  this->SetIsChecked(value);
 }
 
 Widget::ComputedStyleFlags ToggleSwitch::OnComputedStyleChange(

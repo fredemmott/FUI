@@ -28,18 +28,6 @@ ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id)
   this->UpdateStyles();
 }
 
-bool ToggleSwitchKnob::IsOn() const noexcept {
-  return mThumb->IsOn();
-}
-
-void ToggleSwitchKnob::SetIsOn(const bool value) noexcept {
-  if (value == IsOn()) {
-    return;
-  }
-  mThumb->SetIsOn(value);
-  this->UpdateStyles();
-}
-
 void ToggleSwitchKnob::UpdateStyles() {
   namespace Common = StaticTheme::Common;
   using namespace StaticTheme::ToggleSwitch;
@@ -58,8 +46,8 @@ void ToggleSwitchKnob::UpdateStyles() {
         .MarginRight(ToggleSwitchPreContentMargin)
         .Width(Spacing * 10);
 
-  static const auto OffStyles = BaseStyles
-    + Style()
+  static const auto OffStyles
+    = Style()
         .BackgroundColor(ToggleSwitchFillOff)
         .BorderColor(ToggleSwitchStrokeOff)
         .And(
@@ -70,8 +58,8 @@ void ToggleSwitchKnob::UpdateStyles() {
         .And(Hover, Style().BackgroundColor(ToggleSwitchFillOffPointerOver))
         .And(Active, Style().BackgroundColor(ToggleSwitchFillOffPressed));
 
-  static const auto OnStyles = BaseStyles
-    + Style()
+  static const auto OnStyles
+    = Style()
         .BackgroundColor(ToggleSwitchFillOn)
         .BorderColor(ToggleSwitchStrokeOn)
         .And(
@@ -90,7 +78,8 @@ void ToggleSwitchKnob::UpdateStyles() {
             .BackgroundColor(ToggleSwitchFillOnPressed)
             .BorderColor(ToggleSwitchStrokeOnPressed));
 
-  BuiltInStyles() = this->IsOn() ? OnStyles : OffStyles;
+  BuiltInStyles()
+    = BaseStyles + Style().And(Checked, OnStyles).And(!Checked, OffStyles);
 }
 
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {

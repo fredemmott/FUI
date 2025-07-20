@@ -470,6 +470,20 @@ void Widget::EndMouseCapture() {
   gMouseCapture = {};
 }
 
+bool Widget::IsChecked() const noexcept {
+  using enum StateFlags;
+  return ((mDirectStateFlags | mInheritedStateFlags) & Checked) == Checked;
+}
+
+void Widget::SetIsChecked(const bool value) {
+  using enum StateFlags;
+  if (value) {
+    mDirectStateFlags |= Checked;
+  } else {
+    mDirectStateFlags &= ~Checked;
+  }
+}
+
 Point Widget::GetTopLeftCanvasPoint() const {
   Point position {};
   for (auto yoga = this->GetLayoutNode(); yoga;) {

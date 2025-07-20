@@ -10,10 +10,6 @@ class ToggleSwitchKnob final : public Widget {
  public:
   ToggleSwitchKnob(std::size_t id);
 
-  [[nodiscard]]
-  bool IsOn() const noexcept;
-  void SetIsOn(bool) noexcept;
-
  protected:
   WidgetList GetDirectChildren() const noexcept override;
 

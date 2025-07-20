@@ -164,6 +164,7 @@ class Widget {
     Hovered = 1 << 2,
     Active = 1 << 3,
     Animating = 1 << 4,
+    Checked = 1 << 5,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
@@ -226,6 +227,10 @@ class Widget {
   void StartMouseCapture();
   void EndMouseCapture();
 
+  [[nodiscard]]
+  bool IsChecked() const noexcept;
+  void SetIsChecked(bool);
+
  private:
   struct MouseEventResult {
     EventHandlerResult mResult {EventHandlerResult::Default};
@@ -260,6 +265,8 @@ class Widget {
 
   [[nodiscard]]
   bool MatchesStylePseudoClass(StyleClass) const;
+  [[nodiscard]]
+  bool MatchesStyleClass(const StyleClass&) const;
   [[nodiscard]]
   bool MatchesStyleSelector(Style::Selector) const;
 };

@@ -10,6 +10,8 @@
 
 namespace FredEmmott::GUI {
 
+struct NegatedStyleClass;
+
 class StyleClass {
   friend struct std::hash<StyleClass>;
 
@@ -24,6 +26,8 @@ class StyleClass {
 
   bool operator==(const StyleClass&) const noexcept = default;
 
+  inline NegatedStyleClass operator!() const noexcept;
+
  private:
   explicit StyleClass(std::string_view id) : mID(id) {}
   std::string_view mID {};
@@ -31,6 +35,18 @@ class StyleClass {
 using StyleClasses = std::unordered_set<StyleClass>;
 StyleClasses operator+(const StyleClasses&, StyleClass);
 StyleClasses& operator+=(StyleClasses&, StyleClass);
+
+struct NegatedStyleClass {
+  StyleClass mStyleClass;
+  bool operator==(const NegatedStyleClass&) const noexcept = default;
+  StyleClass operator!() const noexcept {
+    return mStyleClass;
+  }
+};
+
+NegatedStyleClass StyleClass::operator!() const noexcept {
+  return NegatedStyleClass {*this};
+}
 
 template <std::size_t N>
 class LiteralStyleClass {
@@ -50,14 +66,21 @@ class LiteralStyleClass {
  private:
   char mName[N];
   mutable std::optional<StyleClass> mCache;
-}
+};
 
-;
 }// namespace FredEmmott::GUI
 
 template <>
 struct std::hash<FredEmmott::GUI::StyleClass> {
   std::size_t operator()(const FredEmmott::GUI::StyleClass& c) const noexcept {
     return std::hash<uintptr_t> {}(std::bit_cast<uintptr_t>(c.mID.data()));
+  }
+};
+
+template <>
+struct std::hash<FredEmmott::GUI::NegatedStyleClass> {
+  std::size_t operator()(
+    const FredEmmott::GUI::NegatedStyleClass& c) const noexcept {
+    return ~std::hash<FredEmmott::GUI::StyleClass> {}(c.mStyleClass);
   }
 };

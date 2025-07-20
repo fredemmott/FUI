@@ -76,6 +76,9 @@ void Widget::ComputeStyles(const Style& inherited) {
     if (isDisabled) {
       propagateFlags |= StateFlags::Disabled;
     }
+    if (IsChecked()) {
+      propagateFlags |= StateFlags::Checked;
+    }
     if (const auto flags = this->OnComputedStyleChange(
           style, mDirectStateFlags | mInheritedStateFlags);
         flags != Empty) {
@@ -196,6 +199,11 @@ Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
 
 bool Widget::MatchesStylePseudoClass(const StyleClass it) const {
   const auto state = mDirectStateFlags | mInheritedStateFlags;
+
+  if (it == PseudoClasses::Checked) {
+    return IsChecked();
+  }
+
   if ((state & StateFlags::Disabled) != StateFlags::Default) {
     return it == PseudoClasses::Disabled;
   }
@@ -212,15 +220,22 @@ bool Widget::MatchesStylePseudoClass(const StyleClass it) const {
   return false;
 }
 
-bool Widget::MatchesStyleSelector(Style::Selector selector) const {
+bool Widget::MatchesStyleClass(const StyleClass& klass) const {
+  if (mClassList.contains(klass)) {
+    return true;
+  }
+  return MatchesStylePseudoClass(klass);
+}
+
+bool Widget::MatchesStyleSelector(const Style::Selector selector) const {
   if (const auto it = get_if<const Widget*>(&selector)) {
     return *it == this;
   }
   if (const auto it = get_if<StyleClass>(&selector)) {
-    if (mClassList.contains(*it)) {
-      return true;
-    }
-    return MatchesStylePseudoClass(*it);
+    return MatchesStyleClass(*it);
+  }
+  if (const auto it = get_if<NegatedStyleClass>(&selector)) {
+    return !MatchesStyleClass(it->mStyleClass);
   }
   if (holds_alternative<std::monostate>(selector)) {
     return true;

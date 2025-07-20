@@ -18,18 +18,16 @@ CheckBox::CheckBox(std::size_t id) : Widget(id) {
       = std::make_unique<Widget>(1, StyleClasses {FosterParentClass});
   });
 
-  static const auto GlyphStyles = Style().TranslateX(4).TranslateY(-2);
-
   mCheckGlyph = new Label(0, StyleClasses {CheckGlyphClass});
-  mCheckGlyph->BuiltInStyles() += GlyphStyles;
   mCheckGlyphBackground->SetChildren({mCheckGlyph});
 
   using namespace StaticTheme::CheckBox;
-  mFosterParent->BuiltInStyles() = Style()
-                                     .PaddingBottom(CheckBoxPaddingBottom + 6)
-                                     .PaddingLeft(CheckBoxPaddingLeft)
-                                     .PaddingRight(CheckBoxPaddingRight)
-                                     .PaddingTop(CheckBoxPaddingTop);
+  mFosterParent->BuiltInStyles()
+    = Style()
+        .PaddingBottom(CheckBoxPaddingBottom + 6)
+        .PaddingLeft(CheckBoxPaddingLeft)
+        .PaddingRight(CheckBoxPaddingRight)
+        .PaddingTop(CheckBoxPaddingTop);
 
   this->UpdateStyles();
 }
@@ -98,30 +96,14 @@ void CheckBox::UpdateCheckGlyphStyles() {
         .And(Hover, CheckedPointerOverGlyphStyles)
         .And(Active, CheckedPointerPressedGlyphStyles)
         .And(Disabled, CheckedDisabledGlyphStyles);
-  switch (mState) {
-    case State::Checked:
-      mCheckGlyphBackground->AddExplicitStyles(CheckedGlyphStyles);
-      // For now, just using the 'fallback' icon; it would be better to
-      // port AnimatedAcceptVisualSource
-      mCheckGlyph->SetText(CheckBoxCheckedGlyph);
-      break;
-    case State::Unchecked:
-      mCheckGlyphBackground->AddExplicitStyles(UncheckedGlyphStyles);
-      mCheckGlyph->SetText({});
-      break;
-  }
-}
+  mCheckGlyph->SetText(CheckBoxCheckedGlyph);
 
-bool CheckBox::IsChecked() const noexcept {
-  return mState == State::Checked;
-}
-
-void CheckBox::SetIsChecked(const bool checked) noexcept {
-  if (checked == IsChecked()) {
-    return;
-  }
-  mState = checked ? State::Checked : State::Unchecked;
-  this->UpdateStyles();
+  mCheckGlyphBackground->BuiltInStyles()
+    = Style()
+        .And(Checked, CheckedGlyphStyles)
+        .And(!Checked, UncheckedGlyphStyles);
+  mCheckGlyph->BuiltInStyles() = Style().TranslateX(4).TranslateY(-2).And(
+    !Checked, Style().Display(YGDisplayNone));
 }
 
 void CheckBox::UpdateStyles() {
@@ -191,7 +173,8 @@ void CheckBox::UpdateStyles() {
         .And(Active, CheckPressed)
         .And(Disabled, CheckedDisabled);
 
-  BuiltInStyles() = IsChecked() ? CheckedStyle : UncheckedStyle;
+  BuiltInStyles()
+    = Style().And(Checked, CheckedStyle).And(!Checked, UncheckedStyle);
   this->UpdateCheckGlyphStyles();
 }
 

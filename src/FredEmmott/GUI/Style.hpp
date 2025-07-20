@@ -40,7 +40,6 @@ struct Style {
 #undef FUI_DECLARE_STYLE_PROPERTY_STORAGE
         void>>
     mStorage;
-  ;
 
   template <class T>
   constexpr const auto& GetProperty(const StylePropertyKey P) const noexcept {
@@ -92,8 +91,11 @@ struct Style {
 #undef FUI_DECLARE_PROPERTY_SETTER
 #undef FUI_DECLARE_PROPERTY_SETTERS
 
-  using Selector
-    = std::variant<std::monostate, StyleClass, const Widgets::Widget*>;
+  using Selector = std::variant<
+    std::monostate,
+    StyleClass,
+    NegatedStyleClass,
+    const Widgets::Widget*>;
   utility::unordered_map<Selector, Style> mAnd;
   utility::unordered_map<Selector, Style> mDescendants;
 

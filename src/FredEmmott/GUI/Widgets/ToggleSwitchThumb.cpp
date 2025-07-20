@@ -38,12 +38,13 @@ constexpr auto ActiveWidth = 17;
 constexpr auto ParentWidth = 40;
 
 const Style& OuterOff() {
-  static const Style lazyInit = Style()
-                                  .Height(NormalHeight)
-                                  .Left(Margin, NormalAnimation)
-                                  .Position(YGPositionTypeAbsolute)
-                                  .Top(Margin)
-                                  .Width(NormalWidth);
+  static const Style lazyInit
+    = Style()
+        .Height(NormalHeight)
+        .Left(Margin, NormalAnimation)
+        .Position(YGPositionTypeAbsolute)
+        .Top(Margin)
+        .Width(NormalWidth);
   return lazyInit;
 }
 
@@ -122,17 +123,12 @@ ToggleSwitchThumb::ToggleSwitchThumb(const std::size_t id)
   this->UpdateStyles();
 }
 
-void ToggleSwitchThumb::SetIsOn(const bool value) noexcept {
-  if (mIsOn == value) {
-    return;
-  }
-  mIsOn = value;
-  this->UpdateStyles();
-}
-
 void ToggleSwitchThumb::UpdateStyles() {
-  this->BuiltInStyles() = mIsOn ? Styles::OuterOn() : Styles::OuterOff();
-  mInner->BuiltInStyles() = mIsOn ? Styles::InnerOn() : Styles::InnerOff();
+  using namespace PseudoClasses;
+  this->BuiltInStyles()
+    = Style().And(Checked, Styles::OuterOn()).And(!Checked, Styles::OuterOff());
+  mInner->BuiltInStyles()
+    = Style().And(Checked, Styles::InnerOn()).And(!Checked, Styles::InnerOff());
 }
 
 }// namespace FredEmmott::GUI::Widgets
