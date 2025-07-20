@@ -41,6 +41,8 @@ class Widget {
   explicit Widget(std::size_t id, const StyleClasses& = {});
   virtual ~Widget();
 
+  void ToggleStyleClass(StyleClass, bool value);
+
   // Can return nullptr
   [[nodiscard]]
   static Widget* FromYogaNode(YGNodeConstRef);

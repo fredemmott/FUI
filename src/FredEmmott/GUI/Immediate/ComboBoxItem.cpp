@@ -92,21 +92,26 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
         .MarginRight(6)
         .MarginTop(2.5)
         .Top(0, PillHeightAnimation)
-        .Width(ComboBoxItemPillWidth);
-  static const auto PillSelectedStyles = PillStyles
-    + Style()
-        .Height(ComboBoxItemPillHeight)
+        .Width(ComboBoxItemPillWidth)
         .And(
-          Active,
+          Checked,
           Style()
-            .Height(ComboBoxItemPillHeight * ComboBoxItemPillMinScale)
-            .Top(
-              (ComboBoxItemPillHeight
-               - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
-              / 2));
-  pill->BuiltInStyles() = isSelected ? PillSelectedStyles : PillStyles;
+            .Height(ComboBoxItemPillHeight)
+            .And(
+              Active,
+              Style()
+                .Height(ComboBoxItemPillHeight * ComboBoxItemPillMinScale)
+                .Top(
+                  (ComboBoxItemPillHeight
+                   - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
+                  / 2)));
+  pill->BuiltInStyles() = PillStyles;
+  pill->ToggleStyleClass(Checked, isSelected);
+
   EndWidget<Widget>();
-  BeginWidget<Widget>(ID {"content"});
+  BeginWidget<Widget>(ID {"content"})->BuiltInStyles() = Style().MinHeight(
+    ComboBoxItemPillHeight + PillStyles.MarginTop().value_or(0)
+    + PillStyles.MarginBottom().value_or(0));
 
   if (isSelected) {
     FUI_ASSERT(tWindow);

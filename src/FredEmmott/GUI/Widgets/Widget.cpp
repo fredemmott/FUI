@@ -165,6 +165,14 @@ Widget::~Widget() {
   delete yogaContext;
 }
 
+void Widget::ToggleStyleClass(const StyleClass klass, const bool value) {
+  if (value) {
+    mClassList.emplace(klass);
+  } else {
+    mClassList.erase(klass);
+  }
+}
+
 bool Widget::IsDisabled() const {
   return ((mDirectStateFlags | mInheritedStateFlags) & StateFlags::Disabled)
     != StateFlags::Default;
