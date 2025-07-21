@@ -120,12 +120,16 @@ void Style::CopyInheritableValues(
       case StylePropertyScope::SelfAndChildren: {
         auto dup = value;
         dup.mScope = StylePropertyScope::Self;
+        dup.mPriority = StylePropertyPriority::Inherited;
         dest.insert_or_assign(key, dup);
         break;
       }
-      case StylePropertyScope::SelfAndDescendants:
-        dest.insert_or_assign(key, value);
+      case StylePropertyScope::SelfAndDescendants: {
+        auto dup = value;
+        dup.mPriority = StylePropertyPriority::Inherited;
+        dest.insert_or_assign(key, dup);
         break;
+      }
     }
   }
 }
@@ -176,7 +180,12 @@ Style Style::BuiltinBaseline() {
           Style().Color(StaticTheme::TextFillColorDisabledBrush));
   for (auto&& [key, value]: ret.mStorage) {
     VisitStyleProperty(
-      key, [](auto& prop) { prop.mScope = StylePropertyScope::Self; }, value);
+      key,
+      [](auto& prop) {
+        prop.mScope = StylePropertyScope::Self;
+        prop.mPriority = StylePropertyPriority::UserAgentBaseline;
+      },
+      value);
   }
   return ret;
 }

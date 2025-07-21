@@ -12,6 +12,7 @@
 namespace FredEmmott::GUI {
 
 struct Style;
+class ImmutableStyle;
 
 struct important_style_property_t {
   constexpr const important_style_property_t& operator!() const noexcept {
@@ -29,6 +30,7 @@ class StyleProperty {
   static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
 
   friend struct Style;
+  friend class ImmutableStyle;
 
   constexpr StyleProperty() = default;
   constexpr StyleProperty(std::nullopt_t) {};
@@ -106,14 +108,14 @@ class StyleProperty {
   StyleProperty(U&& u, important_style_property_t)
     requires requires { StyleProperty(std::forward<U>(u)); }
     : StyleProperty(std::forward<U>(u)) {
-    mIsImportant = true;
+    mPriority = StylePropertyPriority::Important;
   }
 
   template <class U, class V>
   StyleProperty(U&& u, V&& v, important_style_property_t)
     requires requires { StyleProperty(std::forward<U>(u), std::forward<V>(v)); }
     : StyleProperty(std::forward<U>(u), std::forward<V>(v)) {
-    mIsImportant = true;
+    mPriority = StylePropertyPriority::Important;
   }
 
   [[nodiscard]]
@@ -143,13 +145,14 @@ class StyleProperty {
   }
 
   constexpr StyleProperty& operator+=(const StyleProperty& other) noexcept {
-    if (mIsImportant && !other.mIsImportant) {
+    if (std::to_underlying(mPriority) > std::to_underlying(other.mPriority)) {
       return *this;
     }
-    mIsImportant = other.mIsImportant;
+
     if (other.has_value()) {
       mValue = other.mValue;
       mScope = other.mScope;
+      mPriority = other.mPriority;
     }
     if constexpr (SupportsTransitions) {
       if (other.has_transition()) {
@@ -173,7 +176,7 @@ class StyleProperty {
 
   std::optional<StylePropertyScope> mScope;
   std::variant<std::monostate, T, resource_type> mValue {};
-  bool mIsImportant {false};
+  StylePropertyPriority mPriority {StylePropertyPriority::Normal};
   optional_transition_t mTransition;
 };
 

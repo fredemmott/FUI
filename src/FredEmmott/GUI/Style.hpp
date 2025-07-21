@@ -155,7 +155,14 @@ class ImmutableStyle final {
   ImmutableStyle() = default;
 
   explicit ImmutableStyle(Style&& style)
-    : mStyle {std::make_shared<Style>(std::move(style))} {}
+    : mStyle {std::make_shared<Style>(std::move(style))} {
+    for (auto&& [key, value]: mStyle->mStorage) {
+      style_detail::VisitStyleProperty(
+        key,
+        [](auto& prop) { prop.mPriority = StylePropertyPriority::UserAgent; },
+        value);
+    }
+  }
 
   const Style& Get() const noexcept {
     return mStyle ? *mStyle : Style::Empty();

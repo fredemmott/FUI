@@ -20,6 +20,14 @@ enum class StylePropertyScope {
   SelfAndDescendants,
 };
 
+enum class StylePropertyPriority {
+  UserAgentBaseline,
+  Inherited,
+  UserAgent,
+  Normal,
+  Important,
+};
+
 enum class Cursor {
   Default,
   Pointer,// Hand

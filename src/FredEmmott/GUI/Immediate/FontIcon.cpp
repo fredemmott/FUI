@@ -20,9 +20,7 @@ Style MakeFontIconStyle(const FontIconSize size) {
   const auto font = ResolveGlyphFont(size);
   const auto width = font.MeasureTextWidth("\ue700");
   FUI_ASSERT(width == font.GetMetrics().mSize);
-  return Style()
-    .Font(font, !important)
-    .And(StackedStyleClass, Style().Left(-width));
+  return Style().Font(font).And(StackedStyleClass, Style().Left(-width));
 }
 
 const ImmutableStyle& FontIconStyle() {
