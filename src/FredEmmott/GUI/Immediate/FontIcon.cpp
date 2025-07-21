@@ -18,9 +18,10 @@ constexpr LiteralStyleClass StackedStyleClass {"FontIcon/Stacked"};
 
 Style MakeFontIconStyle(const FontIconSize size) {
   const auto font = ResolveGlyphFont(size);
-  const auto width = font.MeasureTextWidth("\ue700");
-  FUI_ASSERT(width == font.GetMetrics().mSize);
-  return Style().Font(font).And(StackedStyleClass, Style().Left(-width));
+  const auto width = font.GetMetrics().mSize;
+  FUI_ASSERT(width == font.MeasureTextWidth("\ue700"));
+  return Style().Font(font).Width(width).Height(width).And(
+    StackedStyleClass, Style().Left(-width));
 }
 
 const ImmutableStyle& FontIconStyle() {
