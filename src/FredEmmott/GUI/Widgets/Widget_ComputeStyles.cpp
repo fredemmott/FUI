@@ -19,11 +19,6 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 }
 
 void Widget::ComputeStyles(const Style& inherited) {
-  if (
-    mClassList.contains(StyleClass::Make("ContentDialogButton"))
-    && inherited.HasColor()) {
-    __debugbreak();
-  }
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
   std::string cacheKey;
