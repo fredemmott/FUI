@@ -127,6 +127,13 @@ class Color final {
 
     [[nodiscard]] constexpr Constant WithAlphaMultipliedBy(
       const float mult) const noexcept {
+      if (mult < std::numeric_limits<float>::epsilon()) {
+        return FromRGBA128F(0, 0, 0, 0);
+      }
+      if (mult > 1.f - std::numeric_limits<float>::epsilon()) {
+        return *this;
+      }
+
       auto [r, g, b, a] = GetRGBAFTuple();
       a = std::clamp(a * mult, 0.0f, 1.0f);
       return FromRGBA128F(r, g, b, a);
@@ -199,19 +206,26 @@ class Color final {
     return Resolve().GetRGBAFTuple();
   }
 
+  constexpr Color WithAlphaMultipliedBy(float alpha) const noexcept {
+    auto dup = *this;
+    dup.mAlpha *= std::clamp(alpha, 0.f, 1.f);
+    return dup;
+  }
+
  private:
   std::variant<Color::Constant, StaticThemeColor, SystemTheme::ColorType>
     mVariant;
+  float mAlpha {1.f};
 
   constexpr Constant Resolve() const noexcept {
     if (const auto it = get_if<Constant>(&mVariant)) {
-      return *it;
+      return it->WithAlphaMultipliedBy(mAlpha);
     }
     if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
-      return (*it)->Resolve()->Resolve();
+      return (*it)->Resolve()->Resolve().WithAlphaMultipliedBy(mAlpha);
     }
     if (const auto it = get_if<SystemTheme::ColorType>(&mVariant)) {
-      return SystemTheme::Resolve(*it).Resolve();
+      return SystemTheme::Resolve(*it).Resolve().WithAlphaMultipliedBy(mAlpha);
     }
     std::unreachable();
   }

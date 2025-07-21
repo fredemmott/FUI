@@ -9,9 +9,13 @@ void GetSolidColorBrush(
   std::back_insert_iterator<std::vector<Resource>> back,
   const TiXmlElement& it) {
   const auto value = ResolveColorReference(it.Attribute("Color"));
+  auto stringValue = std::format("SolidColorBrush {{ {} }}", value);
+  if (const auto opacity = it.Attribute("Opacity")) {
+    stringValue += std::format(".WithAlphaMultipliedBy({})", opacity);
+  }
   back = {
     .mName = it.Attribute("x:Key"),
-    .mValue = std::format("SolidColorBrush {{ {} }}", value),
+    .mValue = stringValue,
     .mType = "Brush",
     .mDependencies = {value},
   };
