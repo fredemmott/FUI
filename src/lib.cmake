@@ -106,10 +106,10 @@ add_library(
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/renderer_detail.cpp FredEmmott/GUI/detail/renderer_detail.hpp
   FredEmmott/GUI/detail/style_detail.hpp
-  FredEmmott/GUI/detail/style/lazy_init_style.hpp
   FredEmmott/GUI/detail/system_font_detail.hpp
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
+  FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
   FredEmmott/GUI/events/MouseButton.hpp
