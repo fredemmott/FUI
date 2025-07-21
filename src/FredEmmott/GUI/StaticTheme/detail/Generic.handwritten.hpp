@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/style/lazy_init_style.hpp>
+#include <FredEmmott/GUI/Style.hpp>
 
 namespace FredEmmott::GUI::StaticTheme::Generic {
 
@@ -10,14 +10,25 @@ namespace FredEmmott::GUI::StaticTheme::Generic {
 // Generic_themeresources.xaml, but there's some overlap. Putting them here
 // as we don't use TextBlock_themeresources.xaml for anything else
 
-extern const style_detail::lazy_init_style BaseTextBlockStyle;
+const ImmutableStyle& BaseTextBlockStyle();
+const ImmutableStyle& CaptionTextBlockStyle();
+const ImmutableStyle& BodyTextBlockStyle();
+inline const auto& BodyStrongTextBlockStyle() {
+  return BaseTextBlockStyle();
+}
+const ImmutableStyle& SubtitleTextBlockStyle();
+const ImmutableStyle& TitleTextBlockStyle();
+const ImmutableStyle& TitleLargeTextBlockStyle();
+const ImmutableStyle& DisplayTextBlockStyle();
 
-extern const style_detail::lazy_init_style CaptionTextBlockStyle;
-extern const style_detail::lazy_init_style BodyTextBlockStyle;
-inline const auto& BodyStrongTextBlockStyle = BaseTextBlockStyle;
-extern const style_detail::lazy_init_style SubtitleTextBlockStyle;
-extern const style_detail::lazy_init_style TitleTextBlockStyle;
-extern const style_detail::lazy_init_style TitleLargeTextBlockStyle;
-extern const style_detail::lazy_init_style DisplayTextBlockStyle;
+constexpr LiteralStyleClass CaptionTextBlockClass {"TextBlock/Caption"};
+constexpr LiteralStyleClass BodyTextBlockClass {"TextBlock/Body"};
+constexpr LiteralStyleClass BodyStrongTextBlockClass {"TextBlock/BodyStrong"};
+constexpr LiteralStyleClass SubtitleTextBlockClass {"TextBlock/Subtitle"};
+constexpr LiteralStyleClass TitleTextBlockClass {"TextBlock/Title"};
+constexpr LiteralStyleClass TitleLargeTextBlockClass {"TextBlock/TitleLarge"};
+constexpr LiteralStyleClass DisplayTextBlockClass {"TextBlock/Display"};
+
+const ImmutableStyle& TextBlockClassStyles();
 
 }// namespace FredEmmott::GUI::StaticTheme::Generic

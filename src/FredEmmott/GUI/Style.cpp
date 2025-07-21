@@ -73,7 +73,17 @@ Style& Style::operator+=(const Style& other) {
         *this += style;
         continue;
       }
-      mAnd[selector] += style;
+      auto it = std::ranges::find(
+        mAnd, selector, [](const auto& tuple) -> const auto& {
+          return std::get<0>(tuple);
+        });
+      if (it != mAnd.end()) {
+        auto buf = std::move(std::get<1>(*it));
+        mAnd.erase(it);
+        mAnd.emplace_back(selector, std::move(buf) + style);
+      } else {
+        mAnd.emplace_back(selector, style);
+      }
     }
   }
 
@@ -120,6 +130,11 @@ void Style::CopyInheritableValues(
   }
 }
 
+const Style& Style::Empty() {
+  static const Style sEmpty {};
+  return sEmpty;
+}
+
 Style Style::InheritableValues() const noexcept {
   Style ret;
 #define COPY_STORAGE(TYPE, NAME) \
@@ -140,13 +155,20 @@ Style Style::InheritableValues() const noexcept {
         },
         value);
     }
-    ret.mAnd[selector] += dup;
+    auto it = std::ranges::find(
+      ret.mAnd, selector, [](const auto& tuple) -> const auto& {
+        return std::get<0>(tuple);
+      });
+    if (it == ret.mAnd.end()) {
+      ret.mAnd.erase(it);
+    }
+    ret.mAnd.emplace_back(selector, dup);
   }
   return ret;
 }
 
 Style Style::BuiltinBaseline() {
-  auto ret = StaticTheme::Generic::BodyTextBlockStyle
+  auto ret = StaticTheme::Generic::BodyTextBlockStyle()
     + Style()
         .Color(StaticTheme::TextFillColorPrimaryBrush)
         .And(

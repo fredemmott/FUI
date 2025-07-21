@@ -15,32 +15,42 @@ using namespace FredEmmott::utility;
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ToggleSwitchStyleClass = StyleClass::Make("ToggleSwitch");
-const auto ToggleSwitchContentStyleClass
-  = StyleClass::Make("ToggleSwitchContent");
+constexpr LiteralStyleClass ToggleSwitchStyleClass("ToggleSwitch");
+constexpr LiteralStyleClass ToggleSwitchContentStyleClass(
+  "ToggleSwitchContent");
+
+auto& ToggleSwitchStyle() {
+  using namespace StaticTheme::ToggleSwitch;
+  using namespace PseudoClasses;
+  static const ImmutableStyle ret {
+    Style()
+      .AlignSelf(YGAlignFlexStart)
+      .Color(ToggleSwitchContentForeground)
+      .FlexDirection(YGFlexDirectionRow)
+      .MarginRight(ToggleSwitchPostContentMargin)
+      .And(Disabled, Style().Color(ToggleSwitchContentForegroundDisabled)),
+  };
+  return ret;
+}
+
+auto& FosterParentStyle() {
+  static const ImmutableStyle ret {
+    Style().Display(YGDisplayContents),
+  };
+  return ret;
+}
 }// namespace
 
 using namespace StaticTheme;
 using namespace widget_detail;
 
 ToggleSwitch::ToggleSwitch(std::size_t id)
-  : Widget(id, {ToggleSwitchStyleClass}) {
+  : Widget(id, ToggleSwitchStyle(), {*ToggleSwitchStyleClass}) {
   this->ChangeDirectChildren([this] {
     mKnob.reset(new ToggleSwitchKnob({}));
-    mFosterParent.reset(new Widget({}, {ToggleSwitchContentStyleClass}));
+    mFosterParent.reset(
+      new Widget({}, FosterParentStyle(), {*ToggleSwitchContentStyleClass}));
   });
-  mFosterParent->ReplaceExplicitStyles(Style().Display(YGDisplayContents));
-
-  using namespace StaticTheme::ToggleSwitch;
-  using namespace PseudoClasses;
-  static const auto ToggleSwitchStyle
-    = Style()
-        .AlignSelf(YGAlignFlexStart)
-        .Color(ToggleSwitchContentForeground)
-        .FlexDirection(YGFlexDirectionRow)
-        .MarginRight(ToggleSwitchPostContentMargin)
-        .And(Disabled, Style().Color(ToggleSwitchContentForegroundDisabled));
-  BuiltInStyles() = ToggleSwitchStyle;
 }
 
 bool ToggleSwitch::IsOn() const noexcept {

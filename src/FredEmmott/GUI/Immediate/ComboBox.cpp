@@ -3,6 +3,7 @@
 
 #include "ComboBox.hpp"
 
+#include <ComboBox.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 
@@ -18,13 +19,21 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace {
 
-const auto ComboBoxWidgetStyleClass = StyleClass::Make("ComboBoxWidget");
+constexpr LiteralStyleClass ComboBoxWidgetStyleClass("ComboBoxWidget");
 
-class ComboBoxWidget : public Widgets::Widget {
+class ComboBoxWidget final : public Widgets::Widget {
+ private:
+  static auto& Styles() {
+    static const ImmutableStyle ret {
+      Style().Display(YGDisplayContents),
+    };
+    return ret;
+  }
+
  public:
   using Widget::Widget;
 
-  ComboBoxWidget() : Widget(0, {ComboBoxWidgetStyleClass}) {}
+  ComboBoxWidget() : Widget(0, Styles(), {*ComboBoxWidgetStyleClass}) {}
   bool mIsPopupOpen = false;
 };
 }// namespace
@@ -40,8 +49,7 @@ ComboBoxResult<bool> ComboBox(
     "Selected index {} is >= items.size() {}",
     *selectedIndex,
     items.size());
-  const auto widget = BeginWidget<ComboBoxWidget>(id);
-  widget->BuiltInStyles().Display() = YGDisplayContents;
+  const auto widget = BeginWidget<ComboBoxWidget>(id, ImmutableStyle {});
 
   const auto button = ComboBoxButton(items[*selectedIndex]);
   if (button.GetValue() /* clicked */) {

@@ -15,38 +15,28 @@ using namespace FredEmmott::utility;
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ToggleSwitchKnobStyleClass = StyleClass::Make("ToggleSwitchKnob");
-}
+constexpr LiteralStyleClass ToggleSwitchKnobStyleClass("ToggleSwitchKnob");
 
-using namespace widget_detail;
-
-ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id)
-  : Widget(id, {ToggleSwitchKnobStyleClass}) {
-  this->ChangeDirectChildren([this] {
-    mThumb.reset(new ToggleSwitchThumb({}));
-  });
-  this->UpdateStyles();
-}
-
-void ToggleSwitchKnob::UpdateStyles() {
-  namespace Common = StaticTheme::Common;
+auto MakeStyles() {
+  using namespace StaticTheme::Common;
   using namespace StaticTheme::ToggleSwitch;
-  constexpr auto ColorAnimation
-    = LinearStyleTransition(Common::ControlFasterAnimationDuration);
   using namespace PseudoClasses;
-  static const auto BaseStyles
+
+  constexpr auto ColorAnimation
+    = LinearStyleTransition(ControlFasterAnimationDuration);
+  const auto BaseStyles
     = Style()
         .BackgroundColor(std::nullopt, ColorAnimation)
         .BorderColor(std::nullopt, ColorAnimation)
-        .BorderRadius(Spacing * 2.5f)
+        .BorderRadius(10)
         .BorderWidth(ToggleSwitchOuterBorderStrokeThickness)
-        .FlexBasis(Spacing * 10)
+        .FlexBasis(40)
         .FlexDirection(YGFlexDirectionColumn)
         .Height(20)
         .MarginRight(ToggleSwitchPreContentMargin)
-        .Width(Spacing * 10);
+        .Width(40);
 
-  static const auto OffStyles
+  const auto OffStyles
     = Style()
         .BackgroundColor(ToggleSwitchFillOff)
         .BorderColor(ToggleSwitchStrokeOff)
@@ -58,7 +48,7 @@ void ToggleSwitchKnob::UpdateStyles() {
         .And(Hover, Style().BackgroundColor(ToggleSwitchFillOffPointerOver))
         .And(Active, Style().BackgroundColor(ToggleSwitchFillOffPressed));
 
-  static const auto OnStyles
+  const auto OnStyles
     = Style()
         .BackgroundColor(ToggleSwitchFillOn)
         .BorderColor(ToggleSwitchStrokeOn)
@@ -78,8 +68,23 @@ void ToggleSwitchKnob::UpdateStyles() {
             .BackgroundColor(ToggleSwitchFillOnPressed)
             .BorderColor(ToggleSwitchStrokeOnPressed));
 
-  BuiltInStyles()
-    = BaseStyles + Style().And(Checked, OnStyles).And(!Checked, OffStyles);
+  return BaseStyles + Style().And(Checked, OnStyles).And(!Checked, OffStyles);
+}
+
+auto& Styles() {
+  static const ImmutableStyle ret {MakeStyles()};
+  return ret;
+}
+
+}// namespace
+
+using namespace widget_detail;
+
+ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id)
+  : Widget(id, Styles(), {*ToggleSwitchKnobStyleClass}) {
+  this->ChangeDirectChildren([this] {
+    mThumb.reset(new ToggleSwitchThumb({}));
+  });
 }
 
 WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {

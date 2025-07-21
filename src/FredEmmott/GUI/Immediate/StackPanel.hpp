@@ -25,13 +25,13 @@ inline Result<&EndHStackPanel> BeginHStackPanel(
   ID id = ID {std::source_location::current()}) {
   using Widgets::StackPanel;
   return {
-    immediate_detail::BeginWidget<StackPanel, Orientation::Horizontal>(id)};
+    immediate_detail::BeginWidget<StackPanel>(id, Orientation::Horizontal)};
 }
 
 inline Result<&EndVStackPanel> BeginVStackPanel(
   ID id = ID {std::source_location::current()}) {
   using Widgets::StackPanel;
-  return {immediate_detail::BeginWidget<StackPanel, Orientation::Vertical>(id)};
+  return {immediate_detail::BeginWidget<StackPanel>(id, Orientation::Vertical)};
 }
 
 }// namespace FredEmmott::GUI::Immediate

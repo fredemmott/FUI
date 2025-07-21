@@ -116,9 +116,13 @@ void PaintBorder(
 }
 }// namespace
 
-Widget::Widget(std::size_t id, const StyleClasses& classes)
-  : mClassList(classes),
+Widget::Widget(
+  const std::size_t id,
+  const ImmutableStyle& immutableStyle,
+  const StyleClasses& classes)
+  : mImmutableStyle(immutableStyle),
     mID(id),
+    mClassList(classes),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   YGNodeSetContext(mYoga.get(), new YogaContext {this});
   mStyleTransitions.reset(new StyleTransitions());
@@ -163,6 +167,9 @@ Widget::~Widget() {
     = static_cast<YogaContext*>(YGNodeGetContext(mYoga.get()));
   YGNodeSetContext(mYoga.get(), nullptr);
   delete yogaContext;
+}
+void Widget::AddStyleClass(const StyleClass klass) {
+  mClassList.emplace(klass);
 }
 
 void Widget::ToggleStyleClass(const StyleClass klass, const bool value) {

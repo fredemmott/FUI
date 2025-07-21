@@ -6,23 +6,35 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto HorizontalStyleClass = StyleClass::Make("HorizontalStackPanel");
-const auto VerticalStyleClass = StyleClass::Make("VerticalStackPanel");
+constexpr LiteralStyleClass HorizontalStyleClass {"HorizontalStackPanel"};
+constexpr LiteralStyleClass VerticalStyleClass {"VerticalStackPanel"};
 
-const auto BaseStyles = Style().FlexGrow(0).Gap(16);
-const auto HorizontalStyles
-  = BaseStyles + Style().FlexDirection(YGFlexDirectionRow);
-const auto VerticalStyles
-  = BaseStyles + Style().FlexDirection(YGFlexDirectionColumn);
+auto BaseStyles() {
+  return Style().FlexGrow(0).Gap(16);
+}
+
+auto& HorizontalStyles() {
+  static const ImmutableStyle ret {
+    BaseStyles() + Style().FlexDirection(YGFlexDirectionRow),
+  };
+  return ret;
+}
+
+auto& VerticalStyles() {
+  static const ImmutableStyle ret {
+    BaseStyles() + Style().FlexDirection(YGFlexDirectionColumn),
+  };
+  return ret;
+}
+
 }// namespace
 
-StackPanel::StackPanel(std::size_t id, Orientation orientation)
+StackPanel::StackPanel(const std::size_t id, const Orientation orientation)
   : Widget(
       id,
-      {orientation == Orientation::Horizontal ? HorizontalStyleClass
-                                              : VerticalStyleClass}) {
-  BuiltInStyles() = (orientation == Orientation::Horizontal) ? HorizontalStyles
-                                                             : VerticalStyles;
-}
+      (orientation == Orientation::Horizontal) ? HorizontalStyles()
+                                               : VerticalStyles(),
+      {orientation == Orientation::Horizontal ? *HorizontalStyleClass
+                                              : *VerticalStyleClass}) {}
 
 }// namespace FredEmmott::GUI::Widgets

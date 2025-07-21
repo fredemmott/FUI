@@ -9,12 +9,20 @@ using namespace FredEmmott::utility;
 
 namespace FredEmmott::GUI::Widgets {
 
+using namespace StaticTheme::Generic;
+
 namespace {
-const auto LabelStyleClass = StyleClass::Make("Label");
+constexpr LiteralStyleClass LabelStyleClass("Label");
 }
 
-Label::Label(std::size_t id, const StyleClasses& classes)
-  : Widget(id, classes + LabelStyleClass) {
+Label::Label(
+  std::size_t id,
+  const std::optional<ImmutableStyle>& style,
+  const StyleClasses& classes)
+  : Widget(
+      id,
+      style.value_or(TextBlockClassStyles()),
+      classes + LabelStyleClass) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }

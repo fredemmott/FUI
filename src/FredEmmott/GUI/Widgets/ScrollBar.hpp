@@ -22,6 +22,10 @@ class ScrollBar final : public Widget {
   using ValueChangedCallback = std::function<void(float, ChangeReason)>;
 
   ScrollBar(std::size_t id, Orientation);
+  ScrollBar(std::size_t id, const ImmutableStyle&, Orientation);
+
+  static ImmutableStyle MakeImmutableStyle(Orientation, const Style& mixin);
+
   ~ScrollBar() override;
 
   void SetMinimum(float value);
@@ -76,8 +80,6 @@ class ScrollBar final : public Widget {
   void SetValue(float value, ChangeReason);
 
   void UpdateLayout() override;
-
-  Style GetBuiltinStylesForOrientation() const;
 
   void OnThumbDrag(Point* delta);
 };

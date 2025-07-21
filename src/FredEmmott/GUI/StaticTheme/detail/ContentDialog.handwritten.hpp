@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/style/lazy_init_style.hpp>
+#include <FredEmmott/GUI/Style.hpp>
 
 namespace FredEmmott::GUI::StaticTheme::ContentDialog {
 
-extern const style_detail::lazy_init_style DefaultContentDialogStyle;
+const ImmutableStyle& DefaultContentDialogStyle();
 
 }// namespace FredEmmott::GUI::StaticTheme::ContentDialog

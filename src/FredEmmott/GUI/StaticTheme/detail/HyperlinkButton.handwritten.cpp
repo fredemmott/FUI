@@ -10,39 +10,42 @@ using namespace FredEmmott::GUI::StaticTheme::Common;
 using namespace FredEmmott::GUI::StaticTheme::Generic;
 namespace FredEmmott::GUI::StaticTheme::HyperlinkButton {
 
-const style_detail::lazy_init_style DefaultHyperlinkButtonStyle {[] {
+const ImmutableStyle& DefaultHyperlinkButtonStyle() {
   using namespace PseudoClasses;
   // Hardcoded in xaml
   constexpr auto BackgroundTransition
     = LinearStyleTransition(std::chrono::milliseconds(83));
-  return Style()
-    .BackgroundColor(HyperlinkButtonBackground, BackgroundTransition)
-    .Color(HyperlinkButtonForeground)
-    .BorderColor(HyperlinkButtonBorderBrush)
-    .BorderWidth(HyperlinkButtonBorderThemeThickness)
-    .PaddingLeft(HyperlinkButtonPaddingLeft)
-    .PaddingRight(HyperlinkButtonPaddingRight)
-    .PaddingTop(HyperlinkButtonPaddingTop)
-    .PaddingBottom(HyperlinkButtonPaddingBottom)
-    .BorderRadius(ControlCornerRadius)
-    .Cursor(Cursor::Pointer)// hand
-    .And(
-      Hover,
-      Style()
-        .BackgroundColor(HyperlinkButtonBackgroundPointerOver)
-        .BorderColor(HyperlinkButtonBorderBrushPointerOver)
-        .Color(HyperlinkButtonForegroundPointerOver))
-    .And(
-      Active,
-      Style()
-        .BackgroundColor(HyperlinkButtonBackgroundPressed)
-        .BorderColor(HyperlinkButtonBorderBrushPressed)
-        .Color(HyperlinkButtonForegroundPressed))
-    .And(
-      Disabled,
-      Style()
-        .BackgroundColor(HyperlinkButtonBackgroundDisabled)
-        .BorderColor(HyperlinkButtonBorderBrushDisabled)
-        .Color(HyperlinkButtonForegroundDisabled));
-}};
+  static const ImmutableStyle ret {
+    Style()
+      .BackgroundColor(HyperlinkButtonBackground, BackgroundTransition)
+      .Color(HyperlinkButtonForeground)
+      .BorderColor(HyperlinkButtonBorderBrush)
+      .BorderWidth(HyperlinkButtonBorderThemeThickness)
+      .PaddingLeft(HyperlinkButtonPaddingLeft)
+      .PaddingRight(HyperlinkButtonPaddingRight)
+      .PaddingTop(HyperlinkButtonPaddingTop)
+      .PaddingBottom(HyperlinkButtonPaddingBottom)
+      .BorderRadius(ControlCornerRadius)
+      .Cursor(Cursor::Pointer)// hand
+      .And(
+        Hover,
+        Style()
+          .BackgroundColor(HyperlinkButtonBackgroundPointerOver)
+          .BorderColor(HyperlinkButtonBorderBrushPointerOver)
+          .Color(HyperlinkButtonForegroundPointerOver))
+      .And(
+        Active,
+        Style()
+          .BackgroundColor(HyperlinkButtonBackgroundPressed)
+          .BorderColor(HyperlinkButtonBorderBrushPressed)
+          .Color(HyperlinkButtonForegroundPressed))
+      .And(
+        Disabled,
+        Style()
+          .BackgroundColor(HyperlinkButtonBackgroundDisabled)
+          .BorderColor(HyperlinkButtonBorderBrushDisabled)
+          .Color(HyperlinkButtonForegroundDisabled)),
+  };
+  return ret;
+};
 }// namespace FredEmmott::GUI::StaticTheme::HyperlinkButton

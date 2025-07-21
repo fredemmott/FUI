@@ -37,98 +37,87 @@ constexpr auto HoverMarginDiff = (HoverHeight - NormalHeight) / 2;
 constexpr auto ActiveWidth = 17;
 constexpr auto ParentWidth = 40;
 
-const Style& OuterOff() {
-  static const Style lazyInit
-    = Style()
-        .Height(NormalHeight)
-        .Left(Margin, NormalAnimation)
-        .Position(YGPositionTypeAbsolute)
-        .Top(Margin)
-        .Width(NormalWidth);
-  return lazyInit;
+auto InnerBase() {
+  return Style()
+    .AlignSelf(YGAlignStretch)
+    .BackgroundColor(std::nullopt, ColorAnimation)
+    .BorderColor(std::nullopt, ColorAnimation)
+    .BorderRadius(NormalHeight / 2, FasterAnimation)
+    .FlexGrow(1)
+    .Margin(std::nullopt, FasterAnimation)
+    .And(
+      Hover,
+      Style()
+        .BorderRadius(HoverHeight / 2)
+        .MarginBottom(-HoverMarginDiff)
+        .MarginLeft(-HoverMarginDiff)
+        .MarginRight(-HoverMarginDiff)
+        .MarginTop(-HoverMarginDiff));
 }
 
-const Style& OuterOn() {
-  static const Style lazyInit
-    = OuterOff() + Style().Left(ParentWidth - ((2 * Margin) + NormalWidth));
-  return lazyInit;
+auto InnerOn() {
+  return Style()
+    .BackgroundColor(ToggleSwitchKnobFillOn)
+    .BorderColor(ToggleSwitchStrokeOn)
+    .And(
+      Disabled,
+      Style()
+        .BackgroundColor(ToggleSwitchKnobFillOnDisabled)
+        .BorderColor(ToggleSwitchStrokeOnDisabled))
+    .And(
+      Hover,
+      Style()
+        .BackgroundColor(ToggleSwitchKnobFillOnPointerOver)
+        .BorderColor(ToggleSwitchStrokeOnPointerOver))
+    .And(
+      Active,
+      Style()
+        .BackgroundColor(ToggleSwitchKnobFillOnPressed)
+        .BorderColor(ToggleSwitchStrokeOnPressed)
+        .MarginLeft(NormalWidth - ActiveWidth)
+        .MarginRight(2 * -HoverMarginDiff));
 }
 
-const Style& InnerBase() {
-  static const Style lazyInit
-    = Style()
-        .AlignSelf(YGAlignStretch)
-        .BackgroundColor(std::nullopt, ColorAnimation)
-        .BorderColor(std::nullopt, ColorAnimation)
-        .BorderRadius(NormalHeight / 2, FasterAnimation)
-        .FlexGrow(1)
-        .Margin(std::nullopt, FasterAnimation)
-        .And(
-          Hover,
-          Style()
-            .BorderRadius(HoverHeight / 2)
-            .MarginBottom(-HoverMarginDiff)
-            .MarginLeft(-HoverMarginDiff)
-            .MarginRight(-HoverMarginDiff)
-            .MarginTop(-HoverMarginDiff));
-  return lazyInit;
+auto InnerOff() {
+  return Style()
+    .BackgroundColor(ToggleSwitchKnobFillOff)
+    .And(Disabled, Style().BackgroundColor(ToggleSwitchKnobFillOffDisabled))
+    .And(Hover, Style().BackgroundColor(ToggleSwitchKnobFillOffPointerOver))
+    .And(
+      Active,
+      Style()
+        .BackgroundColor(ToggleSwitchKnobFillOffPressed)
+        .MarginLeft(0)
+        .MarginRight(NormalWidth - ActiveWidth));
 }
 
-const Style& InnerOn() {
-  static const Style lazyInit = InnerBase()
-    + Style()
-        .BackgroundColor(ToggleSwitchKnobFillOn)
-        .BorderColor(ToggleSwitchStrokeOn)
-        .And(
-          Disabled,
-          Style()
-            .BackgroundColor(ToggleSwitchKnobFillOnDisabled)
-            .BorderColor(ToggleSwitchStrokeOnDisabled))
-        .And(
-          Hover,
-          Style()
-            .BackgroundColor(ToggleSwitchKnobFillOnPointerOver)
-            .BorderColor(ToggleSwitchStrokeOnPointerOver))
-        .And(
-          Active,
-          Style()
-            .BackgroundColor(ToggleSwitchKnobFillOnPressed)
-            .BorderColor(ToggleSwitchStrokeOnPressed)
-            .MarginLeft(NormalWidth - ActiveWidth)
-            .MarginRight(2 * -HoverMarginDiff));
-  return lazyInit;
+const ImmutableStyle& Outer() {
+  static const ImmutableStyle ret {
+    Style()
+      .Height(NormalHeight)
+      .Left(Margin, NormalAnimation)
+      .Position(YGPositionTypeAbsolute)
+      .Top(Margin)
+      .Width(NormalWidth)
+      .And(Checked, Style().Left(ParentWidth - ((2 * Margin) + NormalWidth))),
+  };
+  return ret;
 }
 
-const Style& InnerOff() {
-  static const Style lazyInit = InnerBase()
-    + Style()
-        .BackgroundColor(ToggleSwitchKnobFillOff)
-        .And(Disabled, Style().BackgroundColor(ToggleSwitchKnobFillOffDisabled))
-        .And(Hover, Style().BackgroundColor(ToggleSwitchKnobFillOffPointerOver))
-        .And(
-          Active,
-          Style()
-            .BackgroundColor(ToggleSwitchKnobFillOffPressed)
-            .MarginLeft(0)
-            .MarginRight(NormalWidth - ActiveWidth));
-  return lazyInit;
+const ImmutableStyle& Inner() {
+  static const ImmutableStyle ret {
+    InnerBase().And(Checked, InnerOn()).And(!Checked, InnerOff()),
+  };
+  return ret;
 }
+
 }// namespace Styles
+
 }// namespace
 
 ToggleSwitchThumb::ToggleSwitchThumb(const std::size_t id)
-  : Widget(id, {ToggleSwitchThumbStyleClass}) {
-  this->SetChildren({mInner = new Widget(0)});
-
-  this->UpdateStyles();
-}
-
-void ToggleSwitchThumb::UpdateStyles() {
-  using namespace PseudoClasses;
-  this->BuiltInStyles()
-    = Style().And(Checked, Styles::OuterOn()).And(!Checked, Styles::OuterOff());
-  mInner->BuiltInStyles()
-    = Style().And(Checked, Styles::InnerOn()).And(!Checked, Styles::InnerOff());
+  : Widget(id, Styles::Outer(), {ToggleSwitchThumbStyleClass}) {
+  this->SetChildren({mInner = new Widget(0, Styles::Inner())});
 }
 
 }// namespace FredEmmott::GUI::Widgets

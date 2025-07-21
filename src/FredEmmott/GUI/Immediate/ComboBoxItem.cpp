@@ -21,17 +21,19 @@ class ComboBoxItemButton : public Widgets::Button {
   using Widget::SetIsChecked;
 };
 
-const Style& ComboBoxItemStyles() {
+Style MakeComboBoxItemStyles() {
   using namespace PseudoClasses;
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
 
-  static const auto BaseStyles
+  const auto BaseStyles
     = Style()
         .BackgroundColor(ComboBoxItemBackground)
         .BorderColor(ComboBoxItemBorderBrush)
         .BorderRadius(ComboBoxItemCornerRadius)
         .Color(ComboBoxItemForeground)
+        .FlexDirection(YGFlexDirectionRow)
+        .Gap(0)
         .MarginBottom(2)
         .MarginLeft(5)
         .MarginRight(5)
@@ -57,7 +59,7 @@ const Style& ComboBoxItemStyles() {
             .BackgroundColor(ComboBoxItemBackgroundPressed)
             .BorderColor(ComboBoxItemBorderBrushPressed)
             .Color(ComboBoxItemForegroundPressed));
-  static const auto SelectedStyles
+  const auto SelectedStyles
     = Style()
         .BackgroundColor(ComboBoxItemBackgroundSelected)
         .BorderColor(ComboBoxItemBorderBrushSelected)
@@ -81,49 +83,54 @@ const Style& ComboBoxItemStyles() {
             .BorderColor(ComboBoxItemBorderBrushSelectedPressed)
             .Color(ComboBoxItemForegroundSelectedPressed));
 
-  static auto Combined = BaseStyles + Style().And(Checked, SelectedStyles);
-  return Combined;
+  return BaseStyles + Style().And(Checked, SelectedStyles);
 }
 
-const Style& ComboBoxItemPillStyles() {
+auto& ComboBoxItemStyles() {
+  static const ImmutableStyle ret {MakeComboBoxItemStyles()};
+  return ret;
+}
+
+auto& ComboBoxItemPillStyles() {
   using namespace PseudoClasses;
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
 
   constexpr auto PillHeightAnimation = CubicBezierStyleTransition(
     ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
-  static const auto PillStyles
-    = Style()
-        .BackgroundColor(ComboBoxItemPillFillBrush)
-        .BorderRadius(ComboBoxItemPillCornerRadius)
-        .Height(0, PillHeightAnimation)
-        .MarginLeft(0.5)
-        .MarginRight(6)
-        .MarginTop(2.5)
-        .Top(0, PillHeightAnimation)
-        .Width(ComboBoxItemPillWidth)
-        .And(
-          Checked,
-          Style()
-            .Height(ComboBoxItemPillHeight)
-            .And(
-              Active,
-              Style()
-                .Height(ComboBoxItemPillHeight * ComboBoxItemPillMinScale)
-                .Top(
-                  (ComboBoxItemPillHeight
-                   - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
-                  / 2)));
-  return PillStyles;
+  static const ImmutableStyle ret {
+    Style()
+      .BackgroundColor(ComboBoxItemPillFillBrush)
+      .BorderRadius(ComboBoxItemPillCornerRadius)
+      .Height(0, PillHeightAnimation)
+      .MarginLeft(0.5)
+      .MarginRight(6)
+      .MarginTop(2.5)
+      .Top(0, PillHeightAnimation)
+      .Width(ComboBoxItemPillWidth)
+      .And(
+        Checked,
+        Style()
+          .Height(ComboBoxItemPillHeight)
+          .And(
+            Active,
+            Style()
+              .Height(ComboBoxItemPillHeight * ComboBoxItemPillMinScale)
+              .Top(
+                (ComboBoxItemPillHeight
+                 - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
+                / 2))),
+  };
+  return ret;
 }
 
 }// namespace
 
 Result<&EndComboBoxItem>
-BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
+BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   using namespace immediate_detail;
-  const auto item = BeginWidget<ComboBoxItemButton>(id);
-  item->BuiltInStyles() = ComboBoxItemStyles();
+  const auto item = BeginWidget<ComboBoxItemButton>(
+    id, ComboBoxItemStyles(), StyleClasses {});
   if (clicked) {
     *clicked = std::exchange(item->mClicked, false);
   }
@@ -131,17 +138,15 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
   const bool isSelected = initiallySelected || (clicked && *clicked);
   item->SetIsChecked(isSelected);
 
-  BeginHStackPanel();
-  GetCurrentParentNode()->BuiltInStyles() += Style().Gap(0.f);
-  const auto pill = BeginWidget<Widget>(ID {"pill"});
-  pill->BuiltInStyles() = ComboBoxItemPillStyles();
-
+  BeginWidget<Widget>(ID {"pill"}, ComboBoxItemPillStyles());
   EndWidget<Widget>();
-  static const auto ContentStyles = Style() = Style().MinHeight(
-    StaticTheme::ComboBox::ComboBoxItemPillHeight
-    + ComboBoxItemPillStyles().MarginTop().value_or(0)
-    + ComboBoxItemPillStyles().MarginBottom().value_or(0));
-  BeginWidget<Widget>(ID {"content"})->BuiltInStyles() = ContentStyles;
+  static const ImmutableStyle ContentStyles {
+    Style().MinHeight(
+      StaticTheme::ComboBox::ComboBoxItemPillHeight
+      + ComboBoxItemPillStyles()->MarginTop().value_or(0)
+      + ComboBoxItemPillStyles()->MarginBottom().value_or(0)),
+  };
+  BeginWidget<Widget>(ID {"content"}, ContentStyles);
 
   if (isSelected) {
     FUI_ASSERT(tWindow);
@@ -154,7 +159,6 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, ID id) {
 void EndComboBoxItem() {
   using namespace immediate_detail;
   EndWidget<Widget>();// content
-  EndStackPanel();
   EndWidget<ComboBoxItemButton>();
 }
 

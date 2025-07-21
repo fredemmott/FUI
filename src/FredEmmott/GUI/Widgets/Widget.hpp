@@ -38,9 +38,13 @@ class Widget {
   Widget& operator=(const Widget&) = delete;
   Widget& operator=(Widget&&) = delete;
 
-  explicit Widget(std::size_t id, const StyleClasses& = {});
+  explicit Widget(
+    std::size_t id,
+    const ImmutableStyle&,
+    const StyleClasses& = {});
   virtual ~Widget();
 
+  void AddStyleClass(StyleClass);
   void ToggleStyleClass(StyleClass, bool value);
 
   // Can return nullptr
@@ -129,14 +133,11 @@ class Widget {
   virtual void Tick();
   virtual void UpdateLayout();
   void ComputeStyles(const Style& inherited);
+  Style FlattenStyles(const Style&);
 
   /// User-provided styles
   void ReplaceExplicitStyles(const Style& styles);
   void AddExplicitStyles(const Style& styles);
-
-  auto& BuiltInStyles(this auto&& self) {
-    return std::forward<decltype(self)>(self).mBuiltInStyles;
-  }
 
   void Paint(Renderer* renderer) const;
 
@@ -180,9 +181,6 @@ class Widget {
   };
   friend consteval bool is_bitflag_enum(
     utility::type_tag_t<ComputedStyleFlags>);
-
-  // Base spacing unit - see https://fluent2.microsoft.design/layout
-  static constexpr float Spacing = 4;
 
   [[nodiscard]]
   virtual ComputedStyleFlags OnComputedStyleChange(
@@ -239,13 +237,13 @@ class Widget {
   struct StyleTransitions;
   unique_ptr<StyleTransitions> mStyleTransitions;
 
-  StyleClasses mClassList;
+  ImmutableStyle mImmutableStyle;
   const std::size_t mID {};
+  StyleClasses mClassList;
   unique_ptr<YGNode> mYoga;
 
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
-  Style mBuiltInStyles {};
   Style mExplicitStyles {};
 
   Style mInheritedStyles;

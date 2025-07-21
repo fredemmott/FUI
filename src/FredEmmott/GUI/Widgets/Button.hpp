@@ -9,6 +9,9 @@ namespace FredEmmott::GUI::Widgets {
 class Button : public Widget {
  public:
   explicit Button(std::size_t id);
+  explicit Button(std::size_t id, const ImmutableStyle&, const StyleClasses&);
+
+  static ImmutableStyle MakeImmutableStyle(const Style& mixin);
 
   bool mClicked {false};
 

@@ -8,17 +8,19 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto CardStyleClass = StyleClass::Make("Card");
-}
-
-Card::Card(std::size_t id) : Widget(id, {CardStyleClass}) {
+constexpr LiteralStyleClass CardStyleClass {"Card"};
+auto& CardStyle() {
   using namespace StaticTheme::Common;
-  static const auto CardStyle
-    = Style()
-        .BackgroundColor(CardBackgroundFillColorDefaultBrush)
-        .BorderRadius(OverlayCornerRadius)
-        .Padding(Spacing * 4);
-  BuiltInStyles() = CardStyle;
+  static const ImmutableStyle ret {
+    Style()
+      .BackgroundColor(CardBackgroundFillColorDefaultBrush)
+      .BorderRadius(OverlayCornerRadius)
+      .Padding(16),
+  };
+  return ret;
 }
+}// namespace
+
+Card::Card(const std::size_t id) : Widget(id, CardStyle(), {CardStyleClass}) {}
 
 }// namespace FredEmmott::GUI::Widgets

@@ -14,7 +14,6 @@ class ToggleSwitchKnob final : public Widget {
   WidgetList GetDirectChildren() const noexcept override;
 
  private:
-  void UpdateStyles();
   unique_ptr<ToggleSwitchThumb> mThumb {nullptr};
 };
 

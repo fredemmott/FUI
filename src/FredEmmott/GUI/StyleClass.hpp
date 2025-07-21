@@ -28,6 +28,10 @@ class StyleClass {
 
   inline NegatedStyleClass operator!() const noexcept;
 
+  uintptr_t AsCacheKey() const noexcept {
+    return std::bit_cast<uintptr_t>(mID.data());
+  }
+
  private:
   explicit StyleClass(std::string_view id) : mID(id) {}
   std::string_view mID {};
@@ -56,11 +60,19 @@ class LiteralStyleClass {
     std::copy(name, name + N, mName);
   }
 
-  constexpr operator FredEmmott::GUI::StyleClass() const noexcept {
+  StyleClass Get() const noexcept {
     if (!mCache.has_value()) {
       mCache = StyleClass::Make(mName);
     }
     return mCache.value();
+  }
+
+  constexpr operator FredEmmott::GUI::StyleClass() const noexcept {
+    return Get();
+  }
+
+  constexpr auto operator*() const noexcept {
+    return Get();
   }
 
  private:

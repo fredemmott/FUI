@@ -106,17 +106,17 @@ PopupResult BeginPopup(const ID id) {
     return false;
   }
 
-  const auto widget = BeginWidget<Widget>(ID {0});
-
   using namespace StaticTheme::Common;
-  static const auto PopUpStyles
-    = Style()
-        .BackgroundColor(AcrylicBackgroundFillColorDefaultBrush)
-        .BorderColor(SurfaceStrokeColorDefaultBrush)
-        .BorderRadius(OverlayCornerRadius)
-        .BorderWidth(2)
-        .Padding(20);
-  widget->BuiltInStyles() = PopUpStyles;
+  static const ImmutableStyle PopupStyles {
+    Style()
+      .BackgroundColor(AcrylicBackgroundFillColorDefaultBrush)
+      .BorderColor(SurfaceStrokeColorDefaultBrush)
+      .BorderRadius(OverlayCornerRadius)
+      .BorderWidth(2)
+      .Padding(20),
+  };
+
+  BeginWidget<Widget>(ID {0}, PopupStyles);
 
   return {true};
 }

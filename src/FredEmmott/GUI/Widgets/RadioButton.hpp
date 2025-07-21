@@ -24,9 +24,6 @@ class RadioButton final : public Widget {
   [[nodiscard]] EventHandlerResult OnClick(const MouseEvent&) override;
 
  private:
-  void InitializeOuterStyles();
-  void InitializeInnerStyles();
-
   unique_ptr<Widget> mOuter;
   Widget* mInner {nullptr};
   unique_ptr<Widget> mFosterParent {};

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/style/lazy_init_style.hpp>
+#include <FredEmmott/GUI/Style.hpp>
 
 namespace FredEmmott::GUI::StaticTheme::HyperlinkButton {
 
-extern const style_detail::lazy_init_style DefaultHyperlinkButtonStyle;
+const ImmutableStyle& DefaultHyperlinkButtonStyle();
 
 }

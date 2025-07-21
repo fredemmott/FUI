@@ -4,14 +4,15 @@
 
 #include <functional>
 
+#include "FredEmmott/GUI/Orientation.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
 class ScrollBarThumb final : public Widget {
  public:
-  explicit ScrollBarThumb(std::size_t id);
-  virtual ~ScrollBarThumb() override;
+  explicit ScrollBarThumb(Orientation, std::size_t id);
+  ~ScrollBarThumb() override;
 
   void OnDrag(std::function<void(Point*)> callback);
 

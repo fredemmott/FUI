@@ -25,6 +25,7 @@ namespace FredEmmott::GUI {
 using style_detail::StylePropertyKey;
 
 struct Style {
+  static const Style& Empty();
   struct PropertyTypes {
     PropertyTypes() = delete;
 #define FUI_DECLARE_STYLE_PROPERTY_TYPE(NAME, TYPE, ...) using NAME##_t = TYPE;
@@ -96,7 +97,7 @@ struct Style {
     StyleClass,
     NegatedStyleClass,
     const Widgets::Widget*>;
-  utility::unordered_map<Selector, Style> mAnd;
+  std::list<std::tuple<Selector, Style>> mAnd;
   utility::unordered_map<Selector, Style> mDescendants;
 
   constexpr Style() = default;
@@ -112,12 +113,18 @@ struct Style {
   Style& operator+=(const Style& other);
   bool operator==(const Style& other) const noexcept = default;
 
-  template <std::convertible_to<Selector> T = Selector>
   [[nodiscard]]
-  auto And(this auto&& self, T&& selector, const Style& values)
+  auto And(this auto&& self, const Selector& selector, const Style& values)
     requires std::is_rvalue_reference_v<decltype(self)>
   {
-    self.mAnd.insert_or_assign(std::forward<T>(selector), values);
+    const auto it = std::ranges::find(
+      self.mAnd, selector, [](const auto& tuple) -> const auto& {
+        return std::get<0>(tuple);
+      });
+    if (it != self.mAnd.end()) {
+      self.mAnd.erase(it);
+    }
+    self.mAnd.emplace_back(selector, values);
     return self;
   }
 
@@ -142,5 +149,40 @@ inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   ret += rhs;
   return ret;
 }
+
+class ImmutableStyle final {
+ public:
+  ImmutableStyle() = default;
+
+  explicit ImmutableStyle(Style&& style)
+    : mStyle {std::make_shared<Style>(std::move(style))} {}
+
+  const Style& Get() const noexcept {
+    return mStyle ? *mStyle : Style::Empty();
+  }
+
+  operator const Style&() const noexcept {
+    return Get();
+  }
+
+  Style const* operator->() const noexcept {
+    return mStyle.get();
+  }
+
+  std::optional<Style> GetCached(const std::string& key) {
+    if (mCache.contains(key)) {
+      return mCache.at(key);
+    }
+    return std::nullopt;
+  }
+
+  void EmplaceCache(std::string_view key, const Style& value) {
+    mCache.emplace(std::string {key}, value);
+  }
+
+ private:
+  std::shared_ptr<Style> mStyle {};
+  std::unordered_map<std::string, Style> mCache;
+};
 
 }// namespace FredEmmott::GUI

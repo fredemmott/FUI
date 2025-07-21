@@ -19,6 +19,7 @@ class StyleProperty;
   X(GUI::Font, Font) \
   X(float, Float) \
   X(YGAlign, YGAlign) \
+  X(YGBoxSizing, YGBoxSizing) \
   X(YGDisplay, YGDisplay) \
   X(YGFlexDirection, YGFlexDirection) \
   X(YGJustify, YGJustify) \
@@ -44,6 +45,7 @@ class StyleProperty;
   X(BorderTopRightRadius, float, Self) \
   X(BorderTopWidth, float, Self) \
   X(BorderWidth, float, Self) \
+  X(BoxSizing, YGBoxSizing, Self) \
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
   X(Cursor, GUI::Cursor, SelfAndDescendants) \

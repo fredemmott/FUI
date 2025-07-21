@@ -5,6 +5,7 @@
 
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>
 #include <FredEmmott/GUI/SystemFont.hpp>
+#include <FredEmmott/GUI/detail/Widget/ScrollBar.hpp>
 
 #include "FredEmmott/GUI/Immediate/Button.hpp"
 #include "Label.hpp"
@@ -15,159 +16,199 @@
 namespace FredEmmott::GUI::Widgets {
 
 using namespace StaticTheme::ScrollBar;
+using namespace ScrollBarDetail;
 
 namespace {
 
-const auto ScrollBarStyleClass = StyleClass::Make("ScrollBar");
-const auto ScrollBarTrackStyleClass = StyleClass::Make("ScrollBarTrack");
+constexpr LiteralStyleClass ScrollBarStyleClass {"ScrollBar"};
+constexpr LiteralStyleClass ScrollBarTrackStyleClass {"ScrollBarTrack"};
 
-const auto ContractAnimation = CubicBezierStyleTransition(
-  ScrollBarContractBeginTime,
-  ScrollBarOpacityChangeDuration,
-  StaticTheme::Common::ControlFastOutSlowInKeySpline);
-const auto ExpandAnimation = CubicBezierStyleTransition(
-  ScrollBarExpandBeginTime,
-  ScrollBarOpacityChangeDuration,
-  StaticTheme::Common::ControlFastOutSlowInKeySpline);
+auto BaseStyles() {
+  using namespace PseudoClasses;
+  return Style()
+    .BackgroundColor(ScrollBarBackground)
+    .And(Disabled, Style().BackgroundColor(ScrollBarBackgroundDisabled))
+    .And(Hover, Style().BackgroundColor(ScrollBarBackgroundPointerOver));
+}
 
+auto& HorizontalStyles() {
+  static const ImmutableStyle ret {
+    BaseStyles() + Style().FlexDirection(YGFlexDirectionRow),
+  };
+  return ret;
+}
+
+auto& VerticalStyles() {
+  static const ImmutableStyle ret {
+    BaseStyles() + Style().FlexDirection(YGFlexDirectionColumn),
+  };
+  return ret;
+}
+
+auto& HorizontalTrackStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .Display(YGDisplayFlex)
+      .FlexGrow(1)
+      .FlexDirection(YGFlexDirectionRow)
+      .MarginLeft(2.f)
+      .MarginRight(2.f),
+  };
+  return ret;
+}
+
+auto& VerticalTrackStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .Display(YGDisplayFlex)
+      .FlexGrow(1)
+      .FlexDirection(YGFlexDirectionColumn)
+      .MarginBottom(2.f)
+      .MarginTop(2.f),
+  };
+  return ret;
+}
+
+auto MakeSmallChangeBaseStyles() {
+  // Hardcoded in XAML
+  constexpr auto SmallPressedAnimation
+    = LinearStyleTransition(std::chrono::milliseconds(16));
+  using namespace PseudoClasses;
+  return Style()
+    .Color(ScrollBarButtonArrowForeground)
+    .Opacity(0)
+    .Font(
+      ResolveGlyphFont(SystemFont::Body)
+        .WithSize(ScrollBarButtonArrowIconFontSize),
+      !important)
+    .ScaleX(1, SmallPressedAnimation)
+    .ScaleY(1, SmallPressedAnimation)
+    .TranslateY(0, SmallPressedAnimation)
+    .TranslateX(0, SmallPressedAnimation)
+    .Top(0, SmallPressedAnimation)
+    .And(Hover, Style().Color(ScrollBarButtonArrowForegroundPointerOver))
+    .And(
+      Active,
+      Style()
+        .Color(ScrollBarButtonArrowForegroundPressed)
+        .ScaleX(ScrollBarButtonArrowScalePressed)
+        .ScaleY(ScrollBarButtonArrowScalePressed));
+}
+
+auto& HorizontalSmallChangeStyles() {
+  using namespace PseudoClasses;
+  static const ImmutableStyle ret {
+    MakeSmallChangeBaseStyles() + Style().And(Active, Style().TranslateY(1.f)),
+  };
+  return ret;
+}
+
+auto& VerticalSmallChangeStyles() {
+  static const ImmutableStyle ret {
+    MakeSmallChangeBaseStyles() + Style().Left(2.f),
+  };
+  return ret;
+}
+
+auto& LargeChangeStyles() {
+  static const ImmutableStyle ret {
+    Style().FlexGrow(1),
+  };
+  return ret;
+}
 }// namespace
 
-ScrollBar::ScrollBar(std::size_t id, Orientation orientation)
-  : Widget(id, {ScrollBarStyleClass}),
+ScrollBar::ScrollBar(const std::size_t id, const Orientation orientation)
+  : ScrollBar(
+      id,
+      (orientation == Orientation::Horizontal) ? HorizontalStyles()
+                                               : VerticalStyles(),
+      orientation) {}
+
+ScrollBar::ScrollBar(
+  const std::size_t id,
+  const ImmutableStyle& style,
+  const Orientation orientation)
+  : Widget(id, style, {ScrollBarStyleClass}),
     mOrientation(orientation) {
-  BuiltInStyles() = GetBuiltinStylesForOrientation();
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
   constexpr auto leftGlyph = "\uedd9";
   constexpr auto rightGlyph = "\uedda";
   constexpr auto upGlyph = "\ueddb";
   constexpr auto downGlyph = "\ueddc";
 
-  this->ChangeDirectChildren([this] {
+  const auto isHorizontal = (orientation == Orientation::Horizontal);
+
+  this->ChangeDirectChildren([this, isHorizontal] {
+    const auto& SmallChangeStyles = isHorizontal
+      ? HorizontalSmallChangeStyles()
+      : VerticalSmallChangeStyles();
     mSmallDecrement.reset(new ScrollBarButton(
+      0,
+      SmallChangeStyles,
       nullptr,
       std::bind_front(
-        &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallDecrement),
-      0));
-    mTrack.reset(new Widget(0, {ScrollBarTrackStyleClass}));
+        &ScrollBar::ScrollBarButtonTick,
+        this,
+        ButtonTickKind::SmallDecrement)));
+    mTrack.reset(new Widget(
+      0,
+      (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle(),
+      {ScrollBarTrackStyleClass}));
     mSmallIncrement.reset(new ScrollBarButton(
+      0,
+      SmallChangeStyles,
       nullptr,
       std::bind_front(
-        &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallIncrement),
-      0));
+        &ScrollBar::ScrollBarButtonTick,
+        this,
+        ButtonTickKind::SmallIncrement)));
   });
 
   mLargeDecrement = new ScrollBarButton(
+    0,
+    LargeChangeStyles(),
     std::bind_front(
       &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeDecrement),
     std::bind_front(
-      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement),
-    0);
-  mThumb = new ScrollBarThumb(0);
+      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement));
+  mThumb = new ScrollBarThumb(orientation, 0);
   mLargeIncrement = new ScrollBarButton(
+    0,
+    LargeChangeStyles(),
     std::bind_front(
       &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeIncrement),
     std::bind_front(
-      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeIncrement),
-    0);
+      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeIncrement));
   mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
-
-  static const auto HorizontalTrackStyle
-    = Style()
-        .Display(YGDisplayFlex)
-        .FlexGrow(1)
-        .FlexDirection(YGFlexDirectionRow)
-        .MarginLeft(2.f)
-        .MarginRight(2.f);
-  static const auto VerticalTrackStyle
-    = Style()
-        .Display(YGDisplayFlex)
-        .FlexGrow(1)
-        .FlexDirection(YGFlexDirectionColumn)
-        .MarginBottom(2.f)
-        .MarginTop(2.f);
-  mTrack->BuiltInStyles() = (orientation == Orientation::Horizontal)
-    ? HorizontalTrackStyle
-    : VerticalTrackStyle;
   mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
-
-  // Hardcoded in XAML
-  constexpr auto SmallPressedAnimation
-    = LinearStyleTransition(std::chrono::milliseconds(16));
-
-  using namespace PseudoClasses;
-
-  static const auto SmallChangeBaseStyles
-    = Style()
-        .Color(ScrollBarButtonArrowForeground)
-        .Opacity(0)
-        .Font(
-          ResolveGlyphFont(SystemFont::Body)
-            .WithSize(ScrollBarButtonArrowIconFontSize),
-          !important)
-        .ScaleX(1, SmallPressedAnimation)
-        .ScaleY(1, SmallPressedAnimation)
-        .TranslateY(0, SmallPressedAnimation)
-        .TranslateX(0, SmallPressedAnimation)
-        .Top(0, SmallPressedAnimation)
-        .And(Hover, Style().Color(ScrollBarButtonArrowForegroundPointerOver))
-        .And(
-          Active,
-          Style()
-            .Color(ScrollBarButtonArrowForegroundPressed)
-            .ScaleX(ScrollBarButtonArrowScalePressed)
-            .ScaleY(ScrollBarButtonArrowScalePressed));
-  static const auto HorizontalSmallChangeStyles
-    = SmallChangeBaseStyles + Style().And(Active, Style().TranslateY(1.f));
-  static const auto VerticalSmallChangeStyles
-    = SmallChangeBaseStyles + Style().Left(2.f);
-  const auto SmallChangeStyles = (orientation == Orientation::Horizontal)
-    ? HorizontalSmallChangeStyles
-    : VerticalSmallChangeStyles;
-
-  mSmallDecrement->BuiltInStyles() = SmallChangeStyles;
-  mSmallIncrement->BuiltInStyles() = SmallChangeStyles;
-
-  static const auto LargeChangeStyles = Style().FlexGrow(1);
-  mLargeDecrement->BuiltInStyles() = LargeChangeStyles;
-  mLargeIncrement->BuiltInStyles() = LargeChangeStyles;
-
-  const bool isHorizontal = (orientation == Orientation::Horizontal);
-  auto thumbStyles
-    = Style()
-        .BackgroundColor(ScrollBarThumbFill)
-        .BorderRadius(ScrollBarCornerRadius)
-        .Height(
-          static_cast<float>(
-            isHorizontal ? ScrollBarHorizontalThumbMinHeight
-                         : ScrollBarVerticalThumbMinHeight),
-          ContractAnimation)
-        .Width(
-          static_cast<float>(
-            isHorizontal ? ScrollBarHorizontalThumbMinWidth
-                         : ScrollBarVerticalThumbMinWidth),
-          ExpandAnimation)
-        .And(Disabled, Style().BackgroundColor(ScrollBarThumbFillDisabled))
-        .And(Hover, Style().BackgroundColor(ScrollBarThumbFillPointerOver));
 
   switch (orientation) {
     case Orientation::Vertical:
-      thumbStyles.Width()
-        = {ScrollBarHorizontalThumbMinWidth, ContractAnimation};
       mSmallDecrement->SetText(upGlyph);
       mSmallIncrement->SetText(downGlyph);
       break;
     case Orientation::Horizontal:
-      thumbStyles.Height()
-        = {ScrollBarHorizontalThumbMinHeight, ContractAnimation};
       mSmallDecrement->SetText(leftGlyph);
       mSmallIncrement->SetText(rightGlyph);
       break;
   }
 
-  mThumb->BuiltInStyles() = thumbStyles;
   this->UpdateLayout();
 }
 
+ImmutableStyle ScrollBar::MakeImmutableStyle(
+  const Orientation orientation,
+  const Style& mixin) {
+  using enum Orientation;
+  switch (orientation) {
+    case Horizontal:
+      return ImmutableStyle {HorizontalStyles().Get() + mixin};
+    case Vertical:
+      return ImmutableStyle {VerticalStyles().Get() + mixin};
+  }
+  std::unreachable();
+}
 ScrollBar::~ScrollBar() = default;
 
 WidgetList ScrollBar::GetDirectChildren() const noexcept {
@@ -206,24 +247,6 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   }
 
   return Widget::OnComputedStyleChange(style, state);
-}
-
-Style ScrollBar::GetBuiltinStylesForOrientation() const {
-  using namespace PseudoClasses;
-  static const auto sBaseStyles
-    = Style()
-        .BackgroundColor(ScrollBarBackground)
-        .And(Disabled, Style().BackgroundColor(ScrollBarBackgroundDisabled))
-        .And(Hover, Style().BackgroundColor(ScrollBarBackgroundPointerOver));
-
-  static const auto sHorizontalStyles
-    = sBaseStyles + Style().FlexDirection(YGFlexDirectionRow);
-  static const auto sVerticalStyles
-    = sBaseStyles + Style().FlexDirection(YGFlexDirectionColumn);
-
-  return (mOrientation == Orientation::Horizontal)
-    ? sHorizontalStyles
-    : sVerticalStyles;
 }
 
 void ScrollBar::ScrollBarButtonTick(ButtonTickKind kind) {

@@ -7,10 +7,10 @@
 
 namespace FredEmmott::GUI::Widgets {
 HyperlinkButton::HyperlinkButton(std::size_t id, const StyleClasses& classes)
-  : Widget(id, classes + LiteralStyleClass {"HyperlinkButton"}) {
-  this->BuiltInStyles()
-    = StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle;
-}
+  : Widget(
+      id,
+      StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle(),
+      classes + LiteralStyleClass {"HyperlinkButton"}) {}
 
 HyperlinkButton::~HyperlinkButton() = default;
 

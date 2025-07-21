@@ -9,8 +9,8 @@
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-template <std::derived_from<Widgets::Widget> T, auto... TFixedArgs>
-T* BeginWidget(const ID id) {
+template <std::derived_from<Widgets::Widget> T, class... Args>
+T* BeginWidget(const ID id, Args&&... args) {
   auto& frame = tStack.back();
 
   if constexpr (Config::Debug) {
@@ -24,7 +24,8 @@ T* BeginWidget(const ID id) {
     = std::ranges::find(frame.mPending, id.GetValue(), &Widget::GetID);
 
   if (pending == frame.mPending.end()) {
-    frame.mNewSiblings.push_back(new T(id.GetValue(), TFixedArgs...));
+    frame.mNewSiblings.push_back(
+      new T(id.GetValue(), std::forward<Args>(args)...));
   } else {
     frame.mNewSiblings.push_back(*pending);
     frame.mPending.erase(pending);
@@ -37,7 +38,7 @@ T* BeginWidget(const ID id) {
   return it;
 }
 
-template <class T>
+template <class T = Widgets::Widget>
 void EndWidget() {
 #ifndef NDEBUG
   if (!GetCurrentParentNode<T>()) [[unlikely]] {

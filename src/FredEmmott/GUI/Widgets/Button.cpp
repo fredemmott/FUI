@@ -12,16 +12,30 @@ using namespace FredEmmott::GUI::StaticTheme;
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ButtonStyleClass = StyleClass::Make("Button");
+constexpr LiteralStyleClass ButtonStyleClass("Button");
+auto& ButtonStyles() {
+  static const auto ret = Button::MakeImmutableStyle({});
+  return ret;
 }
+}// namespace
 
-Button::Button(std::size_t id) : Widget(id, {ButtonStyleClass}) {
-  using namespace StaticTheme::Button;
-  static const auto BaseStyle = DefaultButtonStyle
-    + Style()
-        .AlignSelf(YGAlignFlexStart)
-        .Descendants({}, Style().PointerEvents(PointerEvents::None));
-  BuiltInStyles() = BaseStyle;
+Button::Button(const std::size_t id)
+  : Button(id, ButtonStyles(), {*ButtonStyleClass}) {}
+
+Button::Button(
+  const std::size_t id,
+  const ImmutableStyle& style,
+  const StyleClasses& classes)
+  : Widget(id, style, classes) {}
+
+ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
+  return ImmutableStyle {
+    StaticTheme::Button::DefaultButtonStyle()
+      + Style()
+          .AlignSelf(YGAlignFlexStart)
+          .Descendants({}, Style().PointerEvents(PointerEvents::None))
+      + mixin,
+  };
 }
 
 Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {

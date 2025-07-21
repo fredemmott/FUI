@@ -3,11 +3,56 @@
 
 #include "ScrollBarThumb.hpp"
 
-namespace FredEmmott::GUI::Widgets {
-const auto ScrollBarThumbStyleClass = StyleClass::Make("ScrollBarThumb");
+#include "FredEmmott/GUI/StaticTheme/ScrollBar.hpp"
+#include "FredEmmott/GUI/detail/Widget/ScrollBar.hpp"
 
-ScrollBarThumb::ScrollBarThumb(std::size_t id)
-  : Widget(id, {ScrollBarThumbStyleClass}) {}
+namespace FredEmmott::GUI::Widgets {
+using namespace StaticTheme::ScrollBar;
+using namespace ScrollBarDetail;
+
+namespace {
+
+constexpr LiteralStyleClass ScrollBarThumbStyleClass("ScrollBar/Thumb");
+
+auto BaseThumbStyle() {
+  using namespace PseudoClasses;
+  return Style()
+    .BackgroundColor(ScrollBarThumbFill)
+    .BorderRadius(ScrollBarCornerRadius)
+    .Height(std::nullopt, ContractAnimation)
+    .Width(std::nullopt, ExpandAnimation)
+    .And(Disabled, Style().BackgroundColor(ScrollBarThumbFillDisabled))
+    .And(Hover, Style().BackgroundColor(ScrollBarThumbFillPointerOver));
+}
+
+auto& HorizontalThumbStyle() {
+  static const ImmutableStyle ret {
+    BaseThumbStyle()
+      + Style()
+          .Height(ScrollBarHorizontalThumbMinHeight)
+          .Width(ScrollBarHorizontalThumbMinWidth),
+  };
+  return ret;
+}
+
+auto& VerticalThumbStyle() {
+  static const ImmutableStyle ret {
+    BaseThumbStyle()
+      + Style()
+          .Height(ScrollBarVerticalThumbMinHeight)
+          .Width(ScrollBarVerticalThumbMinWidth),
+  };
+  return ret;
+}
+
+}// namespace
+
+ScrollBarThumb::ScrollBarThumb(const Orientation o, std::size_t id)
+  : Widget(
+      id,
+      (o == Orientation::Horizontal) ? HorizontalThumbStyle()
+                                     : VerticalThumbStyle(),
+      {ScrollBarThumbStyleClass}) {}
 
 ScrollBarThumb::~ScrollBarThumb() = default;
 

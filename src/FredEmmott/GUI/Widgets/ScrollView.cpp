@@ -18,8 +18,48 @@ namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
 namespace {
-const auto ScrollViewStyleClass = StyleClass::Make("ScrollView");
-const auto ContentOuterStyleClass = StyleClass::Make("ScrollView_ContentOuter");
+constexpr LiteralStyleClass ScrollViewStyleClass("ScrollView");
+constexpr LiteralStyleClass ContentOuterStyleClass("ScrollView/ContentOuter");
+
+constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
+  std::chrono::milliseconds(100),
+  StaticTheme::Common::ControlFastOutSlowInKeySpline);
+
+auto& ScrollViewStyle() {
+  static const ImmutableStyle ret {
+    Style().MinHeight(128).MinWidth(128),
+  };
+  return ret;
+}
+
+auto& ContentInnerStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .TranslateX(0, SmoothScrollingAnimation)
+      .TranslateY(0, SmoothScrollingAnimation),
+  };
+  return ret;
+}
+
+auto& VerticalScrollBarStyle() {
+  static const auto ret = ScrollBar::MakeImmutableStyle(
+    Orientation::Vertical,
+    Style().Position(YGPositionTypeAbsolute).Right(4).Top(4));
+  return ret;
+}
+
+auto& HorizontalScrollBarStyle() {
+  using StaticTheme::ScrollBar::ScrollBarSize;
+  static const auto ret = ScrollBar::MakeImmutableStyle(
+    Orientation::Horizontal,
+    Style()
+      .Bottom(4)
+      .FlexGrow(1)
+      .Left(0.f)
+      .Position(YGPositionTypeAbsolute)
+      .Right(ScrollBarSize));
+  return ret;
+}
 
 struct ScrollViewContext final : Context {
   explicit ScrollViewContext(ScrollView* sv) : mScrollView(sv) {}
@@ -29,12 +69,14 @@ struct ScrollViewContext final : Context {
 }// namespace
 
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
-  : Widget(id, classes + ScrollViewStyleClass) {
+  : Widget(id, ScrollViewStyle(), classes + ScrollViewStyleClass) {
   this->ChangeDirectChildren([this] {
-    mHorizontalScrollBar.reset(new ScrollBar(0, Orientation::Horizontal));
-    mVerticalScrollBar.reset(new ScrollBar(1, Orientation::Vertical));
-    mContentOuter.reset(new Widget(2, {ContentOuterStyleClass}));
-    mContentInner.reset(new Widget(3));
+    mHorizontalScrollBar.reset(
+      new ScrollBar(0, HorizontalScrollBarStyle(), Orientation::Horizontal));
+    mVerticalScrollBar.reset(
+      new ScrollBar(1, VerticalScrollBarStyle(), Orientation::Vertical));
+    mContentOuter.reset(new Widget(2, {}, {*ContentOuterStyleClass}));
+    mContentInner.reset(new Widget(3, ContentInnerStyle()));
   });
   YGNodeRemoveChild(this->GetLayoutNode(), mContentInner->GetLayoutNode());
   mContentYoga.reset(YGNodeNew());
@@ -53,37 +95,10 @@ ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
     mContentOuter->GetLayoutNode(), &ScrollView::MeasureOuterContent);
   mContentOuter->SetContextIfUnset<ScrollViewContext>(this);
 
-  using StaticTheme::ScrollBar::ScrollBarSize;
-
-  constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
-    std::chrono::milliseconds(100),
-    StaticTheme::Common::ControlFastOutSlowInKeySpline);
-
-  static const auto InnerStyle
-    = Style()
-        .TranslateX(0, SmoothScrollingAnimation)
-        .TranslateY(0, SmoothScrollingAnimation);
-  mContentInner->BuiltInStyles() = InnerStyle;
-
-  static const auto VerticalScrollStyle
-    = Style().Position(YGPositionTypeAbsolute).Right(4).Top(4);
-  mVerticalScrollBar->BuiltInStyles() += VerticalScrollStyle;
-
-  static const auto HorizontalScrollStyle
-    = Style()
-        .Bottom(4)
-        .FlexGrow(1)
-        .Left(0.f)
-        .Position(YGPositionTypeAbsolute)
-        .Right(ScrollBarSize);
-  mHorizontalScrollBar->BuiltInStyles() += HorizontalScrollStyle;
-
   mHorizontalScrollBar->OnValueChanged(
     std::bind_front(&ScrollView::OnHorizontalScroll, this));
   mVerticalScrollBar->OnValueChanged(
     std::bind_front(&ScrollView::OnVerticalScroll, this));
-
-  BuiltInStyles() = Style().MinHeight(128).MinWidth(128);
 }
 
 ScrollView::~ScrollView() {

@@ -20,6 +20,7 @@ using namespace StaticTheme::Common;
 using namespace StaticTheme::ContentDialog;
 
 namespace {
+constexpr LiteralStyleClass ContentDialogButtonClass {"ContentDialogButton"};
 struct Context : Widgets::Context {
   std::string mTitleText {};
   Widgets::Label* mTitleLabel {nullptr};
@@ -54,11 +55,19 @@ struct ButtonsContext : Widgets::Context {
   LogicalButton mClose {"Close"};
 };
 thread_local ButtonsContext* tButtonsContext {nullptr};
+
+auto& OuterStyles() {
+  static const ImmutableStyle ret {
+    DefaultContentDialogStyle()
+      + Style().FlexDirection(YGFlexDirectionColumn).Gap(0),
+  };
+  return ret;
+}
 }// namespace
 
 void EndContentDialog() {
   tContext = nullptr;
-  EndVStackPanel();
+  EndWidget<Widgets::Widget>();
   EndBasicPopupWindow();
 }
 
@@ -68,9 +77,8 @@ ContentDialogResult BeginContentDialog(const ID id) {
     return false;
   }
 
-  static const Style OuterStyle = DefaultContentDialogStyle + Style().Gap(0);
-  const auto outer = BeginVStackPanel().Styled(OuterStyle);
-  tContext = widget_from_result(outer)->GetOrCreateContext<Context>();
+  const auto outer = BeginWidget<Widgets::Widget>(ID {0}, OuterStyles());
+  tContext = outer->GetOrCreateContext<Context>();
 
   static const auto InnerStyle
     = Style()
@@ -245,17 +253,17 @@ void EndContentDialogButtons() {
     it->mLabel->SetText(button.mText);
     it->mButton->SetIsDirectlyDisabled(
       button.mFlags & ButtonsContext::DisabledFlag);
-    it->mButton->ReplaceExplicitStyles(
+    it->mButton->ToggleStyleClass(
+      StaticTheme::Button::AccentButtonStyleClass,
       (button.mFlags & ButtonsContext::AccentFlag)
-        ? StaticTheme::Button::AccentButtonStyle
-        : Style {});
+        == ButtonsContext::AccentFlag);
   }
 }
 
 Result<&EndContentDialogButtons, void, WidgetlessResultMixin>
 BeginContentDialogButtons() {
   if (tContext) {
-    EndVStackPanel();
+    EndWidget<Widget>();
   }
   static const auto OuterStyle
     = Style()
@@ -278,17 +286,22 @@ BeginContentDialogButtons() {
   const auto button = [](
                         ButtonsContext::LayoutButton& it,
                         const ID& id = ID {std::source_location::current()}) {
-    it.mButton = BeginWidget<Widgets::Button>(id);
-    it.mLabel = BeginWidget<Widgets::Label>(ID {0});
-    it.mLabel->ReplaceExplicitStyles(Style().FlexGrow(1.0));
+    static const auto ButtonStyles
+      = Widgets::Button::MakeImmutableStyle(Style().FlexGrow(1));
+    static const ImmutableStyle LabelStyles {
+      Style().FlexGrow(1),
+    };
+    it.mButton = BeginWidget<Widgets::Button>(
+      id, ButtonStyles, StyleClasses {ContentDialogButtonClass});
+    it.mLabel = BeginWidget<Widgets::Label>(ID {0}, LabelStyles);
     EndWidget<Widgets::Label>();
     EndWidget<Widgets::Button>();
-
-    it.mButton->BuiltInStyles() += Style().FlexGrow(1);
   };
   const auto spacer = [](const ID& id = ID {std::source_location::current()}) {
-    const auto w = BeginWidget<Widgets::Widget>(id);
-    w->BuiltInStyles() = Style().Width(ContentDialogButtonSpacing);
+    static const ImmutableStyle SpacerStyle {
+      Style().Width(ContentDialogButtonSpacing),
+    };
+    const auto w = BeginWidget<Widgets::Widget>(id, SpacerStyle);
     EndWidget<Widgets::Widget>();
     return w;
   };
@@ -357,9 +370,8 @@ ContentDialogButtonResult<ContentDialogButton::Close> ContentDialogCloseButton(
 }
 
 void immediate_detail::ContentDialogButton_AddAccent(
-  ContentDialogButton button) {
+  const ContentDialogButton button) {
   GetButton(button).mFlags |= ButtonsContext::AccentFlag;
-  ;
 }
 
 }// namespace FredEmmott::GUI::Immediate

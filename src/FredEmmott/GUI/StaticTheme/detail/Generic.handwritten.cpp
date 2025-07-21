@@ -17,19 +17,46 @@ static Style GetFontStyle(const SystemFont::Usage usage) {
   return Style().Font(usage);
 }
 
-const style_detail::lazy_init_style BaseTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::BodyStrong); }};
-const style_detail::lazy_init_style CaptionTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::Caption); }};
-const style_detail::lazy_init_style BodyTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::Body); }};
-const style_detail::lazy_init_style SubtitleTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::Subtitle); }};
-const style_detail::lazy_init_style TitleTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::Title); }};
-const style_detail::lazy_init_style TitleLargeTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::TitleLarge); }};
-const style_detail::lazy_init_style DisplayTextBlockStyle {
-  [] { return GetFontStyle(SystemFont::Display); }};
+const ImmutableStyle& BaseTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::BodyStrong)};
+  return ret;
+}
+const ImmutableStyle& CaptionTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::Caption)};
+  return ret;
+}
+const ImmutableStyle& BodyTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::Body)};
+  return ret;
+}
+const ImmutableStyle& SubtitleTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::Subtitle)};
+  return ret;
+}
+const ImmutableStyle& TitleTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::Title)};
+  return ret;
+}
+const ImmutableStyle& TitleLargeTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::TitleLarge)};
+  return ret;
+}
+const ImmutableStyle& DisplayTextBlockStyle() {
+  static const ImmutableStyle ret {GetFontStyle(SystemFont::Display)};
+  return ret;
+}
+
+const ImmutableStyle& TextBlockClassStyles() {
+  static const ImmutableStyle ret {
+    Style(BodyTextBlockStyle())
+      .And(CaptionTextBlockClass, CaptionTextBlockStyle())
+      .And(BodyStrongTextBlockClass, BodyStrongTextBlockStyle())
+      .And(SubtitleTextBlockClass, SubtitleTextBlockStyle())
+      .And(TitleTextBlockClass, TitleTextBlockStyle())
+      .And(TitleLargeTextBlockClass, TitleLargeTextBlockStyle())
+      .And(DisplayTextBlockClass, DisplayTextBlockStyle()),
+  };
+  return ret;
+}
 
 }// namespace FredEmmott::GUI::StaticTheme::Generic

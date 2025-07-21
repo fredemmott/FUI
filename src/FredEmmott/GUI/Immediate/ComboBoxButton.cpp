@@ -12,12 +12,61 @@
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
+namespace {
+constexpr LiteralStyleClass ComboBoxButtonClass {"ComboBoxButton"};
+
+auto& ComboBoxButtonStyles() {
+  using namespace StaticTheme::Common;
+  using namespace StaticTheme::ComboBox;
+  using namespace PseudoClasses;
+  static const ImmutableStyle ret {
+    Style()
+      .AlignSelf(YGAlignFlexStart)
+      .BackgroundColor(ComboBoxBackground)
+      .BorderColor(ComboBoxBorderBrush)
+      .BorderRadius(ControlCornerRadius)
+      .BorderWidth(ComboBoxBorderThemeThickness)
+      .Color(ComboBoxForeground)
+      .FlexDirection(YGFlexDirectionRow)
+      .Font(WidgetFont::ControlContent)
+      .MinHeight(ComboBoxMinHeight)
+      .MinWidth(ComboBoxThemeMinWidth)
+      .PaddingBottom(ComboBoxPaddingBottom)
+      .PaddingLeft(ComboBoxPaddingLeft)
+      .PaddingRight(ComboBoxPaddingRight)
+      .PaddingTop(ComboBoxPaddingTop)
+      .And(
+        Disabled,
+        Style()
+          .BackgroundColor(ComboBoxBackgroundDisabled)
+          .BorderColor(ComboBoxBorderBrushDisabled)
+          .Color(ComboBoxForegroundDisabled))
+      .And(
+        Hover,
+        Style()
+          .BackgroundColor(ComboBoxBackgroundPointerOver)
+          .BorderColor(ComboBoxBorderBrushPointerOver)
+          .Color(ComboBoxForegroundPointerOver))
+      .And(
+        Active,
+        Style()
+          .BackgroundColor(ComboBoxBackgroundPressed)
+          .BorderColor(ComboBoxBorderBrushPressed)
+          .Color(ComboBoxForegroundPressed)),
+  };
+  return ret;
+}
+
+}// namespace
+
 ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   bool* clicked,
   const ID id) {
   using Button = Widgets::Button;
   using Widget = Widgets::Widget;
-  const auto button = BeginWidget<Button>(id);
+  const auto button = BeginWidget<Button>(
+    id, ComboBoxButtonStyles(), StyleClasses {ComboBoxButtonClass});
+
   if (clicked) {
     *clicked = std::exchange(button->mClicked, false);
   }
@@ -25,48 +74,16 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   using namespace PseudoClasses;
-  static const Style ComboBoxButtonStyles
-    = Style()
-        .AlignSelf(YGAlignFlexStart)
-        .BackgroundColor(ComboBoxBackground)
-        .BorderColor(ComboBoxBorderBrush)
-        .BorderRadius(ControlCornerRadius)
-        .BorderWidth(ComboBoxBorderThemeThickness)
-        .Color(ComboBoxForeground)
-        .FlexDirection(YGFlexDirectionRow)
-        .Font(WidgetFont::ControlContent)
-        .MinHeight(ComboBoxMinHeight)
-        .MinWidth(ComboBoxThemeMinWidth)
-        .PaddingBottom(ComboBoxPaddingBottom)
-        .PaddingLeft(ComboBoxPaddingLeft)
-        .PaddingRight(ComboBoxPaddingRight)
-        .PaddingTop(ComboBoxPaddingTop)
-        .And(
-          Disabled,
-          Style()
-            .BackgroundColor(ComboBoxBackgroundDisabled)
-            .BorderColor(ComboBoxBorderBrushDisabled)
-            .Color(ComboBoxForegroundDisabled))
-        .And(
-          Hover,
-          Style()
-            .BackgroundColor(ComboBoxBackgroundPointerOver)
-            .BorderColor(ComboBoxBorderBrushPointerOver)
-            .Color(ComboBoxForegroundPointerOver))
-        .And(
-          Active,
-          Style()
-            .BackgroundColor(ComboBoxBackgroundPressed)
-            .BorderColor(ComboBoxBorderBrushPressed)
-            .Color(ComboBoxForegroundPressed));
-  button->BuiltInStyles() = ComboBoxButtonStyles;
 
-  BeginWidget<Widget>(ID {"container"});
-  GetCurrentParentNode()->BuiltInStyles()
-    = Style().AlignSelf(YGAlignCenter).FlexGrow(1);
+  static const ImmutableStyle OuterStyles {
+    Style().AlignSelf(YGAlignCenter).FlexGrow(1),
+  };
+  static const ImmutableStyle InnerStyles {
+    Style().Display(YGDisplayContents),
+  };
+  BeginWidget<Widget>(ID {"container"}, OuterStyles);
   button->SetContextIfUnset<PopupAnchorContext>(GetCurrentParentNode());
-  BeginWidget<Widget>(ID {0});
-  GetCurrentParentNode()->BuiltInStyles() = Style().Display(YGDisplayContents);
+  BeginWidget<Widget>(ID {0}, InnerStyles);
   return {button};
 };
 

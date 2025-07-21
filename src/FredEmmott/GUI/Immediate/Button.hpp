@@ -16,8 +16,8 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 struct ButtonResultMixin : CaptionResultMixin {
   template <class Self>
   decltype(auto) Accent(this Self&& self) {
-    widget_from_result(self)->AddExplicitStyles(
-      StaticTheme::Button::AccentButtonStyle);
+    widget_from_result(self)->AddStyleClass(
+      StaticTheme::Button::AccentButtonStyleClass);
     return std::forward<Self>(self);
   }
 };

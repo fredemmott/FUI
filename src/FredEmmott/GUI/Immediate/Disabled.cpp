@@ -9,12 +9,12 @@ namespace FredEmmott::GUI::Immediate {
 
 Result<&EndDisabled, void, immediate_detail::WidgetlessResultMixin>
 BeginDisabled(const bool isDisabled, const ID id) {
-  static const auto BaseStyles = Style().Display(YGDisplayContents);
+  static const ImmutableStyle Styles {
+    Style().Display(YGDisplayContents),
+  };
 
   using namespace immediate_detail;
-  BeginWidget<Widgets::Widget>(id);
-  auto widget = GetCurrentParentNode();
-  widget->ReplaceExplicitStyles(BaseStyles);
+  const auto widget = BeginWidget<Widgets::Widget>(id, Styles);
   widget->SetIsDirectlyDisabled(isDisabled);
   return {};
 }

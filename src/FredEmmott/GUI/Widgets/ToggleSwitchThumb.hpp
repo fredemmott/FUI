@@ -10,7 +10,6 @@ class ToggleSwitchThumb final : public Widget {
   explicit ToggleSwitchThumb(std::size_t id);
 
  private:
-  void UpdateStyles();
   Widget* mInner {nullptr};
 };
 

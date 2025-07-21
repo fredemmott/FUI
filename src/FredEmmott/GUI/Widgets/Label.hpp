@@ -10,7 +10,10 @@ namespace FredEmmott::GUI::Widgets {
 
 class Label final : public Widget {
  public:
-  Label(std::size_t id, const StyleClasses& = {});
+  Label(
+    std::size_t id,
+    const std::optional<ImmutableStyle>& = {},
+    const StyleClasses& = {});
 
   std::string_view GetText() const noexcept {
     return mText;

@@ -11,13 +11,16 @@ namespace FredEmmott::GUI::StaticTheme::ContentDialog {
 using namespace StaticTheme::Common;
 using namespace PseudoClasses;
 
-const style_detail::lazy_init_style DefaultContentDialogStyle {[] {
-  return Style()
-    .BackgroundColor(ContentDialogBackground)
-    .BorderColor(ContentDialogBorderBrush)
-    .BorderRadius(OverlayCornerRadius)
-    .BorderWidth(ContentDialogBorderWidth)
-    .Color(ContentDialogForeground);
-}};
+const ImmutableStyle& DefaultContentDialogStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .BackgroundColor(ContentDialogBackground)
+      .BorderColor(ContentDialogBorderBrush)
+      .BorderRadius(OverlayCornerRadius)
+      .BorderWidth(ContentDialogBorderWidth)
+      .Color(ContentDialogForeground),
+  };
+  return ret;
+};
 
 }// namespace FredEmmott::GUI::StaticTheme::ContentDialog

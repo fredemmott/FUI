@@ -18,9 +18,10 @@ class ScrollBarButton final : public Widget {
    *   down.
    */
   ScrollBarButton(
+    std::size_t id,
+    const ImmutableStyle&,
     std::function<void(const Point&)> pressCallback,
-    std::function<void()> tickCallback,
-    std::size_t id);
+    std::function<void()> tickCallback);
   ~ScrollBarButton() override;
 
   void SetText(std::string_view);

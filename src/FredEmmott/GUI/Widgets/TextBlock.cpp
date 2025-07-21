@@ -29,11 +29,14 @@ using namespace FredEmmott::GUI::renderer_detail;
 
 namespace FredEmmott::GUI::Widgets {
 
+using namespace StaticTheme::Generic;
+
 consteval bool is_bitflag_enum(utility::type_tag_t<TextBlock::DirtyFlags>) {
   return true;
 }
 
-TextBlock::TextBlock(std::size_t id) : Widget(id) {
+TextBlock::TextBlock(const std::size_t id)
+  : Widget(id, TextBlockClassStyles()) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBlock::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }

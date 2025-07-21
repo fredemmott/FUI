@@ -17,7 +17,6 @@ class CheckBox final : public Widget {
   bool mChanged {false};
 
  protected:
-  void UpdateStyles();
   EventHandlerResult OnClick(const MouseEvent& event) override;
   Widget* GetFosterParent() const noexcept override;
   WidgetList GetDirectChildren() const noexcept override;
@@ -28,8 +27,6 @@ class CheckBox final : public Widget {
   std::unique_ptr<Widget> mCheckGlyphBackground;
   Label* mCheckGlyph {nullptr};
   std::unique_ptr<Widget> mFosterParent;
-
-  void UpdateCheckGlyphStyles();
 };
 
 }// namespace FredEmmott::GUI::Widgets

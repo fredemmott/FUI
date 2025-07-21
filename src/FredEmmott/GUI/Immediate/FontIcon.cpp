@@ -3,45 +3,94 @@
 
 #include "FontIcon.hpp"
 
+#include "FredEmmott/GUI/StaticTheme/Generic.hpp"
+#include "FredEmmott/GUI/Widgets/Label.hpp"
+#include "FredEmmott/GUI/assert.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
-#include "Label.hpp"
+
+using namespace FredEmmott::GUI::StaticTheme::Generic;
 
 namespace FredEmmott::GUI::Immediate {
 
-Result<> FontIcon(std::string_view glyph, FontIconSize size, const ID id) {
-  const auto ret = Label(glyph, id);
-  immediate_detail::GetCurrentNode()->BuiltInStyles()
-    += Style()
-         .AlignSelf(YGAlignCenter)
-         .Font(ResolveGlyphFont(size), !important);
-  return {ret};
+namespace {
+
+constexpr LiteralStyleClass StackedStyleClass {"FontIcon/Stacked"};
+
+Style MakeFontIconStyle(const FontIconSize size) {
+  const auto font = ResolveGlyphFont(size);
+  const auto width = font.MeasureTextWidth("\ue700");
+  FUI_ASSERT(width == font.GetMetrics().mSize);
+  return Style()
+    .Font(font, !important)
+    .And(StackedStyleClass, Style().Left(-width));
+}
+
+const ImmutableStyle& FontIconStyle() {
+  static ImmutableStyle ret {
+    Style()
+      .AlignSelf(YGAlignCenter)
+      .Position(YGPositionTypeRelative)
+      .And(CaptionTextBlockClass, MakeFontIconStyle(FontIconSize::Caption))
+      .And(BodyTextBlockClass, MakeFontIconStyle(FontIconSize::Body))
+      .And(
+        BodyStrongTextBlockClass, MakeFontIconStyle(FontIconSize::BodyStrong))
+      .And(SubtitleTextBlockClass, MakeFontIconStyle(FontIconSize::Subtitle))
+      .And(TitleTextBlockClass, MakeFontIconStyle(FontIconSize::Title))
+      .And(
+        TitleLargeTextBlockClass, MakeFontIconStyle(FontIconSize::TitleLarge))
+      .And(DisplayTextBlockClass, MakeFontIconStyle(FontIconSize::Display)),
+  };
+  return ret;
+}
+
+StyleClass GetStyleClass(const FontIconSize size) {
+  using enum FontIconSize;
+  switch (size) {
+    case Caption:
+      return CaptionTextBlockClass;
+    case Body:
+      return BodyTextBlockClass;
+    case BodyStrong:
+      return BodyStrongTextBlockClass;
+    case Subtitle:
+      return SubtitleTextBlockClass;
+    case Title:
+      return TitleTextBlockClass;
+    case TitleLarge:
+      return TitleLargeTextBlockClass;
+    case Display:
+      return DisplayTextBlockClass;
+    default:
+      std::unreachable();
+  }
+}
+}// namespace
+
+Result<>
+FontIcon(const std::string_view glyph, const FontIconSize size, const ID id) {
+  const auto label = immediate_detail::BeginWidget<Widgets::Label>(
+    id, FontIconStyle(), StyleClasses {GetStyleClass(size)});
+  label->SetText(glyph);
+  immediate_detail::EndWidget<Widgets::Label>();
+  return {label};
 }
 
 Result<> FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyphs,
   FontIconSize size,
   const ID id) {
-  const auto font = ResolveGlyphFont(size);
-  const auto styles
-    = Style().Font(font, !important).Position(YGPositionTypeRelative);
-
-  bool first = true;
-  const auto ret = immediate_detail::BeginWidget<Widgets::Widget>(id);
+  const auto ret
+    = immediate_detail::BeginWidget<Widgets::Widget>(id, ImmutableStyle {});
   std::size_t count = 0;
 
-  float offset {};
-
+  bool first = true;
   for (auto&& [glyph, style]: glyphs) {
-    auto thisStyle = styles + style;
-    if (first) {
-      offset = -font.MeasureTextWidth(glyph);
-      first = false;
-    } else {
-      thisStyle.Left() = offset;
+    FontIcon(glyph, size, ID {count++});
+    const auto widget = immediate_detail::GetCurrentNode();
+    if (!std::exchange(first, false)) {
+      widget->AddStyleClass(StackedStyleClass);
     }
-
-    Label(glyph, ID {count++});
-    immediate_detail::GetCurrentNode()->BuiltInStyles() += thisStyle;
+    widget->ReplaceExplicitStyles(style);
   }
 
   immediate_detail::EndWidget<Widgets::Widget>();

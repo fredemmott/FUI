@@ -5,6 +5,7 @@
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#include "FredEmmott/GUI/assert.hpp"
 #include "Widget.hpp"
 #include "WidgetList.hpp"
 
@@ -18,32 +19,33 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 }
 
 void Widget::ComputeStyles(const Style& inherited) {
+  if (
+    mClassList.contains(StyleClass::Make("ContentDialogButton"))
+    && inherited.HasColor()) {
+    __debugbreak();
+  }
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
-  auto style
-    = GlobalBaselineStyle + mBuiltInStyles + inherited + mExplicitStyles;
+  std::string cacheKey;
+  cacheKey.resize(sizeof(void*) * (mClassList.size() + 1));
+  const auto cacheKeyPointers = reinterpret_cast<uintptr_t*>(cacheKey.data());
+  cacheKeyPointers[0]
+    = static_cast<uintptr_t>(mDirectStateFlags | mInheritedStateFlags);
+  std::ranges::copy(
+    mClassList | std::views::transform(&StyleClass::AsCacheKey),
+    cacheKeyPointers + 1);
+
+  auto flattened = mImmutableStyle.GetCached(cacheKey);
+  if (!flattened) {
+    flattened = FlattenStyles(GlobalBaselineStyle + mImmutableStyle.Get());
+    mImmutableStyle.EmplaceCache(cacheKey, *flattened);
+  }
+
+  auto style = flattened.value() + inherited + mExplicitStyles;
 
   mDirectStateFlags &= ~StateFlags::Animating;
-  const auto stateFlags = mDirectStateFlags | mInheritedStateFlags;
 
-  const bool isHovered
-    = (stateFlags & StateFlags::Hovered) != StateFlags::Default;
-  const bool isActive
-    = (stateFlags & StateFlags::Active) != StateFlags::Default;
-  const bool isDisabled
-    = (stateFlags & StateFlags::Disabled) != StateFlags::Default;
-
-  bool haveChanges = false;
-  do {
-    haveChanges = false;
-    for (auto&& [selector, rules]: style.mAnd) {
-      if (this->MatchesStyleSelector(selector)) {
-        style += rules;
-        haveChanges = true;
-      }
-    }
-    style.mAnd.clear();
-  } while (haveChanges);
+  style = FlattenStyles(style);
 
   const auto flattenEdge = [&style]<class T, class U>(T allEdges, U thisEdge) {
     auto& thisEdgeOpt = std::invoke(thisEdge, style);
@@ -71,6 +73,14 @@ void Widget::ComputeStyles(const Style& inherited) {
   }
 
   {
+    const auto stateFlags = mDirectStateFlags | mInheritedStateFlags;
+    const bool isHovered
+      = (stateFlags & StateFlags::Hovered) != StateFlags::Default;
+    const bool isActive
+      = (stateFlags & StateFlags::Active) != StateFlags::Default;
+    const bool isDisabled
+      = (stateFlags & StateFlags::Disabled) != StateFlags::Default;
+
     using enum ComputedStyleFlags;
     auto propagateFlags = StateFlags::Default;
     if (isDisabled) {
@@ -156,6 +166,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   X(BorderRightWidth, Border, YGEdgeRight)
   X(BorderTopWidth, Border, YGEdgeTop)
   X(Bottom, Position, YGEdgeBottom)
+  X(BoxSizing, BoxSizing)
   X(Display, Display)
   X(FlexBasis, FlexBasis)
   X(FlexDirection, FlexDirection)
@@ -184,6 +195,18 @@ void Widget::ComputeStyles(const Style& inherited) {
 #undef X
 }
 
+Style Widget::FlattenStyles(const Style& inputStyle) {
+  Style style = inputStyle;
+  while (!style.mAnd.empty()) {
+    for (auto&& [selector, rules]: std::exchange(style.mAnd, {})) {
+      if (this->MatchesStyleSelector(selector)) {
+        style += rules;
+      }
+    }
+  }
+  return style;
+}
+
 Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
   const Style&,
   StateFlags) {
@@ -199,7 +222,6 @@ Widget::ComputedStyleFlags Widget::OnComputedStyleChange(
 
 bool Widget::MatchesStylePseudoClass(const StyleClass it) const {
   const auto state = mDirectStateFlags | mInheritedStateFlags;
-
   if (it == PseudoClasses::Checked) {
     return IsChecked();
   }
