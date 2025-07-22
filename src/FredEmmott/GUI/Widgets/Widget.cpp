@@ -169,15 +169,24 @@ Widget::~Widget() {
   delete yogaContext;
 }
 void Widget::AddStyleClass(const StyleClass klass) {
+  if (mClassList.contains(klass)) {
+    return;
+  }
+  mStylesCacheKey.clear();
   mClassList.emplace(klass);
 }
 
 void Widget::ToggleStyleClass(const StyleClass klass, const bool value) {
   if (value) {
-    mClassList.emplace(klass);
-  } else {
-    mClassList.erase(klass);
+    this->AddStyleClass(klass);
+    return;
   }
+
+  if (!mClassList.contains(klass)) {
+    return;
+  }
+  mClassList.erase(klass);
+  mStylesCacheKey.clear();
 }
 
 bool Widget::IsDisabled() const {

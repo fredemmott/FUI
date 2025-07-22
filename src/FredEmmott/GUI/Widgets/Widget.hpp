@@ -246,6 +246,7 @@ class Widget {
   StateFlags mInheritedStateFlags {};
   Style mExplicitStyles {};
 
+  std::string mStylesCacheKey;
   Style mInheritedStyles;
   Style mComputedStyle;
 

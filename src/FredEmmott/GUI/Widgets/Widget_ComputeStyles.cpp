@@ -21,19 +21,21 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 void Widget::ComputeStyles(const Style& inherited) {
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
-  std::string cacheKey;
-  cacheKey.resize(sizeof(void*) * (mClassList.size() + 1));
-  const auto cacheKeyPointers = reinterpret_cast<uintptr_t*>(cacheKey.data());
-  cacheKeyPointers[0]
+  if (mStylesCacheKey.empty()) {
+    mStylesCacheKey.resize(sizeof(void*) * (mClassList.size() + 1));
+    const auto cacheKeyPointers
+      = reinterpret_cast<uintptr_t*>(mStylesCacheKey.data());
+    std::ranges::copy(
+      mClassList | std::views::transform(&StyleClass::AsCacheKey),
+      cacheKeyPointers + 1);
+  }
+  reinterpret_cast<uintptr_t*>(mStylesCacheKey.data())[0]
     = static_cast<uintptr_t>(mDirectStateFlags | mInheritedStateFlags);
-  std::ranges::copy(
-    mClassList | std::views::transform(&StyleClass::AsCacheKey),
-    cacheKeyPointers + 1);
 
-  auto flattened = mImmutableStyle.GetCached(cacheKey);
+  auto flattened = mImmutableStyle.GetCached(mStylesCacheKey);
   if (!flattened) {
     flattened = FlattenStyles(GlobalBaselineStyle + mImmutableStyle.Get());
-    mImmutableStyle.EmplaceCache(cacheKey, *flattened);
+    mImmutableStyle.EmplaceCache(mStylesCacheKey, *flattened);
   }
 
   auto style = flattened.value() + inherited + mExplicitStyles;
