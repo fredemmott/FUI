@@ -34,8 +34,12 @@ void Widget::ComputeStyles(const Style& inherited) {
 
   auto flattened = mImmutableStyle.GetCached(mStylesCacheKey);
   if (!flattened) {
-    flattened = FlattenStyles(GlobalBaselineStyle + mImmutableStyle.Get());
-    mImmutableStyle.EmplaceCache(mStylesCacheKey, *flattened);
+    if (mImmutableStyle) {
+      flattened = FlattenStyles(GlobalBaselineStyle + mImmutableStyle.Get());
+      mImmutableStyle.EmplaceCache(mStylesCacheKey, *flattened);
+    } else {
+      flattened = GlobalBaselineStyle;
+    }
   }
 
   auto style = flattened.value() + inherited + mExplicitStyles;

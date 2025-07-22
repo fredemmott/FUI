@@ -164,6 +164,10 @@ class ImmutableStyle final {
     }
   }
 
+  operator bool() const noexcept {
+    return mSharedData != nullptr;
+  }
+
   [[nodiscard]]
   const Style& Get() const noexcept {
     return mSharedData ? mSharedData->mStyle : Style::Empty();
