@@ -155,8 +155,8 @@ class ImmutableStyle final {
   ImmutableStyle() = default;
 
   explicit ImmutableStyle(Style&& style)
-    : mStyle {std::make_shared<Style>(std::move(style))} {
-    for (auto&& [key, value]: mStyle->mStorage) {
+    : mSharedData {std::make_shared<SharedData>(std::move(style))} {
+    for (auto&& [key, value]: mSharedData->mStyle.mStorage) {
       style_detail::VisitStyleProperty(
         key,
         [](auto& prop) { prop.mPriority = StylePropertyPriority::UserAgent; },
@@ -164,8 +164,9 @@ class ImmutableStyle final {
     }
   }
 
+  [[nodiscard]]
   const Style& Get() const noexcept {
-    return mStyle ? *mStyle : Style::Empty();
+    return mSharedData ? mSharedData->mStyle : Style::Empty();
   }
 
   operator const Style&() const noexcept {
@@ -173,23 +174,37 @@ class ImmutableStyle final {
   }
 
   Style const* operator->() const noexcept {
-    return mStyle.get();
+    if (!mSharedData) {
+      return nullptr;
+    }
+    return &mSharedData->mStyle;
   }
 
-  std::optional<Style> GetCached(const std::string& key) {
-    if (mCache.contains(key)) {
-      return mCache.at(key);
+  [[nodiscard]]
+  std::optional<Style> GetCached(const std::string& key) const {
+    if (!mSharedData) {
+      return std::nullopt;
+    }
+
+    if (mSharedData->mCache.contains(key)) {
+      return mSharedData->mCache.at(key);
     }
     return std::nullopt;
   }
 
   void EmplaceCache(std::string_view key, const Style& value) {
-    mCache.emplace(std::string {key}, value);
+    if (!mSharedData) {
+      return;
+    }
+    mSharedData->mCache.emplace(std::string {key}, value);
   }
 
  private:
-  std::shared_ptr<Style> mStyle {};
-  std::unordered_map<std::string, Style> mCache;
+  struct SharedData {
+    Style mStyle;
+    std::unordered_map<std::string, Style> mCache;
+  };
+  std::shared_ptr<SharedData> mSharedData {};
 };
 
 }// namespace FredEmmott::GUI
