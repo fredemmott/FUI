@@ -48,23 +48,16 @@ void Widget::ComputeStyles(const Style& inherited) {
 
   style = FlattenStyles(style);
 
-  const auto flattenEdge = [&style]<class T, class U>(T allEdges, U thisEdge) {
-    auto& thisEdgeOpt = std::invoke(thisEdge, style);
-    const auto& allEdgesOpt = std::invoke(allEdges, style);
-
-    thisEdgeOpt = allEdgesOpt + thisEdgeOpt;
+  const auto flattenEdges = [](const auto& allEdges, auto&... edge) {
+    ((edge = allEdges + edge), ...);
   };
-  const auto flattenEdges
-    = [&flattenEdge]<class T, class... TRest>(T all, TRest... rest) {
-        (flattenEdge(all, rest), ...);
-      };
 #define FLATTEN_EDGES(X, Y) \
   flattenEdges( \
-    [](auto&& it) -> auto& { return it.X##Y(); }, \
-    [](auto&& it) -> auto& { return it.X##Left##Y(); }, \
-    [](auto&& it) -> auto& { return it.X##Top##Y(); }, \
-    [](auto&& it) -> auto& { return it.X##Right##Y(); }, \
-    [](auto&& it) -> auto& { return it.X##Bottom##Y(); });
+    style.X##Y(), \
+    style.X##Left##Y(), \
+    style.X##Top##Y(), \
+    style.X##Right##Y(), \
+    style.X##Bottom##Y());
   FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
 #undef FLATTEN_EDGES
 
