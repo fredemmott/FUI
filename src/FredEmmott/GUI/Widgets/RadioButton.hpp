@@ -18,15 +18,12 @@ class RadioButton final : public Widget {
 
  protected:
   Widget* GetFosterParent() const noexcept override;
-  WidgetList GetDirectChildren() const noexcept override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
   [[nodiscard]] EventHandlerResult OnClick(const MouseEvent&) override;
 
  private:
-  unique_ptr<Widget> mOuter;
-  Widget* mInner {nullptr};
-  unique_ptr<Widget> mFosterParent {};
+  Widget* mFosterParent {};
 };
 
 }// namespace FredEmmott::GUI::Widgets

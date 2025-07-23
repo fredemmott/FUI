@@ -23,10 +23,6 @@ PopupWindow::PopupWindow(const std::size_t id)
   : Widget(id, InvisibleStyle(), {PseudoClasses::LayoutOrphan}),
     mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {}
 
-WidgetList PopupWindow::GetDirectChildren() const noexcept {
-  return WidgetList::MakeEmpty();
-}
-
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(
   const Style& style,
   StateFlags flags) {

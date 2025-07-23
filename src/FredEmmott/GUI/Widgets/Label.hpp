@@ -18,7 +18,7 @@ class Label final : public Widget {
   std::string_view GetText() const noexcept {
     return mText;
   }
-  void SetText(std::string_view);
+  Widget* SetText(std::string_view);
 
  protected:
   void PaintOwnContent(Renderer*, const Rect&, const Style& style)

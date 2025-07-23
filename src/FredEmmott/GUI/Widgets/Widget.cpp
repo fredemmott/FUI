@@ -128,36 +128,20 @@ Widget::Widget(
   mStyleTransitions.reset(new StyleTransitions());
 }
 
-WidgetList Widget::GetDirectChildren() const noexcept {
-  return WidgetList {mManagedChildrenCacheForGetChildren};
-}
-
-void Widget::ChangeDirectChildren(const std::function<void()>& mutator) {
-  if (mutator) {
-    mutator();
-  }
-
-  const auto children = this->GetDirectChildren();
-  std::vector<YGNodeRef> layoutChildren;
-  layoutChildren.reserve(children.end() - children.begin());
-  for (auto&& child: children) {
-    if (!child->mClassList.contains(PseudoClasses::LayoutOrphan)) {
-      layoutChildren.push_back(child->GetLayoutNode());
-      continue;
-    }
-    auto& ctx
-      = *static_cast<YogaContext*>(YGNodeGetContext(child->GetLayoutNode()));
-    if (holds_alternative<Widget*>(ctx)) {
-      ctx = DetachedYogaTree {this, child};
-    }
-  }
-  YGNodeSetChildren(mYoga.get(), layoutChildren.data(), layoutChildren.size());
-}
-
 Widget* Widget::FromYogaNode(YGNodeConstRef node) {
-  const auto it
-    = std::get_if<Widget*>(static_cast<YogaContext*>(YGNodeGetContext(node)));
-  return it ? *it : nullptr;
+  const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
+  if (!ctx) {
+    return nullptr;
+  }
+  if (
+    const auto it
+    = std::get_if<Widget*>(static_cast<YogaContext*>(YGNodeGetContext(node)))) {
+    return *it;
+  }
+  if (const auto it = std::get_if<DetachedYogaTree>(ctx)) {
+    return it->mSelf;
+  }
+  return nullptr;
 }
 
 Widget::~Widget() {
@@ -199,7 +183,7 @@ FrameRateRequirement Widget::GetFrameRateRequirement() const noexcept {
   if ((mDirectStateFlags & Animating) != StateFlags::Default) {
     return FrameRateRequirement::SmoothAnimation;
   }
-  for (auto&& child: this->GetDirectChildren()) {
+  for (auto&& child: this->mRawDirectChildren) {
     if (
       child->GetFrameRateRequirement()
       == FrameRateRequirement::SmoothAnimation) {
@@ -232,19 +216,37 @@ void Widget::AddExplicitStyles(const Style& styles) {
   mExplicitStyles += styles;
 }
 
-void Widget::SetManagedChildren(const std::vector<Widget*>& children) {
+void Widget::SetDirectChildren(const std::vector<Widget*>& children) {
   std::vector<unique_ptr<Widget>> newChildren;
   for (auto child: children) {
     auto it
-      = std::ranges::find(mManagedChildren, child, &unique_ptr<Widget>::get);
-    if (it == mManagedChildren.end()) {
+      = std::ranges::find(mDirectChildren, child, &unique_ptr<Widget>::get);
+    if (it == mDirectChildren.end()) {
       newChildren.emplace_back(child);
     } else {
       newChildren.emplace_back(std::move(*it));
     }
   }
-  mManagedChildren = std::move(newChildren);
-  mManagedChildrenCacheForGetChildren = children;
+  mDirectChildren = std::move(newChildren);
+  mRawDirectChildren = children;
+
+  std::vector<YGNodeRef> layoutChildren;
+  layoutChildren.reserve(children.end() - children.begin());
+  for (auto&& child: children) {
+    if (!child->mClassList.contains(PseudoClasses::LayoutOrphan)) {
+      layoutChildren.push_back(child->GetLayoutNode());
+      continue;
+    }
+    auto& ctx
+      = *static_cast<YogaContext*>(YGNodeGetContext(child->GetLayoutNode()));
+    if (holds_alternative<Widget*>(ctx)) {
+      ctx = DetachedYogaTree {
+        .mSelf = child,
+        .mParent = this,
+      };
+    }
+  }
+  YGNodeSetChildren(mYoga.get(), layoutChildren.data(), layoutChildren.size());
 }
 
 void Widget::Paint(Renderer* renderer) const {
@@ -291,25 +293,20 @@ void Widget::Paint(Renderer* renderer) const {
 }
 
 void Widget::PaintChildren(Renderer* renderer) const {
-  const auto children = this->GetDirectChildren();
-  if (children.empty()) {
-    return;
-  }
-
-  for (auto&& child: children) {
+  for (auto&& child: mRawDirectChildren) {
     child->Paint(renderer);
   }
 }
 
-void Widget::SetChildren(const std::vector<Widget*>& children) {
+Widget* Widget::SetChildren(const std::vector<Widget*>& children) {
   const auto foster = this->GetFosterParent();
   const auto parent = foster ? foster : this;
-  if (children == parent->mManagedChildrenCacheForGetChildren) {
-    return;
+  if (children == parent->mRawDirectChildren) {
+    return this;
   }
 
-  parent->ChangeDirectChildren(
-    std::bind_front(&Widget::SetManagedChildren, parent, std::ref(children)));
+  parent->SetDirectChildren(children);
+  return this;
 }
 
 Widget* Widget::DispatchEvent(const Event* e) {
@@ -325,13 +322,13 @@ Widget* Widget::DispatchEvent(const Event* e) {
 }
 
 void Widget::Tick() {
-  for (auto&& child: this->GetDirectChildren()) {
+  for (auto&& child: mRawDirectChildren) {
     child->Tick();
   }
 }
 
 void Widget::UpdateLayout() {
-  for (auto&& child: this->GetDirectChildren()) {
+  for (auto&& child: mRawDirectChildren) {
     child->UpdateLayout();
   }
 }
@@ -383,7 +380,7 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
   mMouseOffset = event.mOffset;
 
   // Always propagate unconditionally to allow correct internal states
-  for (auto&& child: this->GetDirectChildren()) {
+  for (auto&& child: mRawDirectChildren) {
     if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
       continue;
     }
@@ -509,9 +506,9 @@ Point Widget::GetTopLeftCanvasPoint() const {
     const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
     const Widget* widget = nullptr;
 
-    if (auto tree = std::get_if<DetachedYogaTree>(ctx)) {
-      widget = tree->mLogicalParent;
-    } else if (auto widgetp = std::get_if<Widget*>(ctx)) {
+    if (const auto tree = std::get_if<DetachedYogaTree>(ctx)) {
+      widget = tree->mParent;
+    } else if (const auto widgetp = std::get_if<Widget*>(ctx)) {
       widget = *widgetp;
     } else if (ctx) {
       __debugbreak();

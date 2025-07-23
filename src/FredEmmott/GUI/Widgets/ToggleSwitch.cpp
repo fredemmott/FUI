@@ -44,12 +44,12 @@ auto& FosterParentStyle() {
 using namespace StaticTheme;
 using namespace widget_detail;
 
-ToggleSwitch::ToggleSwitch(std::size_t id)
+ToggleSwitch::ToggleSwitch(const std::size_t id)
   : Widget(id, ToggleSwitchStyle(), {*ToggleSwitchStyleClass}) {
-  this->ChangeDirectChildren([this] {
-    mKnob.reset(new ToggleSwitchKnob({}));
-    mFosterParent.reset(
-      new Widget({}, FosterParentStyle(), {*ToggleSwitchContentStyleClass}));
+  this->SetDirectChildren({
+    new ToggleSwitchKnob({}),
+    mFosterParent
+    = new Widget({}, FosterParentStyle(), {*ToggleSwitchContentStyleClass}),
   });
 }
 
@@ -77,10 +77,6 @@ Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent&) {
   // This is used to detect user-triggered changes, not any change
   mChanged = true;
   return EventHandlerResult::StopPropagation;
-}
-
-WidgetList ToggleSwitch::GetDirectChildren() const noexcept {
-  return {mKnob.get(), mFosterParent.get()};
 }
 
 }// namespace FredEmmott::GUI::Widgets

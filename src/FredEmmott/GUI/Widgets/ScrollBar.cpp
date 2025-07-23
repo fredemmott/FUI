@@ -139,32 +139,6 @@ ScrollBar::ScrollBar(
 
   const auto isHorizontal = (orientation == Orientation::Horizontal);
 
-  this->ChangeDirectChildren([this, isHorizontal] {
-    const auto& SmallChangeStyles = isHorizontal
-      ? HorizontalSmallChangeStyles()
-      : VerticalSmallChangeStyles();
-    mSmallDecrement.reset(new ScrollBarButton(
-      0,
-      SmallChangeStyles,
-      nullptr,
-      std::bind_front(
-        &ScrollBar::ScrollBarButtonTick,
-        this,
-        ButtonTickKind::SmallDecrement)));
-    mTrack.reset(new Widget(
-      0,
-      (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle(),
-      {ScrollBarTrackStyleClass}));
-    mSmallIncrement.reset(new ScrollBarButton(
-      0,
-      SmallChangeStyles,
-      nullptr,
-      std::bind_front(
-        &ScrollBar::ScrollBarButtonTick,
-        this,
-        ButtonTickKind::SmallIncrement)));
-  });
-
   mLargeDecrement = new ScrollBarButton(
     0,
     LargeChangeStyles(),
@@ -173,6 +147,7 @@ ScrollBar::ScrollBar(
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement));
   mThumb = new ScrollBarThumb(orientation, 0);
+  mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
   mLargeIncrement = new ScrollBarButton(
     0,
     LargeChangeStyles(),
@@ -180,8 +155,29 @@ ScrollBar::ScrollBar(
       &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeIncrement),
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeIncrement));
+
+  const auto& SmallChangeStyles = isHorizontal
+    ? HorizontalSmallChangeStyles()
+    : VerticalSmallChangeStyles();
+  mSmallDecrement = new ScrollBarButton(
+    0,
+    SmallChangeStyles,
+    nullptr,
+    std::bind_front(
+      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallDecrement));
+  mTrack = new Widget(
+    0,
+    (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle(),
+    {ScrollBarTrackStyleClass});
   mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
-  mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
+  mSmallIncrement = new ScrollBarButton(
+    0,
+    SmallChangeStyles,
+    nullptr,
+    std::bind_front(
+      &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallIncrement));
+
+  this->SetChildren({mSmallDecrement, mTrack, mSmallIncrement});
 
   switch (orientation) {
     case Orientation::Vertical:
@@ -210,14 +206,6 @@ ImmutableStyle ScrollBar::MakeImmutableStyle(
   std::unreachable();
 }
 ScrollBar::~ScrollBar() = default;
-
-WidgetList ScrollBar::GetDirectChildren() const noexcept {
-  return {
-    mSmallDecrement.get(),
-    mTrack.get(),
-    mSmallIncrement.get(),
-  };
-}
 
 Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
   const Style& style,

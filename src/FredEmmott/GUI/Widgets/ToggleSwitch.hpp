@@ -19,17 +19,15 @@ class ToggleSwitch final : public Widget {
  protected:
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
+
   Widget* GetFosterParent() const noexcept override {
-    return mFosterParent.get();
+    return mFosterParent;
   }
 
   EventHandlerResult OnClick(const MouseEvent& event) override;
 
  private:
-  unique_ptr<ToggleSwitchKnob> mKnob;
-  // Container for user-supplied children
-  unique_ptr<Widget> mFosterParent;
-  WidgetList GetDirectChildren() const noexcept override;
+  Widget* mFosterParent {nullptr};
 };
 
 }// namespace FredEmmott::GUI::Widgets

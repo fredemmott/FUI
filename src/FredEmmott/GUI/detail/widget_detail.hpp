@@ -36,8 +36,8 @@ struct constant_t {
 };
 
 struct DetachedYogaTree {
-  Widget* mLogicalParent {nullptr};
-  Widget* mFosterParent {nullptr};
+  Widget* mSelf {nullptr};
+  Widget* mParent {nullptr};
 };
 
 class PopupAnchorContext final : public Context {

@@ -189,17 +189,15 @@ auto& GlyphBackgroundStyles() {
 
 CheckBox::CheckBox(std::size_t id)
   : Widget(id, CheckBoxStyles(), {*CheckBoxStyleClass}) {
-  this->ChangeDirectChildren([this] {
-    mCheckGlyphBackground
-      = std::make_unique<Widget>(0, GlyphBackgroundStyles());
-    mFosterParent = std::make_unique<Widget>(
-      1, FosterParentStyles(), StyleClasses {*FosterParentStyleClass});
+  this->SetDirectChildren({
+    (new Widget(0, GlyphBackgroundStyles()))
+      ->SetChildren({
+        (new Label(0, GlyphStyles(), {*CheckGlyphStyleClass}))
+          ->SetText(StaticTheme::CheckBox::CheckBoxCheckedGlyph),
+      }),
+    mFosterParent = new Widget(
+      1, FosterParentStyles(), StyleClasses {*FosterParentStyleClass}),
   });
-
-  mCheckGlyph = new Label(0, GlyphStyles(), {*CheckGlyphStyleClass});
-  mCheckGlyph->SetText(StaticTheme::CheckBox::CheckBoxCheckedGlyph);
-
-  mCheckGlyphBackground->SetChildren({mCheckGlyph});
 }
 
 Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
@@ -209,18 +207,12 @@ Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
 }
 
 Widget* CheckBox::GetFosterParent() const noexcept {
-  return mFosterParent.get();
+  return mFosterParent;
 }
 
-WidgetList CheckBox::GetDirectChildren() const noexcept {
-  return {
-    mCheckGlyphBackground.get(),
-    mFosterParent.get(),
-  };
-}
 Widget::ComputedStyleFlags CheckBox::OnComputedStyleChange(
   const Style& style,
-  StateFlags state) {
+  const StateFlags state) {
   return Widget::OnComputedStyleChange(style, state)
     | ComputedStyleFlags::InheritableActiveState
     | ComputedStyleFlags::InheritableHoverState;

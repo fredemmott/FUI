@@ -19,14 +19,11 @@ class CheckBox final : public Widget {
  protected:
   EventHandlerResult OnClick(const MouseEvent& event) override;
   Widget* GetFosterParent() const noexcept override;
-  WidgetList GetDirectChildren() const noexcept override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
 
  private:
-  std::unique_ptr<Widget> mCheckGlyphBackground;
-  Label* mCheckGlyph {nullptr};
-  std::unique_ptr<Widget> mFosterParent;
+  Widget* mFosterParent {nullptr};
 };
 
 }// namespace FredEmmott::GUI::Widgets

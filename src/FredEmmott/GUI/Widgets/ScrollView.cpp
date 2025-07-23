@@ -70,22 +70,22 @@ struct ScrollViewContext final : Context {
 
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
   : Widget(id, ScrollViewStyle(), classes + ScrollViewStyleClass) {
-  this->ChangeDirectChildren([this] {
-    mHorizontalScrollBar.reset(
-      new ScrollBar(0, HorizontalScrollBarStyle(), Orientation::Horizontal));
-    mVerticalScrollBar.reset(
-      new ScrollBar(1, VerticalScrollBarStyle(), Orientation::Vertical));
-    mContentOuter.reset(new Widget(2, {}, {*ContentOuterStyleClass}));
-    mContentInner.reset(new Widget(3, ContentInnerStyle()));
+  this->SetDirectChildren({
+    mHorizontalScrollBar
+    = new ScrollBar({}, HorizontalScrollBarStyle(), Orientation::Horizontal),
+    mVerticalScrollBar
+    = new ScrollBar({}, VerticalScrollBarStyle(), Orientation::Vertical),
+    mContentOuter = new Widget({}, {}, {*ContentOuterStyleClass}),
+    mContentInner
+    = new Widget({}, ContentInnerStyle(), {PseudoClasses::LayoutOrphan}),
   });
-  YGNodeRemoveChild(this->GetLayoutNode(), mContentInner->GetLayoutNode());
   mContentYoga.reset(YGNodeNew());
   YGNodeInsertChild(mContentYoga.get(), mContentInner->GetLayoutNode(), 0);
   YGNodeSetContext(
     mContentYoga.get(),
     new YogaContext {DetachedYogaTree {
-      .mLogicalParent = this,
-      .mFosterParent = mContentInner.get(),
+      .mSelf = nullptr,
+      .mParent = mContentInner,
     }});
 
   YGNodeSetDirtiedFunc(
@@ -130,17 +130,8 @@ ScrollView& ScrollView::SetVerticalScrollBarVisibility(
   return *this;
 }
 
-WidgetList ScrollView::GetDirectChildren() const noexcept {
-  return {
-    mVerticalScrollBar.get(),
-    mHorizontalScrollBar.get(),
-    mContentOuter.get(),
-    mContentInner.get(),
-  };
-}
-
 Widget* ScrollView::GetFosterParent() const noexcept {
-  return mContentInner.get();
+  return mContentInner;
 }
 
 void ScrollView::UpdateScrollBars(const Size& containerSize) const {
@@ -214,7 +205,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   const auto pixels
     = lines * SystemFont::Resolve(SystemFont::Body).GetMetrics().mSize;
 
-  const auto scrollBar = mVerticalScrollBar.get();
+  const auto scrollBar = mVerticalScrollBar;
   const auto value = std::clamp<float>(
     scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
   scrollBar->SetValue(value);

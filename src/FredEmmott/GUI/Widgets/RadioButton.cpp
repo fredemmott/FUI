@@ -138,24 +138,17 @@ auto& InnerStyles() {
 
 RadioButton::RadioButton(std::size_t id)
   : Widget(id, RadioButtonStyles(), {RadioButtonStyleClass}) {
-  this->ChangeDirectChildren([this] {
-    mOuter = std::make_unique<Widget>(0, OuterStyles());
-    mFosterParent = std::make_unique<Widget>(1, FosterParentStyles());
-  });
-  mOuter->SetChildren({mInner = new Widget(0, InnerStyles())});
+  const auto inner = new Widget({}, InnerStyles());
+  const auto outer = (new Widget({}, OuterStyles()))->SetChildren({inner});
+  mFosterParent = new Widget({}, FosterParentStyles());
+
+  this->SetDirectChildren({outer, mFosterParent});
 }
 
 RadioButton::~RadioButton() = default;
 
 Widget* RadioButton::GetFosterParent() const noexcept {
-  return mFosterParent.get();
-}
-
-WidgetList RadioButton::GetDirectChildren() const noexcept {
-  return {
-    mOuter.get(),
-    mFosterParent.get(),
-  };
+  return mFosterParent;
 }
 
 Widget::ComputedStyleFlags RadioButton::OnComputedStyleChange(

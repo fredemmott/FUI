@@ -27,19 +27,17 @@ class ScrollView final : public Widget {
   ScrollView& SetVerticalScrollBarVisibility(ScrollBarVisibility) noexcept;
 
  protected:
-  [[nodiscard]]
-  WidgetList GetDirectChildren() const noexcept override;
   Widget* GetFosterParent() const noexcept override;
   void PaintChildren(Renderer* renderer) const override;
   EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
 
  private:
-  unique_ptr<Widget> mContentOuter;
-  unique_ptr<Widget> mContentInner;
-  unique_ptr<YGNode> mContentYoga;
+  Widget* mContentOuter {};
+  Widget* mContentInner {};
+  unique_ptr<YGNode> mContentYoga {};
 
-  unique_ptr<ScrollBar> mHorizontalScrollBar;
-  unique_ptr<ScrollBar> mVerticalScrollBar;
+  ScrollBar* mHorizontalScrollBar {};
+  ScrollBar* mVerticalScrollBar {};
 
   ScrollBarVisibility mHorizontalScrollBarVisibility {
     ScrollBarVisibility::Hidden};

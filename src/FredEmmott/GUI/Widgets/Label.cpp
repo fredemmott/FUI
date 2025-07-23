@@ -27,14 +27,14 @@ Label::Label(
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
 
-void Label::SetText(std::string_view text) {
+Widget* Label::SetText(std::string_view text) {
   if (text == mText) {
-    return;
+    return this;
   }
   mText = std::string {text};
 
   if (!mFont) {
-    return;
+    return this;
   }
 
   // Check before calling `YGNodeMarkDirty()` as this will mark
@@ -48,6 +48,8 @@ void Label::SetText(std::string_view text) {
   if (mFont.MeasureTextWidth(mText) > availableWidth) {
     YGNodeMarkDirty(this->GetLayoutNode());
   }
+
+  return this;
 }
 
 void Label::PaintOwnContent(

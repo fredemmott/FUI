@@ -144,9 +144,9 @@ class Widget {
   [[nodiscard]]
   auto GetChildren() const noexcept {
     const auto foster = this->GetFosterParent();
-    return (foster ? foster : this)->mManagedChildrenCacheForGetChildren;
+    return (foster ? foster : this)->mRawDirectChildren;
   }
-  void SetChildren(const std::vector<Widget*>& children);
+  Widget* SetChildren(const std::vector<Widget*>& children);
 
   /// Returns the Widget that ultimately handled the event, or nullptr
   [[nodiscard]]
@@ -212,15 +212,11 @@ class Widget {
 
   /** Parent node for `GetChildren()` and `SetChildren()` (public APIs).
    *
-   * Use `GetDirectChildren()` and `ChangeDirectChildren()` for internal
-   * sub-widgets.
+   * Use `SetDirectChildren()` for internal sub-widgets
    */
   virtual Widget* GetFosterParent() const noexcept {
     return nullptr;
   }
-
-  virtual WidgetList GetDirectChildren() const noexcept;
-  void ChangeDirectChildren(const std::function<void()>& mutator);
 
   void StartMouseCapture();
   void EndMouseCapture();
@@ -228,6 +224,8 @@ class Widget {
   [[nodiscard]]
   bool IsChecked() const noexcept;
   void SetIsChecked(bool);
+
+  void SetDirectChildren(const std::vector<Widget*>& children);
 
  private:
   struct MouseEventResult {
@@ -250,8 +248,8 @@ class Widget {
   Style mInheritedStyles;
   Style mComputedStyle;
 
-  std::vector<unique_ptr<Widget>> mManagedChildren;
-  std::vector<Widget*> mManagedChildrenCacheForGetChildren;
+  std::vector<unique_ptr<Widget>> mDirectChildren;
+  std::vector<Widget*> mRawDirectChildren;
 
   std::unordered_map<std::type_index, std::unique_ptr<Context>> mContexts;
 
@@ -260,7 +258,6 @@ class Widget {
   // Returns the innermost widget that received the event.
   [[nodiscard]]
   MouseEventResult DispatchMouseEvent(const MouseEvent&);
-  void SetManagedChildren(const std::vector<Widget*>& children);
 
   [[nodiscard]]
   bool MatchesStylePseudoClass(StyleClass) const;

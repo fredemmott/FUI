@@ -80,15 +80,9 @@ auto& Styles() {
 
 using namespace widget_detail;
 
-ToggleSwitchKnob::ToggleSwitchKnob(std::size_t id)
+ToggleSwitchKnob::ToggleSwitchKnob(const std::size_t id)
   : Widget(id, Styles(), {*ToggleSwitchKnobStyleClass}) {
-  this->ChangeDirectChildren([this] {
-    mThumb.reset(new ToggleSwitchThumb({}));
-  });
-}
-
-WidgetList ToggleSwitchKnob::GetDirectChildren() const noexcept {
-  return {mThumb.get()};
+  this->SetChildren({new ToggleSwitchThumb({})});
 }
 
 }// namespace FredEmmott::GUI::Widgets

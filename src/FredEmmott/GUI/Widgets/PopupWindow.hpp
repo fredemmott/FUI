@@ -12,12 +12,11 @@ class PopupWindow final : public Widget {
  public:
   PopupWindow(std::size_t id);
 
-  Window* GetWindow() {
+  Window* GetWindow() const noexcept {
     return mWindow.get();
   }
 
  protected:
-  WidgetList GetDirectChildren() const noexcept override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
 

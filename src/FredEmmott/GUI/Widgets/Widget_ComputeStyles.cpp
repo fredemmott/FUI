@@ -61,8 +61,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
 #undef FLATTEN_EDGES
 
-  const auto children = this->GetDirectChildren();
-  for (auto&& child: children) {
+  for (auto&& child: mRawDirectChildren) {
     child->mInheritedStateFlags = {};
   }
 
@@ -102,7 +101,7 @@ void Widget::ComputeStyles(const Style& inherited) {
     }
 
     if (propagateFlags != StateFlags::Default) {
-      for (auto&& child: this->GetDirectChildren()) {
+      for (auto&& child: mRawDirectChildren) {
         child->mInheritedStateFlags = propagateFlags;
       }
     }
@@ -120,7 +119,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   mComputedStyle = style;
 
   const auto childStyles = style.InheritableValues();
-  for (auto&& child: this->GetDirectChildren()) {
+  for (auto&& child: mRawDirectChildren) {
     child->ComputeStyles(childStyles);
   }
 
