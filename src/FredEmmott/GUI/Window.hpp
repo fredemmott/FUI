@@ -62,6 +62,7 @@ class Window {
     = 0;
   virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;
 
+  /// Start a frame, or provide an exit code.
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
   void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
@@ -74,7 +75,6 @@ class Window {
     mExitCode = exitCode;
     this->InterruptWaitFrame();
   }
-  virtual void InterruptWaitFrame() = 0;
 
  protected:
   class BasicFramePainter {
