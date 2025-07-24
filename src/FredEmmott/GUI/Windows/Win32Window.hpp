@@ -116,9 +116,10 @@ class Win32Window : public Window {
 
   std::unique_ptr<Window> CreatePopup() const final;
 
-  void WaitForInput() const override;
   void SetIsModal(bool modal);
   void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) override;
+
+  void InterruptWaitFrame() override;
 
  protected:
   static constexpr UINT SwapChainLength = 3;
@@ -151,12 +152,18 @@ class Win32Window : public Window {
     return mIsDisabled;
   }
 
+  void WaitForInput() const override;
+  void InterruptableWait(
+    const std::chrono::steady_clock::duration&) const override;
+
  private:
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};
   Options mOptions {};
   static thread_local std::unordered_map<HWND, Win32Window*> gInstances;
   static thread_local Win32Window* gInstanceCreatingWindow;
+
+  wil::unique_event mWaitFrameInterruptEvent;
 
   HWND mParentHwnd {nullptr};
   wil::unique_hwnd mHwnd;

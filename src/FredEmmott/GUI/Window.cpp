@@ -64,10 +64,7 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
   if (frameDuration >= frameInterval) {
     return;
   }
-  const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
-    frameInterval - frameDuration);
-
-  std::this_thread::sleep_for(millis);
+  this->InterruptableWait(frameInterval - frameDuration);
 }
 
 void Window::EndFrame() {

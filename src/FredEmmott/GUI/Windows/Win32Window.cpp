@@ -19,6 +19,7 @@
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
 #include <print>
+#include <thread>
 
 #include "FredEmmott/GUI/ExitException.hpp"
 
@@ -117,6 +118,7 @@ Win32Window::Win32Window(
   int nCmdShow,
   const Options& options)
   : Window(SwapChainLength),
+    mWaitFrameInterruptEvent(CreateEventW(nullptr, FALSE, FALSE, nullptr)),
     mInstanceHandle(hInstance),
     mShowCommand(nCmdShow),
     mOptions(options) {
@@ -920,7 +922,15 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
 }
 
 void Win32Window::WaitForInput() const {
-  MsgWaitForMultipleObjects(0, nullptr, false, INFINITE, QS_ALLINPUT);
+  auto event = mWaitFrameInterruptEvent.get();
+  MsgWaitForMultipleObjects(1, &event, false, INFINITE, QS_ALLINPUT);
+}
+
+void Win32Window::InterruptableWait(
+  const std::chrono::steady_clock::duration& duration) const {
+  WaitForSingleObject(
+    mWaitFrameInterruptEvent.get(),
+    std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 }
 
 void Win32Window::SetIsModal(bool modal) {
@@ -950,6 +960,9 @@ void Win32Window::SetResizeMode(
     rect.right - rect.left,
     rect.bottom - rect.top,
     SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+void Win32Window::InterruptWaitFrame() {
+  SetEvent(mWaitFrameInterruptEvent.get());
 }
 
 }// namespace FredEmmott::GUI

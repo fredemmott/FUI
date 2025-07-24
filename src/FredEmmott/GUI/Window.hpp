@@ -62,6 +62,7 @@ class Window {
   void RequestStop(int exitCode = EXIT_SUCCESS) {
     mExitCode = exitCode;
   }
+  virtual void InterruptWaitFrame() = 0;
 
  protected:
   class BasicFramePainter {
@@ -82,6 +83,11 @@ class Window {
   virtual Color GetClearColor() const = 0;
   virtual void InitializeGraphicsAPI() = 0;
   virtual void WaitForInput() const = 0;
+  /// Wait for the specified amount of time, unless a new frame is requested
+  /// sooner
+  virtual void InterruptableWait(
+    const std::chrono::steady_clock::duration&) const
+    = 0;
 
   // This is protected so it can be called outside the usual frame loop, e.g.
   // when resizing on Windows
