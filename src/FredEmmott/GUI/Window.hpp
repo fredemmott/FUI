@@ -68,8 +68,11 @@ class Window {
   void EndFrame();
   [[nodiscard]]
   FrameRateRequirement GetFrameRateRequirement() const;
+  virtual void InterruptWaitFrame() = 0;
+
   void RequestStop(int exitCode = EXIT_SUCCESS) {
     mExitCode = exitCode;
+    this->InterruptWaitFrame();
   }
   virtual void InterruptWaitFrame() = 0;
 
