@@ -41,23 +41,32 @@ class Window {
   Window(uint8_t swapChainLength);
   virtual ~Window() = default;
 
-  virtual std::unique_ptr<Window> CreatePopup() const = 0;
+  [[nodiscard]]
+  virtual std::unique_ptr<Window> CreatePopup() const
+    = 0;
   virtual void SetParent(NativeHandle) = 0;
-  virtual NativeHandle GetNativeHandle() const noexcept = 0;
+  [[nodiscard]]
+  virtual NativeHandle GetNativeHandle() const noexcept
+    = 0;
   virtual void SetInitialPositionInNativeCoords(const NativePoint& native) = 0;
   virtual void OffsetPositionToDescendant(Widgets::Widget* child) = 0;
   /// Changes the size as little as possible to meet the constraints
   virtual void ApplySizeConstraints() = 0;
   /// Resize to the 'ideal' size
   virtual void ResizeToIdeal() = 0;
-  virtual bool IsDisabled() const = 0;
-  virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const = 0;
+  [[nodiscard]]
+  virtual bool IsDisabled() const
+    = 0;
+  [[nodiscard]]
+  virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const
+    = 0;
   virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;
 
   [[nodiscard]]
   std::expected<void, int> BeginFrame();
   void WaitFrame(unsigned int minFPS = 0, unsigned int maxFPS = 60) const;
   void EndFrame();
+  [[nodiscard]]
   FrameRateRequirement GetFrameRateRequirement() const;
   void RequestStop(int exitCode = EXIT_SUCCESS) {
     mExitCode = exitCode;
