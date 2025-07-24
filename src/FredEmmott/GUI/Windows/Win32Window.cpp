@@ -118,10 +118,10 @@ Win32Window::Win32Window(
   int nCmdShow,
   const Options& options)
   : Window(SwapChainLength),
-    mWaitFrameInterruptEvent(CreateEventW(nullptr, FALSE, FALSE, nullptr)),
     mInstanceHandle(hInstance),
     mShowCommand(nCmdShow),
-    mOptions(options) {
+    mOptions(options),
+    mWaitFrameInterruptEvent(CreateEventW(nullptr, FALSE, FALSE, nullptr)) {
   if (options.mDXGIFactory) {
     mDXGIFactory = wil::com_query<IDXGIFactory4>(options.mDXGIFactory);
   } else {
