@@ -32,7 +32,11 @@ auto MakeCheckBoxStyles() {
         .PaddingBottom(CheckBoxPaddingBottom)
         .PaddingLeft(CheckBoxPaddingLeft)
         .PaddingRight(CheckBoxPaddingRight)
-        .PaddingTop(CheckBoxPaddingTop);
+        .PaddingTop(CheckBoxPaddingTop)
+        .OutlineLeftOffset(7)
+        .OutlineTopOffset(3)
+        .OutlineRightOffset(7)
+        .OutlineBottomOffset(7);
 
   const auto& UncheckedNormal = DefaultCheckBoxStyle;
   const Style UncheckedPointerOver

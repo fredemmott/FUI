@@ -28,6 +28,10 @@ auto& ToggleSwitchStyle() {
       .Color(ToggleSwitchContentForeground)
       .FlexDirection(YGFlexDirectionRow)
       .MarginRight(ToggleSwitchPostContentMargin)
+      .OutlineLeftOffset(7)
+      .OutlineTopOffset(3)
+      .OutlineRightOffset(7)
+      .OutlineBottomOffset(7)
       .And(Disabled, Style().Color(ToggleSwitchContentForegroundDisabled)),
   };
   return ret;

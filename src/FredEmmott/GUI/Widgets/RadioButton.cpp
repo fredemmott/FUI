@@ -12,7 +12,13 @@ constexpr LiteralStyleClass RadioButtonStyleClass {"RadioButton"};
 
 auto& RadioButtonStyles() {
   static const ImmutableStyle ret {
-    Style().AlignContent(YGAlignCenter).Height(32),
+    Style()
+      .AlignContent(YGAlignCenter)
+      .Height(32)
+      .OutlineLeftOffset(7)
+      .OutlineTopOffset(3)
+      .OutlineRightOffset(7)
+      .OutlineBottomOffset(7),
   };
   return ret;
 }

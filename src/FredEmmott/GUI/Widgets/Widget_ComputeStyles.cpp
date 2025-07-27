@@ -23,7 +23,8 @@ void Widget::ComputeStyles(const Style& inherited) {
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
   if (const auto fm = FocusManager::Get()) {
-    mDirectStateFlags &= ~(StateFlags::HaveFocus | StateFlags::HaveVisibleFocus);
+    mDirectStateFlags
+      &= ~(StateFlags::HaveFocus | StateFlags::HaveVisibleFocus);
     if (const auto target = fm->GetFocusedWidget()) {
       if (const auto [widget, reason] = *target; widget == this) {
         mDirectStateFlags |= StateFlags::HaveFocus;
@@ -60,19 +61,6 @@ void Widget::ComputeStyles(const Style& inherited) {
   mDirectStateFlags &= ~StateFlags::Animating;
 
   style = FlattenStyles(style);
-
-  const auto flattenEdges = [](const auto& allEdges, auto&... edge) {
-    ((edge = allEdges + edge), ...);
-  };
-#define FLATTEN_EDGES(X, Y) \
-  flattenEdges( \
-    style.X##Y(), \
-    style.X##Left##Y(), \
-    style.X##Top##Y(), \
-    style.X##Right##Y(), \
-    style.X##Bottom##Y());
-  FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
-#undef FLATTEN_EDGES
 
   for (auto&& child: mRawDirectChildren) {
     child->mInheritedStateFlags = {};
@@ -210,6 +198,20 @@ Style Widget::FlattenStyles(const Style& inputStyle) {
       }
     }
   }
+
+  const auto flattenEdges = [](const auto& allEdges, auto&... edge) {
+    ((edge = allEdges + edge), ...);
+  };
+#define FLATTEN_EDGES(X, Y) \
+  flattenEdges( \
+    style.X##Y(), \
+    style.X##Left##Y(), \
+    style.X##Top##Y(), \
+    style.X##Right##Y(), \
+    style.X##Bottom##Y());
+  FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
+#undef FLATTEN_EDGES
+
   return style;
 }
 

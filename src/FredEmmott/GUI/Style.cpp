@@ -174,7 +174,6 @@ Style Style::InheritableValues() const noexcept {
 Style Style::BuiltinBaseline() {
   auto ret = StaticTheme::Generic::BodyTextBlockStyle()
     + Style()
-        .BorderRadius(StaticTheme::ControlCornerRadius)
         .Color(StaticTheme::TextFillColorPrimaryBrush)
         .And(
           PseudoClasses::Disabled,
@@ -182,6 +181,7 @@ Style Style::BuiltinBaseline() {
         .And(
           PseudoClasses::FocusVisible,
           Style()
+            .OutlineRadius(StaticTheme::ControlCornerRadius)
             .OutlineColor(
               StaticTheme::Common::SystemControlFocusVisualPrimaryBrush)
             // FocusVisualMargin

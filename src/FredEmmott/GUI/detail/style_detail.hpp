@@ -70,7 +70,12 @@ class StyleProperty;
   X(MinWidth, float, Self) \
   X(Opacity, float, Self, 1.0f) \
   X(OutlineColor, Brush, Self) \
+  X(OutlineRadius, float, Self) \
   X(OutlineOffset, float, Self) \
+  X(OutlineBottomOffset, float, Self) \
+  X(OutlineLeftOffset, float, Self) \
+  X(OutlineRightOffset, float, Self) \
+  X(OutlineTopOffset, float, Self) \
   X(OutlineWidth, float, Self) \
   X(Overflow, YGOverflow, Self) \
   X(Padding, float, Self) \
@@ -96,7 +101,8 @@ class StyleProperty;
 #define FUI_STYLE_EDGE_PROPERTIES(X) \
   X(Margin, ) \
   X(Padding, ) \
-  X(Border, Width)
+  X(Border, Width) \
+  X(Outline, Offset)
 
 namespace FredEmmott::GUI::style_detail {
 

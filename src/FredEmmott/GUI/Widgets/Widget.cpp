@@ -66,9 +66,13 @@ void PaintOutline(
     return;
   }
 
-  const auto offset = style.OutlineOffset().value_or(0) + thickness / 2;
-  const auto rect = contentRect.WithInset(-offset, -offset);
-  const auto radius = style.BorderRadius().value_or(0);
+  const auto left = style.OutlineLeftOffset().value_or(0) + thickness / 2;
+  const auto top = style.OutlineTopOffset().value_or(0) + thickness / 2;
+  const auto right = style.OutlineRightOffset().value_or(0) + thickness / 2;
+  const auto bottom = style.OutlineBottomOffset().value_or(0) + thickness / 2;
+
+  const auto rect = contentRect.WithOutset(left, top, right, bottom);
+  const auto radius = style.OutlineRadius().value_or(0);
 
   if (radius < std::numeric_limits<float>::epsilon()) {
     renderer->StrokeRect(style.OutlineColor().value(), rect, thickness);
@@ -78,7 +82,10 @@ void PaintOutline(
   // Like WinUI3's FocusRectManager, aim to keep the length of the straight part
   // the same, i.e. extend by the offset
   renderer->StrokeRoundedRect(
-    style.OutlineColor().value(), rect, radius + offset, thickness);
+    style.OutlineColor().value(),
+    rect,
+    radius + std::ranges::max({left, top, bottom, right}),
+    thickness);
 }
 
 void PaintBorder(

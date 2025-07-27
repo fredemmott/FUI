@@ -114,6 +114,17 @@ struct BasicRect {
     return result;
   }
 
+  template <class Self>
+  constexpr Self WithOutset(this const Self& self, T dx, T dy) noexcept {
+    return self.WithInset(-dx, -dy);
+  }
+
+  template <class Self>
+  constexpr Self
+  WithOutset(this const Self& self, T left, T top, T right, T bottom) noexcept {
+    return self.WithInset(-left, -top, -right, -bottom);
+  }
+
 #ifdef FUI_ENABLE_SKIA
   constexpr operator SkRect() const noexcept
     requires std::same_as<float, T>
