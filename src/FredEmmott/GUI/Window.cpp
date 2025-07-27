@@ -3,9 +3,9 @@
 #include "Window.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/Generic.hpp>
-#include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include <thread>
 
+#include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "Immediate/ContentDialog.hpp"
 #include "assert.hpp"
 #include "detail/immediate_detail.hpp"
@@ -119,12 +119,20 @@ void Window::ResetToFirstBackBuffer() {
   mFrameIndex = 0;
 }
 
+Widgets::Widget* Window::DispatchEvent(const MouseEvent& e) {
+  const auto fm = GetRoot()->GetFocusManager();
+  FocusManager::PushInstance(fm);
+  const auto popFocusManager
+    = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
+
+  return GetRoot()->GetWidget()->DispatchEvent(e);
+}
+
 void Window::DispatchEvent(const KeyEvent& e) {
   const auto fm = GetRoot()->GetFocusManager();
   FocusManager::PushInstance(fm);
-  const auto popFocusManager = wil::scope_exit([&]() {
-    FocusManager::PopInstance(fm);
-  });
+  const auto popFocusManager
+    = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
 
   if (GetRoot()->GetWidget()->DispatchEvent(e)) {
     return;

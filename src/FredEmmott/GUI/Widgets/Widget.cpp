@@ -550,7 +550,13 @@ Widget::EventHandlerResult Widget::OnMouseButtonRelease(
   const auto isClick = (mDirectStateFlags & Flags) == Flags;
   mDirectStateFlags &= ~StateFlags::Active;
   if (isClick) {
-    return this->OnClick(event);
+    const auto result = this->OnClick(event);
+    if (result == EventHandlerResult::StopPropagation) {
+      if (const auto fm = FocusManager::Get()) {
+        fm->GivePointerFocus(this);
+      }
+    }
+    return result;
   }
 
   return EventHandlerResult::Default;

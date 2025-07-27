@@ -800,8 +800,8 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     }
     case WM_MOUSEMOVE: {
       TrackMouseEvent();
-      auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
-      if (const auto receiver = this->DispatchEvent(&e)) {
+      const auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
+      if (const auto receiver = this->DispatchEvent(e)) {
         switch (
           receiver->GetComputedStyle().Cursor().value_or(Cursor::Default)) {
           case Cursor::Default:
@@ -819,7 +819,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_MOUSELEAVE: {
       MouseEvent e;
       e.mWindowPoint = {-1, -1};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       mTrackingMouseEvents = false;
       break;
     }
@@ -828,7 +828,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       e.mDetail = MouseEvent::VerticalWheelEvent {
         -static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
       };
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_MOUSEHWHEEL: {
@@ -836,7 +836,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       e.mDetail = MouseEvent::HorizontalWheelEvent {
         static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
       };
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
     }
     case WM_LBUTTONDOWN: {
       for (auto&& child: mChildren) {
@@ -845,38 +845,38 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       SetCapture(mHwnd.get());
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_LBUTTONUP: {
       ReleaseCapture();
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_MBUTTONDOWN: {
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Middle};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_MBUTTONUP: {
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Middle};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_RBUTTONDOWN: {
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Right};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_RBUTTONUP: {
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Right};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_XBUTTONDOWN: {
@@ -889,7 +889,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       }
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonPressEvent {pressed};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_XBUTTONUP: {
@@ -902,7 +902,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       }
       auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::ButtonReleaseEvent {released};
-      this->DispatchEvent(&e);
+      this->DispatchEvent(e);
       break;
     }
     case WM_CLOSE:

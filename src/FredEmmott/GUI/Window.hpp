@@ -112,13 +112,10 @@ class Window {
     return &mFUIRoot;
   }
 
-  Widgets::Widget* DispatchEvent(Event* e) {
-    return mFUIRoot.DispatchEvent(e);
-  }
-
   void ResetToFirstBackBuffer();
 
   void DispatchEvent(const KeyEvent&);
+  Widgets::Widget* DispatchEvent(const MouseEvent& e);
 
  private:
   uint8_t mSwapChainLength {};
