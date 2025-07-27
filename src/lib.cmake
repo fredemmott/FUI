@@ -114,6 +114,8 @@ add_library(
   FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
+  FredEmmott/GUI/events/KeyCode.hpp
+  FredEmmott/GUI/events/KeyEvent.hpp
   FredEmmott/GUI/events/MouseButton.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
   FredEmmott/GUI/yoga.cpp FredEmmott/GUI/yoga.hpp
