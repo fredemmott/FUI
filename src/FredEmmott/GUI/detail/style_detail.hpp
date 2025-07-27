@@ -69,6 +69,9 @@ class StyleProperty;
   X(MinHeight, float, Self) \
   X(MinWidth, float, Self) \
   X(Opacity, float, Self, 1.0f) \
+  X(OutlineColor, Brush, Self) \
+  X(OutlineOffset, float, Self) \
+  X(OutlineWidth, float, Self) \
   X(Overflow, YGOverflow, Self) \
   X(Padding, float, Self) \
   X(PaddingBottom, float, Self) \

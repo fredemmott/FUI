@@ -54,6 +54,30 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
     brush, rect, tlRadius, trRadius, brRadius, blRadius);
 }
 
+void PaintOutline(
+  Renderer* renderer,
+  const Rect& contentRect,
+  const Style& style) {
+  if (!style.OutlineColor()) {
+    return;
+  }
+  const auto thickness = style.OutlineWidth().value_or(0);
+  if (thickness < std::numeric_limits<float>::epsilon()) {
+    return;
+  }
+
+  const auto offset = style.OutlineOffset().value_or(0) + thickness / 2;
+  const auto rect = contentRect.WithInset(-offset, -offset);
+  const auto radius = style.BorderRadius().value_or(0);
+
+  if (radius < std::numeric_limits<float>::epsilon()) {
+    renderer->StrokeRect(style.OutlineColor().value(), rect, thickness);
+  } else {
+    renderer->StrokeRoundedRect(
+      style.OutlineColor().value(), rect, radius, thickness);
+  }
+}
+
 void PaintBorder(
   YGNodeConstRef yoga,
   Renderer* renderer,
@@ -307,6 +331,7 @@ void Widget::Paint(Renderer* renderer) const {
   this->PaintOwnContent(renderer, rect, style);
   this->PaintChildren(renderer);
   PaintBorder(yoga, renderer, rect, style);
+  PaintOutline(renderer, rect, style);
 }
 
 void Widget::PaintChildren(Renderer* renderer) const {
@@ -337,7 +362,8 @@ Widget* Widget::DispatchEvent(const Event& e) {
   }
 
   if (const auto it = dynamic_cast<KeyEvent const*>(&e)) {
-    if (const auto fm = FocusManager::Get(); const auto target = fm->GetFocusedWidget()) {
+    if (const auto fm = FocusManager::Get();
+        const auto target = fm->GetFocusedWidget()) {
       return get<0>(*target)->DispatchKeyEvent(*it);
     }
     return nullptr;

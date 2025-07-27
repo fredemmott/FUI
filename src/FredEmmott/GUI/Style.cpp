@@ -180,9 +180,7 @@ Style Style::BuiltinBaseline() {
           Style().Color(StaticTheme::TextFillColorDisabledBrush))
         .And(
           PseudoClasses::FocusVisible,
-          Style()
-            .BorderColor(Colors::Red, !important)
-            .BorderWidth(1, !important));
+          Style().OutlineColor(Colors::Red).OutlineOffset(3).OutlineWidth(3));
   for (auto&& [key, value]: ret.mStorage) {
     VisitStyleProperty(
       key,
