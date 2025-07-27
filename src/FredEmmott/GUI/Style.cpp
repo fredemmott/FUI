@@ -181,14 +181,17 @@ Style Style::BuiltinBaseline() {
         .And(
           PseudoClasses::FocusVisible,
           Style().OutlineColor(Colors::Red).OutlineOffset(3).OutlineWidth(3));
+  const auto makeBaseline = [](auto& prop) {
+    prop.mScope = StylePropertyScope::Self;
+    prop.mPriority = StylePropertyPriority::UserAgentBaseline;
+  };
   for (auto&& [key, value]: ret.mStorage) {
-    VisitStyleProperty(
-      key,
-      [](auto& prop) {
-        prop.mScope = StylePropertyScope::Self;
-        prop.mPriority = StylePropertyPriority::UserAgentBaseline;
-      },
-      value);
+    VisitStyleProperty(key, makeBaseline, value);
+  }
+  for (auto&& [selector, styles]: ret.mAnd) {
+    for (auto&& [key, value]: styles.mStorage) {
+      VisitStyleProperty(key, makeBaseline, value);
+    }
   }
   return ret;
 }
