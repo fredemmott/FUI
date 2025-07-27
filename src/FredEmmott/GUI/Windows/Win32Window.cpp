@@ -16,6 +16,7 @@
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+#include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
 #include <print>
@@ -34,6 +35,19 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 
 namespace {
+std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
+  using enum KeyCode;
+  switch (vk) {
+    case VK_TAB:
+      return Key_Tab;
+    case VK_RETURN:
+      return Key_Return;
+    case VK_SPACE:
+      return Key_Space;
+  }
+  return std::nullopt;
+}
+
 std::wstring GetDefaultWindowClassName() {
   const auto thisExe = wil::QueryFullProcessImageNameW(GetCurrentProcess(), 0);
   return std::format(
@@ -704,11 +718,17 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       mIsDisabled = !wParam;
       break;
     case WM_KEYDOWN:
-      if (wParam == VK_TAB) {
-        GetRoot()->GetFocusManager()->FocusNextWidget();
+      if (const auto key = KeyCodeFromVirtualKey(wParam)) {
+        KeyPressEvent e {*key};
+        this->DispatchEvent(e);
       }
       break;
-
+    case WM_KEYUP:
+      if (const auto key = KeyCodeFromVirtualKey(wParam)) {
+        KeyReleaseEvent e {*key};
+        this->DispatchEvent(e);
+      }
+      break;
     case WM_SETCURSOR: {
       static const wil::unique_hcursor sDefaultCursor {
         LoadCursor(nullptr, IDC_ARROW)};

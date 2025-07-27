@@ -3,6 +3,7 @@
 #include "Window.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/Generic.hpp>
+#include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include <thread>
 
 #include "Immediate/ContentDialog.hpp"
@@ -116,6 +117,45 @@ void Window::Paint() {
 
 void Window::ResetToFirstBackBuffer() {
   mFrameIndex = 0;
+}
+
+void Window::DispatchEvent(const KeyEvent& e) {
+  const auto fm = GetRoot()->GetFocusManager();
+  FocusManager::PushInstance(fm);
+  const auto popFocusManager = wil::scope_exit([&]() {
+    FocusManager::PopInstance(fm);
+  });
+
+  if (GetRoot()->GetWidget()->DispatchEvent(e)) {
+    return;
+  }
+  const auto pe = dynamic_cast<KeyPressEvent const*>(&e);
+  if (!pe) {
+    return;
+  }
+
+  using enum KeyCode;
+  switch (pe->mKeyCode) {
+    case Key_Tab:
+      GetRoot()->GetFocusManager()->FocusNextWidget();
+      break;
+    case Key_Return:
+    case Key_Space: {
+      if (const auto focused = GetRoot()->GetFocusManager()->GetFocusedWidget()) {
+        const auto widget = get<0>(*focused);
+        if (const auto it = dynamic_cast<Widgets::IInvocable*>(widget)) {
+          it->Invoke();
+          return;
+        }
+        if (const auto it = dynamic_cast<Widgets::IToggleable*>(widget)) {
+          it->Toggle();
+          return;
+        }
+      }
+    }
+    default:
+      break;
+  }
 }
 
 }// namespace FredEmmott::GUI

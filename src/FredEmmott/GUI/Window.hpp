@@ -118,6 +118,8 @@ class Window {
 
   void ResetToFirstBackBuffer();
 
+  void DispatchEvent(const KeyEvent&);
+
  private:
   uint8_t mSwapChainLength {};
   std::chrono::steady_clock::time_point mBeginFrameTime;

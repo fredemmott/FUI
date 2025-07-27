@@ -68,7 +68,7 @@ void Root::EndFrame() {
 
 Widget* Root::DispatchEvent(const Event* e) {
   if (mWidgetRoot) {
-    return mWidgetRoot->mWidget->DispatchEvent(e);
+    return mWidgetRoot->mWidget->DispatchEvent(*e);
   }
   return nullptr;
 }

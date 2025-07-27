@@ -12,6 +12,11 @@
 #include <FredEmmott/GUI/yoga.hpp>
 #include <typeindex>
 
+namespace FredEmmott::GUI {
+struct KeyEvent;
+struct KeyReleaseEvent;
+struct KeyPressEvent;
+}
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
 
@@ -151,7 +156,7 @@ class Widget {
 
   /// Returns the Widget that ultimately handled the event, or nullptr
   [[nodiscard]]
-  Widget* DispatchEvent(const Event*);
+  Widget* DispatchEvent(const Event&);
 
   const Style& GetComputedStyle() const {
     return mComputedStyle;
@@ -208,6 +213,10 @@ class Widget {
   virtual EventHandlerResult OnMouseVerticalWheel(const MouseEvent&);
   [[nodiscard]]
   virtual EventHandlerResult OnMouseHorizontalWheel(const MouseEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnKeyPress(const KeyPressEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnKeyRelease(const KeyReleaseEvent&);
 
   [[nodiscard]] auto GetExplicitStyles() const noexcept {
     return mExplicitStyles;
@@ -261,6 +270,7 @@ class Widget {
   // Returns the innermost widget that received the event.
   [[nodiscard]]
   MouseEventResult DispatchMouseEvent(const MouseEvent&);
+  Widget* DispatchKeyEvent(const KeyEvent&);
 
   [[nodiscard]]
   bool MatchesStylePseudoClass(StyleClass) const;

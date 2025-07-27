@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 #include "Widget.hpp"
 
+#include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
-#include <FredEmmott/GUI/FocusManager.hpp>
 #include <ranges>
 
 #include "FredEmmott/GUI/assert.hpp"
+#include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -325,8 +326,8 @@ Widget* Widget::SetChildren(const std::vector<Widget*>& children) {
   return this;
 }
 
-Widget* Widget::DispatchEvent(const Event* e) {
-  if (const auto it = dynamic_cast<const MouseEvent*>(e)) [[likely]] {
+Widget* Widget::DispatchEvent(const Event& e) {
+  if (const auto it = dynamic_cast<MouseEvent const*>(&e)) {
     if (gMouseCapture) {
       auto translated = it->WithOffset(gMouseCapture->mOffset);
       return gMouseCapture->mWidget->DispatchMouseEvent(translated).mTarget;
@@ -334,6 +335,14 @@ Widget* Widget::DispatchEvent(const Event* e) {
 
     return this->DispatchMouseEvent(*it).mTarget;
   }
+
+  if (const auto it = dynamic_cast<KeyEvent const*>(&e)) {
+    if (const auto fm = FocusManager::Get(); const auto target = fm->GetFocusedWidget()) {
+      return get<0>(*target)->DispatchKeyEvent(*it);
+    }
+    return nullptr;
+  }
+
   throw std::logic_error("Unhandled event type");
 }
 
@@ -445,6 +454,24 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
 
   return result;
 }
+Widget* Widget::DispatchKeyEvent(const KeyEvent& e) {
+  auto result = EventHandlerResult::Default;
+  if (const auto it = dynamic_cast<const KeyPressEvent*>(&e)) {
+    result = this->OnKeyPress(*it);
+  }
+  if (const auto it = dynamic_cast<const KeyReleaseEvent*>(&e)) {
+    result = this->OnKeyRelease(*it);
+  }
+
+  if (result == EventHandlerResult::StopPropagation) {
+    return this;
+  }
+
+  if (const auto parent = this->GetParent()) {
+    return parent->DispatchKeyEvent(e);
+  }
+  return nullptr;
+}
 
 Widget::EventHandlerResult Widget::OnMouseMove(const MouseEvent&) {
   return EventHandlerResult::Default;
@@ -455,6 +482,14 @@ Widget::EventHandlerResult Widget::OnMouseVerticalWheel(const MouseEvent&) {
 }
 
 Widget::EventHandlerResult Widget::OnMouseHorizontalWheel(const MouseEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnKeyPress(const KeyPressEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnKeyRelease(const KeyReleaseEvent&) {
   return EventHandlerResult::Default;
 }
 
