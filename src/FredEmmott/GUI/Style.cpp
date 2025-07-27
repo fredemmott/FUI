@@ -174,13 +174,20 @@ Style Style::InheritableValues() const noexcept {
 Style Style::BuiltinBaseline() {
   auto ret = StaticTheme::Generic::BodyTextBlockStyle()
     + Style()
+        .BorderRadius(StaticTheme::ControlCornerRadius)
         .Color(StaticTheme::TextFillColorPrimaryBrush)
         .And(
           PseudoClasses::Disabled,
           Style().Color(StaticTheme::TextFillColorDisabledBrush))
         .And(
           PseudoClasses::FocusVisible,
-          Style().OutlineColor(Colors::Red).OutlineOffset(3).OutlineWidth(3));
+          Style()
+            .OutlineColor(
+              StaticTheme::Common::SystemControlFocusVisualPrimaryBrush)
+            // FocusVisualMargin
+            .OutlineOffset(3)
+            // FocusVisualPrimaryThickness/DefaultFocusVisualPrimaryThickness
+            .OutlineWidth(2));
   const auto makeBaseline = [](auto& prop) {
     prop.mScope = StylePropertyScope::Self;
     prop.mPriority = StylePropertyPriority::UserAgentBaseline;
