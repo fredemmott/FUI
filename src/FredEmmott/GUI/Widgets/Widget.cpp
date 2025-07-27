@@ -72,10 +72,13 @@ void PaintOutline(
 
   if (radius < std::numeric_limits<float>::epsilon()) {
     renderer->StrokeRect(style.OutlineColor().value(), rect, thickness);
-  } else {
-    renderer->StrokeRoundedRect(
-      style.OutlineColor().value(), rect, radius, thickness);
+    return;
   }
+
+  // Like WinUI3's FocusRectManager, aim to keep the length of the straight part
+  // the same, i.e. extend by the offset
+  renderer->StrokeRoundedRect(
+    style.OutlineColor().value(), rect, radius + offset, thickness);
 }
 
 void PaintBorder(
