@@ -137,11 +137,11 @@ void Window::DispatchEvent(const KeyEvent& e) {
   using enum KeyCode;
   switch (pe->mKeyCode) {
     case Key_Tab:
-      GetRoot()->GetFocusManager()->FocusNextWidget();
+      fm->FocusNextWidget();
       break;
     case Key_Return:
     case Key_Space: {
-      if (const auto focused = GetRoot()->GetFocusManager()->GetFocusedWidget()) {
+      if (const auto focused = fm->GetFocusedWidget()) {
         const auto widget = get<0>(*focused);
         if (const auto it = dynamic_cast<Widgets::IInvocable*>(widget)) {
           it->Invoke();

@@ -938,10 +938,10 @@ SIZE Win32Window::GetInitialWindowSize() const {
 std::unique_ptr<Window> Win32Window::CreatePopup() const {
   return this->CreatePopup(
     GetModuleHandleW(nullptr),
-    SW_SHOWNA,
+    SW_SHOWDEFAULT,
     {
       .mWindowStyle = WS_POPUP | WS_BORDER,
-      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_NOACTIVATE,
+      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP,
       .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
       .mDXGIFactory = mDXGIFactory.get(),
     });

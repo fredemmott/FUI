@@ -74,6 +74,9 @@ void FocusManager::FocusNextWidget() {
         return;
       }
     }
+    if (parent == mRootWidget) {
+      break;
+    }
     child = parent;
   }
   FocusFirstWidget();
@@ -108,6 +111,9 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
     if (IsFocusable(parent)) {
       mFocusedWidget = parent;
       return;
+    }
+    if (parent == mRootWidget) {
+      break;
     }
     child = parent;
   }
