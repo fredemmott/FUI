@@ -36,7 +36,7 @@ auto MakeCheckBoxStyles() {
         .OutlineLeftOffset(7)
         .OutlineTopOffset(3)
         .OutlineRightOffset(7)
-        .OutlineBottomOffset(7);
+        .OutlineBottomOffset(3);
 
   const auto& UncheckedNormal = DefaultCheckBoxStyle;
   const Style UncheckedPointerOver

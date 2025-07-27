@@ -31,7 +31,7 @@ auto& ToggleSwitchStyle() {
       .OutlineLeftOffset(7)
       .OutlineTopOffset(3)
       .OutlineRightOffset(7)
-      .OutlineBottomOffset(7)
+      .OutlineBottomOffset(3)
       .And(Disabled, Style().Color(ToggleSwitchContentForegroundDisabled)),
   };
   return ret;

@@ -18,7 +18,7 @@ auto& RadioButtonStyles() {
       .OutlineLeftOffset(7)
       .OutlineTopOffset(3)
       .OutlineRightOffset(7)
-      .OutlineBottomOffset(7),
+      .OutlineBottomOffset(3),
   };
   return ret;
 }
