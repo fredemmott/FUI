@@ -48,6 +48,22 @@ std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
   return std::nullopt;
 }
 
+KeyModifier GetModifierKeys() {
+  BYTE keyState[256] {};
+  GetKeyboardState(keyState);
+  KeyModifier modifiers {};
+  if (keyState[VK_SHIFT] & 0x80) {
+    modifiers |= KeyModifier::Modifier_Shift;
+  }
+  if (keyState[VK_CONTROL] & 0x80) {
+    modifiers |= KeyModifier::Modifier_Control;
+  }
+  if (keyState[VK_MENU] & 0x80) {
+    modifiers |= KeyModifier::Modifier_Alt;
+  }
+  return modifiers;
+}
+
 std::wstring GetDefaultWindowClassName() {
   const auto thisExe = wil::QueryFullProcessImageNameW(GetCurrentProcess(), 0);
   return std::format(
@@ -719,13 +735,13 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     case WM_KEYDOWN:
       if (const auto key = KeyCodeFromVirtualKey(wParam)) {
-        KeyPressEvent e {*key};
+        KeyPressEvent e {*key, GetModifierKeys()};
         this->DispatchEvent(e);
       }
       break;
     case WM_KEYUP:
       if (const auto key = KeyCodeFromVirtualKey(wParam)) {
-        KeyReleaseEvent e {*key};
+        KeyReleaseEvent e {*key, GetModifierKeys()};
         this->DispatchEvent(e);
       }
       break;

@@ -143,9 +143,19 @@ void Window::DispatchEvent(const KeyEvent& e) {
   }
 
   using enum KeyCode;
+  using enum KeyModifier;
   switch (pe->mKeyCode) {
     case Key_Tab:
-      fm->FocusNextWidget();
+      switch (pe->mModifiers) {
+        case Modifier_None:
+          fm->FocusNextWidget();
+          break;
+        case Modifier_Shift:
+          fm->FocusPreviousWidget();
+          break;
+        default:
+          break;
+      }
       break;
     case Key_Return:
     case Key_Space: {

@@ -9,10 +9,15 @@ namespace FredEmmott::GUI {
 
 struct KeyEvent : Event {
   KeyEvent() = delete;
-  constexpr explicit KeyEvent(const KeyCode keyCode) : mKeyCode(keyCode) {}
+  constexpr explicit KeyEvent(
+    const KeyCode keyCode,
+    const KeyModifier modifiers)
+    : mKeyCode(keyCode),
+      mModifiers(modifiers) {}
   ~KeyEvent() override = default;
 
   KeyCode mKeyCode;
+  KeyModifier mModifiers {};
 };
 
 struct KeyPressEvent final : KeyEvent {
@@ -27,5 +32,4 @@ struct KeyReleaseEvent final : KeyEvent {
   using KeyEvent::KeyEvent;
 };
 
-
-}
+}// namespace FredEmmott::GUI

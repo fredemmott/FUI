@@ -25,6 +25,7 @@ class FocusManager final {
 
   void GivePointerFocus(Widgets::Widget*);
   void FocusNextWidget();
+  void FocusPreviousWidget();
 
   void BeforeDestroy(Widgets::Widget*);
 
@@ -36,11 +37,13 @@ class FocusManager final {
  private:
   Widgets::Widget* mRootWidget {};
   Widgets::Widget* mFocusedWidget {};
-  FocusKind mFocusKind { FocusKind::Pointer };
+  FocusKind mFocusKind {FocusKind::Pointer};
 
   void FocusFirstWidget();
+  void FocusLastWidget();
 
   static Widgets::Widget* FirstFocusableWidget(Widgets::Widget* parent);
+  static Widgets::Widget* LastFocusableWidget(Widgets::Widget* parent);
 };
 
 }// namespace FredEmmott::GUI

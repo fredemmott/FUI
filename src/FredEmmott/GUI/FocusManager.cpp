@@ -11,15 +11,15 @@
 namespace FredEmmott::GUI {
 
 namespace {
-bool IsFocusable(Widgets::Widget const * widget) {
+bool IsFocusable(Widgets::Widget const* widget) {
   if (widget->IsDisabled()) {
     return false;
   }
-  return dynamic_cast<Widgets::IFocusable const *>(widget);
+  return dynamic_cast<Widgets::IFocusable const*>(widget);
 }
 
 thread_local std::stack<FocusManager*> tInstances;
-}
+}// namespace
 
 FocusManager* FocusManager::Get() {
   if (tInstances.empty()) {
@@ -28,8 +28,7 @@ FocusManager* FocusManager::Get() {
   return tInstances.top();
 }
 
-void FocusManager::PushInstance(
-  FocusManager* it) {
+void FocusManager::PushInstance(FocusManager* it) {
   tInstances.push(it);
 }
 
@@ -41,8 +40,7 @@ void FocusManager::PopInstance(FocusManager* it) {
 FocusManager::~FocusManager() = default;
 
 FocusManager::FocusManager(Widgets::Widget* rootWidget)
-  : mRootWidget(rootWidget) {
-}
+  : mRootWidget(rootWidget) {}
 
 std::optional<std::tuple<Widgets::Widget*, FocusKind>>
 FocusManager::GetFocusedWidget() const {
@@ -68,18 +66,52 @@ void FocusManager::FocusNextWidget() {
   while (const auto parent = child->GetParent()) {
     const auto children = parent->GetChildren();
     const auto it = std::ranges::find(children, child);
-    for (auto&& sibling: std::ranges::subrange(it + 1, children.end()) ) {
+    for (auto&& sibling: std::ranges::subrange(it + 1, children.end())) {
       if (const auto target = FirstFocusableWidget(sibling)) {
         mFocusedWidget = target;
         return;
       }
+      if (parent == mRootWidget) {
+        break;
+      }
+      if (IsFocusable(parent)) {
+        mFocusedWidget = parent;
+        return;
+      }
+    }
+    child = parent;
+  }
+  FocusFirstWidget();
+}
+
+void FocusManager::FocusPreviousWidget() {
+  mFocusKind = FocusKind::Keyboard;
+  if (!mFocusedWidget) {
+    this->FocusFirstWidget();
+    return;
+  }
+
+  auto child = std::exchange(mFocusedWidget, nullptr);
+  while (const auto parent = child->GetParent()) {
+    const auto children = parent->GetChildren();
+    const auto it = std::ranges::find(children, child);
+    for (auto&& sibling:
+         std::ranges::subrange(children.begin(), it) | std::views::reverse) {
+      if (const auto target = FirstFocusableWidget(sibling)) {
+        mFocusedWidget = target;
+        return;
+      }
+    }
+    if (IsFocusable(parent)) {
+      mFocusedWidget = parent;
+      return;
     }
     if (parent == mRootWidget) {
       break;
     }
     child = parent;
   }
-  FocusFirstWidget();
+  FocusLastWidget();
 }
 
 void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
@@ -107,11 +139,11 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
       }
       return;
     }
-
     if (IsFocusable(parent)) {
       mFocusedWidget = parent;
       return;
     }
+
     if (parent == mRootWidget) {
       break;
     }
@@ -124,6 +156,10 @@ void FocusManager::FocusFirstWidget() {
   mFocusedWidget = FirstFocusableWidget(mRootWidget);
 }
 
+void FocusManager::FocusLastWidget() {
+  mFocusedWidget = LastFocusableWidget(mRootWidget);
+}
+
 Widgets::Widget* FocusManager::FirstFocusableWidget(Widgets::Widget* parent) {
   if (IsFocusable(parent)) {
     return parent;
@@ -133,6 +169,20 @@ Widgets::Widget* FocusManager::FirstFocusableWidget(Widgets::Widget* parent) {
     if (const auto it = FirstFocusableWidget(child)) {
       return it;
     }
+  }
+
+  return nullptr;
+}
+
+Widgets::Widget* FocusManager::LastFocusableWidget(Widgets::Widget* parent) {
+  for (auto&& child: parent->GetChildren() | std::views::reverse) {
+    if (const auto it = LastFocusableWidget(child)) {
+      return it;
+    }
+  }
+
+  if (IsFocusable(parent)) {
+    return parent;
   }
 
   return nullptr;
