@@ -8,6 +8,8 @@
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
 
+#include "FredEmmott/GUI/FocusManager.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 class Widget;
 };
@@ -27,10 +29,10 @@ class Root final {
   [[nodiscard]]
   bool CanFit(float width, float height) const;
   YGNodeRef GetLayoutNode() const;
-  Widgets::Widget* GetWidget() const {
-    return mWidget.get();
-  }
   Size GetInitialSize() const;
+
+  Widgets::Widget* GetWidget() const;
+  FocusManager* GetFocusManager() const;
 
   float GetHeightForWidth(float) const;
   FrameRateRequirement GetFrameRateRequirement() const;
@@ -38,11 +40,12 @@ class Root final {
   Widgets::Widget* DispatchEvent(const Event*);
 
  private:
-  unique_ptr<Widgets::Widget> mWidget;
-  unique_ptr<YGNode> mYogaRoot;
-  enum class Cursor {
-    Default,
+  struct WidgetRoot {
+    unique_ptr<Widgets::Widget> mWidget;
+    FocusManager mFocusManager;
   };
+  std::optional<WidgetRoot> mWidgetRoot;
+  unique_ptr<YGNode> mYogaRoot;
 };
 
 }// namespace FredEmmott::GUI::Immediate

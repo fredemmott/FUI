@@ -8,6 +8,7 @@ add_library(
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/ExitException.hpp
+  FredEmmott/GUI/FocusManager.cpp FredEmmott/GUI/FocusManager.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/FontWeight.hpp
   FredEmmott/GUI/FrameRateRequirement.hpp
@@ -73,6 +74,7 @@ add_library(
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
   FredEmmott/GUI/Widgets/CheckBox.cpp FredEmmott/GUI/Widgets/CheckBox.hpp
+  FredEmmott/GUI/Widgets/Focusable.hpp
   FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp

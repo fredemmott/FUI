@@ -50,6 +50,7 @@ class Widget {
   // Can return nullptr
   [[nodiscard]]
   static Widget* FromYogaNode(YGNodeConstRef);
+  Widget* GetParent() const;
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
     return mYoga.get();
@@ -166,6 +167,8 @@ class Widget {
     Active = 1 << 3,
     Animating = 1 << 4,
     Checked = 1 << 5,
+    HaveFocus = 1 << 6,
+    HaveVisibleFocus = 1<< 7,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 

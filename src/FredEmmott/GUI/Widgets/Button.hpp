@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "Focusable.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class Button : public Widget {
+class Button : public Widget, public IInvocable {
  public:
   explicit Button(std::size_t id);
   explicit Button(std::size_t id, const ImmutableStyle&, const StyleClasses&);
@@ -14,6 +15,8 @@ class Button : public Widget {
   static ImmutableStyle MakeImmutableStyle(const Style& mixin);
 
   bool mClicked {false};
+
+  void Invoke() override;
 
  protected:
   EventHandlerResult OnClick(const MouseEvent& e) override;

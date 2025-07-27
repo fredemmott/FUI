@@ -14,8 +14,12 @@ HyperlinkButton::HyperlinkButton(std::size_t id, const StyleClasses& classes)
 
 HyperlinkButton::~HyperlinkButton() = default;
 
-Widget::EventHandlerResult HyperlinkButton::OnClick(const MouseEvent&) {
+void HyperlinkButton::Invoke() {
   mClicked = true;
+}
+
+Widget::EventHandlerResult HyperlinkButton::OnClick(const MouseEvent&) {
+  this->Invoke();
   return EventHandlerResult::StopPropagation;
 }
 

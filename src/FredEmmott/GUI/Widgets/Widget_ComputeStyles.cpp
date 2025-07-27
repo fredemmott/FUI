@@ -5,6 +5,7 @@
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/GUI/assert.hpp"
 #include "Widget.hpp"
 #include "WidgetList.hpp"
@@ -20,6 +21,18 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 
 void Widget::ComputeStyles(const Style& inherited) {
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
+
+  if (const auto fm = FocusManager::Get()) {
+    mDirectStateFlags &= ~(StateFlags::HaveFocus | StateFlags::HaveVisibleFocus);
+    if (const auto target = fm->GetFocusedWidget()) {
+      if (const auto [widget, reason] = *target; widget == this) {
+        mDirectStateFlags |= StateFlags::HaveFocus;
+        if (reason == FocusKind::Keyboard) {
+          mDirectStateFlags |= StateFlags::HaveVisibleFocus;
+        }
+      }
+    }
+  }
 
   if (mStylesCacheKey.empty()) {
     mStylesCacheKey.resize(sizeof(void*) * (mClassList.size() + 1));
@@ -230,6 +243,14 @@ bool Widget::MatchesStylePseudoClass(const StyleClass it) const {
 
   if (it == PseudoClasses::Active) {
     return (state & StateFlags::Active) != StateFlags::Default;
+  }
+
+  if (it == PseudoClasses::Focus) {
+    return (state & StateFlags::HaveFocus) != StateFlags::Default;
+  }
+
+  if (it == PseudoClasses::FocusVisible) {
+    return (state & StateFlags::HaveVisibleFocus) != StateFlags::Default;
   }
 
   return false;

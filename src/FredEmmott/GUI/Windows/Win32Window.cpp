@@ -703,6 +703,12 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_ENABLE:
       mIsDisabled = !wParam;
       break;
+    case WM_KEYDOWN:
+      if (wParam == VK_TAB) {
+        GetRoot()->GetFocusManager()->FocusNextWidget();
+      }
+      break;
+
     case WM_SETCURSOR: {
       static const wil::unique_hcursor sDefaultCursor {
         LoadCursor(nullptr, IDC_ARROW)};

@@ -5,6 +5,7 @@
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <FredEmmott/GUI/FocusManager.hpp>
 #include <ranges>
 
 #include "FredEmmott/GUI/assert.hpp"
@@ -129,6 +130,9 @@ Widget::Widget(
 }
 
 Widget* Widget::FromYogaNode(YGNodeConstRef node) {
+  if (!node) {
+    return nullptr;
+  }
   const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
   if (!ctx) {
     return nullptr;
@@ -144,7 +148,19 @@ Widget* Widget::FromYogaNode(YGNodeConstRef node) {
   return nullptr;
 }
 
+Widget* Widget::GetParent() const {
+  const auto parentYoga = YGNodeGetParent(mYoga.get());
+  if (!parentYoga) {
+    return nullptr;
+  }
+  return FromYogaNode(parentYoga);
+}
+
 Widget::~Widget() {
+  if (const auto fm = FocusManager::Get()) {
+    fm->BeforeDestroy(this);
+  }
+
   this->EndMouseCapture();
 
   const auto yogaContext

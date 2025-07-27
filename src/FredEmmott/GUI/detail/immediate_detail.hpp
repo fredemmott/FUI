@@ -6,7 +6,6 @@
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <format>
-#include <span>
 
 #include "widget_detail.hpp"
 

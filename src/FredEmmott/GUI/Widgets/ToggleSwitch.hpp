@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include "ToggleSwitchKnob.hpp"
+#include "Focusable.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class ToggleSwitch final : public Widget {
+class ToggleSwitch final : public Widget, public IToggleable {
  public:
   explicit ToggleSwitch(std::size_t id);
 
@@ -15,6 +15,8 @@ class ToggleSwitch final : public Widget {
   void SetIsOn(bool) noexcept;
 
   bool mChanged {false};
+
+  void Toggle() override;
 
  protected:
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)

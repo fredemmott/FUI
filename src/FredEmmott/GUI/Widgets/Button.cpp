@@ -38,8 +38,12 @@ ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
   };
 }
 
-Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {
+void Button::Invoke() {
   mClicked = true;
+}
+
+Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {
+  this->Invoke();
   return EventHandlerResult::StopPropagation;
 }
 Widget::ComputedStyleFlags Button::OnComputedStyleChange(

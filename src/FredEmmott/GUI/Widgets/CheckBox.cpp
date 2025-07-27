@@ -3,6 +3,7 @@
 #include "CheckBox.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/CheckBox.hpp>
+#include <FredEmmott/GUI/Widgets/Label.hpp>
 
 #include "WidgetList.hpp"
 
@@ -200,9 +201,13 @@ CheckBox::CheckBox(std::size_t id)
   });
 }
 
-Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
+void CheckBox::Toggle() {
   SetIsChecked(!IsChecked());
   mChanged = true;
+}
+
+Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
+  this->Toggle();
   return EventHandlerResult::StopPropagation;
 }
 

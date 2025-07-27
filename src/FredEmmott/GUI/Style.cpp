@@ -177,7 +177,12 @@ Style Style::BuiltinBaseline() {
         .Color(StaticTheme::TextFillColorPrimaryBrush)
         .And(
           PseudoClasses::Disabled,
-          Style().Color(StaticTheme::TextFillColorDisabledBrush));
+          Style().Color(StaticTheme::TextFillColorDisabledBrush))
+        .And(
+          PseudoClasses::FocusVisible,
+          Style()
+            .BorderColor(Colors::Red, !important)
+            .BorderWidth(1, !important));
   for (auto&& [key, value]: ret.mStorage) {
     VisitStyleProperty(
       key,

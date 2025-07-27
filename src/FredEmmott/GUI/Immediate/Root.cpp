@@ -30,8 +30,8 @@ void Root::BeginFrame() {
   }
 
   tStack.push_back({});
-  if (mWidget) {
-    tStack.front().mPending.push_back(mWidget.get());
+  if (mWidgetRoot) {
+    tStack.front().mPending.push_back(mWidgetRoot->mWidget.get());
   }
 }
 
@@ -43,7 +43,7 @@ void Root::EndFrame() {
   tStack.clear();
 
   if (widgets.empty()) {
-    mWidget = nullptr;
+    mWidgetRoot.reset();
     return;
   }
 
@@ -53,10 +53,11 @@ void Root::EndFrame() {
   }
 
   const auto widget = widgets.front();
-  if (widget != mWidget.get()) {
-    mWidget.reset(widget);
-    auto node = mWidget->GetLayoutNode();
-    YGNodeSetChildren(mYogaRoot.get(), &node, 1);
+  if ((!mWidgetRoot) || (mWidgetRoot->mWidget.get() != widget)) {
+    mWidgetRoot.emplace(
+      unique_ptr<Widgets::Widget>(widget), FocusManager {widget});
+    const auto yoga = widget->GetLayoutNode();
+    YGNodeSetChildren(mYogaRoot.get(), &yoga, 1);
   }
 
   if (tResizeThisFrame) {
@@ -66,25 +67,31 @@ void Root::EndFrame() {
 }
 
 Widget* Root::DispatchEvent(const Event* e) {
-  if (mWidget) {
-    return mWidget->DispatchEvent(e);
+  if (mWidgetRoot) {
+    return mWidgetRoot->mWidget->DispatchEvent(e);
   }
   return nullptr;
 }
 
 void Root::Paint(Renderer* renderer, const Size& size) {
-  if (!mWidget) {
+  if (!mWidgetRoot) {
     return;
   }
+  const auto widget = mWidgetRoot->mWidget.get();
   const auto clipRegion = renderer->ScopedClipRect({size});
 
-  mWidget->ComputeStyles({});
-  auto yoga = mYogaRoot.get();
+  FocusManager::PushInstance(&mWidgetRoot->mFocusManager);
+  const auto popFocusManager = wil::scope_exit([this] {
+    FocusManager::PopInstance(&mWidgetRoot->mFocusManager);
+  });
+
+  widget->ComputeStyles({});
+  const auto yoga = mYogaRoot.get();
   YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
 
-  mWidget->UpdateLayout();
-  mWidget->Tick();
-  mWidget->Paint(renderer);
+  widget->UpdateLayout();
+  widget->Tick();
+  widget->Paint(renderer);
 }
 
 bool Root::CanFit(const Size& size) const {
@@ -106,10 +113,25 @@ YGNodeRef Root::GetLayoutNode() const {
   return mYogaRoot.get();
 }
 
+Widgets::Widget* Root::GetWidget() const {
+  if (mWidgetRoot) {
+    return mWidgetRoot->mWidget.get();
+  }
+  return nullptr;
+}
+
+FocusManager* Root::GetFocusManager() const {
+  if (mWidgetRoot) {
+    return const_cast<FocusManager*>(&mWidgetRoot->mFocusManager);
+  }
+  return nullptr;
+}
+
 Size Root::GetInitialSize() const {
-  if (mWidget) {
-    mWidget->ComputeStyles({});
-    mWidget->UpdateLayout();
+  if (mWidgetRoot) {
+    const auto widget = mWidgetRoot->mWidget.get();
+    widget->ComputeStyles({});
+    widget->UpdateLayout();
   }
 
   return GetMinimumWidthAndIdealHeight(mYogaRoot.get());
@@ -120,10 +142,10 @@ float Root::GetHeightForWidth(float width) const {
 }
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {
-  if (std::exchange(tNeedAdditionalFrame, false) || !mWidget) {
+  if (std::exchange(tNeedAdditionalFrame, false) || !mWidgetRoot) {
     return FrameRateRequirement::SmoothAnimation;
   }
-  return mWidget->GetFrameRateRequirement();
+  return mWidgetRoot->mWidget->GetFrameRateRequirement();
 }
 
 }// namespace FredEmmott::GUI::Immediate

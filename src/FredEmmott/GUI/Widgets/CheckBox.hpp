@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/Widgets/Label.hpp>
-
+#include "Focusable.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class CheckBox final : public Widget {
+class CheckBox final : public Widget, public IToggleable {
  public:
   explicit CheckBox(std::size_t id);
 
@@ -15,6 +14,8 @@ class CheckBox final : public Widget {
   using Widget::SetIsChecked;
 
   bool mChanged {false};
+
+  void Toggle() override;
 
  protected:
   EventHandlerResult OnClick(const MouseEvent& event) override;
