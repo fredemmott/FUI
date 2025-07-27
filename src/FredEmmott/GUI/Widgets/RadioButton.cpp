@@ -153,6 +153,10 @@ RadioButton::RadioButton(std::size_t id)
 
 RadioButton::~RadioButton() = default;
 
+bool RadioButton::IsSelected() const noexcept {
+  return IsChecked();
+}
+
 Widget* RadioButton::GetFosterParent() const noexcept {
   return mFosterParent;
 }
@@ -165,9 +169,16 @@ Widget::ComputedStyleFlags RadioButton::OnComputedStyleChange(
     | InheritableHoverState;
 }
 
-Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {
+void RadioButton::Select() {
+  if (IsChecked()) {
+    return;
+  }
   this->SetIsChecked(true);
   mChanged = true;
+}
+
+Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {
+  this->Select();
   return EventHandlerResult::StopPropagation;
 }
 

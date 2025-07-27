@@ -159,6 +159,10 @@ void Window::DispatchEvent(const KeyEvent& e) {
           it->Toggle();
           return;
         }
+        if (const auto it = dynamic_cast<Widgets::ISelectionItem*>(widget)) {
+          it->Select();
+          return;
+        }
       }
     }
     default:

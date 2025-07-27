@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "Focusable.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class RadioButton final : public Widget {
+class RadioButton final : public Widget, public ISelectionItem {
  public:
   explicit RadioButton(std::size_t id);
   ~RadioButton() override;
@@ -15,6 +16,9 @@ class RadioButton final : public Widget {
   using Widget::SetIsChecked;
 
   bool mChanged {false};
+
+  bool IsSelected() const noexcept override;
+  void Select() override;
 
  protected:
   Widget* GetFosterParent() const noexcept override;
