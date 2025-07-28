@@ -7,7 +7,6 @@
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
-#include "EnqueueAdditionalFrame.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 

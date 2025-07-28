@@ -78,7 +78,6 @@ static void AppTick(fui::Window& window) {
     fuii::Label("This is a popup");
     if (fuii::Button("Close")) {
       popupVisible = false;
-      fuii::EnqueueAdditionalFrame();
     }
   }
 

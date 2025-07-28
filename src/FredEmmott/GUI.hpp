@@ -11,7 +11,6 @@
 #include <FredEmmott/GUI/Immediate/ComboBoxPopup.hpp>
 #include <FredEmmott/GUI/Immediate/ContentDialog.hpp>
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
-#include <FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp>
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>
 #include <FredEmmott/GUI/Immediate/HyperlinkButton.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>

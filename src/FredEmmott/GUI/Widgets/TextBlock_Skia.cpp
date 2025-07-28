@@ -13,7 +13,6 @@
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
 
-#include "FredEmmott/GUI/Immediate/EnqueueAdditionalFrame.hpp"
 #include "TextBlock.hpp"
 
 using namespace FredEmmott::utility;
