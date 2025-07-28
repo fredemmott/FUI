@@ -600,7 +600,7 @@ Point Widget::GetTopLeftCanvasPoint() const {
     const Widget* widget = nullptr;
 
     if (const auto tree = std::get_if<DetachedYogaTree>(ctx)) {
-      widget = tree->mParent;
+      widget = tree->mSelf;
     } else if (const auto widgetp = std::get_if<Widget*>(ctx)) {
       widget = *widgetp;
     } else if (ctx) {
