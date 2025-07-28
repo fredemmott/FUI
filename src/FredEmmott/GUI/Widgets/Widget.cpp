@@ -590,28 +590,14 @@ void Widget::SetIsChecked(const bool value) {
 
 Point Widget::GetTopLeftCanvasPoint() const {
   Point position {};
-  for (auto yoga = this->GetLayoutNode(); yoga;) {
+  for (auto widget = this; widget; widget = widget->GetParent()) {
+    const auto yoga = widget->GetLayoutNode();
     position.mX += YGNodeLayoutGetLeft(yoga);
     position.mY += YGNodeLayoutGetTop(yoga);
 
-    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
-    const Widget* widget = nullptr;
-
-    if (const auto tree = std::get_if<DetachedYogaTree>(ctx)) {
-      widget = tree->mSelf;
-    } else if (const auto widgetp = std::get_if<Widget*>(ctx)) {
-      widget = *widgetp;
-    } else if (ctx) {
-      __debugbreak();
-    }
-    if (widget) {
-      const auto& style = widget->GetComputedStyle();
-      position.mX += style.TranslateX().value_or(0);
-      position.mY += style.TranslateY().value_or(0);
-      yoga = YGNodeGetParent(widget->GetLayoutNode());
-    } else {
-      yoga = YGNodeGetParent(yoga);
-    }
+    const auto& style = widget->GetComputedStyle();
+    position.mX += style.TranslateX().value_or(0);
+    position.mY += style.TranslateY().value_or(0);
   }
   return position;
 }
