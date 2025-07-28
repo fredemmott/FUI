@@ -22,6 +22,7 @@ auto& OuterStyles() {
       .BorderColor(ComboBoxDropDownBorderBrush)
       .BorderRadius(OverlayCornerRadius)
       .BorderWidth(ComboBoxDropdownBorderThickness)
+      .MinWidth(ComboBoxPopupThemeMinWidth)
       .Padding(ComboBoxDropdownBorderPadding),
   };
   return ret;
@@ -40,6 +41,7 @@ auto& InnerStyles() {
       .MarginLeft(0.0)
       .MarginRight(0)
       .MarginTop(-0.5)
+      .MinWidth(ComboBoxPopupThemeMinWidth)
       .PaddingBottom(ComboBoxDropdownContentMarginBottom)
       .PaddingLeft(ComboBoxDropdownContentMarginLeft)
       .PaddingRight(ComboBoxDropdownContentMarginRight)
@@ -69,7 +71,8 @@ ComboBoxPopupResult BeginComboBoxPopup(ID id) {
 
   BeginWidget<Widget>(ID {0}, OuterStyles());
   BeginWidget<Widget>(ID {0}, InnerStyles())
-    ->ReplaceExplicitStyles(Style().MinWidth(width));
+    ->ReplaceExplicitStyles(
+      Style().MinWidth(std::max(width, ComboBoxPopupThemeMinWidth)));
   return true;
 }
 

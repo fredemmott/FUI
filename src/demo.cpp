@@ -117,7 +117,6 @@ static void AppTick(fui::Window& window) {
       "foo",
       "bar",
       "baz",
-      "I am a much much much longer entry",
     };
     if (fuii::ComboBox(&selectedIndex, comboItems)
           .Caption("Array of strings")) {
@@ -133,7 +132,6 @@ static void AppTick(fui::Window& window) {
       Item {"a"},
       Item {"b"},
       Item {"c"},
-      Item {"echo echo echo"},
     };
     (void)fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel)
       .Caption("Array of structs");
@@ -148,7 +146,6 @@ static void AppTick(fui::Window& window) {
       Item {123, "a"},
       Item {456, "b"},
       Item {789, "c"},
-      Item {123456, "echo echo echo"},
     };
     if (fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel, &Item::mKey)
           .Caption("Key-value structs")) {

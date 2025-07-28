@@ -332,11 +332,18 @@ void Win32Window::CreateNativeWindow() {
     mNCRect.bottom = mNCRect.top + cy;
   }
   if (mOffsetToChild) {
+    const auto yogaRoot = this->GetRoot()->GetLayoutNode();
+    const auto yogaChild = this->GetRoot()->GetWidget()->GetLayoutNode();
+
+    FUI_ASSERT(YGNodeGetChildCount(yogaRoot) == 1);
+    FUI_ASSERT(YGNodeGetChild(yogaRoot, 0) == yogaChild);
+    // Due to the asserts above, this should do nothing - however, it fixes
+    // what appears to be a caching bug in Yoga 3.2.1
+    // https://github.com/fredemmott/FUI/issues/73
+    YGNodeSetChildren(yogaRoot, &yogaChild, 1);
+
     YGNodeCalculateLayout(
-      this->GetRoot()->GetLayoutNode(),
-      mNCRect.right - mNCRect.left,
-      YGUndefined,
-      YGDirectionLTR);
+      yogaRoot, mNCRect.right - mNCRect.left, YGUndefined, YGDirectionLTR);
     const auto canvas = mOffsetToChild->GetTopLeftCanvasPoint();
     const auto native = CanvasPointToNativePoint(canvas);
     const auto nativeOrigin = CanvasPointToNativePoint({0, 0});
