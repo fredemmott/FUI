@@ -49,11 +49,11 @@ class StyleProperty;
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
   X(Cursor, GUI::Cursor, SelfAndDescendants) \
-  X(Display, YGDisplay, Self, YGDisplayFlex) \
+  X(Display, YGDisplay, Self) \
   X(FlexBasis, float, Self) \
   X(FlexDirection, YGFlexDirection, Self) \
-  X(FlexGrow, float, Self, 0.0f) \
-  X(FlexShrink, float, Self, 0.0f) \
+  X(FlexGrow, float, Self) \
+  X(FlexShrink, float, Self) \
   X(Font, GUI::Font, SelfAndDescendants) \
   X(Gap, float, Self) \
   X(Height, float, Self) \
@@ -68,7 +68,7 @@ class StyleProperty;
   X(MaxWidth, float, Self) \
   X(MinHeight, float, Self) \
   X(MinWidth, float, Self) \
-  X(Opacity, float, Self, 1.0f) \
+  X(Opacity, float, Self) \
   X(OutlineColor, Brush, Self) \
   X(OutlineRadius, float, Self) \
   X(OutlineOffset, float, Self) \
@@ -84,14 +84,14 @@ class StyleProperty;
   X(PaddingRight, float, Self) \
   X(PaddingTop, float, Self) \
   X(PointerEvents, GUI::PointerEvents, Self) \
-  X(Position, YGPositionType, Self, YGPositionTypeRelative) \
+  X(Position, YGPositionType, Self) \
   X(Right, float, Self) \
-  X(ScaleX, float, Self, 1.0f) \
-  X(ScaleY, float, Self, 1.0f) \
-  X(TextAlign, GUI::TextAlign, SelfAndDescendants, TextAlign::Left) \
+  X(ScaleX, float, Self) \
+  X(ScaleY, float, Self) \
+  X(TextAlign, GUI::TextAlign, SelfAndDescendants) \
   X(Top, float, Self) \
-  X(TranslateX, float, Self, 0.0f) \
-  X(TranslateY, float, Self, 0.0f) \
+  X(TranslateX, float, Self) \
+  X(TranslateY, float, Self) \
   X(Width, float, Self)
 
 /** Properties of the form `mPrefixSuffix`, `mPrefixEdgeSuffix`
@@ -173,7 +173,7 @@ using property_value_t = typename property_metadata_t<P>::value_type;
 constexpr StylePropertyScope GetDefaultPropertyScope(
   const StylePropertyKey prop) {
   switch (prop) {
-#define FUI_DECLARE_PROPERTY_CASE(NAME, TYPE, SCOPE, ...) \
+#define FUI_DECLARE_PROPERTY_CASE(NAME, TYPE, SCOPE) \
   case StylePropertyKey::NAME: \
     return StylePropertyScope::SCOPE;
     FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_CASE)
@@ -188,7 +188,7 @@ void VisitStyleProperty(
   auto&& visitor,
   Value&&... value) {
   switch (key) {
-#define PROPERTY_CASE(NAME, TYPE, ...) \
+#define PROPERTY_CASE(NAME, TYPE, SCOPE) \
   case StylePropertyKey::NAME: \
     std::invoke( \
       visitor, get<StyleProperty<TYPE>>(std::forward<Value>(value))...); \

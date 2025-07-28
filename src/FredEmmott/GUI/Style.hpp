@@ -28,7 +28,8 @@ struct Style {
   static const Style& Empty();
   struct PropertyTypes {
     PropertyTypes() = delete;
-#define FUI_DECLARE_STYLE_PROPERTY_TYPE(NAME, TYPE, ...) using NAME##_t = TYPE;
+#define FUI_DECLARE_STYLE_PROPERTY_TYPE(NAME, TYPE, SCOPE) \
+  using NAME##_t = TYPE;
     FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY_TYPE)
 #undef FUI_DECLARE_STYLE_PROPERTY_TYPE
   };
@@ -79,7 +80,7 @@ struct Style {
       key, StyleProperty<TYPE>(value, std::forward<Args>(args)...)); \
     return std::move(self); \
   }
-#define FUI_DECLARE_PROPERTY_SETTERS(NAME, TYPE, ...) \
+#define FUI_DECLARE_PROPERTY_SETTERS(NAME, TYPE, SCOPE) \
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const TYPE&); \
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const StaticTheme::Resource<TYPE>&); \
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, std::nullopt_t) \

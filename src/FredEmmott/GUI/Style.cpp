@@ -175,6 +175,16 @@ Style Style::BuiltinBaseline() {
   auto ret = StaticTheme::Generic::BodyTextBlockStyle()
     + Style()
         .Color(StaticTheme::TextFillColorPrimaryBrush)
+        .Display(YGDisplayFlex)
+        .FlexGrow(0)
+        .FlexShrink(0)
+        .Opacity(1)
+        .Position(YGPositionTypeRelative)
+        .ScaleX(1)
+        .ScaleY(1)
+        .TextAlign(TextAlign::Left)
+        .TranslateX(0)
+        .TranslateY(0)
         .And(
           PseudoClasses::Disabled,
           Style().Color(StaticTheme::TextFillColorDisabledBrush))
