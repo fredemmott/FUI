@@ -172,9 +172,7 @@ Widget* Widget::FromYogaNode(YGNodeConstRef node) {
   if (!ctx) {
     return nullptr;
   }
-  if (
-    const auto it
-    = std::get_if<Widget*>(static_cast<YogaContext*>(YGNodeGetContext(node)))) {
+  if (const auto it = std::get_if<Widget*>(ctx)) {
     return *it;
   }
   if (const auto it = std::get_if<DetachedYogaTree>(ctx)) {
