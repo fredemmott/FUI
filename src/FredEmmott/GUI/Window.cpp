@@ -141,43 +141,7 @@ void Window::DispatchEvent(const KeyEvent& e) {
   if (!pe) {
     return;
   }
-
-  using enum KeyCode;
-  using enum KeyModifier;
-  switch (pe->mKeyCode) {
-    case Key_Tab:
-      switch (pe->mModifiers) {
-        case Modifier_None:
-          fm->FocusNextWidget();
-          break;
-        case Modifier_Shift:
-          fm->FocusPreviousWidget();
-          break;
-        default:
-          break;
-      }
-      break;
-    case Key_Return:
-    case Key_Space: {
-      if (const auto focused = fm->GetFocusedWidget()) {
-        const auto widget = get<0>(*focused);
-        if (const auto it = dynamic_cast<Widgets::IInvocable*>(widget)) {
-          it->Invoke();
-          return;
-        }
-        if (const auto it = dynamic_cast<Widgets::IToggleable*>(widget)) {
-          it->Toggle();
-          return;
-        }
-        if (const auto it = dynamic_cast<Widgets::ISelectionItem*>(widget)) {
-          it->Select();
-          return;
-        }
-      }
-    }
-    default:
-      break;
-  }
+  fm->OnKeyPress(*pe);
 }
 
 }// namespace FredEmmott::GUI

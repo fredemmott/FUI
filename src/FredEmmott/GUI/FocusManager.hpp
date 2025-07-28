@@ -20,14 +20,16 @@ class FocusManager final {
 
   explicit FocusManager(Widgets::Widget* rootWidget);
 
-  std::optional<std::tuple<Widgets::Widget*, FocusKind>> GetFocusedWidget()
-    const;
+  [[nodiscard]] std::optional<std::tuple<Widgets::Widget*, FocusKind>>
+  GetFocusedWidget() const;
 
   void GivePointerFocus(Widgets::Widget*);
   void FocusNextWidget();
   void FocusPreviousWidget();
 
   void BeforeDestroy(Widgets::Widget*);
+
+  void OnKeyPress(const KeyPressEvent& e);
 
   /// Thread-local
   static FocusManager* Get();

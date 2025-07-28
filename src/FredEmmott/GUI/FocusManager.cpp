@@ -7,6 +7,7 @@
 
 #include "Widgets/Focusable.hpp"
 #include "assert.hpp"
+#include "events/KeyEvent.hpp"
 
 namespace FredEmmott::GUI {
 
@@ -150,6 +151,47 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
     child = parent;
   }
   this->FocusFirstWidget();
+}
+void FocusManager::OnKeyPress(const KeyPressEvent& e) {
+  using enum KeyCode;
+  using enum KeyModifier;
+  switch (e.mKeyCode) {
+    case Key_Tab:
+      switch (e.mModifiers) {
+        case Modifier_None:
+          this->FocusNextWidget();
+          break;
+        case Modifier_Shift:
+          this->FocusPreviousWidget();
+          break;
+        default:
+          break;
+      }
+      break;
+    case Key_Return:
+    case Key_Space: {
+      if (mFocusedWidget) {
+        if (
+          const auto it = dynamic_cast<Widgets::IInvocable*>(mFocusedWidget)) {
+          it->Invoke();
+          return;
+        }
+        if (
+          const auto it = dynamic_cast<Widgets::IToggleable*>(mFocusedWidget)) {
+          it->Toggle();
+          return;
+        }
+        if (
+          const auto it
+          = dynamic_cast<Widgets::ISelectionItem*>(mFocusedWidget)) {
+          it->Select();
+          return;
+        }
+      }
+    }
+    default:
+      break;
+  }
 }
 
 void FocusManager::FocusFirstWidget() {
