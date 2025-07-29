@@ -4,6 +4,7 @@
 
 #include <ComboBox.hpp>
 
+#include "FredEmmott/GUI/Widgets/Focusable.hpp"
 #include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
@@ -49,9 +50,15 @@ auto& InnerStyles() {
   };
   return ret;
 }
+
+class ComboBoxList final : public Widgets::Widget,
+                           public Widgets::ISelectionContainer {
+ public:
+  explicit ComboBoxList(const std::size_t id) : Widget(id, InnerStyles(), {}) {}
+};
 }// namespace
 
-ComboBoxPopupResult BeginComboBoxPopup(bool* open, ID id) {
+ComboBoxPopupResult BeginComboBoxPopup(bool* open, const ID id) {
   if (!(open && *open)) {
     return false;
   }
@@ -59,7 +66,7 @@ ComboBoxPopupResult BeginComboBoxPopup(bool* open, ID id) {
   return *open;
 }
 
-ComboBoxPopupResult BeginComboBoxPopup(ID id) {
+ComboBoxPopupResult BeginComboBoxPopup(const ID id) {
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   auto button = GetCurrentNode();
@@ -70,14 +77,13 @@ ComboBoxPopupResult BeginComboBoxPopup(ID id) {
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
   BeginWidget<Widget>(ID {0}, OuterStyles());
-  BeginWidget<Widget>(ID {0}, InnerStyles())
-    ->ReplaceExplicitStyles(
-      Style().MinWidth(std::max(width, ComboBoxPopupThemeMinWidth)));
+  BeginWidget<ComboBoxList>(ID {0})->ReplaceExplicitStyles(
+    Style().MinWidth(std::max(width, ComboBoxPopupThemeMinWidth)));
   return true;
 }
 
 void EndComboBoxPopup() {
-  EndWidget();
+  EndWidget<ComboBoxList>();
   EndWidget();
   EndBasicPopupWindow();
 }

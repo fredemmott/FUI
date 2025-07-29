@@ -13,12 +13,21 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace {
 
-class ComboBoxItemButton : public Widgets::Button {
+class ComboBoxItemButton : public Widgets::Button,
+                           public Widgets::ISelectionItem {
  public:
   using Button::Button;
 
   using Widget::IsChecked;
   using Widget::SetIsChecked;
+
+  bool IsSelected() const noexcept override {
+    return IsChecked();
+  }
+
+  void Select() override {
+    this->Invoke();
+  }
 };
 
 Style MakeComboBoxItemStyles() {
