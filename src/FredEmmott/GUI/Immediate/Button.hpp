@@ -20,6 +20,26 @@ struct ButtonResultMixin : CaptionResultMixin {
       StaticTheme::Button::AccentButtonStyleClass);
     return std::forward<Self>(self);
   }
+
+  template <class Self>
+  decltype(auto) DefaultAction(this Self&& self) {
+    tWindow->SetDefaultAction([w = widget_from_result(self)] {
+      if (!w->IsDisabled()) {
+        w->Invoke();
+      }
+    });
+    return std::forward<Self>(self);
+  }
+
+  template <class Self>
+  decltype(auto) CancelAction(this Self&& self) {
+    tWindow->SetCancelAction([w = widget_from_result(self)] {
+      if (!w->IsDisabled()) {
+        w->Invoke();
+      }
+    });
+    return std::forward<Self>(self);
+  }
 };
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
