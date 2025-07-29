@@ -189,7 +189,7 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
   }
   this->FocusFirstWidget();
 }
-void FocusManager::OnKeyPress(const KeyPressEvent& e) {
+bool FocusManager::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyCode;
   using enum KeyModifier;
   switch (e.mKeyCode) {
@@ -197,32 +197,32 @@ void FocusManager::OnKeyPress(const KeyPressEvent& e) {
       switch (e.mModifiers) {
         case Modifier_None:
           this->FocusNextWidget();
-          break;
+          return true;
         case Modifier_Shift:
           this->FocusPreviousWidget();
-          break;
+          return true;
         default:
           break;
       }
       break;
     case Key_Return:
     case Key_Space: {
-      if (mFocusedWidget) {
+      if (mFocusedWidget && !mFocusedWidget->IsDisabled()) {
         if (
           const auto it = dynamic_cast<Widgets::IInvocable*>(mFocusedWidget)) {
           it->Invoke();
-          return;
+          return true;
         }
         if (
           const auto it = dynamic_cast<Widgets::IToggleable*>(mFocusedWidget)) {
           it->Toggle();
-          return;
+          return true;
         }
         if (
           const auto it
           = dynamic_cast<Widgets::ISelectionItem*>(mFocusedWidget)) {
           it->Select();
-          return;
+          return true;
         }
       }
       break;
@@ -230,14 +230,15 @@ void FocusManager::OnKeyPress(const KeyPressEvent& e) {
     case Key_LeftArrow:
     case Key_UpArrow:
       this->FocusPreviousSelectionItem();
-      break;
+      return true;
     case Key_RightArrow:
     case Key_DownArrow:
       this->FocusNextSelectionItem();
-      break;
+      return true;
     default:
       break;
   }
+  return false;
 }
 
 void FocusManager::FocusFirstWidget() {

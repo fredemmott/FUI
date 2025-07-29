@@ -22,6 +22,12 @@ class Renderer;
 
 class Window {
  public:
+  class BasicFramePainter {
+   public:
+    virtual ~BasicFramePainter() = default;
+
+    virtual Renderer* GetRenderer() noexcept = 0;
+  };
   struct NativeHandle {
     HWND mValue {};
     constexpr operator HWND() const noexcept {
@@ -76,13 +82,12 @@ class Window {
     this->InterruptWaitFrame();
   }
 
- protected:
-  class BasicFramePainter {
-   public:
-    virtual ~BasicFramePainter() = default;
+  void SetDefaultAction(const std::function<void()>&);
+  void SetCancelAction(const std::function<void()>&);
 
-    virtual Renderer* GetRenderer() noexcept = 0;
-  };
+  [[nodiscard]]
+  virtual bool IsPopup() const noexcept
+    = 0;
 
   virtual void InitializeWindow() = 0;
   virtual void HideWindow() = 0;
@@ -125,6 +130,9 @@ class Window {
 
   std::optional<int> mExitCode;
   Immediate::Root mFUIRoot;
+
+  std::function<void()> mDefaultAction;
+  std::function<void()> mCancelAction;
 };
 
 }// namespace FredEmmott::GUI

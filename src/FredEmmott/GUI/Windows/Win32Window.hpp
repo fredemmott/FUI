@@ -148,6 +148,11 @@ class Win32Window : public Window {
     return mSwapChain.get();
   }
 
+  bool IsPopup() const noexcept override {
+    return (mOptions.mWindowStyle & WS_POPUP)
+      || (mOptions.mWindowExStyle & WS_EX_TOOLWINDOW);
+  }
+
   bool IsDisabled() const override {
     return mIsDisabled;
   }

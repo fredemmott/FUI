@@ -52,6 +52,8 @@ std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
       return Key_RightArrow;
     case VK_DOWN:
       return Key_DownArrow;
+    case VK_ESCAPE:
+      return Key_Escape;
     default:
       return std::nullopt;
   }

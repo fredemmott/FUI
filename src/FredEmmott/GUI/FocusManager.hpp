@@ -29,7 +29,8 @@ class FocusManager final {
 
   void BeforeDestroy(Widgets::Widget*);
 
-  void OnKeyPress(const KeyPressEvent& e);
+  [[nodiscard]]
+  bool OnKeyPress(const KeyPressEvent& e);
 
   /// Thread-local
   static FocusManager* Get();

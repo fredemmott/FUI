@@ -95,6 +95,14 @@ FrameRateRequirement Window::GetFrameRateRequirement() const {
   return mFUIRoot.GetFrameRateRequirement();
 }
 
+void Window::SetDefaultAction(const std::function<void()>& action) {
+  mDefaultAction = action;
+}
+
+void Window::SetCancelAction(const std::function<void()>& action) {
+  mCancelAction = action;
+}
+
 void Window::Paint() {
   this->ResizeIfNeeded();
 
@@ -141,7 +149,29 @@ void Window::DispatchEvent(const KeyEvent& e) {
   if (!pe) {
     return;
   }
-  fm->OnKeyPress(*pe);
+  if (fm->OnKeyPress(*pe)) {
+    return;
+  }
+
+  using enum KeyCode;
+  switch (pe->mKeyCode) {
+    case Key_Escape:
+      if (mCancelAction) {
+        mCancelAction();
+        return;
+      }
+      if (this->IsPopup()) {
+        this->RequestStop(EXIT_SUCCESS);
+      }
+      return;
+    case Key_Return:
+      if (mDefaultAction) {
+        mDefaultAction();
+      }
+      return;
+    default:
+      break;
+  }
 }
 
 }// namespace FredEmmott::GUI

@@ -12,6 +12,7 @@ enum class KeyCode : uint8_t {
   // Matching ASCII
   Key_Tab = 0x09,
   Key_Return = 0x0D,
+  Key_Escape = 0x1B,
   Key_Space = 0x20,
 
   // Matching Win32 VKEY_*
