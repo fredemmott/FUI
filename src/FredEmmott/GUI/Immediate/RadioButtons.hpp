@@ -7,8 +7,13 @@
 
 namespace FredEmmott::GUI::Immediate {
 void EndRadioButtons();
-/// Optional, not needed to use RadioButtons - however, it sets the correct
-/// flexbox gap, and optionally adds a header with the correct margin.
+/** Container for multiple RadioButton items.
+ *
+ * Not strictly required, however:
+ * - without it, keyboard navigation (tabs/arrow keys) won't work
+ * - it sets the flexbox gap property correctly
+ * - optionally, it adds a header with the correct margin.
+ */
 Result<&EndRadioButtons> BeginRadioButtons(
   std::string_view title = {},
   ID = ID {std::source_location::current()});
