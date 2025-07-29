@@ -108,6 +108,9 @@ void FocusManager::FocusFirstSelectedItem() {
   }
 
   for (auto&& child: mFocusedWidget->GetChildren()) {
+    if (child->IsDisabled()) {
+      continue;
+    }
     const auto it = dynamic_cast<Widgets::ISelectionItem const*>(child);
     if (it) {
       mFocusedWidget = child;
@@ -271,6 +274,9 @@ void FocusManager::FocusNextSelectionItem() {
   const auto children = mFocusedWidget->GetParent()->GetChildren();
   const auto it = std::ranges::find(children, mFocusedWidget);
   for (auto&& sibling: std::ranges::subrange(it + 1, children.end())) {
+    if (sibling->IsDisabled()) {
+      continue;
+    }
     if (dynamic_cast<Widgets::ISelectionItem const*>(sibling)) {
       mFocusedWidget = sibling;
       mFocusKind = FocusKind::Keyboard;
@@ -301,6 +307,9 @@ void FocusManager::FocusPreviousSelectionItem() {
   const auto it = std::ranges::find(children, mFocusedWidget);
   for (auto&& sibling:
        std::ranges::subrange(children.begin(), it) | std::views::reverse) {
+    if (sibling->IsDisabled()) {
+      continue;
+    }
     if (dynamic_cast<Widgets::ISelectionItem const*>(sibling)) {
       mFocusedWidget = sibling;
       mFocusKind = FocusKind::Keyboard;
