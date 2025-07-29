@@ -24,10 +24,16 @@ class IToggleable : public IFocusable {
   virtual void Toggle() = 0;
 };
 
+class ISelectionItem;
+
+class ISelectionContainer : public IFocusable {};
+
 /// A single item that can be selected from a list, e.g. a single radio button
 class ISelectionItem : public IFocusable {
  public:
-  virtual bool IsSelected() const noexcept = 0;
+  [[nodiscard]]
+  virtual bool IsSelected() const noexcept
+    = 0;
   virtual void Select() = 0;
 };
 

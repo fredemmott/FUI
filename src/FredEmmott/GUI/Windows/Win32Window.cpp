@@ -44,8 +44,17 @@ std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
       return Key_Return;
     case VK_SPACE:
       return Key_Space;
+    case VK_LEFT:
+      return Key_LeftArrow;
+    case VK_UP:
+      return Key_UpArrow;
+    case VK_RIGHT:
+      return Key_RightArrow;
+    case VK_DOWN:
+      return Key_DownArrow;
+    default:
+      return std::nullopt;
   }
-  return std::nullopt;
 }
 
 KeyModifier GetModifierKeys() {

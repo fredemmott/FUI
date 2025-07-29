@@ -3,15 +3,34 @@
 #include "RadioButtons.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/RadioButtons.hpp>
+#include <FredEmmott/GUI/Widgets/Focusable.hpp>
 
 #include "Label.hpp"
 #include "StackPanel.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-void EndRadioButtons() {
-  EndVStackPanel();
-  EndVStackPanel();
+
+namespace {
+
+auto& InnerStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .FlexDirection(YGFlexDirectionColumn)
+      .Gap(StaticTheme::RadioButtons::RadioButtonsRowSpacing),
+  };
+  return ret;
 }
+
+constexpr LiteralStyleClass InnerStyleClass {"RadioButtons/Inner"};
+
+class RadioButtonsInner : public Widgets::Widget,
+                          public Widgets::ISelectionContainer {
+ public:
+  explicit RadioButtonsInner(std::size_t id)
+    : Widget(id, InnerStyle(), {*InnerStyleClass}) {}
+};
+}// namespace
+
 Result<&EndRadioButtons> BeginRadioButtons(
   const std::string_view title,
   const ID id) {
@@ -33,9 +52,13 @@ Result<&EndRadioButtons> BeginRadioButtons(
     Label(title, ID {"RadioButtons/Title"}).Styled(TitleStyle);
   }
 
-  BeginVStackPanel(ID {"RadioButtons/Content"})
-    .Styled(Style().Gap(RadioButtonsRowSpacing));
+  immediate_detail::BeginWidget<RadioButtonsInner>(ID {"RadioButtons/Inner"});
   return outer;
+}
+
+void EndRadioButtons() {
+  immediate_detail::EndWidget<RadioButtonsInner>();
+  EndVStackPanel();
 }
 
 }// namespace FredEmmott::GUI::Immediate

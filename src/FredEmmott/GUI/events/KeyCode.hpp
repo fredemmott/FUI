@@ -8,11 +8,17 @@
 
 namespace FredEmmott::GUI {
 
-// Mostly from the ASCII table
 enum class KeyCode : uint8_t {
+  // Matching ASCII
   Key_Tab = 0x09,
   Key_Return = 0x0D,
   Key_Space = 0x20,
+
+  // Matching Win32 VKEY_*
+  Key_LeftArrow = 0x25,
+  Key_UpArrow = 0x26,
+  Key_RightArrow = 0x27,
+  Key_DownArrow = 0x28,
 };
 
 enum class KeyModifier : uint8_t {

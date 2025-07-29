@@ -44,6 +44,11 @@ class FocusManager final {
   void FocusFirstWidget();
   void FocusLastWidget();
 
+  void FocusNextSelectionItem();
+  void FocusPreviousSelectionItem();
+
+  void FocusFirstSelectedItem();
+
   static Widgets::Widget* FirstFocusableWidget(Widgets::Widget* parent);
   static Widgets::Widget* LastFocusableWidget(Widgets::Widget* parent);
 };
