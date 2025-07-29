@@ -93,7 +93,9 @@ static void AppTick(fui::Window& window) {
     fuii::TextBlock(LoremIpsum).Styled(fui::Style().MinWidth(400));
 
     const auto footer = fuii::BeginContentDialogButtons().Scoped();
-    fuii::ContentDialogPrimaryButton("Test").Accent();
+    if (fuii::ContentDialogPrimaryButton("Test").Accent()) {
+      std::println(stderr, "ContentDialog primary button clicked");
+    }
     fuii::BeginDisabled();
     fuii::ContentDialogSecondaryButton("Test Disabled");
     fuii::EndDisabled();

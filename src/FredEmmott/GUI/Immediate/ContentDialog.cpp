@@ -53,6 +53,10 @@ struct ButtonsContext : Widgets::Context {
   LogicalButton mPrimary {"Primary"};
   LogicalButton mSecondary {"Secondary"};
   LogicalButton mClose {"Close"};
+
+  bool mInitialized = false;
+  Widgets::Button* mDefaultButton {};
+  Widgets::Button* mCancelButton {};
 };
 thread_local ButtonsContext* tButtonsContext {nullptr};
 
@@ -161,6 +165,9 @@ void SingleButton(ButtonsContext::LogicalButton& b) {
   ctx->mSecondary.mBinding = nullptr;
   ctx->mClose.mBinding = nullptr;
   b.mBinding = &ctx->mThirdColumn;
+
+  ctx->mDefaultButton = b.mBinding->mButton;
+  ctx->mCancelButton = ctx->mDefaultButton;
 };
 
 void EndContentDialogButtons() {
@@ -189,6 +196,9 @@ void EndContentDialogButtons() {
   }
   Show(ctx->mOuter);
 
+  ctx->mDefaultButton = nullptr;
+  ctx->mCancelButton = nullptr;
+
   switch (visibleButtons) {
     case Primary | Secondary | Close:
       Show(ctx->mFirstColumn);
@@ -200,6 +210,9 @@ void EndContentDialogButtons() {
       ctx->mPrimary.mBinding = &ctx->mFirstColumn;
       ctx->mSecondary.mBinding = &ctx->mSecondColumn;
       ctx->mClose.mBinding = &ctx->mThirdColumn;
+
+      ctx->mDefaultButton = ctx->mPrimary.mBinding->mButton;
+      ctx->mCancelButton = ctx->mClose.mBinding->mButton;
       break;
     case Primary:
       SingleButton(ctx->mPrimary);
@@ -220,6 +233,8 @@ void EndContentDialogButtons() {
       ctx->mPrimary.mBinding = &ctx->mFirstColumn;
       ctx->mSecondary.mBinding = &ctx->mThirdColumn;
       ctx->mClose.mBinding = nullptr;
+      ctx->mDefaultButton = ctx->mPrimary.mBinding->mButton;
+      ctx->mCancelButton = ctx->mSecondary.mBinding->mButton;
       break;
     case Primary | Close:
       Show(ctx->mFirstColumn);
@@ -231,6 +246,9 @@ void EndContentDialogButtons() {
       ctx->mPrimary.mBinding = &ctx->mFirstColumn;
       ctx->mSecondary.mBinding = nullptr;
       ctx->mClose.mBinding = &ctx->mThirdColumn;
+
+      ctx->mDefaultButton = ctx->mPrimary.mBinding->mButton;
+      ctx->mCancelButton = ctx->mClose.mBinding->mButton;
       break;
     case Secondary | Close:
       Hide(ctx->mFirstColumn);
@@ -242,6 +260,9 @@ void EndContentDialogButtons() {
       ctx->mPrimary.mBinding = nullptr;
       ctx->mSecondary.mBinding = &ctx->mSecondColumn;
       ctx->mClose.mBinding = &ctx->mThirdColumn;
+
+      ctx->mDefaultButton = ctx->mSecondary.mBinding->mButton;
+      ctx->mCancelButton = ctx->mClose.mBinding->mButton;
       break;
   }
 
@@ -311,6 +332,28 @@ BeginContentDialogButtons() {
   button(ctx->mSecondColumn);
   ctx->mSecondSpacer = spacer();
   button(ctx->mThirdColumn);
+
+  if (std::exchange(ctx->mInitialized, true)) {
+    return {};
+  }
+
+  const auto invokeButton = [ctx](auto proj) {
+    const auto button = std::invoke(proj, ctx);
+    if (!button) {
+      return;
+    }
+    if (button->IsDisabled()) {
+      return;
+    }
+    button->Invoke();
+  };
+
+  FUI_ASSERT(tWindow);
+  tWindow->SetDefaultAction(
+    std::bind_front(invokeButton, &ButtonsContext::mDefaultButton));
+  tWindow->SetCancelAction(
+    std::bind_front(invokeButton, &ButtonsContext::mCancelButton));
+
   return {};
 }
 
