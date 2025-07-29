@@ -45,6 +45,8 @@ class FocusManager final {
   void FocusFirstWidget();
   void FocusLastWidget();
 
+  void FocusFirstSelectionItem(auto makeRange);
+
   void FocusNextSelectionItem();
   void FocusPreviousSelectionItem();
 
