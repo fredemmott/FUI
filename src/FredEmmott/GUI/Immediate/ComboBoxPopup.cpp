@@ -77,7 +77,7 @@ ComboBoxPopupResult BeginComboBoxPopup(const ID id) {
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
   BeginWidget<Widget>(ID {0}, OuterStyles());
-  BeginWidget<ComboBoxList>(ID {0})->ReplaceExplicitStyles(
+  BeginWidget<ComboBoxList>(ID {0})->SetMutableStyles(
     Style().MinWidth(std::max(width, ComboBoxPopupThemeMinWidth)));
   return true;
 }

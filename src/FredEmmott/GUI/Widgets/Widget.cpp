@@ -254,15 +254,15 @@ void Widget::SetIsDirectlyDisabled(bool value) {
   }
 }
 
-void Widget::ReplaceExplicitStyles(const Style& styles) {
-  if (styles == mExplicitStyles) {
+void Widget::SetMutableStyles(const Style& styles) {
+  if (styles == mMutableStyles) {
     return;
   }
-  mExplicitStyles = styles;
+  mMutableStyles = styles;
 }
 
-void Widget::AddExplicitStyles(const Style& styles) {
-  mExplicitStyles += styles;
+void Widget::AddMutableStyles(const Style& styles) {
+  mMutableStyles += styles;
 }
 
 void Widget::SetDirectChildren(const std::vector<Widget*>& children) {

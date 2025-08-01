@@ -56,7 +56,7 @@ void Widget::ComputeStyles(const Style& inherited) {
     }
   }
 
-  auto style = flattened.value() + inherited + mExplicitStyles;
+  auto style = flattened.value() + inherited + mMutableStyles;
 
   mDirectStateFlags &= ~StateFlags::Animating;
 

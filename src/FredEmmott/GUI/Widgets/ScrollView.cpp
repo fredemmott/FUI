@@ -152,24 +152,24 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
     mHorizontalScrollBar->SetMaximum(cw - w);
-    mHorizontalScrollBar->AddExplicitStyles(Style().Display(YGDisplayFlex));
-    mVerticalScrollBar->AddExplicitStyles(
+    mHorizontalScrollBar->AddMutableStyles(Style().Display(YGDisplayFlex));
+    mVerticalScrollBar->AddMutableStyles(
       Style().Bottom(StaticTheme::ScrollBar::ScrollBarSize + 4));
   } else {
     mHorizontalScrollBar->SetValue(0);
     mHorizontalScrollBar->SetMaximum(0);
-    mHorizontalScrollBar->AddExplicitStyles(Style().Display(YGDisplayNone));
-    mVerticalScrollBar->AddExplicitStyles(Style().Bottom(4));
+    mHorizontalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
+    mVerticalScrollBar->AddMutableStyles(Style().Bottom(4));
   }
 
   if (showVScroll) {
     mVerticalScrollBar->SetThumbSize(h);
     mVerticalScrollBar->SetMaximum(ch - h);
-    mVerticalScrollBar->AddExplicitStyles(Style().Display(YGDisplayFlex));
+    mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayFlex));
   } else {
     mVerticalScrollBar->SetValue(0);
     mVerticalScrollBar->SetMaximum(0);
-    mVerticalScrollBar->AddExplicitStyles(Style().Display(YGDisplayNone));
+    mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
   }
 }
 
@@ -219,7 +219,7 @@ void ScrollView::OnHorizontalScroll(
   if (reason != ScrollBar::ChangeReason::Discrete) {
     transition = InstantStyleTransition;
   }
-  mContentInner->AddExplicitStyles(Style().TranslateX(-value, transition));
+  mContentInner->AddMutableStyles(Style().TranslateX(-value, transition));
 }
 
 void ScrollView::OnVerticalScroll(float value, ScrollBar::ChangeReason reason) {
@@ -227,7 +227,7 @@ void ScrollView::OnVerticalScroll(float value, ScrollBar::ChangeReason reason) {
   if (reason != ScrollBar::ChangeReason::Discrete) {
     transition = InstantStyleTransition;
   }
-  mContentInner->AddExplicitStyles(Style().TranslateY(-value, transition));
+  mContentInner->AddMutableStyles(Style().TranslateY(-value, transition));
 }
 
 bool ScrollView::IsScrollBarVisible(

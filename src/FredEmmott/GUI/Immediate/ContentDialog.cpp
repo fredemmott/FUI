@@ -146,11 +146,11 @@ auto GetButtonWidget(const T& v) {
 
 void Hide(auto w) {
   static const auto Hide = Style().Display(YGDisplayNone);
-  GetButtonWidget(w)->AddExplicitStyles(Hide);
+  GetButtonWidget(w)->AddMutableStyles(Hide);
 }
 auto Show(auto w) {
   static const auto Show = Style().Display(YGDisplayFlex);
-  GetButtonWidget(w)->AddExplicitStyles(Show);
+  GetButtonWidget(w)->AddMutableStyles(Show);
 };
 
 void SingleButton(ButtonsContext::LogicalButton& b) {

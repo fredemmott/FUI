@@ -101,7 +101,7 @@ void EndComboBoxButton() {
   FontIcon("\ue70d", FontIconSize::Body, ID {"glyph"});// ChevronDown
   // MarginRight of 14 is in the Xaml without an alias; MarginLeft
   // is not set in the XAML at all.
-  GetCurrentNode()->ReplaceExplicitStyles(
+  GetCurrentNode()->SetMutableStyles(
     Style()
       .AlignSelf(YGAlignCenter)
       .FlexGrow(0)

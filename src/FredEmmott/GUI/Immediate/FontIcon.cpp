@@ -89,7 +89,7 @@ Result<> FontIcon(
     if (!std::exchange(first, false)) {
       widget->AddStyleClass(StackedStyleClass);
     }
-    widget->ReplaceExplicitStyles(style);
+    widget->SetMutableStyles(style);
   }
 
   immediate_detail::EndWidget<Widgets::Widget>();

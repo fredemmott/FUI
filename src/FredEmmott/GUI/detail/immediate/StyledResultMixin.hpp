@@ -14,7 +14,7 @@ template <class... TMixins>
 struct StyledResultMixin<TMixins...> {
   template <class Self>
   decltype(auto) Styled(this Self&& self, const Style& style) {
-    widget_from_result(self)->ReplaceExplicitStyles(style);
+    widget_from_result(self)->SetMutableStyles(style);
     return std::forward<Self>(self);
   }
 };

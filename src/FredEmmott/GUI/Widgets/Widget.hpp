@@ -16,7 +16,7 @@ namespace FredEmmott::GUI {
 struct KeyEvent;
 struct KeyReleaseEvent;
 struct KeyPressEvent;
-}
+}// namespace FredEmmott::GUI
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
 
@@ -142,8 +142,8 @@ class Widget {
   Style FlattenStyles(const Style&);
 
   /// User-provided styles
-  void ReplaceExplicitStyles(const Style& styles);
-  void AddExplicitStyles(const Style& styles);
+  void SetMutableStyles(const Style& styles);
+  void AddMutableStyles(const Style& styles);
 
   void Paint(Renderer* renderer) const;
 
@@ -173,7 +173,7 @@ class Widget {
     Animating = 1 << 4,
     Checked = 1 << 5,
     HaveFocus = 1 << 6,
-    HaveVisibleFocus = 1<< 7,
+    HaveVisibleFocus = 1 << 7,
   };
   friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
 
@@ -218,8 +218,8 @@ class Widget {
   [[nodiscard]]
   virtual EventHandlerResult OnKeyRelease(const KeyReleaseEvent&);
 
-  [[nodiscard]] auto GetExplicitStyles() const noexcept {
-    return mExplicitStyles;
+  [[nodiscard]] auto GetMutableStyles() const noexcept {
+    return mMutableStyles;
   }
 
   /** Parent node for `GetChildren()` and `SetChildren()` (public APIs).
@@ -254,7 +254,7 @@ class Widget {
 
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
-  Style mExplicitStyles {};
+  Style mMutableStyles {};
 
   std::string mStylesCacheKey;
   Style mInheritedStyles;
