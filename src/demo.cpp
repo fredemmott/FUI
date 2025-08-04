@@ -6,7 +6,7 @@
 #include <map>
 #include <print>
 
-#include "FredEmmott/GUI/Immediate/ContentDialog.hpp"
+#include "FredEmmott/GUI/Widgets/TextBox.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -203,6 +203,9 @@ static void AppTick(fui::Window& window) {
   if (fuii::HyperlinkButton("I'm a HyperlinkButton!")) {
     std::println(stderr, "Hyperlink clicked");
   }
+
+  fuii::immediate_detail::ChildlessWidget<fui::Widgets::TextBox>(
+    fuii::ID {std::source_location::current()});
 
   fuii::EndDisabled();
 

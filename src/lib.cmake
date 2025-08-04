@@ -84,6 +84,7 @@ add_library(
   FredEmmott/GUI/Widgets/ScrollView.cpp FredEmmott/GUI/Widgets/ScrollView.hpp
   FredEmmott/GUI/Widgets/StackPanel.cpp FredEmmott/GUI/Widgets/StackPanel.hpp
   FredEmmott/GUI/Widgets/TextBlock.cpp FredEmmott/GUI/Widgets/TextBlock.hpp
+  FredEmmott/GUI/Widgets/TextBox.cpp FredEmmott/GUI/Widgets/TextBox.hpp
   FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchKnob.cpp FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
@@ -110,6 +111,8 @@ add_library(
   FredEmmott/GUI/detail/system_font_detail.hpp
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
+  FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
+  FredEmmott/GUI/detail/win32_detail/WinRTEventHandler.hpp
   FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp

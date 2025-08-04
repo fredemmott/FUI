@@ -28,6 +28,8 @@ struct BasicPoint {
   static constexpr auto is_size_type_v = is_size_type_t<U>::value;
 
  public:
+  using value_type = T;
+
   T mX {};
   T mY {};
 
@@ -78,7 +80,12 @@ struct BasicPoint {
 
   template <class Other>
   Other as() const noexcept {
-    return Other {mX, mY};
+    if constexpr (requires { typename Other::value_type; }) {
+      using U = typename Other::value_type;
+      return Other {static_cast<U>(mX), static_cast<U>(mY)};
+    } else {
+      return Other {mX, mY};
+    }
   }
 };
 

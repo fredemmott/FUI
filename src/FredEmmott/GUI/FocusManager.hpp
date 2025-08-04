@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "FredEmmott/GUI/Widgets/Widget.hpp"
+#include "Widgets/TextBox.hpp"
 
 namespace FredEmmott::GUI {
 enum class FocusKind {
@@ -22,6 +23,9 @@ class FocusManager final {
 
   [[nodiscard]] std::optional<std::tuple<Widgets::Widget*, FocusKind>>
   GetFocusedWidget() const;
+
+  [[nodiscard]]
+  static bool IsWidgetFocused(Widgets::Widget const*);
 
   void GivePointerFocus(Widgets::Widget*);
   void FocusNextWidget();

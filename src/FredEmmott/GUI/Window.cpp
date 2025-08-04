@@ -73,7 +73,7 @@ void Window::EndFrame() {
   mFUIRoot.EndFrame();
 
   FUI_ASSERT(tWindow == this, "Improperly nested windows");
-  tWindow = nullptr;
+  const auto resetWindowAtExit = wil::scope_exit([] { tWindow = nullptr; });
 
   if (mExitCode) {
     this->HideWindow();
