@@ -52,4 +52,12 @@ void EndWidget() {
   ++tStack.back().mNextIndex;
 }
 
+template <std::derived_from<Widgets::Widget> T, class... Args>
+T* ChildlessWidget(const ID id, Args&&... args) {
+  auto ret = BeginWidget<T>(id, std::forward<Args>(args)...);
+  tStack.pop_back();
+  ++tStack.back().mNextIndex;
+  return ret;
+}
+
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

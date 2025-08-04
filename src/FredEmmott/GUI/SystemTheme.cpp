@@ -43,7 +43,7 @@ Store::Store() {
 void Store::Populate() {
   const wil::com_ptr<IUISettings3> uiSettings
     = wil::ActivateInstance<IUISettings3>(
-      L"Windows.UI.ViewManagement.UISettings");
+      RuntimeClass_Windows_UI_ViewManagement_UISettings);
 #define POPULATE_COLOR(X, IMPL) this->Populate(*uiSettings, &m##X, IMPL);
   FUI_SYSTEM_COLOR_USAGES(POPULATE_COLOR)
 #undef POPULATE_COLOR

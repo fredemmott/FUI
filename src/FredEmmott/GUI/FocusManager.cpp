@@ -54,6 +54,14 @@ FocusManager::GetFocusedWidget() const {
   return std::tuple {mFocusedWidget, mFocusKind};
 }
 
+bool FocusManager::IsWidgetFocused(Widgets::Widget const* widget) {
+  const auto fm = Get();
+  if (!fm) {
+    return false;
+  }
+  return fm->mFocusedWidget == widget;
+}
+
 void FocusManager::GivePointerFocus(Widgets::Widget* widget) {
   mFocusedWidget = widget;
   mFocusKind = FocusKind::Pointer;
