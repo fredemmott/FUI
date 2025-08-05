@@ -112,7 +112,6 @@ add_library(
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
   FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
-  FredEmmott/GUI/detail/win32_detail/WinRTEventHandler.hpp
   FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
