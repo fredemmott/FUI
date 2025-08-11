@@ -22,7 +22,8 @@
       "cacheVariables": {
         "CMAKE_MT": "mt",
         "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl"
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER_LINKER": "MSVC"
       }
     },
     {
