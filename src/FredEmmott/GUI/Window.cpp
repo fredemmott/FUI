@@ -174,4 +174,13 @@ void Window::DispatchEvent(const KeyEvent& e) {
   }
 }
 
+void Window::DispatchEvent(const TextInputEvent& e) {
+  const auto fm = GetRoot()->GetFocusManager();
+  FocusManager::PushInstance(fm);
+  const auto popFocusManager
+    = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
+
+  (void)GetRoot()->GetWidget()->DispatchEvent(e);
+}
+
 }// namespace FredEmmott::GUI

@@ -15,6 +15,9 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
+    {
+      "name": "pkgconf"
+    },
     "wil",
     {
       "name": "yoga",
@@ -28,10 +31,14 @@
     "direct2d": {
       "description": "Enable support for Direct2D+DirectWrite+D3D11"
     },
+    "icu": {
+      "description": "Use the ICU library; on Windows, increases the binary size but reduces the minimum version"
+    },
     "skia": {
       "description": "Enable support for Skia",
       "supports": "static",
       "dependencies": [
+        "icu",
         {
           "name": "skia",
           "default-features": false,

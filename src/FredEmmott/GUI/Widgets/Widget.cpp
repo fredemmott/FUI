@@ -377,6 +377,14 @@ Widget* Widget::DispatchEvent(const Event& e) {
     return nullptr;
   }
 
+  if (const auto it = dynamic_cast<TextInputEvent const*>(&e)) {
+    if (const auto fm = FocusManager::Get();
+        const auto target = fm->GetFocusedWidget()) {
+      return get<0>(*target)->DispatchTextInputEvent(*it);
+    }
+    return nullptr;
+  }
+
   throw std::logic_error("Unhandled event type");
 }
 
@@ -504,6 +512,21 @@ Widget* Widget::DispatchKeyEvent(const KeyEvent& e) {
   if (const auto parent = this->GetParent()) {
     return parent->DispatchKeyEvent(e);
   }
+
+  return nullptr;
+}
+
+Widget* Widget::DispatchTextInputEvent(const TextInputEvent& e) {
+  const auto result = this->OnTextInput(e);
+
+  if (result == EventHandlerResult::StopPropagation) {
+    return this;
+  }
+
+  if (const auto parent = this->GetParent()) {
+    return parent->DispatchTextInputEvent(e);
+  }
+
   return nullptr;
 }
 
@@ -524,6 +547,10 @@ Widget::EventHandlerResult Widget::OnKeyPress(const KeyPressEvent&) {
 }
 
 Widget::EventHandlerResult Widget::OnKeyRelease(const KeyReleaseEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnTextInput(const TextInputEvent&) {
   return EventHandlerResult::Default;
 }
 

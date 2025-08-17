@@ -120,6 +120,7 @@ class Window {
   void ResetToFirstBackBuffer();
 
   void DispatchEvent(const KeyEvent&);
+  void DispatchEvent(const TextInputEvent&);
   Widgets::Widget* DispatchEvent(const MouseEvent& e);
 
  private:

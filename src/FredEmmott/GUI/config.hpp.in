@@ -6,6 +6,7 @@
 
 $<IF:$<BOOL:@ENABLE_SKIA@>,#define,// #undef> FUI_ENABLE_SKIA
 $<IF:$<BOOL:@ENABLE_DIRECT2D@>,#define,// #undef> FUI_ENABLE_DIRECT2D
+$<IF:$<BOOL:@ENABLE_ICU@>,#define,// #undef> FUI_ENABLE_ICU
 
 // See notes on no_unique_address here:
 // https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/
@@ -33,6 +34,10 @@ static_assert(BackendCount > 0, "At least one backend must be enabled");
 // Allows optimizations
 constexpr bool HaveSingleBackend = (BackendCount == 1);
 
+#ifdef _WIN32
+constexpr auto MinimumWindowsTarget = @NTDDI_VERSION_VALUE@; // @NTDDI_VERSION@
+#endif
+
 }// namespace FredEmmott::GUI::Config
 
 namespace FredEmmott::GUI::Config::CompilerChecks {
@@ -57,4 +62,5 @@ constexpr auto CPlusPlus = __cplusplus;
 #endif
 constexpr auto MinimumCPlusPlus = @MINIMUM_CPLUSPLUS@;
 static_assert(CPlusPlus >= MinimumCPlusPlus, "C++ @MINIMUM_CPLUSPLUS@ is required");
+
 }// namespace FredEmmott::GUI::CompilerChecks

@@ -12,6 +12,8 @@
 #include <FredEmmott/GUI/yoga.hpp>
 #include <typeindex>
 
+#include "FredEmmott/GUI/events/TextInputEvent.hpp"
+
 namespace FredEmmott::GUI {
 struct KeyEvent;
 struct KeyReleaseEvent;
@@ -217,6 +219,8 @@ class Widget {
   virtual EventHandlerResult OnKeyPress(const KeyPressEvent&);
   [[nodiscard]]
   virtual EventHandlerResult OnKeyRelease(const KeyReleaseEvent&);
+  [[nodiscard]]
+  virtual EventHandlerResult OnTextInput(const TextInputEvent&);
 
   [[nodiscard]] auto GetMutableStyles() const noexcept {
     return mMutableStyles;
@@ -271,6 +275,7 @@ class Widget {
   [[nodiscard]]
   MouseEventResult DispatchMouseEvent(const MouseEvent&);
   Widget* DispatchKeyEvent(const KeyEvent&);
+  Widget* DispatchTextInputEvent(const TextInputEvent&);
 
   [[nodiscard]]
   bool MatchesStylePseudoClass(StyleClass) const;

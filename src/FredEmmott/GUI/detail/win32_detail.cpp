@@ -47,4 +47,32 @@ std::wstring Utf8ToWide(const std::string_view s) {
   }
   return ret;
 }
+
+std::string WideToUtf8(const std::wstring_view s) {
+  const auto retCharCount = WideCharToMultiByte(
+    CP_UTF8,
+    WC_ERR_INVALID_CHARS,
+    s.data(),
+    s.size(),
+    nullptr,
+    0,
+    nullptr,
+    nullptr);
+  std::string ret;
+  ret.resize(retCharCount);
+  WideCharToMultiByte(
+    CP_UTF8,
+    WC_ERR_INVALID_CHARS,
+    s.data(),
+    s.size(),
+    ret.data(),
+    retCharCount,
+    nullptr,
+    nullptr);
+  if (const auto i = ret.find_last_of('\0'); i != std::string::npos) {
+    ret.erase(i);
+  }
+  return ret;
+}
+
 }// namespace FredEmmott::GUI::win32_detail

@@ -23,6 +23,7 @@
 #include <thread>
 
 #include "FredEmmott/GUI/ExitException.hpp"
+#include "FredEmmott/GUI/events/TextInputEvent.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
@@ -54,6 +55,10 @@ std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
       return Key_DownArrow;
     case VK_ESCAPE:
       return Key_Escape;
+    case VK_HOME:
+      return Key_Home;
+    case VK_END:
+      return Key_End;
     default:
       return std::nullopt;
   }
@@ -763,6 +768,33 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         this->DispatchEvent(e);
       }
       break;
+    case WM_CHAR: {
+      if (IS_HIGH_SURROGATE(wParam)) {
+        mHighSurrogate = wParam;
+        return 0;
+      }
+      const auto clearSurrogate
+        = wil::scope_exit([this] { mHighSurrogate.reset(); });
+      if (IS_LOW_SURROGATE(wParam)) {
+        if (!mHighSurrogate) {
+          __debugbreak();
+          return 0;
+        }
+        if (IS_SURROGATE_PAIR(*mHighSurrogate, wParam)) {
+          // TODO
+          __debugbreak();
+        }
+        return 0;
+      }
+      if (wParam == '\t') {
+        return 0;
+      }
+      const auto text = WideToUtf8(
+        std::wstring_view {reinterpret_cast<const wchar_t*>(&wParam), 1});
+      TextInputEvent e {text};
+      this->DispatchEvent(e);
+      break;
+    }
     case WM_SETCURSOR: {
       static const wil::unique_hcursor sDefaultCursor {
         LoadCursor(nullptr, IDC_ARROW)};

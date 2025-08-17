@@ -16,6 +16,8 @@ enum class KeyCode : uint8_t {
   Key_Space = 0x20,
 
   // Matching Win32 VKEY_*
+  Key_End = 0x23,
+  Key_Home = 0x24,
   Key_LeftArrow = 0x25,
   Key_UpArrow = 0x26,
   Key_RightArrow = 0x27,

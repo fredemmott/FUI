@@ -15,4 +15,5 @@ void CheckHResult(
   HRESULT,
   const std::source_location& caller = std::source_location::current());
 std::wstring Utf8ToWide(std::string_view);
+std::string WideToUtf8(std::wstring_view);
 }// namespace FredEmmott::GUI::win32_detail

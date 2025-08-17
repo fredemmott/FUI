@@ -18,6 +18,7 @@ namespace FredEmmott::GUI {
     BOOL, \
     SPI_GETCLIENTAREAANIMATION, \
     SPI_SETCLIENTAREAANIMATION) \
+  X(uint32_t, CaretWidth, DWORD, SPI_GETCARETWIDTH, SPI_SETCARETWIDTH) \
   X(bool, \
     HighContrast, \
     HIGHCONTRASTW, \

@@ -47,6 +47,44 @@ if (MSVC)
   )
 endif ()
 
+set(DEFAULT_ENABLE_ICU "${UNIX}")
+if (ENABLE_SKIA)
+  set(DEFAULT_ENABLE_ICU ON)
+endif ()
+option(ENABLE_ICU "Use the ICU library" "${DEFAULT_ENABLE_ICU}")
+if (WIN32)
+  set(NTDDI_VERSION NTDDI_WIN10)
+  if (NOT ENABLE_ICU)
+    # Use ICU from the Windows SDK instead, which means we need Win10 "Creators Update" (1703), a.k.a "Redstone 2"
+    set(NTDDI_VERSION NTDDI_WIN10_RS2)
+  endif ()
+  add_compile_definitions(
+    "_WIN32_WINNT=_WIN32_WINNT_WIN10"
+    "NTDDI_VERSION=${NTDDI_VERSION}"
+  )
+  try_run(
+    NTDDI_VERSION_RAN
+    NTDDI_VERSION_COMPILED
+    SOURCE_FROM_CONTENT
+    "NTDDI_VERSION.cpp"
+    "
+ #include <Windows.h>
+ #include <print>
+ int main() {
+   std::print(\"{:#010x}\", ${NTDDI_VERSION});
+   return 0;
+ }"
+    COMPILE_DEFINITIONS -DWIN32_LEAN_AND_MEAN
+    RUN_OUTPUT_STDOUT_VARIABLE NTDDI_VERSION_VALUE
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+  )
+  if (NOT NTDDI_VERSION_VALUE)
+    message(FATAL_ERROR "Failed to determine NTDDI_VERSION value")
+  endif ()
+endif ()
+
 option(ENABLE_DEVELOPER_OPTIONS "Enable lots of warnings, and warnings-as-errors" "${PROJECT_IS_TOP_LEVEL}")
 if (${ENABLE_DEVELOPER_OPTIONS})
   set(CMAKE_LINK_LIBRARIES_ONLY_TARGETS ON)

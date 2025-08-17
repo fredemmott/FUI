@@ -182,6 +182,7 @@ class Win32Window : public Window {
   Widgets::Widget* mOffsetToChild {nullptr};
   bool mPendingResize {false};
   bool mTrackingMouseEvents {false};
+  std::optional<uint16_t> mHighSurrogate;
   NativePoint mPosition {};
   ResizeMode mHorizontalResizeMode = ResizeMode::AllowGrow;
   ResizeMode mVerticalResizeMode = ResizeMode::Fixed;

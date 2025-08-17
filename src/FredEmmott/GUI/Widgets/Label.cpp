@@ -45,7 +45,7 @@ Widget* Label::SetText(std::string_view text) {
        + YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
        + YGNodeLayoutGetPadding(yoga, YGEdgeRight)
        + YGNodeLayoutGetBorder(yoga, YGEdgeRight));
-  if (mFont.MeasureTextWidth(mText) > availableWidth) {
+  if (std::abs(mFont.MeasureTextWidth(mText) - availableWidth) > 1.0) {
     YGNodeMarkDirty(this->GetLayoutNode());
   }
 
@@ -110,8 +110,8 @@ Widget::ComputedStyleFlags Label::OnComputedStyleChange(
 
 YGSize Label::Measure(
   YGNodeConstRef node,
-  float width,
-  YGMeasureMode widthMode,
+  [[maybe_unused]] float width,
+  [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
   const auto self = static_cast<Label*>(FromYogaNode(node));
@@ -122,7 +122,7 @@ YGSize Label::Measure(
   const auto tw = font.MeasureTextWidth(text);
 
   return {
-    (widthMode == YGMeasureModeExactly && tw < width) ? width : tw,
+    tw,
     -font.GetMetrics().mAscent,
   };
 }

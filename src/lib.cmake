@@ -97,6 +97,7 @@ add_library(
   FredEmmott/GUI/Window.cpp FredEmmott/GUI/Window.hpp
   FredEmmott/GUI/assert.hpp
   FredEmmott/GUI/detail/font_detail.hpp
+  FredEmmott/GUI/detail/icu.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate/CaptionResultMixin.cpp FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp
   FredEmmott/GUI/detail/immediate/TextBlockStylesMixin.hpp
@@ -119,6 +120,7 @@ add_library(
   FredEmmott/GUI/events/KeyEvent.hpp
   FredEmmott/GUI/events/MouseButton.hpp
   FredEmmott/GUI/events/MouseEvent.hpp
+  FredEmmott/GUI/events/TextInputEvent.hpp
   FredEmmott/GUI/yoga.cpp FredEmmott/GUI/yoga.hpp
   FredEmmott/memory.hpp
   FredEmmott/memory/memory_detail.hpp
@@ -203,6 +205,14 @@ if (ENABLE_DIRECT2D)
     Dwrite
     D3d11
   )
+endif ()
+
+if (ENABLE_ICU)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(ICU REQUIRED IMPORTED_TARGET icu-uc)
+  target_link_libraries(fredemmott-gui PRIVATE PkgConfig::ICU)
+elseif (WIN32)
+  list(APPEND WINDOWS_SDK_LIBRARIES icuuc icuin)
 endif ()
 
 foreach (NAME IN LISTS WINDOWS_SDK_LIBRARIES)
