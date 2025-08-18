@@ -30,7 +30,11 @@ struct deleter_type<T, nullptr> {
   using type = std::default_delete<T>;
 };
 
-template <class T, std::invocable<T*> auto TDeleter>
+// AIUI we *should* be able to put the requirement in to the template <>,
+// but while Clang is fine with it, MSVC 19.44.35214 (VS 17.14.11) allows
+// the syntax, but fails to substitute it where appropriate
+template <class T, auto TDeleter>
+  requires std::invocable<decltype(TDeleter), T*>
 struct deleter_type<T, TDeleter> {
   using type = callback_delete<T, TDeleter>;
 };
