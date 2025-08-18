@@ -41,7 +41,7 @@ float DirectWriteFontProvider::MeasureTextWidth(
     return 0.f;
   }
 
-  return metrics.width;
+  return metrics.widthIncludingTrailingWhitespace;
 }
 
 Font::Metrics DirectWriteFontProvider::GetFontMetrics(const Font& font) const {
