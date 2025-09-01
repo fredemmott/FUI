@@ -45,8 +45,13 @@ TToString ConvertEncoding(const TFromStringView s) {
   const auto convert
     = std::bind_front(TImpl, s.data(), size_cast<int>(s.size()));
 
+  // If we can fit in `StaticBufferSize`, avoid a heap allocation
   thread_local TToString tlBuffer;
-  tlBuffer.resize_and_overwrite(StaticBufferSize, convert);
+  // Reserves size + 1 for trailing null
+  // Let's make StaticBufferSize the *actual* buffer size. Especially as
+  // powers-of-two are normal, going one byte over is likely to increase
+  // fragmentation and may hurt performance if it turns out to be page size + 1
+  tlBuffer.resize_and_overwrite(StaticBufferSize - 1, convert);
   if (!tlBuffer.empty()) {
     FUI_ASSERT(tlBuffer.back() != '\0' || s.back() == '\0');
     return tlBuffer;
