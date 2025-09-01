@@ -5,9 +5,63 @@
 
 #include <bit>
 #include <format>
+#include <functional>
 #include <system_error>
 
+#include "FredEmmott/GUI/assert.hpp"
+#include "FredEmmott/GUI/config.hpp"
+
 namespace FredEmmott::GUI::win32_detail {
+
+namespace {
+constexpr std::size_t StaticBufferSize = 1024 * 1024;
+
+template <std::integral T>
+T size_cast(const std::size_t v) {
+  if (v > std::numeric_limits<T>::max()) {
+    throw std::overflow_error("size too large");
+  }
+  return static_cast<T>(v);
+}
+
+template <class T, class TFromStringView, class TToString, class TSizeType>
+concept text_transcoder = std::is_invocable_r_v<
+  TSizeType,
+  T,
+  typename TFromStringView::value_type const*,
+  TSizeType,
+  typename TToString::value_type*,
+  TSizeType>;
+
+template <
+  class TFromStringView,
+  class TToString,
+  text_transcoder<TFromStringView, TToString, int> auto TImpl>
+TToString ConvertEncoding(const TFromStringView s) {
+  if (s.empty()) {
+    return {};
+  }
+
+  const auto convert
+    = std::bind_front(TImpl, s.data(), size_cast<int>(s.size()));
+
+  thread_local TToString tlBuffer;
+  tlBuffer.resize_and_overwrite(StaticBufferSize, convert);
+  if (!tlBuffer.empty()) {
+    FUI_ASSERT(tlBuffer.back() != '\0' || s.back() == '\0');
+    return tlBuffer;
+  }
+
+  const auto charCount = convert(nullptr, 0);
+  const auto bufferSize = charCount + 1;
+  TToString ret;
+  ret.resize_and_overwrite(bufferSize, convert);
+  FUI_ASSERT(ret.back() != '\0' || s.back() == '\0');
+  return ret;
+}
+
+}// namespace
+
 void ThrowHResult(const HRESULT ret, const std::source_location& caller) {
   const std::error_code ec {ret, std::system_category()};
 
@@ -31,48 +85,24 @@ void CheckHResult(const HRESULT ret, const std::source_location& caller) {
 }
 
 std::wstring Utf8ToWide(const std::string_view s) {
-  const auto retCharCount = MultiByteToWideChar(
-    CP_UTF8, MB_ERR_INVALID_CHARS, s.data(), s.size(), nullptr, 0);
-  std::wstring ret;
-  ret.resize(retCharCount);
-  MultiByteToWideChar(
-    CP_UTF8,
-    MB_ERR_INVALID_CHARS,
-    s.data(),
-    s.size(),
-    ret.data(),
-    retCharCount);
-  if (const auto i = ret.find_last_of(L'\0'); i != std::wstring::npos) {
-    ret.erase(i);
-  }
-  return ret;
+  constexpr auto Impl = []<class... TArgs>(TArgs&&... args) {
+    return MultiByteToWideChar(
+      CP_UTF8, MB_ERR_INVALID_CHARS, std::forward<TArgs>(args)...);
+  };
+  return ConvertEncoding<std::string_view, std::wstring, Impl>(s);
 }
 
 std::string WideToUtf8(const std::wstring_view s) {
-  const auto retCharCount = WideCharToMultiByte(
-    CP_UTF8,
-    WC_ERR_INVALID_CHARS,
-    s.data(),
-    s.size(),
-    nullptr,
-    0,
-    nullptr,
-    nullptr);
-  std::string ret;
-  ret.resize(retCharCount);
-  WideCharToMultiByte(
-    CP_UTF8,
-    WC_ERR_INVALID_CHARS,
-    s.data(),
-    s.size(),
-    ret.data(),
-    retCharCount,
-    nullptr,
-    nullptr);
-  if (const auto i = ret.find_last_of('\0'); i != std::string::npos) {
-    ret.erase(i);
-  }
-  return ret;
+  constexpr auto Impl = []<class... TArgs>(TArgs&&... args) {
+    return WideCharToMultiByte(
+      CP_UTF8,
+      WC_ERR_INVALID_CHARS,
+      std::forward<TArgs>(args)...,
+      nullptr,
+      nullptr);
+  };
+
+  return ConvertEncoding<std::wstring_view, std::string, Impl>(s);
 }
 
 }// namespace FredEmmott::GUI::win32_detail
