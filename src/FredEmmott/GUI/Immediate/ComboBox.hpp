@@ -118,7 +118,7 @@ ComboBoxResult<bool> ComboBox(
     if (key == *selectedKey) {
       selectedIndex = vec.size();
     }
-    vec.push_back(std::string_view {value});
+    vec.emplace_back(value);
   }
   const auto changed = ComboBox(&selectedIndex, vec, id);
   if (changed) {

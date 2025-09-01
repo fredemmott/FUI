@@ -32,11 +32,9 @@ void LinearGradientBrush::InitializeDirect2DBrush(ID2D1RenderTarget* rt) {
   auto& [d2dStops, d2dBrush] = *mDirect2DCache;
 
   std::vector<D2D1_GRADIENT_STOP> stops;
+  stops.reserve(mStops.size());
   for (auto&& stop: mStops) {
-    stops.push_back({
-      stop.mOffset,
-      stop.mColor.as<D2D1_COLOR_F>(),
-    });
+    stops.emplace_back(stop.mOffset, stop.mColor.as<D2D1_COLOR_F>());
   }
 
   CheckHResult(rt->CreateGradientStopCollection(

@@ -30,8 +30,8 @@ struct StaticThemedLinearGradientBrush {
     std::vector<LinearGradientBrush::Stop> stops;
     stops.reserve(mStops.size());
     for (auto&& stop: mStops) {
-      stops.push_back(
-        {stop.mOffset, stop.mColor.ResolveForStaticTheme<TTheme>()});
+      stops.emplace_back(
+        stop.mOffset, stop.mColor.ResolveForStaticTheme<TTheme>());
     }
     return LinearGradientBrush {
       mMappingMode, mStart, mEnd, stops, mScaleTransform};
