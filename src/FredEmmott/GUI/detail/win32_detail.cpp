@@ -14,7 +14,7 @@
 namespace FredEmmott::GUI::win32_detail {
 
 namespace {
-constexpr std::size_t StaticBufferSize = 1024 * 1024;
+constexpr std::size_t StaticBufferSize = 1024;
 
 template <std::integral T>
 T size_cast(const std::size_t v) {
