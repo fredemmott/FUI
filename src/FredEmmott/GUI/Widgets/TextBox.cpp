@@ -11,7 +11,6 @@
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 
 namespace FredEmmott::GUI::Widgets {
-
 namespace {
 using namespace win32_detail;
 
@@ -21,7 +20,6 @@ auto& TextBoxStyles() {
   };
   return ret;
 }
-
 }// namespace
 
 TextBox::TextBox(const std::size_t id) : Widget(id, TextBoxStyles(), {}) {
@@ -63,70 +61,72 @@ void TextBox::Tick() {
 Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
   using enum EventHandlerResult;
   const auto& t = e.mText;
-  if (t.size() == 1) {
-    switch (t.front()) {
-      case '\b':
-        if (mSelectionStart == mSelectionEnd) {
-          const auto newIdx
-            = ubrk_preceding(GetGraphemeIterator(), mSelectionStart);
-          this->SetText(
-            std::format(
-              "{}{}", mText.substr(0, newIdx), mText.substr(mSelectionStart)));
-          this->SetCaret(newIdx);
-        } else {
-          this->SetText(
-            std::format(
-              "{}{}",
-              mText.substr(0, mSelectionStart),
-              mText.substr(mSelectionEnd)));
-          this->SetCaret(mSelectionStart);
-        }
-        return StopPropagation;
-      default:
-        break;
+
+  if (t.size() == 1 && t.front() == '\b') {
+    if (mSelectionStart == mSelectionEnd) {
+      const auto newIdx
+        = ubrk_preceding(GetGraphemeIterator(), mSelectionStart);
+      this->SetText(
+        std::format(
+          "{}{}", mText.substr(0, newIdx), mText.substr(mSelectionStart)));
+      this->SetCaret(newIdx);
+    } else {
+      const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+      this->SetText(
+        std::format("{}{}", mText.substr(0, left), mText.substr(right)));
+      this->SetCaret(left);
     }
+    return StopPropagation;
   }
+
+  const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+
   this->SetText(
-    std::format(
-      "{}{}{}",
-      mText.substr(0, mSelectionStart),
-      e.mText,
-      mText.substr(mSelectionEnd)));
-  this->SetCaret(mSelectionStart + t.size());
+    std::format("{}{}{}", mText.substr(0, left), t, mText.substr(right)));
+  this->SetCaret(left + t.size());
+
   return StopPropagation;
 }
 
 Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyModifier;
-  if (e.mModifiers != Modifier_None) {
-    return EventHandlerResult::Default;
-  }
+  std::optional<std::size_t> newIdx;
 
   using enum KeyCode;
   using enum EventHandlerResult;
   switch (e.mKeyCode) {
     case Key_Home:
-      this->SetCaret(0);
-      return StopPropagation;
+      newIdx = 0;
+      break;
     case Key_End:
-      this->SetCaret(mText.size());
-      return StopPropagation;
+      newIdx = mText.size();
+      break;
     case Key_LeftArrow:
-      if (const auto idx
-          = ubrk_preceding(GetGraphemeIterator(), mSelectionStart);
+      if (const auto idx = ubrk_preceding(GetGraphemeIterator(), mSelectionEnd);
           idx != UBRK_DONE) {
-        this->SetCaret(idx);
+        newIdx = idx;
       }
-      return StopPropagation;
+      break;
     case Key_RightArrow:
       if (const auto idx = ubrk_following(GetGraphemeIterator(), mSelectionEnd);
           idx != UBRK_DONE) {
-        this->SetCaret(idx);
+        newIdx = idx;
       }
-      return StopPropagation;
+      break;
     default:
       break;
   }
+  if (newIdx) {
+    if (e.mModifiers == Modifier_None) {
+      this->SetCaret(*newIdx);
+      return StopPropagation;
+    }
+    if (e.mModifiers == Modifier_Shift) {
+      this->SetSelection(mSelectionStart, *newIdx);
+      return StopPropagation;
+    }
+  }
+
   return Widget::OnKeyPress(e);
 }
 
@@ -168,17 +168,21 @@ const TextBox::TextMetrics& TextBox::GetMetrics() const {
     .mAscent = fontMetrics.mAscent,
     .mDescent = fontMetrics.mDescent,
   };
-  if (mSelectionStart > 0) {
+
+  const auto [beforeSelection, afterSelection]
+    = std::minmax(mSelectionStart, mSelectionEnd);
+
+  if (beforeSelection > 0) {
     ret.mWidthBeforeSelection
-      = font.MeasureTextWidth(mText.substr(0, mSelectionStart));
+      = font.MeasureTextWidth(mText.substr(0, beforeSelection));
   }
-  if (mSelectionStart != mSelectionEnd) {
+  if (beforeSelection != afterSelection) {
     ret.mWidthOfSelection = font.MeasureTextWidth(
-      mText.substr(mSelectionStart, mSelectionEnd - mSelectionStart));
+      mText.substr(beforeSelection, afterSelection - beforeSelection));
   }
-  if (mSelectionEnd < mText.size()) {
+  if (afterSelection < mText.size()) {
     ret.mWidthAfterSelection
-      = font.MeasureTextWidth(mText.substr(mSelectionEnd));
+      = font.MeasureTextWidth(mText.substr(afterSelection));
   }
   mTextMetrics.emplace(std::move(ret));
   return mTextMetrics.value();
@@ -208,26 +212,33 @@ void TextBox::PaintOwnContent(
     rect.GetBottom() - metrics.mDescent,
   };
 
-  if (mSelectionStart > 0) {
-    const auto prefix = mText.substr(0, mSelectionStart);
+  const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+
+  if (left > 0) {
+    const auto prefix = mText.substr(0, left);
     const auto w = metrics.mWidthBeforeSelection;
     renderer->DrawText(color, rect, font, prefix, origin);
     origin.mX += w;
   }
 
-  if (mSelectionStart == mSelectionEnd) {
+  if (left == right) {
     this->PaintCursor(renderer, rect, style);
   } else {
-    const auto selection
-      = mText.substr(mSelectionStart, mSelectionEnd - mSelectionStart);
+    const auto selection = mText.substr(left, right - left);
     const auto w = metrics.mWidthOfSelection;
-    renderer->FillRect(Colors::Blue, Rect {origin, Size {w, rect.GetHeight()}});
+    const auto h = rect.GetHeight();
+    renderer->FillRect(
+      Colors::Blue,
+      Rect {
+        Point {origin.mX, origin.mY - h},
+        Size {w, h},
+      });
     renderer->DrawText(Colors::White, rect, font, selection, origin);
     origin.mX += w;
   }
 
-  if (mSelectionEnd < mText.size()) {
-    const auto suffix = mText.substr(mSelectionEnd);
+  if (right < mText.size()) {
+    const auto suffix = mText.substr(right);
     renderer->DrawText(color, rect, font, suffix, origin);
   }
 }
@@ -258,12 +269,12 @@ UBreakIterator* TextBox::GetGraphemeIterator() noexcept {
 }
 
 YGSize TextBox::Measure(
-  YGNodeConstRef node,
+  const YGNodeConstRef node,
   [[maybe_unused]] float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
-  auto& self = *static_cast<TextBox*>(FromYogaNode(node));
+  const auto& self = *static_cast<TextBox*>(FromYogaNode(node));
 
   const auto& metrics = self.GetMetrics();
 
@@ -273,5 +284,4 @@ YGSize TextBox::Measure(
     -metrics.mAscent,
   };
 }
-
 }// namespace FredEmmott::GUI::Widgets
