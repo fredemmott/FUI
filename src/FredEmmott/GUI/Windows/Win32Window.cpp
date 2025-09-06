@@ -45,6 +45,8 @@ std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
       return Key_Return;
     case VK_SPACE:
       return Key_Space;
+    case VK_BACK:
+      return Key_Backspace;
     case VK_LEFT:
       return Key_LeftArrow;
     case VK_UP:
@@ -59,6 +61,8 @@ std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
       return Key_Home;
     case VK_END:
       return Key_End;
+    case VK_DELETE:
+      return Key_Delete;
     default:
       return std::nullopt;
   }
@@ -786,8 +790,12 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         }
         return 0;
       }
-      if (wParam == '\t') {
-        return 0;
+      switch (wParam) {
+        case '\t':
+        case '\b':
+          return 0;
+        default:
+          break;
       }
       const auto text = WideToUtf8(
         std::wstring_view {reinterpret_cast<const wchar_t*>(&wParam), 1});

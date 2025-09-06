@@ -12,6 +12,7 @@ enum class KeyCode : uint8_t {
   // Matching ASCII
   Key_Tab = 0x09,
   Key_Return = 0x0D,
+  Key_Backspace = 0x08,
   Key_Escape = 0x1B,
   Key_Space = 0x20,
 
@@ -22,6 +23,7 @@ enum class KeyCode : uint8_t {
   Key_UpArrow = 0x26,
   Key_RightArrow = 0x27,
   Key_DownArrow = 0x28,
+  Key_Delete = 0x2e,
 };
 
 enum class KeyModifier : uint8_t {

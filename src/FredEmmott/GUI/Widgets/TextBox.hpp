@@ -26,6 +26,10 @@ class TextBox : public Widget, public IFocusable {
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
  private:
+  enum DeleteDirection {
+    DeleteLeft,
+    DeleteRight,
+  };
   struct TextMetrics {
     float mWidthBeforeSelection {};
     float mWidthOfSelection {};
@@ -63,6 +67,8 @@ class TextBox : public Widget, public IFocusable {
     YGMeasureMode widthMode,
     float height,
     YGMeasureMode heightMode);
+
+  void DeleteSelection(DeleteDirection ifSelectionEmpty);
 };
 
 }// namespace FredEmmott::GUI::Widgets

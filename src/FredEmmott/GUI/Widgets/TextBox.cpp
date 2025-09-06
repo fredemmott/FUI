@@ -62,23 +62,6 @@ Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
   using enum EventHandlerResult;
   const auto& t = e.mText;
 
-  if (t.size() == 1 && t.front() == '\b') {
-    if (mSelectionStart == mSelectionEnd) {
-      const auto newIdx
-        = ubrk_preceding(GetGraphemeIterator(), mSelectionStart);
-      this->SetText(
-        std::format(
-          "{}{}", mText.substr(0, newIdx), mText.substr(mSelectionStart)));
-      this->SetCaret(newIdx);
-    } else {
-      const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
-      this->SetText(
-        std::format("{}{}", mText.substr(0, left), mText.substr(right)));
-      this->SetCaret(left);
-    }
-    return StopPropagation;
-  }
-
   const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
 
   this->SetText(
@@ -88,6 +71,28 @@ Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
   return StopPropagation;
 }
 
+void TextBox::DeleteSelection(const DeleteDirection ifSelectionEmpty) {
+  if (mSelectionStart == mSelectionEnd) {
+    switch (ifSelectionEmpty) {
+      case DeleteLeft:
+        if (mSelectionEnd > 0) {
+          mSelectionEnd = ubrk_preceding(GetGraphemeIterator(), mSelectionEnd);
+        }
+        break;
+      case DeleteRight:
+        if (mSelectionEnd < mText.size()) {
+          mSelectionEnd = ubrk_following(GetGraphemeIterator(), mSelectionEnd);
+        }
+        break;
+    }
+  }
+
+  const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+  this->SetText(
+    std::format("{}{}", mText.substr(0, left), mText.substr(right)));
+  this->SetCaret(left);
+}
+
 Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyModifier;
   std::optional<std::size_t> newIdx;
@@ -95,6 +100,12 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyCode;
   using enum EventHandlerResult;
   switch (e.mKeyCode) {
+    case Key_Backspace:
+      this->DeleteSelection(DeleteLeft);
+      return StopPropagation;
+    case Key_Delete:
+      this->DeleteSelection(DeleteRight);
+      return StopPropagation;
     case Key_Home:
       newIdx = 0;
       break;
