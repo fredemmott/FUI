@@ -36,36 +36,8 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 
 namespace {
-std::optional<KeyCode> KeyCodeFromVirtualKey(const UINT vk) {
-  using enum KeyCode;
-  switch (vk) {
-    case VK_TAB:
-      return Key_Tab;
-    case VK_RETURN:
-      return Key_Return;
-    case VK_SPACE:
-      return Key_Space;
-    case VK_BACK:
-      return Key_Backspace;
-    case VK_LEFT:
-      return Key_LeftArrow;
-    case VK_UP:
-      return Key_UpArrow;
-    case VK_RIGHT:
-      return Key_RightArrow;
-    case VK_DOWN:
-      return Key_DownArrow;
-    case VK_ESCAPE:
-      return Key_Escape;
-    case VK_HOME:
-      return Key_Home;
-    case VK_END:
-      return Key_End;
-    case VK_DELETE:
-      return Key_Delete;
-    default:
-      return std::nullopt;
-  }
+KeyCode KeyCodeFromVirtualKey(const UINT vk) {
+  return static_cast<KeyCode>(vk);
 }
 
 KeyModifier GetModifierKeys() {
@@ -760,18 +732,18 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_ENABLE:
       mIsDisabled = !wParam;
       break;
-    case WM_KEYDOWN:
-      if (const auto key = KeyCodeFromVirtualKey(wParam)) {
-        KeyPressEvent e {*key, GetModifierKeys()};
-        this->DispatchEvent(e);
-      }
+    case WM_KEYDOWN: {
+      const auto key = KeyCodeFromVirtualKey(wParam);
+      KeyPressEvent e {key, GetModifierKeys()};
+      this->DispatchEvent(e);
       break;
-    case WM_KEYUP:
-      if (const auto key = KeyCodeFromVirtualKey(wParam)) {
-        KeyReleaseEvent e {*key, GetModifierKeys()};
-        this->DispatchEvent(e);
-      }
+    }
+    case WM_KEYUP: {
+      const auto key = KeyCodeFromVirtualKey(wParam);
+      KeyReleaseEvent e {key, GetModifierKeys()};
+      this->DispatchEvent(e);
       break;
+    }
     case WM_CHAR: {
       if (IS_HIGH_SURROGATE(wParam)) {
         mHighSurrogate = wParam;
@@ -790,12 +762,10 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         }
         return 0;
       }
-      switch (wParam) {
-        case '\t':
-        case '\b':
-          return 0;
-        default:
-          break;
+      if (wParam < 0x20) {
+        // control characters/special keys, deal with these in WM_KEY messages
+        // instead of here
+        return 0;
       }
       const auto text = WideToUtf8(
         std::wstring_view {reinterpret_cast<const wchar_t*>(&wParam), 1});

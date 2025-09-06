@@ -100,6 +100,11 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyCode;
   using enum EventHandlerResult;
   switch (e.mKeyCode) {
+    case Key_A:
+      if (e.mModifiers == Modifier_Control) {
+        this->SetSelection(0, mText.size());
+      }
+      return StopPropagation;
     case Key_Backspace:
       this->DeleteSelection(DeleteLeft);
       return StopPropagation;
@@ -138,7 +143,7 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
     }
   }
 
-  return Widget::OnKeyPress(e);
+  return StopPropagation;
 }
 
 void TextBox::PaintCursor(
