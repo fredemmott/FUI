@@ -53,6 +53,7 @@ class TextBox : public Widget, public IFocusable {
   struct Caches {
     unique_ptr<UText, &utext_close> mUText;
     unique_ptr<UBreakIterator, &ubrk_close> mGraphemeIterator;
+    unique_ptr<UBreakIterator, &ubrk_close> mWordIterator;
     std::optional<TextMetrics> mTextMetrics;
   };
 
@@ -78,6 +79,10 @@ class TextBox : public Widget, public IFocusable {
 
   UText* GetUText() const noexcept;
   UBreakIterator* GetGraphemeIterator() const noexcept;
+  UBreakIterator* GetWordIterator() const noexcept;
+
+  std::size_t GetPreviousWordBoundary() const noexcept;
+  std::size_t GetNextWordBoundary() const noexcept;
 
   static YGSize Measure(
     YGNodeConstRef node,

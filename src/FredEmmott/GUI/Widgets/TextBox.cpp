@@ -3,6 +3,8 @@
 
 #include "TextBox.hpp"
 
+#include <print>
+
 #include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "FredEmmott/GUI/detail/icu.hpp"
@@ -13,6 +15,11 @@
 namespace FredEmmott::GUI::Widgets {
 namespace {
 using namespace win32_detail;
+
+bool IsWordCharacter(UText* text, std::size_t index) {
+  const auto c = utext_char32At(text, index);
+  return u_isalnum(c) || u_hasBinaryProperty(c, UCHAR_IDEOGRAPHIC);
+}
 
 auto& TextBoxStyles() {
   static const ImmutableStyle ret {
@@ -142,6 +149,8 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
         (s.mSelectionStart != s.mSelectionEnd)
         && (e.mModifiers == Modifier_None)) {
         newIdx = std::min(s.mSelectionStart, s.mSelectionEnd);
+      } else if ((e.mModifiers & Modifier_Control) == Modifier_Control) {
+        newIdx = GetPreviousWordBoundary();
       } else if (const auto idx
                  = ubrk_preceding(GetGraphemeIterator(), s.mSelectionEnd);
                  idx != UBRK_DONE) {
@@ -153,6 +162,8 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
         (s.mSelectionStart != s.mSelectionEnd)
         && (e.mModifiers == Modifier_None)) {
         newIdx = std::max(s.mSelectionStart, s.mSelectionEnd);
+      } else if ((e.mModifiers & Modifier_Control) == Modifier_Control) {
+        newIdx = GetNextWordBoundary();
       } else if (const auto idx
                  = ubrk_following(GetGraphemeIterator(), s.mSelectionEnd);
                  idx != UBRK_DONE) {
@@ -319,14 +330,57 @@ UText* TextBox::GetUText() const noexcept {
   return mCaches.mUText.get();
 }
 
-UBreakIterator* TextBox::GetGraphemeIterator() const noexcept {
-  if (!mCaches.mGraphemeIterator) {
-    UErrorCode status = U_ZERO_ERROR;
-    mCaches.mGraphemeIterator.reset(
-      ubrk_open(UBRK_CHARACTER, nullptr, nullptr, 0, &status));
-    ubrk_setUText(mCaches.mGraphemeIterator.get(), GetUText(), &status);
+static UBreakIterator* LazyUBreakIterator(
+  unique_ptr<UBreakIterator, &ubrk_close>& owned,
+  const UBreakIteratorType iteratorType,
+  UText* text) noexcept {
+  if (owned) {
+    return owned.get();
   }
-  return mCaches.mGraphemeIterator.get();
+
+  UErrorCode status = U_ZERO_ERROR;
+  owned.reset(ubrk_open(iteratorType, nullptr, nullptr, 0, &status));
+  ubrk_setUText(owned.get(), text, &status);
+  return owned.get();
+}
+
+UBreakIterator* TextBox::GetGraphemeIterator() const noexcept {
+  return LazyUBreakIterator(
+    mCaches.mGraphemeIterator, UBRK_CHARACTER, GetUText());
+}
+
+UBreakIterator* TextBox::GetWordIterator() const noexcept {
+  return LazyUBreakIterator(mCaches.mWordIterator, UBRK_WORD, GetUText());
+}
+
+std::size_t TextBox::GetPreviousWordBoundary() const noexcept {
+  // We want word boundaries *just before* the words, and at the end of the
+  // end of the string, e.g.:
+
+  //   foo, bar, baz
+  //  ><   ><   >< ><
+
+  const auto it = GetWordIterator();
+  for (auto idx = ubrk_preceding(it, mActiveState.mSelectionEnd);
+       idx != UBRK_DONE;
+       idx = ubrk_previous(it)) {
+    if (IsWordCharacter(GetUText(), idx)) {
+      return idx;
+    }
+  }
+  return 0;
+}
+
+std::size_t TextBox::GetNextWordBoundary() const noexcept {
+  const auto it = GetWordIterator();
+  for (auto idx = ubrk_following(it, mActiveState.mSelectionStart);
+       idx != UBRK_DONE;
+       idx = ubrk_next(it)) {
+    if (IsWordCharacter(GetUText(), idx)) {
+      return idx;
+    }
+  }
+  return mActiveState.mText.size();
 }
 
 YGSize TextBox::Measure(
