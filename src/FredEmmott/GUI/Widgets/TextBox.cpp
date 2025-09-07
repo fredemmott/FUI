@@ -99,11 +99,16 @@ void TextBox::DeleteSelection(const DeleteDirection ifSelectionEmpty) {
 
 Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyModifier;
+  using enum EventHandlerResult;
+
   auto& s = mActiveState;
   std::optional<std::size_t> newIdx;
 
+  if ((e.mModifiers & Modifier_Alt) == Modifier_Alt) {
+    return StopPropagation;
+  }
+
   using enum KeyCode;
-  using enum EventHandlerResult;
   switch (e.mKeyCode) {
     case Key_A:
       if (e.mModifiers == Modifier_Control) {
@@ -133,16 +138,24 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       newIdx = s.mText.size();
       break;
     case Key_LeftArrow:
-      if (const auto idx
-          = ubrk_preceding(GetGraphemeIterator(), s.mSelectionEnd);
-          idx != UBRK_DONE) {
+      if (
+        (s.mSelectionStart != s.mSelectionEnd)
+        && (e.mModifiers == Modifier_None)) {
+        newIdx = std::min(s.mSelectionStart, s.mSelectionEnd);
+      } else if (const auto idx
+                 = ubrk_preceding(GetGraphemeIterator(), s.mSelectionEnd);
+                 idx != UBRK_DONE) {
         newIdx = idx;
       }
       break;
     case Key_RightArrow:
-      if (const auto idx
-          = ubrk_following(GetGraphemeIterator(), s.mSelectionEnd);
-          idx != UBRK_DONE) {
+      if (
+        (s.mSelectionStart != s.mSelectionEnd)
+        && (e.mModifiers == Modifier_None)) {
+        newIdx = std::max(s.mSelectionStart, s.mSelectionEnd);
+      } else if (const auto idx
+                 = ubrk_following(GetGraphemeIterator(), s.mSelectionEnd);
+                 idx != UBRK_DONE) {
         newIdx = idx;
       }
       break;
@@ -150,14 +163,12 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       break;
   }
   if (newIdx) {
-    if (e.mModifiers == Modifier_None) {
-      this->SetCaret(*newIdx);
-      return StopPropagation;
-    }
-    if (e.mModifiers == Modifier_Shift) {
+    if ((e.mModifiers & Modifier_Shift) == Modifier_Shift) {
       this->SetSelection(s.mSelectionStart, *newIdx);
       return StopPropagation;
     }
+    this->SetCaret(*newIdx);
+    return StopPropagation;
   }
 
   return StopPropagation;
