@@ -82,6 +82,9 @@ class Window {
     this->InterruptWaitFrame();
   }
 
+  virtual std::optional<std::string> GetClipboardText() const = 0;
+  virtual void SetClipboardText(std::string_view) const = 0;
+
   void SetDefaultAction(const std::function<void()>&);
   void SetCancelAction(const std::function<void()>&);
 
@@ -89,6 +92,7 @@ class Window {
   virtual bool IsPopup() const noexcept
     = 0;
 
+ protected:
   virtual void InitializeWindow() = 0;
   virtual void HideWindow() = 0;
   virtual std::unique_ptr<BasicFramePainter> GetFramePainter(

@@ -40,6 +40,8 @@ class TextBox : public Widget, public IFocusable {
   struct UndoableState {
     enum class Operation {
       None,
+      Cut,
+      Paste,
       Typing,
       DeleteLeft,
       DeleteRight,

@@ -106,6 +106,9 @@ class Win32Window : public Window {
     return {mHwnd ? mHwnd.get() : nullptr};
   }
 
+  std::optional<std::string> GetClipboardText() const override;
+  void SetClipboardText(std::string_view) const override;
+
   void SetParent(NativeHandle) final;
   void SetInitialPositionInNativeCoords(const NativePoint& native) final;
   void OffsetPositionToDescendant(Widgets::Widget* child) final;

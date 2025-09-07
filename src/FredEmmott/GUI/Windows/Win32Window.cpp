@@ -398,6 +398,57 @@ void Win32Window::SetSystemBackdropType(const DWM_SYSTEMBACKDROP_TYPE type) {
     sizeof(mOptions.mSystemBackdrop)));
 }
 
+std::optional<std::string> Win32Window::GetClipboardText() const {
+  if (!IsClipboardFormatAvailable(CF_UNICODETEXT)) {
+    return {};
+  }
+
+  if (!OpenClipboard(mHwnd.get())) {
+    return {};
+  }
+  const auto closeClipboard = wil::scope_exit([] { CloseClipboard(); });
+
+  const auto handle = GetClipboardData(CF_UNICODETEXT);
+  if (!handle) {
+    return {};
+  }
+
+  const auto ptr = static_cast<wchar_t*>(GlobalLock(handle));
+  if (!ptr) {
+    return {};
+  }
+  const auto unlock = wil::scope_exit([handle] { GlobalUnlock(handle); });
+
+  return WideToUtf8(ptr);
+}
+
+void Win32Window::SetClipboardText(const std::string_view utf8) const {
+  if (!OpenClipboard(mHwnd.get())) {
+    return;
+  }
+  const auto closeClipboard = wil::scope_exit([] { CloseClipboard(); });
+  EmptyClipboard();
+
+  const auto wide = Utf8ToWide(utf8);
+
+  wil::unique_hglobal buffer {
+    GlobalAlloc(GMEM_MOVEABLE, (wide.size() + 1) * sizeof(wchar_t))};
+
+  {
+    const auto ptr = static_cast<wchar_t*>(GlobalLock(buffer.get()));
+    if (!ptr) {
+      return;
+    }
+    memcpy(ptr, wide.data(), wide.size() * sizeof(wchar_t));
+    ptr[wide.size()] = 0;
+    GlobalUnlock(buffer.get());
+  }
+
+  SetClipboardData(CF_UNICODETEXT, buffer.get());
+  // SetClipboardData takes ownership
+  buffer.release();
+}
+
 void Win32Window::InitializeDirectComposition() {
   CheckHResult(
     DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));

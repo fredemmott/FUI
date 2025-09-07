@@ -122,6 +122,42 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
         this->SetSelection(0, s.mText.size());
       }
       return StopPropagation;
+    case Key_C:
+      if (e.mModifiers == Modifier_Control) {
+        const auto [left, right]
+          = std::minmax(s.mSelectionStart, s.mSelectionEnd);
+        mWindow->SetClipboardText(s.mText.substr(left, right - left));
+      }
+      return StopPropagation;
+    case Key_X:
+      if (e.mModifiers == Modifier_Control) {
+        const auto [left, right]
+          = std::minmax(s.mSelectionStart, s.mSelectionEnd);
+        mWindow->SetClipboardText(s.mText.substr(left, right - left));
+        BeforeOperation(UndoableState::Operation::Cut);
+        this->SetText(
+          std::format("{}{}", s.mText.substr(0, left), s.mText.substr(right)));
+        this->SetCaret(left);
+      }
+      return StopPropagation;
+    case Key_V: {
+      if (e.mModifiers != Modifier_Control) {
+        return StopPropagation;
+      }
+      const auto pasted = mWindow->GetClipboardText();
+      if (!pasted) {
+        return StopPropagation;
+      }
+
+      BeforeOperation(UndoableState::Operation::Paste);
+      const auto [left, right]
+        = std::minmax(s.mSelectionStart, s.mSelectionEnd);
+      this->SetText(
+        std::format(
+          "{}{}{}", s.mText.substr(0, left), *pasted, s.mText.substr(right)));
+      this->SetCaret(left + pasted->size());
+      return StopPropagation;
+    }
     case Key_Z:
       if (e.mModifiers == Modifier_Control) {
         mCaches = {};
