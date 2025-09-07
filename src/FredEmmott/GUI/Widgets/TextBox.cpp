@@ -33,16 +33,15 @@ TextBox::TextBox(const std::size_t id) : Widget(id, TextBoxStyles(), {}) {
 TextBox::~TextBox() = default;
 
 void TextBox::SetText(const std::string_view text) {
-  if (text == mText) {
+  auto& s = mActiveState;
+  if (text == s.mText) {
     return;
   }
 
-  mGraphemeIterator.reset();
-  mUText.reset();
-  mTextMetrics.reset();
+  mCaches = {};
 
-  mText = std::string {text};
-  this->SetSelection(mSelectionStart, mSelectionEnd);
+  s.mText = std::string {text};
+  this->SetSelection(s.mSelectionStart, s.mSelectionEnd);
   YGNodeMarkDirty(this->GetLayoutNode());
 
   // TODO: notify IME
@@ -60,41 +59,47 @@ void TextBox::Tick() {
 
 Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
   using enum EventHandlerResult;
+  auto& s = mActiveState;
   const auto& t = e.mText;
 
-  const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+  const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
 
+  BeforeOperation(UndoableState::Operation::Typing);
   this->SetText(
-    std::format("{}{}{}", mText.substr(0, left), t, mText.substr(right)));
+    std::format("{}{}{}", s.mText.substr(0, left), t, s.mText.substr(right)));
   this->SetCaret(left + t.size());
 
   return StopPropagation;
 }
 
 void TextBox::DeleteSelection(const DeleteDirection ifSelectionEmpty) {
-  if (mSelectionStart == mSelectionEnd) {
+  auto& s = mActiveState;
+  if (s.mSelectionStart == s.mSelectionEnd) {
     switch (ifSelectionEmpty) {
       case DeleteLeft:
-        if (mSelectionEnd > 0) {
-          mSelectionEnd = ubrk_preceding(GetGraphemeIterator(), mSelectionEnd);
+        if (s.mSelectionEnd > 0) {
+          s.mSelectionEnd
+            = ubrk_preceding(GetGraphemeIterator(), s.mSelectionEnd);
         }
         break;
       case DeleteRight:
-        if (mSelectionEnd < mText.size()) {
-          mSelectionEnd = ubrk_following(GetGraphemeIterator(), mSelectionEnd);
+        if (s.mSelectionEnd < s.mText.size()) {
+          s.mSelectionEnd
+            = ubrk_following(GetGraphemeIterator(), s.mSelectionEnd);
         }
         break;
     }
   }
 
-  const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+  const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
   this->SetText(
-    std::format("{}{}", mText.substr(0, left), mText.substr(right)));
+    std::format("{}{}", s.mText.substr(0, left), s.mText.substr(right)));
   this->SetCaret(left);
 }
 
 Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   using enum KeyModifier;
+  auto& s = mActiveState;
   std::optional<std::size_t> newIdx;
 
   using enum KeyCode;
@@ -102,29 +107,41 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   switch (e.mKeyCode) {
     case Key_A:
       if (e.mModifiers == Modifier_Control) {
-        this->SetSelection(0, mText.size());
+        this->SetSelection(0, s.mText.size());
+      }
+      return StopPropagation;
+    case Key_Z:
+      if (e.mModifiers == Modifier_Control) {
+        mCaches = {};
+        std::swap(mActiveState, mUndoState);
+        YGNodeMarkDirty(this->GetLayoutNode());
+        // TODO: notify IME
       }
       return StopPropagation;
     case Key_Backspace:
+      BeforeOperation(UndoableState::Operation::DeleteLeft);
       this->DeleteSelection(DeleteLeft);
       return StopPropagation;
     case Key_Delete:
+      BeforeOperation(UndoableState::Operation::DeleteRight);
       this->DeleteSelection(DeleteRight);
       return StopPropagation;
     case Key_Home:
       newIdx = 0;
       break;
     case Key_End:
-      newIdx = mText.size();
+      newIdx = s.mText.size();
       break;
     case Key_LeftArrow:
-      if (const auto idx = ubrk_preceding(GetGraphemeIterator(), mSelectionEnd);
+      if (const auto idx
+          = ubrk_preceding(GetGraphemeIterator(), s.mSelectionEnd);
           idx != UBRK_DONE) {
         newIdx = idx;
       }
       break;
     case Key_RightArrow:
-      if (const auto idx = ubrk_following(GetGraphemeIterator(), mSelectionEnd);
+      if (const auto idx
+          = ubrk_following(GetGraphemeIterator(), s.mSelectionEnd);
           idx != UBRK_DONE) {
         newIdx = idx;
       }
@@ -138,7 +155,7 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       return StopPropagation;
     }
     if (e.mModifiers == Modifier_Shift) {
-      this->SetSelection(mSelectionStart, *newIdx);
+      this->SetSelection(s.mSelectionStart, *newIdx);
       return StopPropagation;
     }
   }
@@ -174,8 +191,8 @@ void TextBox::PaintCursor(
 }
 
 const TextBox::TextMetrics& TextBox::GetMetrics() const {
-  if (mTextMetrics) {
-    return mTextMetrics.value();
+  if (mCaches.mTextMetrics) {
+    return mCaches.mTextMetrics.value();
   }
 
   const auto& font = this->GetComputedStyle().Font().value();
@@ -185,29 +202,42 @@ const TextBox::TextMetrics& TextBox::GetMetrics() const {
     .mDescent = fontMetrics.mDescent,
   };
 
+  const auto& s = mActiveState;
   const auto [beforeSelection, afterSelection]
-    = std::minmax(mSelectionStart, mSelectionEnd);
+    = std::minmax(s.mSelectionStart, s.mSelectionEnd);
 
   if (beforeSelection > 0) {
     ret.mWidthBeforeSelection
-      = font.MeasureTextWidth(mText.substr(0, beforeSelection));
+      = font.MeasureTextWidth(s.mText.substr(0, beforeSelection));
   }
   if (beforeSelection != afterSelection) {
     ret.mWidthOfSelection = font.MeasureTextWidth(
-      mText.substr(beforeSelection, afterSelection - beforeSelection));
+      s.mText.substr(beforeSelection, afterSelection - beforeSelection));
   }
-  if (afterSelection < mText.size()) {
+  if (afterSelection < s.mText.size()) {
     ret.mWidthAfterSelection
-      = font.MeasureTextWidth(mText.substr(afterSelection));
+      = font.MeasureTextWidth(s.mText.substr(afterSelection));
   }
-  mTextMetrics.emplace(std::move(ret));
-  return mTextMetrics.value();
+  mCaches.mTextMetrics.emplace(std::move(ret));
+  return mCaches.mTextMetrics.value();
+}
+
+void TextBox::BeforeOperation(const UndoableState::Operation op) {
+  if (op == mActiveState.mOperation) {
+    return;
+  }
+  mUndoState = mActiveState;
+  mUndoState.mOperation = UndoableState::Operation::None;
+  mActiveState.mOperation = op;
+  mCaches = {};
 }
 
 void TextBox::PaintOwnContent(
   Renderer* renderer,
   const Rect& outerRect,
   const Style& style) const {
+  const auto& s = mActiveState;
+
   const auto yoga = this->GetLayoutNode();
   const Rect rect = outerRect.WithInset(
     YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
@@ -228,10 +258,10 @@ void TextBox::PaintOwnContent(
     rect.GetBottom() - metrics.mDescent,
   };
 
-  const auto [left, right] = std::minmax(mSelectionStart, mSelectionEnd);
+  const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
 
   if (left > 0) {
-    const auto prefix = mText.substr(0, left);
+    const auto prefix = s.mText.substr(0, left);
     const auto w = metrics.mWidthBeforeSelection;
     renderer->DrawText(color, rect, font, prefix, origin);
     origin.mX += w;
@@ -240,7 +270,7 @@ void TextBox::PaintOwnContent(
   if (left == right) {
     this->PaintCursor(renderer, rect, style);
   } else {
-    const auto selection = mText.substr(left, right - left);
+    const auto selection = s.mText.substr(left, right - left);
     const auto w = metrics.mWidthOfSelection;
     const auto h = rect.GetHeight();
     renderer->FillRect(
@@ -253,35 +283,39 @@ void TextBox::PaintOwnContent(
     origin.mX += w;
   }
 
-  if (right < mText.size()) {
-    const auto suffix = mText.substr(right);
+  if (right < s.mText.size()) {
+    const auto suffix = s.mText.substr(right);
     renderer->DrawText(color, rect, font, suffix, origin);
   }
 }
 
 void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
-  const auto size = mText.size();
-  mSelectionStart = std::min(start, size);
-  mSelectionEnd = std::min(end, size);
-  mTextMetrics.reset();
+  auto& s = mActiveState;
+  const auto size = s.mText.size();
+  s.mSelectionStart = std::min(start, size);
+  s.mSelectionEnd = std::min(end, size);
+
+  mCaches.mTextMetrics.reset();
 }
 
-UText* TextBox::GetUText() noexcept {
-  if (!mUText) {
+UText* TextBox::GetUText() const noexcept {
+  if (!mCaches.mUText) {
+    const auto& s = mActiveState;
     UErrorCode status = U_ZERO_ERROR;
-    mUText.reset(utext_openUTF8(nullptr, mText.data(), mText.size(), &status));
+    mCaches.mUText.reset(
+      utext_openUTF8(nullptr, s.mText.data(), s.mText.size(), &status));
   }
-  return mUText.get();
+  return mCaches.mUText.get();
 }
 
-UBreakIterator* TextBox::GetGraphemeIterator() noexcept {
-  if (!mGraphemeIterator) {
+UBreakIterator* TextBox::GetGraphemeIterator() const noexcept {
+  if (!mCaches.mGraphemeIterator) {
     UErrorCode status = U_ZERO_ERROR;
-    mGraphemeIterator.reset(
+    mCaches.mGraphemeIterator.reset(
       ubrk_open(UBRK_CHARACTER, nullptr, nullptr, 0, &status));
-    ubrk_setUText(mGraphemeIterator.get(), GetUText(), &status);
+    ubrk_setUText(mCaches.mGraphemeIterator.get(), GetUText(), &status);
   }
-  return mGraphemeIterator.get();
+  return mCaches.mGraphemeIterator.get();
 }
 
 YGSize TextBox::Measure(

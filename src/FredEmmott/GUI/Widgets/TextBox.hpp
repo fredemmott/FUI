@@ -37,17 +37,35 @@ class TextBox : public Widget, public IFocusable {
     float mAscent {};
     float mDescent {};
   };
+  struct UndoableState {
+    enum class Operation {
+      None,
+      Typing,
+      DeleteLeft,
+      DeleteRight,
+    };
+    Operation mOperation {Operation::None};
+
+    std::string mText;
+    std::size_t mSelectionStart {};
+    std::size_t mSelectionEnd {};
+  };
+  struct Caches {
+    unique_ptr<UText, &utext_close> mUText;
+    unique_ptr<UBreakIterator, &ubrk_close> mGraphemeIterator;
+    std::optional<TextMetrics> mTextMetrics;
+  };
+
   Window* mWindow {};
 
-  std::string mText;
-  unique_ptr<UText, &utext_close> mUText;
-  unique_ptr<UBreakIterator, &ubrk_close> mGraphemeIterator;
+  UndoableState mActiveState {};
+  UndoableState mUndoState {};
 
-  std::size_t mSelectionStart {};
-  std::size_t mSelectionEnd {};
+  mutable Caches mCaches {};
+
   bool mIsFocused {false};
 
-  mutable std::optional<TextMetrics> mTextMetrics;
+  void BeforeOperation(UndoableState::Operation);
 
   const TextMetrics& GetMetrics() const;
 
@@ -58,8 +76,8 @@ class TextBox : public Widget, public IFocusable {
   }
   void SetSelection(std::size_t start, std::size_t end);
 
-  UText* GetUText() noexcept;
-  UBreakIterator* GetGraphemeIterator() noexcept;
+  UText* GetUText() const noexcept;
+  UBreakIterator* GetGraphemeIterator() const noexcept;
 
   static YGSize Measure(
     YGNodeConstRef node,
