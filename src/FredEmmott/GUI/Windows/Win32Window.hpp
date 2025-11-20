@@ -171,6 +171,7 @@ class Win32Window : public Window {
   static thread_local std::unordered_map<HWND, Win32Window*> gInstances;
   static thread_local Win32Window* gInstanceCreatingWindow;
 
+  wil::unique_event mFrameIntervalTimer;
   wil::unique_event mWaitFrameInterruptEvent;
 
   HWND mParentHwnd {nullptr};

@@ -143,6 +143,11 @@ Win32Window::Win32Window(
     mInstanceHandle(hInstance),
     mShowCommand(nCmdShow),
     mOptions(options),
+    mFrameIntervalTimer(CreateWaitableTimerExW(
+      nullptr,
+      nullptr,
+      CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
+      TIMER_ALL_ACCESS)),
     mWaitFrameInterruptEvent(CreateEventW(nullptr, FALSE, FALSE, nullptr)) {
   if (options.mDXGIFactory) {
     mDXGIFactory = wil::com_query<IDXGIFactory4>(options.mDXGIFactory);
@@ -1043,15 +1048,35 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
 }
 
 void Win32Window::WaitForInput() const {
-  auto event = mWaitFrameInterruptEvent.get();
+  const auto event = mWaitFrameInterruptEvent.get();
   MsgWaitForMultipleObjects(1, &event, false, INFINITE, QS_ALLINPUT);
 }
 
 void Win32Window::InterruptableWait(
   const std::chrono::steady_clock::duration& duration) const {
-  WaitForSingleObject(
+  using HighResolutionTimerTicks
+    = std::chrono::duration<int64_t, std::ratio<1, 10'000'000>>;
+  const LARGE_INTEGER timeout {
+    .QuadPart
+    = -std::chrono::duration_cast<HighResolutionTimerTicks>(duration).count(),
+  };
+  if (!SetWaitableTimer(
+        mFrameIntervalTimer.get(), &timeout, 0, nullptr, nullptr, false)) {
+    throw std::runtime_error(
+      std::format(
+        "Failed to create waitable timer: {}",
+        static_cast<int>(HRESULT_FROM_WIN32(GetLastError()))));
+  }
+
+  const HANDLE handles[] = {
+    mFrameIntervalTimer.get(),
     mWaitFrameInterruptEvent.get(),
-    std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+  };
+
+  WaitForMultipleObjects(std::size(handles), handles, FALSE, INFINITE);
+
+  CancelWaitableTimer(mWaitFrameInterruptEvent.get());
+  ResetEvent(mWaitFrameInterruptEvent.get());
 }
 
 void Win32Window::SetIsModal(bool modal) {

@@ -59,7 +59,7 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
   if (fps == 0) {
     this->WaitForInput();
   }
-  std::chrono::milliseconds frameInterval {1000 / maxFPS};
+  const std::chrono::microseconds frameInterval {1'000'000 / maxFPS};
 
   const auto frameDuration = std::chrono::steady_clock::now() - mBeginFrameTime;
   if (frameDuration >= frameInterval) {
