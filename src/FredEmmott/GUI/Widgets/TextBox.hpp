@@ -24,6 +24,9 @@ class TextBox : public Widget, public IFocusable {
   EventHandlerResult OnTextInput(const TextInputEvent&) override;
   EventHandlerResult OnKeyPress(const KeyPressEvent&) override;
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
+  [[nodiscard]] EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;
+  [[nodiscard]] EventHandlerResult OnMouseMove(const MouseEvent&) override;
+  [[nodiscard]] EventHandlerResult OnMouseButtonRelease(const MouseEvent&) override;
 
  private:
   enum DeleteDirection {
@@ -67,6 +70,7 @@ class TextBox : public Widget, public IFocusable {
   mutable Caches mCaches {};
 
   bool mIsFocused {false};
+  std::optional<std::size_t> mMouseSelectionAnchor;
 
   void BeforeOperation(UndoableState::Operation);
 
@@ -85,6 +89,9 @@ class TextBox : public Widget, public IFocusable {
 
   std::size_t GetPreviousWordBoundary() const noexcept;
   std::size_t GetNextWordBoundary() const noexcept;
+
+  // Convert an X position in local widget coordinates to a text caret index
+  std::size_t IndexFromLocalX(float x) const noexcept;
 
   static YGSize Measure(
     YGNodeConstRef node,

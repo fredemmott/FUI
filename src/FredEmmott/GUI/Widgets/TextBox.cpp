@@ -11,6 +11,7 @@
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
+#include "FredEmmott/GUI/events/MouseEvent.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 namespace {
@@ -221,6 +222,54 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
   return StopPropagation;
 }
 
+Widget::EventHandlerResult TextBox::OnMouseButtonPress(const MouseEvent& e) {
+  using enum EventHandlerResult;
+  if (!e.IsValid()) {
+    return Default;
+  }
+
+  (void)Widget::OnMouseButtonPress(e);
+
+  // Update caret immediately on press and begin possible drag selection
+  const auto pos = e.GetPosition();
+  const auto idx = this->IndexFromLocalX(pos.mX);
+  mMouseSelectionAnchor = idx;
+  this->SetCaret(idx);
+
+  // Capture mouse for drag selection
+  this->StartMouseCapture();
+
+  // Give focus to this widget so caret is visible and keyboard works
+  if (const auto fm = FocusManager::Get()) {
+    fm->GivePointerFocus(this);
+  }
+
+  return StopPropagation;
+}
+
+Widget::EventHandlerResult TextBox::OnMouseMove(const MouseEvent& e) {
+  using enum EventHandlerResult;
+  if (!mMouseSelectionAnchor.has_value()) {
+    return Default;
+  }
+
+  const auto pos = e.GetPosition();
+  const auto idx = this->IndexFromLocalX(pos.mX);
+  this->SetSelection(*mMouseSelectionAnchor, idx);
+  return StopPropagation;
+}
+
+Widget::EventHandlerResult TextBox::OnMouseButtonRelease(const MouseEvent& e) {
+  using enum EventHandlerResult;
+  if (!mMouseSelectionAnchor.has_value()) {
+    return Default;
+  }
+  (void)Widget::OnMouseButtonRelease(e);
+  mMouseSelectionAnchor.reset();
+  this->EndMouseCapture();
+  return StopPropagation;
+}
+
 void TextBox::PaintCursor(
   Renderer* renderer,
   const Rect& rect,
@@ -417,6 +466,46 @@ std::size_t TextBox::GetNextWordBoundary() const noexcept {
     }
   }
   return mActiveState.mText.size();
+}
+
+std::size_t TextBox::IndexFromLocalX(const float x) const noexcept {
+  // Convert from local widget X to content X (inside padding/border)
+  const auto yoga = this->GetLayoutNode();
+  const float leftInset = YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
+    + YGNodeLayoutGetBorder(yoga, YGEdgeLeft);
+
+  const float contentX = x - leftInset;
+
+  const auto& s = mActiveState;
+  const auto& font = this->GetComputedStyle().Font().value();
+
+  if (contentX <= 0) {
+    return 0;
+  }
+
+  const float totalWidth = font.MeasureTextWidth(s.mText);
+  if (contentX >= totalWidth) {
+    return s.mText.size();
+  }
+
+  // Iterate grapheme cluster boundaries and pick the nearest caret position
+  const auto it = GetGraphemeIterator();
+  ubrk_first(it);
+
+  std::size_t closestIndex = 0;
+  float closestDistance = contentX;// distance from start
+
+  for (int32_t next = ubrk_next(it); next != UBRK_DONE; next = ubrk_next(it)) {
+    const auto width = font.MeasureTextWidth(
+      s.mText.substr(0, static_cast<std::size_t>(next)));
+    const auto distance = std::abs(width - contentX);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = static_cast<std::size_t>(next);
+    }
+  }
+
+  return std::min(closestIndex, s.mText.size());
 }
 
 YGSize TextBox::Measure(
