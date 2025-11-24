@@ -229,17 +229,22 @@ bool Widget::IsDisabled() const {
 
 FrameRateRequirement Widget::GetFrameRateRequirement() const noexcept {
   using enum StateFlags;
+  // Prioritize requirements: SmoothAnimation > Caret > None
   if ((mDirectStateFlags & Animating) != StateFlags::Default) {
     return FrameRateRequirement::SmoothAnimation;
   }
+
+  FrameRateRequirement best = FrameRateRequirement::None;
   for (auto&& child: this->mRawDirectChildren) {
-    if (
-      child->GetFrameRateRequirement()
-      == FrameRateRequirement::SmoothAnimation) {
+    const auto req = child->GetFrameRateRequirement();
+    if (req == FrameRateRequirement::SmoothAnimation) {
       return FrameRateRequirement::SmoothAnimation;
     }
+    if (req == FrameRateRequirement::Caret) {
+      best = FrameRateRequirement::Caret;
+    }
   }
-  return FrameRateRequirement::None;
+  return best;
 }
 
 bool Widget::IsDirectlyDisabled() const {

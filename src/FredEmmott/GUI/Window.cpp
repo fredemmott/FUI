@@ -7,6 +7,7 @@
 
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "Immediate/ContentDialog.hpp"
+#include "SystemSettings.hpp"
 #include "assert.hpp"
 #include "detail/immediate_detail.hpp"
 
@@ -50,16 +51,38 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
     return;
   }
 
-  const auto fps = std::clamp<unsigned int>(
-    mFUIRoot.GetFrameRateRequirement() == FrameRateRequirement::SmoothAnimation
-      ? 60
-      : 0,
-    minFPS,
-    maxFPS);
-  if (fps == 0) {
+  const std::chrono::duration minInterval = (maxFPS == 0)
+    ? std::chrono::microseconds::zero()
+    : std::chrono::microseconds {1'000'000 / maxFPS};
+  const std::chrono::duration maxInterval = (minFPS == 0)
+    ? std::chrono::microseconds::max()
+    : std::chrono::microseconds {1'000'000 / minFPS};
+
+  auto requestedInterval = std::chrono::microseconds::max();
+
+  switch (mFUIRoot.GetFrameRateRequirement()) {
+    case FrameRateRequirement::SmoothAnimation:
+      requestedInterval = std::chrono::microseconds(1'000'000 / 60);
+      break;
+    case FrameRateRequirement::Caret:
+      if (const auto interval = SystemSettings::Get().GetCaretBlinkInterval()) {
+        // Run at double the requested rate so we don't get weird issues at the
+        // boundaries
+        requestedInterval
+          = std::chrono::duration_cast<std::chrono::microseconds>(*interval)
+          / 2;
+        break;
+      }
+      // fallthrough
+    case FrameRateRequirement::None:
+    default:
+      break;
+  }
+  const auto frameInterval
+    = std::clamp(requestedInterval, minInterval, maxInterval);
+  if (frameInterval == decltype(frameInterval)::max()) {
     this->WaitForInput();
   }
-  const std::chrono::microseconds frameInterval {1'000'000 / maxFPS};
 
   const auto frameDuration = std::chrono::steady_clock::now() - mBeginFrameTime;
   if (frameDuration >= frameInterval) {

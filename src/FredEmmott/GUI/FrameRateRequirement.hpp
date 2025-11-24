@@ -7,6 +7,7 @@ namespace FredEmmott::GUI {
 enum class FrameRateRequirement {
   None,
   SmoothAnimation,
+  Caret,
 };
 
 }

@@ -57,6 +57,9 @@ class SystemSettings {
   FUI_ENUM_SYSTEM_SETTINGS(FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER);
 #undef FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER
 
+  std::optional<std::chrono::steady_clock::duration> GetCaretBlinkInterval()
+    const;
+
   void ClearWin32(UINT key);
 
  protected:

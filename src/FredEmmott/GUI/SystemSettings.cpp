@@ -95,7 +95,16 @@ void SystemSettings::ClearWin32(const UINT key) {
   RETURN_TYPE SystemSettings::Get##NAME() const { \
     return GetSetting<WIN32_TYPE, WIN32_GET>(m##NAME); \
   }
-FUI_ENUM_SYSTEM_SETTINGS(DEFINE_GETTER);
+FUI_ENUM_SYSTEM_SETTINGS(DEFINE_GETTER)
 #undef DEFINE_GETTER
+
+std::optional<std::chrono::steady_clock::duration>
+SystemSettings::GetCaretBlinkInterval() const {
+  const auto millis = ::GetCaretBlinkTime();
+  if (millis == INFINITE) {
+    return std::nullopt;
+  }
+  return std::chrono::milliseconds(millis);
+};
 
 }// namespace FredEmmott::GUI

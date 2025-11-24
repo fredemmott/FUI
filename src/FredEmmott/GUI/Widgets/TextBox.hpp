@@ -3,6 +3,7 @@
 #pragma once
 
 #include <vector>
+#include <chrono>
 
 #include "Focusable.hpp"
 #include "FredEmmott/GUI/detail/icu.hpp"
@@ -20,6 +21,8 @@ class TextBox : public Widget, public IFocusable {
   ~TextBox() override;
 
   void SetText(std::string_view);
+
+   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
 
  protected:
   void Tick() override;
@@ -76,6 +79,10 @@ class TextBox : public Widget, public IFocusable {
 
   bool mIsFocused {false};
   std::optional<std::size_t> mMouseSelectionAnchor;
+
+  // Caret blinking state
+  bool mCaretVisible {true};
+  std::chrono::steady_clock::time_point mLastCaretToggle {};
 
   void BeforeOperation(UndoableState::Operation);
 

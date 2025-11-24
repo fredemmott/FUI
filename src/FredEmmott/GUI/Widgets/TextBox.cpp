@@ -7,6 +7,7 @@
 
 #include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/GUI/SystemSettings.hpp"
+#include "FredEmmott/GUI/assert.hpp"
 #include "FredEmmott/GUI/detail/icu.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
@@ -55,14 +56,44 @@ void TextBox::SetText(const std::string_view text) {
   // TODO: notify IME
 }
 
+FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
+  // If caret should blink, request caret-level frame rate
+  if (!mIsFocused) {
+    return Widget::GetFrameRateRequirement();
+  }
+  if (mActiveState.mSelectionStart != mActiveState.mSelectionEnd) {
+    return Widget::GetFrameRateRequirement();
+  }
+  return FrameRateRequirement::Caret;
+}
+
 void TextBox::Tick() {
   const auto isFocused = FocusManager::IsWidgetFocused(this);
-  if (isFocused == mIsFocused) {
-    return;
-  }
+  const bool focusChanged = (isFocused != mIsFocused);
   mIsFocused = isFocused;
 
-  // TODO: notify IME
+  // Blink caret when focused and no selection
+  const auto& s = mActiveState;
+  const bool hasCaret = (s.mSelectionStart == s.mSelectionEnd);
+  const auto blinkInterval = SystemSettings::Get().GetCaretBlinkInterval();
+
+  const auto now = std::chrono::steady_clock::now();
+  if (focusChanged) {
+    // Reset blink on focus change
+    mCaretVisible = true;
+    mLastCaretToggle = now;
+    return;
+  }
+  if (!(isFocused && hasCaret && blinkInterval.has_value())) {
+    return;
+  }
+
+  if (now - mLastCaretToggle < *blinkInterval) {
+    return;
+  }
+
+  mCaretVisible = !mCaretVisible;
+  mLastCaretToggle += *blinkInterval;
 }
 
 Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
@@ -278,6 +309,11 @@ void TextBox::PaintCursor(
     return;
   }
 
+  if (!mCaretVisible) {
+    FUI_ASSERT(SystemSettings::Get().GetCaretBlinkInterval().has_value());
+    return;
+  }
+
   const auto& metrics = this->GetMetrics();
   const auto& s = mActiveState;
   const auto midX = metrics.mOffsetX[s.mSelectionStart];
@@ -401,6 +437,9 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
   const auto size = s.mText.size();
   s.mSelectionStart = std::min(start, size);
   s.mSelectionEnd = std::min(end, size);
+  // Reset caret blink on movement/selection change
+  mCaretVisible = true;
+  mLastCaretToggle = std::chrono::steady_clock::now();
 }
 
 UText* TextBox::GetUText() const noexcept {
