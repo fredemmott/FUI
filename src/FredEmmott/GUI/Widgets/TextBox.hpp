@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <vector>
+
 #include "Focusable.hpp"
 #include "FredEmmott/GUI/detail/icu.hpp"
 #include "Label.hpp"
@@ -24,9 +26,11 @@ class TextBox : public Widget, public IFocusable {
   EventHandlerResult OnTextInput(const TextInputEvent&) override;
   EventHandlerResult OnKeyPress(const KeyPressEvent&) override;
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
-  [[nodiscard]] EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;
+  [[nodiscard]] EventHandlerResult OnMouseButtonPress(
+    const MouseEvent&) override;
   [[nodiscard]] EventHandlerResult OnMouseMove(const MouseEvent&) override;
-  [[nodiscard]] EventHandlerResult OnMouseButtonRelease(const MouseEvent&) override;
+  [[nodiscard]] EventHandlerResult OnMouseButtonRelease(
+    const MouseEvent&) override;
 
  private:
   enum DeleteDirection {
@@ -34,9 +38,10 @@ class TextBox : public Widget, public IFocusable {
     DeleteRight,
   };
   struct TextMetrics {
-    float mWidthBeforeSelection {};
-    float mWidthOfSelection {};
-    float mWidthAfterSelection {};
+    // Cumulative width at each byte index into the UTF-8 string.
+    // mWidthToIndex[i] is the width of text.substr(0, i).
+    // Size is text.size() + 1 with mWidthToIndex[0] == 0.
+    std::vector<float> mOffsetX;
     float mAscent {};
     float mDescent {};
   };

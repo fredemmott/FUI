@@ -279,7 +279,8 @@ void TextBox::PaintCursor(
   }
 
   const auto& metrics = this->GetMetrics();
-  const auto midX = metrics.mWidthBeforeSelection;
+  const auto& s = mActiveState;
+  const auto midX = metrics.mOffsetX[s.mSelectionStart];
 
   const auto width = static_cast<float>(SystemSettings::Get().GetCaretWidth());
   const auto left = midX - (width / 2);
@@ -305,26 +306,25 @@ const TextBox::TextMetrics& TextBox::GetMetrics() const {
   const auto& font = this->GetComputedStyle().Font().value();
   const auto& fontMetrics = font.GetMetrics();
   TextMetrics ret {
+    .mOffsetX = {0.0f},
     .mAscent = fontMetrics.mAscent,
     .mDescent = fontMetrics.mDescent,
   };
 
-  const auto& s = mActiveState;
-  const auto [beforeSelection, afterSelection]
-    = std::minmax(s.mSelectionStart, s.mSelectionEnd);
+  const auto& text = mActiveState.mText;
+  ret.mOffsetX.reserve(text.size() + 1);
 
-  if (beforeSelection > 0) {
-    ret.mWidthBeforeSelection
-      = font.MeasureTextWidth(s.mText.substr(0, beforeSelection));
+  const auto it = GetGraphemeIterator();
+  ubrk_first(it);
+  for (int32_t next = ubrk_next(it); next != UBRK_DONE; next = ubrk_next(it)) {
+    const auto width
+      = font.MeasureTextWidth(text.substr(0, static_cast<std::size_t>(next)));
+    if (next > 0) {
+      ret.mOffsetX.resize(next, std::numeric_limits<float>::signaling_NaN());
+    }
+    ret.mOffsetX.emplace_back(width);
   }
-  if (beforeSelection != afterSelection) {
-    ret.mWidthOfSelection = font.MeasureTextWidth(
-      s.mText.substr(beforeSelection, afterSelection - beforeSelection));
-  }
-  if (afterSelection < s.mText.size()) {
-    ret.mWidthAfterSelection
-      = font.MeasureTextWidth(s.mText.substr(afterSelection));
-  }
+
   mCaches.mTextMetrics.emplace(std::move(ret));
   return mCaches.mTextMetrics.value();
 }
@@ -369,7 +369,7 @@ void TextBox::PaintOwnContent(
 
   if (left > 0) {
     const auto prefix = s.mText.substr(0, left);
-    const auto w = metrics.mWidthBeforeSelection;
+    const auto w = metrics.mOffsetX[left];
     renderer->DrawText(color, rect, font, prefix, origin);
     origin.mX += w;
   }
@@ -378,7 +378,7 @@ void TextBox::PaintOwnContent(
     this->PaintCursor(renderer, rect, style);
   } else {
     const auto selection = s.mText.substr(left, right - left);
-    const auto w = metrics.mWidthOfSelection;
+    const auto w = metrics.mOffsetX[right] - metrics.mOffsetX[left];
     const auto h = rect.GetHeight();
     renderer->FillRect(
       Colors::Blue,
@@ -401,8 +401,6 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
   const auto size = s.mText.size();
   s.mSelectionStart = std::min(start, size);
   s.mSelectionEnd = std::min(end, size);
-
-  mCaches.mTextMetrics.reset();
 }
 
 UText* TextBox::GetUText() const noexcept {
@@ -476,36 +474,30 @@ std::size_t TextBox::IndexFromLocalX(const float x) const noexcept {
 
   const float contentX = x - leftInset;
 
-  const auto& s = mActiveState;
-  const auto& font = this->GetComputedStyle().Font().value();
+  const auto& offsets = this->GetMetrics().mOffsetX;
 
   if (contentX <= 0) {
     return 0;
   }
 
-  const float totalWidth = font.MeasureTextWidth(s.mText);
-  if (contentX >= totalWidth) {
-    return s.mText.size();
+  if (contentX >= offsets.back()) {
+    return mActiveState.mText.size();
   }
-
-  // Iterate grapheme cluster boundaries and pick the nearest caret position
-  const auto it = GetGraphemeIterator();
-  ubrk_first(it);
 
   std::size_t closestIndex = 0;
   float closestDistance = contentX;// distance from start
-
-  for (int32_t next = ubrk_next(it); next != UBRK_DONE; next = ubrk_next(it)) {
-    const auto width = font.MeasureTextWidth(
-      s.mText.substr(0, static_cast<std::size_t>(next)));
-    const auto distance = std::abs(width - contentX);
+  for (auto&& [index, offset]: std::views::enumerate(offsets)) {
+    const auto distance = std::abs(offset - contentX);
     if (distance < closestDistance) {
       closestDistance = distance;
-      closestIndex = static_cast<std::size_t>(next);
+      closestIndex = index;
+    }
+    if (offset >= contentX) {
+      break;
     }
   }
 
-  return std::min(closestIndex, s.mText.size());
+  return closestIndex;
 }
 
 YGSize TextBox::Measure(
@@ -519,8 +511,7 @@ YGSize TextBox::Measure(
   const auto& metrics = self.GetMetrics();
 
   return {
-    metrics.mWidthBeforeSelection + metrics.mWidthOfSelection
-      + metrics.mWidthAfterSelection,
+    metrics.mOffsetX.back(),
     -metrics.mAscent,
   };
 }
