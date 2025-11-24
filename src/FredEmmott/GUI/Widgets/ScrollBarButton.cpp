@@ -38,7 +38,7 @@ FrameRateRequirement ScrollBarButton::GetFrameRateRequirement() const noexcept {
   }
   return Widget::GetFrameRateRequirement();
 }
-void ScrollBarButton::Tick() {
+void ScrollBarButton::Tick(const std::chrono::steady_clock::time_point& now) {
   if (!mNextTick) {
     return;
   }
@@ -47,7 +47,6 @@ void ScrollBarButton::Tick() {
     return;
   }
 
-  const auto now = std::chrono::steady_clock::now();
   while (now > mNextTick.value()) {
     tick();
     *mNextTick += SystemSettings::Get().GetKeyboardRepeatInterval();

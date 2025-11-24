@@ -85,12 +85,14 @@ void Root::Paint(Renderer* renderer, const Size& size) {
     FocusManager::PopInstance(&mWidgetRoot->mFocusManager);
   });
 
+  const auto frameStartTime = std::chrono::steady_clock::now();
+
   widget->ComputeStyles({});
-  const auto yoga = mYogaRoot.get();
-  YGNodeCalculateLayout(yoga, size.mWidth, size.mHeight, YGDirectionLTR);
+  YGNodeCalculateLayout(
+    mYogaRoot.get(), size.mWidth, size.mHeight, YGDirectionLTR);
 
   widget->UpdateLayout();
-  widget->Tick();
+  widget->Tick(frameStartTime);
   widget->Paint(renderer);
 }
 

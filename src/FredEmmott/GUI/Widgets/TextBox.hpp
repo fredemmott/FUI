@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <vector>
 #include <chrono>
+#include <vector>
 
 #include "Focusable.hpp"
 #include "FredEmmott/GUI/detail/icu.hpp"
@@ -22,10 +22,10 @@ class TextBox : public Widget, public IFocusable {
 
   void SetText(std::string_view);
 
-   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
+  FrameRateRequirement GetFrameRateRequirement() const noexcept override;
 
  protected:
-  void Tick() override;
+  void Tick(const std::chrono::steady_clock::time_point& now) override;
   EventHandlerResult OnTextInput(const TextInputEvent&) override;
   EventHandlerResult OnKeyPress(const KeyPressEvent&) override;
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;

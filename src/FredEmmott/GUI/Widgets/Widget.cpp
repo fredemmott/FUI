@@ -393,9 +393,9 @@ Widget* Widget::DispatchEvent(const Event& e) {
   throw std::logic_error("Unhandled event type");
 }
 
-void Widget::Tick() {
+void Widget::Tick(const std::chrono::steady_clock::time_point& now) {
   for (auto&& child: mRawDirectChildren) {
-    child->Tick();
+    child->Tick(now);
   }
 }
 

@@ -28,7 +28,7 @@ class ScrollBarButton final : public Widget {
 
   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
 
-  void Tick() override;
+  void Tick(const std::chrono::steady_clock::time_point& now) override;
 
  protected:
   EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;

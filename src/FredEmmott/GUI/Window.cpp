@@ -66,11 +66,8 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
       break;
     case FrameRateRequirement::Caret:
       if (const auto interval = SystemSettings::Get().GetCaretBlinkInterval()) {
-        // Run at double the requested rate so we don't get weird issues at the
-        // boundaries
         requestedInterval
-          = std::chrono::duration_cast<std::chrono::microseconds>(*interval)
-          / 2;
+          = std::chrono::duration_cast<std::chrono::microseconds>(*interval);
         break;
       }
       // fallthrough

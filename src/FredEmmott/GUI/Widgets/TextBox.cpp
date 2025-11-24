@@ -67,7 +67,7 @@ FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
   return FrameRateRequirement::Caret;
 }
 
-void TextBox::Tick() {
+void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   const auto isFocused = FocusManager::IsWidgetFocused(this);
   const bool focusChanged = (isFocused != mIsFocused);
   mIsFocused = isFocused;
@@ -77,7 +77,6 @@ void TextBox::Tick() {
   const bool hasCaret = (s.mSelectionStart == s.mSelectionEnd);
   const auto blinkInterval = SystemSettings::Get().GetCaretBlinkInterval();
 
-  const auto now = std::chrono::steady_clock::now();
   if (focusChanged) {
     // Reset blink on focus change
     mCaretVisible = true;

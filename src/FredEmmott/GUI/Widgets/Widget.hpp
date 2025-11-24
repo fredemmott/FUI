@@ -138,7 +138,7 @@ class Widget {
   void SetIsDirectlyDisabled(bool value);
 
   // A periodic event at an undefined interval; use for animations etc
-  virtual void Tick();
+  virtual void Tick(const std::chrono::steady_clock::time_point& now);
   virtual void UpdateLayout();
   void ComputeStyles(const Style& inherited);
   Style FlattenStyles(const Style&);
