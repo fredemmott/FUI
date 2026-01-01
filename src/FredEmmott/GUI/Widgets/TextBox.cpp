@@ -447,13 +447,7 @@ void TextBox::PaintOwnContent(
     this->PaintCursor(renderer, rect, style);
   } else {
     const auto selectionBox = this->GetTextBoundingBox(left, right).mRect;
-    const auto h = rect.GetHeight();
-    renderer->FillRect(
-      Colors::Blue,
-      Rect {
-        Point {selectionBox.GetLeft(), selectionBox.GetTop()},
-        Size {selectionBox.GetWidth(), h},
-      });
+    renderer->FillRect(Colors::Blue, selectionBox);
     const auto selection = s.mText.substr(left, right - left);
     const auto w = metrics.mOffsetX[right] - metrics.mOffsetX[left];
     renderer->DrawText(Colors::White, rect, font, selection, origin);
@@ -608,20 +602,19 @@ TextBox::BoundingBox TextBox::GetTextBoundingBox(
   const auto& metrics = this->GetMetrics();
 
   const auto scrollOffset = metrics.mOffsetX[mContentScrollX];
-  const auto left = metrics.mOffsetX[begin] - scrollOffset;
-  auto right = metrics.mOffsetX[end] - scrollOffset;
-  const bool clipped = right > contentRect.GetRight();
-  right = std::min(right, contentRect.GetRight());
+  const auto left
+    = contentRect.GetLeft() + metrics.mOffsetX[begin] - scrollOffset;
+  auto width = metrics.mOffsetX[end] - metrics.mOffsetX[begin];
+  const bool clipped = (width > contentRect.GetWidth()) || (left < 0);
+  if (clipped)
+    width = contentRect.GetWidth();
 
   return BoundingBox {
     Rect {
-      Point {
-        contentRect.GetLeft() + left,
-        contentRect.GetBottom() - metrics.mDescent - metrics.mAscent,
-      },
+      contentRect.GetTopLeft() + Point {left, 0},
       Size {
-        right - left,
-        metrics.mAscent + metrics.mDescent,
+        width,
+        metrics.mDescent - /* always negative, so addition */ metrics.mAscent,
       },
     },
     clipped,
