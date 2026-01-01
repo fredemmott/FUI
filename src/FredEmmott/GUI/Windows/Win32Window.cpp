@@ -3,6 +3,8 @@
 
 #include "Win32Window.hpp"
 
+#include <UIAutomationClient.h>
+#include <UIAutomationCoreApi.h>
 #include <Windows.h>
 #include <Windowsx.h>
 #include <roapi.h>
@@ -16,6 +18,9 @@
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/UIANode.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/UIARoot.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <filesystem>
@@ -626,18 +631,37 @@ NativePoint Win32Window::CanvasPointToNativePoint(const Point& canvas) const {
   };
 
   // Adjust an all-zero rect to get padding
-  RECT rect {};
+  RECT padding {};
   AdjustWindowRectEx(
-    &rect, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
+    &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
   // The top and left padding will both be <= 0
-  native.mX -= rect.left;
-  native.mY -= rect.top;
+  native.mX -= padding.left;
+  native.mY -= padding.top;
 
-  GetWindowRect(mHwnd.get(), &rect);
-  native.mX += rect.left;
-  native.mY += rect.top;
+  GetWindowRect(mHwnd.get(), &padding);
+  native.mX += padding.left;
+  native.mY += padding.top;
 
   return native;
+}
+
+Point Win32Window::NativePointToCanvasPoint(const NativePoint& native) const {
+  FUI_ASSERT(mDPI && mHwnd);
+
+  RECT padding {};
+  AdjustWindowRectEx(
+    &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
+
+  RECT windowRect {};
+  GetWindowRect(mHwnd.get(), &windowRect);
+
+  // Convert to client-relative coordinates
+  Point canvas {
+    static_cast<float>(native.mX - windowRect.left + padding.left) / mDPIScale,
+    static_cast<float>(native.mY - windowRect.top + padding.top) / mDPIScale,
+  };
+
+  return canvas;
 }
 
 LRESULT Win32Window::StaticWindowProc(
@@ -785,6 +809,18 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     throw std::logic_error("hwnd mismatch");
   }
   switch (uMsg) {
+    case WM_GETOBJECT: {
+      if (static_cast<long>(lParam) == UiaRootObjectId) {
+        if (!mUIAProvider) {
+          mUIAProvider = wil::com_ptr_nothrow<IRawElementProviderFragmentRoot>(
+            new win32_detail::UIARoot(this));
+        }
+        wil::com_ptr_nothrow<IRawElementProviderSimple> simple;
+        mUIAProvider->QueryInterface(IID_PPV_ARGS(simple.put()));
+        return UiaReturnRawElementProvider(hwnd, wParam, lParam, simple.get());
+      }
+      break;
+    }
     case WM_ENABLE:
       mIsDisabled = !wParam;
       break;

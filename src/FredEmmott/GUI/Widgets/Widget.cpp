@@ -337,7 +337,6 @@ void Widget::Paint(Renderer* renderer) const {
     const auto newHeight = oldHeight * scaleY;
     renderer->Translate((oldWidth - newWidth) / 2, (oldHeight - newHeight) / 2);
     renderer->Scale(scaleX, scaleY);
-    rect.mSize = {rect.GetWidth(), rect.GetHeight()};
   }
 
   PaintBackground(renderer, rect, style);
@@ -469,8 +468,10 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
     FUI_ASSERT(result.mTarget);
     return result;
   }
-
-  if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
+  if (std::holds_alternative<MouseEvent::HitTestEvent>(event.mDetail)) {
+    result.mResult = EventHandlerResult::Default;
+  } else if (std::holds_alternative<MouseEvent::ButtonPressEvent>(
+               event.mDetail)) {
     result.mResult = this->OnMouseButtonPress(event);
   } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
                event.mDetail)) {

@@ -30,7 +30,7 @@ struct MouseEvent final : Event {
     return ret;
   }
 
-  using MoveEvent = std::monostate;
+  struct MoveEvent {};
   struct ButtonPressEvent {
     MouseButtons mPressedButtons {};
   };
@@ -43,12 +43,14 @@ struct MouseEvent final : Event {
   struct VerticalWheelEvent {
     float mDelta {};
   };
+  struct HitTestEvent {};
   std::variant<
     MoveEvent,
     ButtonPressEvent,
     ButtonReleaseEvent,
     HorizontalWheelEvent,
-    VerticalWheelEvent>
+    VerticalWheelEvent,
+    HitTestEvent>
     mDetail {};
 };
 

@@ -11,6 +11,7 @@
 #include "FredEmmott/GUI/detail/icu.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
+#include "FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp"
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "FredEmmott/GUI/events/MouseEvent.hpp"
 
@@ -67,10 +68,50 @@ FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
   return FrameRateRequirement::Caret;
 }
 
+Rect TextBox::GetContentRect() const noexcept {
+  const auto yoga = this->GetLayoutNode();
+  // Full area of the text box
+  const Rect outerRect = Rect {
+    Point {},
+    Size {
+      YGNodeLayoutGetWidth(yoga),
+      YGNodeLayoutGetHeight(yoga),
+    },
+  };
+  // Where we can render text
+  return outerRect.WithInset(
+    YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeLeft),
+    YGNodeLayoutGetPadding(yoga, YGEdgeTop)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeTop),
+    YGNodeLayoutGetPadding(yoga, YGEdgeRight)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeRight),
+    YGNodeLayoutGetPadding(yoga, YGEdgeBottom)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeBottom));
+}
+
 void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   const auto isFocused = FocusManager::IsWidgetFocused(this);
   const bool focusChanged = (isFocused != mIsFocused);
   mIsFocused = isFocused;
+
+  // Manage TSF document activation on focus changes
+  if (focusChanged) {
+    struct TSFContext : public Widgets::Context {
+      win32_detail::TSFThreadManager::Document mDoc;
+    };
+    if (mIsFocused) {
+      auto hwnd = static_cast<HWND>(mWindow->GetNativeHandle());
+      win32_detail::TSFThreadManager::Get().Initialize(hwnd);
+      auto ctx = this->GetOrCreateContext<TSFContext>();
+      ctx->mDoc = win32_detail::TSFThreadManager::Get().ActivateFor(hwnd, this);
+    } else {
+      if (auto ctx = this->GetContext<TSFContext>()) {
+        win32_detail::TSFThreadManager::Get().Deactivate(ctx->mDoc);
+        ctx->mDoc = {};
+      }
+    }
+  }
 
   // Blink caret when focused and no selection
   const auto& s = mActiveState;
@@ -376,29 +417,22 @@ void TextBox::BeforeOperation(const UndoableState::Operation op) {
 
 void TextBox::PaintOwnContent(
   Renderer* renderer,
-  const Rect& outerRect,
+  const Rect&,
   const Style& style) const {
   const auto& s = mActiveState;
-
-  const auto yoga = this->GetLayoutNode();
-  const Rect rect = outerRect.WithInset(
-    YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeLeft),
-    YGNodeLayoutGetPadding(yoga, YGEdgeTop)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeTop),
-    YGNodeLayoutGetPadding(yoga, YGEdgeRight)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeRight),
-    YGNodeLayoutGetPadding(yoga, YGEdgeBottom)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeBottom));
+  const auto rect = this->GetContentRect();
 
   const auto& metrics = this->GetMetrics();
-  const auto& color = style.Color().value();
   const auto& font = style.Font().value();
 
+  const auto scrollOffset = metrics.mOffsetX[mContentScrollX];
+
   Point origin {
-    rect.GetLeft(),
+    rect.GetLeft() - scrollOffset,
     rect.GetBottom() - metrics.mDescent,
   };
+
+  const auto& color = style.Color().value();
 
   const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
 
@@ -412,15 +446,16 @@ void TextBox::PaintOwnContent(
   if (left == right) {
     this->PaintCursor(renderer, rect, style);
   } else {
-    const auto selection = s.mText.substr(left, right - left);
-    const auto w = metrics.mOffsetX[right] - metrics.mOffsetX[left];
+    const auto selectionBox = this->GetTextBoundingBox(left, right).mRect;
     const auto h = rect.GetHeight();
     renderer->FillRect(
       Colors::Blue,
       Rect {
-        Point {origin.mX, origin.mY - h},
-        Size {w, h},
+        Point {selectionBox.GetLeft(), selectionBox.GetTop()},
+        Size {selectionBox.GetWidth(), h},
       });
+    const auto selection = s.mText.substr(left, right - left);
+    const auto w = metrics.mOffsetX[right] - metrics.mOffsetX[left];
     renderer->DrawText(Colors::White, rect, font, selection, origin);
     origin.mX += w;
   }
@@ -439,6 +474,34 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
   // Reset caret blink on movement/selection change
   mCaretVisible = true;
   mLastCaretToggle = std::chrono::steady_clock::now();
+
+  if (start == 0 || end == 0) {
+    mContentScrollX = 0;
+    return;
+  }
+
+  // Adjust scroll to keep caret visible
+  const auto rect = this->GetContentRect();
+  const auto& metrics = this->GetMetrics();
+  const auto caretPos = s.mSelectionEnd;
+  const auto caretX = metrics.mOffsetX[caretPos];
+  const auto scrollX = metrics.mOffsetX[mContentScrollX];
+  const auto contentWidth = rect.GetWidth();
+
+  // If caret is off to the left, scroll left
+  if (caretX < scrollX) {
+    mContentScrollX = caretPos;
+  }
+  // If caret is off to the right, scroll right
+  else if (caretX > scrollX + contentWidth) {
+    // Find the rightmost character position where caret would be visible
+    for (std::size_t i = mContentScrollX; i <= caretPos; ++i) {
+      if (metrics.mOffsetX[caretPos] - metrics.mOffsetX[i] <= contentWidth) {
+        mContentScrollX = i;
+        break;
+      }
+    }
+  }
 }
 
 UText* TextBox::GetUText() const noexcept {
@@ -536,6 +599,33 @@ std::size_t TextBox::IndexFromLocalX(const float x) const noexcept {
   }
 
   return closestIndex;
+}
+
+TextBox::BoundingBox TextBox::GetTextBoundingBox(
+  const std::size_t begin,
+  const std::size_t end) const noexcept {
+  const auto contentRect = this->GetContentRect();
+  const auto& metrics = this->GetMetrics();
+
+  const auto scrollOffset = metrics.mOffsetX[mContentScrollX];
+  const auto left = metrics.mOffsetX[begin] - scrollOffset;
+  auto right = metrics.mOffsetX[end] - scrollOffset;
+  const bool clipped = right > contentRect.GetRight();
+  right = std::min(right, contentRect.GetRight());
+
+  return BoundingBox {
+    Rect {
+      Point {
+        contentRect.GetLeft() + left,
+        contentRect.GetBottom() - metrics.mDescent - metrics.mAscent,
+      },
+      Size {
+        right - left,
+        metrics.mAscent + metrics.mDescent,
+      },
+    },
+    clipped,
+  };
 }
 
 YGSize TextBox::Measure(

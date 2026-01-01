@@ -156,6 +156,10 @@ Widgets::Widget* Window::DispatchEvent(const MouseEvent& e) {
   return GetRoot()->GetWidget()->DispatchEvent(e);
 }
 
+Widgets::Widget* Window::GetRootWidget() const noexcept {
+  return GetRoot()->GetWidget();
+}
+
 void Window::DispatchEvent(const KeyEvent& e) {
   const auto fm = GetRoot()->GetFocusManager();
   FocusManager::PushInstance(fm);

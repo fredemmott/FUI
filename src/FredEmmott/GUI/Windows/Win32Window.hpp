@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <dcomp.h>
 #include <dwmapi.h>
+#include <uiautomationcore.h>
 #include <wil/com.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
@@ -106,6 +107,10 @@ class Win32Window : public Window {
     return {mHwnd ? mHwnd.get() : nullptr};
   }
 
+  [[nodiscard]] std::string_view GetTitle() const noexcept {
+    return mOptions.mTitle;
+  }
+
   std::optional<std::string> GetClipboardText() const override;
   void SetClipboardText(std::string_view) const override;
 
@@ -116,6 +121,7 @@ class Win32Window : public Window {
   void ResizeToIdeal() override;
 
   NativePoint CanvasPointToNativePoint(const Point& canvas) const final;
+  Point NativePointToCanvasPoint(const NativePoint& native) const override;
 
   std::unique_ptr<Window> CreatePopup() const final;
 
@@ -136,9 +142,10 @@ class Win32Window : public Window {
   float GetDPIScale() const final;
   Color GetClearColor() const final;
 
-  virtual std::unique_ptr<Win32Window>
-  CreatePopup(HINSTANCE instance, int showCommand, const Options& options) const
-    = 0;
+  virtual std::unique_ptr<Win32Window> CreatePopup(
+    HINSTANCE instance,
+    int showCommand,
+    const Options& options) const = 0;
   virtual IUnknown* GetDirectCompositionTargetDevice() const = 0;
   virtual void CreateRenderTargets() = 0;
   virtual void CleanupFrameContexts() = 0;
@@ -165,6 +172,8 @@ class Win32Window : public Window {
     const std::chrono::steady_clock::duration&) const override;
 
  private:
+  // UI Automation fragment root provider (server-side)
+  wil::com_ptr_nothrow<IRawElementProviderFragmentRoot> mUIAProvider;
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};
   Options mOptions {};

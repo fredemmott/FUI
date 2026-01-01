@@ -12,17 +12,38 @@
 
 namespace FredEmmott::GUI {
 class Window;
+namespace win32_detail {
+class TextStoreACP;
 }
+}// namespace FredEmmott::GUI
 namespace FredEmmott::GUI::Widgets {
 
 class TextBox : public Widget, public IFocusable {
  public:
+  struct BoundingBox {
+    Rect mRect;
+    bool mClipped {false};
+  };
   explicit TextBox(std::size_t id);
   ~TextBox() override;
 
   void SetText(std::string_view);
 
   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
+
+  // Accessors used by TSF and automation
+  [[nodiscard]] std::string_view GetText() const noexcept {
+    return mActiveState.mText;
+  }
+  [[nodiscard]] std::pair<std::size_t, std::size_t> GetSelection()
+    const noexcept {
+    return {mActiveState.mSelectionStart, mActiveState.mSelectionEnd};
+  }
+  [[nodiscard]]
+  BoundingBox GetTextBoundingBox(std::size_t begin, std::size_t end)
+    const noexcept;
+  [[nodiscard]]
+  Rect GetContentRect() const noexcept;
 
  protected:
   void Tick(const std::chrono::steady_clock::time_point& now) override;
@@ -84,6 +105,9 @@ class TextBox : public Widget, public IFocusable {
   bool mCaretVisible {true};
   std::chrono::steady_clock::time_point mLastCaretToggle {};
 
+  // Horizontal scroll position (number of characters hidden off to the left)
+  std::size_t mContentScrollX {0};
+
   void BeforeOperation(UndoableState::Operation);
 
   const TextMetrics& GetMetrics() const;
@@ -113,6 +137,9 @@ class TextBox : public Widget, public IFocusable {
     YGMeasureMode heightMode);
 
   void DeleteSelection(DeleteDirection ifSelectionEmpty);
+
+  // Allow TSF text store to call private selection APIs
+  friend class FredEmmott::GUI::win32_detail::TextStoreACP;
 };
 
 }// namespace FredEmmott::GUI::Widgets
