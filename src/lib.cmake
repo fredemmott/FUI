@@ -164,7 +164,7 @@ target_link_libraries(
   # vpckg
   yoga::yogacore
 )
-set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject uiautomationcore)
+set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject uiautomationcore Imm32)
 target_compile_definitions(
   fredemmott-gui
   PUBLIC

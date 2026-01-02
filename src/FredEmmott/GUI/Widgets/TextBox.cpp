@@ -21,7 +21,10 @@ using namespace win32_detail;
 
 struct TSFContext : public Widgets::Context {
   win32_detail::TSFThreadManager::Document mDoc;
-  auto GetSink(DWORD mask) const {
+  ITextStoreACPSink* GetSink(DWORD mask) const {
+    if (!mDoc.mStore) {
+      return nullptr;
+    }
     return mDoc.mStore->GetSink(mask);
   }
 };
@@ -57,12 +60,29 @@ void TextBox::SetText(const std::string_view text) {
   }
 
   mCaches = {};
+  const auto oldLength = s.mText.size();
 
   s.mText = std::string {text};
   this->SetSelection(s.mSelectionStart, s.mSelectionEnd);
   YGNodeMarkDirty(this->GetLayoutNode());
 
-  // TODO: notify IME
+  const auto ctx = this->GetOrCreateContext<TSFContext>();
+  if (!ctx) {
+    return;
+  }
+  if (auto sink = ctx->GetSink(TS_AS_TEXT_CHANGE)) {
+    const TS_TEXTCHANGE textChange {
+      .acpOldEnd = static_cast<LONG>(oldLength),
+      .acpNewEnd = static_cast<LONG>(s.mText.size()),
+    };
+    CheckHResult(sink->OnTextChange(0, &textChange));
+  }
+  if (auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE)) {
+    CheckHResult(sink->OnLayoutChange(TS_LC_CHANGE, 1));
+  }
+  if (auto sink = ctx->GetSink(TS_AS_SEL_CHANGE)) {
+    CheckHResult(sink->OnSelectionChange());
+  }
 }
 
 FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
@@ -106,13 +126,19 @@ void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   // Manage TSF document activation on focus changes
   if (focusChanged) {
     if (mIsFocused) {
-      auto hwnd = static_cast<HWND>(mWindow->GetNativeHandle());
-      win32_detail::TSFThreadManager::Get().Initialize(hwnd);
+      auto& tm = TSFThreadManager::Get();
+      const auto hwnd = static_cast<HWND>(mWindow->GetNativeHandle());
+      tm.Initialize(hwnd);
       auto ctx = this->GetOrCreateContext<TSFContext>();
-      ctx->mDoc = win32_detail::TSFThreadManager::Get().ActivateFor(hwnd, this);
+      ctx->mDoc = tm.ActivateFor(hwnd, this);
+      tm.SetFocus(GetOwnerWindow()->GetNativeHandle().mValue, &ctx->mDoc);
+      if (const auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE)) {
+        sink->OnLayoutChange(TS_LC_CREATE, 1);
+      }
     } else {
       if (auto ctx = this->GetContext<TSFContext>()) {
-        win32_detail::TSFThreadManager::Get().Deactivate(ctx->mDoc);
+        auto& tm = TSFThreadManager::Get();
+        tm.Deactivate(ctx->mDoc);
         ctx->mDoc = {};
       }
     }
@@ -407,10 +433,9 @@ const TextBox::TextMetrics& TextBox::GetMetrics() const {
   }
 
   mCaches.mTextMetrics.emplace(std::move(ret));
-  if (const auto ctx = this->GetContext<TSFContext>()) {
+  if (const auto ctx = this->GetContext<TSFContext>())
     if (const auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE))
       sink->OnLayoutChange(TS_LC_CHANGE, 1);
-  }
   return mCaches.mTextMetrics.value();
 }
 
@@ -506,9 +531,12 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
     }
   }
 
-  if (const auto ctx = this->GetContext<TSFContext>())
+  if (const auto ctx = this->GetContext<TSFContext>()) {
     if (const auto sink = ctx->GetSink(TS_AS_SEL_CHANGE))
       sink->OnSelectionChange();
+    if (const auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE))
+      sink->OnLayoutChange(TS_LC_CHANGE, 1);
+  }
 }
 
 UText* TextBox::GetUText() const noexcept {

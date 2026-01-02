@@ -156,6 +156,12 @@ class TextStoreACP final : public COMImplementation<ITextStoreACP2> {
     LONG acpStart,
     LONG acpEnd,
     IDataObject** ppDataObject) override;
+  HRESULT OnStartComposition(ITfCompositionView* pComposition, BOOL* pfOk)
+    /*override*/;
+  HRESULT OnUpdateComposition(
+    ITfCompositionView* pComposition,
+    ITfRange* pRangeNew) /*override*/;
+  HRESULT OnEndComposition(ITfCompositionView* pComposition) /*override*/;
 };
 
 // Per-thread TSF manager
@@ -175,9 +181,14 @@ class TSFThreadManager final {
   Document ActivateFor(HWND hwnd, Widgets::TextBox* owner);
   void Deactivate(Document& doc);
 
+  void SetFocus(HWND, Document* doc);
+  [[nodiscard]]
+  bool WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
  private:
   TSFThreadManager() = default;
   wil::com_ptr_nothrow<ITfThreadMgr> mThreadMgr;
+  wil::com_ptr<ITfKeystrokeMgr> mKeystrokeMgr;
   TfClientId mClientId {};
   bool mInitialized {false};
 };

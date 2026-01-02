@@ -3,6 +3,9 @@
 
 #include "TSFTextStore.hpp"
 
+#include <wil/com.h>
+#include <wil/resource.h>
+
 #include <FredEmmott/GUI/Widgets/TextBox.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <algorithm>
@@ -35,6 +38,7 @@ struct WideCharDataObject : COMImplementation<IDataObject> {
     *out = {
       .tymed = TYMED_HGLOBAL,
       .hGlobal = buffer,
+      .pUnkForRelease = nullptr,
     };
     return S_OK;
   }
@@ -95,14 +99,23 @@ HRESULT TextStoreACP::AdviseSink(REFIID riid, IUnknown* punk, DWORD dwMask) {
   if (riid != __uuidof(ITextStoreACPSink)) {
     return E_INVALIDARG;
   }
+  if (mSink) {
+    __debugbreak();
+  }
   mSink = wil::com_query<ITextStoreACPSink>(punk);
+  if (!mSink)
+    return E_NOINTERFACE;
   mSinkMask = dwMask;
-  return mSink ? S_OK : E_NOINTERFACE;
+
+  if (dwMask & TS_AS_LAYOUT_CHANGE)
+    CheckHResult(mSink->OnLayoutChange(TS_LC_CREATE, 1));
+
+  return S_OK;
 }
 
 HRESULT TextStoreACP::UnadviseSink(IUnknown* punk) {
-  if (punk != mSink.get()) {
-    // TODO: error checking
+  if (wil::com_query<ITextStoreACPSink>(punk) != mSink) {
+    // TODO: ... runtime_error?
     __debugbreak();
   }
   mSink.reset();
@@ -111,21 +124,30 @@ HRESULT TextStoreACP::UnadviseSink(IUnknown* punk) {
 }
 
 HRESULT TextStoreACP::RequestLock(DWORD dwLockFlags, HRESULT* phrSession) {
-  // We keep it simple and always grant the lock
-  mLocked = true;
-  *phrSession = S_OK;
-  if (mSink) {
-    mSink->OnLockGranted(dwLockFlags);
+  if (!phrSession)
+    return E_INVALIDARG;
+  if (mLocked) {
+    __debugbreak();
+    *phrSession = TS_E_SYNCHRONOUS;
+    return S_OK;
   }
-  mLocked = false;
+
+  mLocked = true;
+  const auto unlock = wil::scope_exit([this] { mLocked = false; });
+  if (mSink) {
+    *phrSession = mSink->OnLockGranted(dwLockFlags);
+    CheckHResult(*phrSession);
+  } else {
+    *phrSession = S_OK;
+  }
   return S_OK;
 }
 
 HRESULT TextStoreACP::GetStatus(TS_STATUS* pdcs) {
   if (!pdcs)
     return E_INVALIDARG;
-  pdcs->dwDynamicFlags = 0;
-  pdcs->dwStaticFlags = 0;
+  pdcs->dwDynamicFlags = TS_SD_UIINTEGRATIONENABLE;
+  pdcs->dwStaticFlags = TS_SS_NOHIDDENTEXT;
   return S_OK;
 }
 
@@ -156,6 +178,20 @@ HRESULT TextStoreACP::GetFormattedText(LONG, LONG, IDataObject** ppDataObject) {
     return E_INVALIDARG;
   *ppDataObject = nullptr;
   return E_NOTIMPL;
+}
+HRESULT TextStoreACP::OnStartComposition(ITfCompositionView*, BOOL* pfOk) {
+  if (!pfOk)
+    return E_INVALIDARG;
+  *pfOk = TRUE;
+  return S_OK;
+}
+
+HRESULT TextStoreACP::OnUpdateComposition(ITfCompositionView*, ITfRange*) {
+  return S_OK;
+}
+
+HRESULT TextStoreACP::OnEndComposition(ITfCompositionView*) {
+  return S_OK;
 }
 
 static std::size_t Utf16ToUtf8Index(
@@ -199,8 +235,8 @@ HRESULT TextStoreACP::SetSelection(ULONG ulCount, const TS_SELECTION_ACP* sel) {
   if (ulCount != 1 || !sel)
     return E_INVALIDARG;
   const auto& text = mOwner->GetText();
-  const auto start = Utf16ToUtf8Index(std::string {text}, sel[0].acpStart);
-  const auto end = Utf16ToUtf8Index(std::string {text}, sel[0].acpEnd);
+  const auto start = Utf16ToUtf8Index(text, sel[0].acpStart);
+  const auto end = Utf16ToUtf8Index(text, sel[0].acpEnd);
   mOwner->SetSelection(start, end);
   if (mSink && (mSinkMask & TS_AS_SEL_CHANGE)) {
     mSink->OnSelectionChange();
@@ -301,6 +337,7 @@ HRESULT TextStoreACP::GetTextExt(
   LONG acpEnd,
   RECT* prc,
   BOOL* pfClipped) {
+  __debugbreak();
   if (!prc || !pfClipped)
     return E_INVALIDARG;
   if (acpStart > acpEnd)
@@ -333,6 +370,7 @@ HRESULT TextStoreACP::GetTextExt(
 }
 
 HRESULT TextStoreACP::GetScreenExt(TsViewCookie, RECT* prc) {
+  __debugbreak();
   if (!prc)
     return E_INVALIDARG;
   const auto widgetRect = mOwner->GetContentRect();
@@ -357,6 +395,7 @@ HRESULT TextStoreACP::InsertTextAtSelection(
   LONG* pacpStart,
   LONG* pacpEnd,
   TS_TEXTCHANGE* pChange) {
+  __debugbreak();
   if (!(pacpStart && pacpEnd && pChange))
     return E_INVALIDARG;
   // Map the current selection and call SetText
@@ -383,8 +422,45 @@ void TSFThreadManager::Initialize(HWND) {
   mThreadMgr = wil::CoCreateInstanceNoThrow<ITfThreadMgr>(CLSID_TF_ThreadMgr);
   if (!mThreadMgr)
     return;
-  mThreadMgr->Activate(&mClientId);
+  CheckHResult(mThreadMgr->Activate(&mClientId));
   mInitialized = true;
+}
+
+bool TSFThreadManager::WndProc(HWND, UINT msg, WPARAM wParam, LPARAM lParam) {
+  if (!mThreadMgr) {
+    return false;
+  }
+  if (!mKeystrokeMgr) {
+    mKeystrokeMgr = wil::try_com_query<ITfKeystrokeMgr>(mThreadMgr.get());
+  }
+  if (!mKeystrokeMgr) {
+    return false;
+  }
+
+  const auto km = mKeystrokeMgr.get();
+  BOOL eaten {FALSE};
+
+  switch (msg) {
+    case WM_KEYDOWN:
+      CheckHResult(km->TestKeyDown(wParam, lParam, &eaten));
+      if (!eaten) {
+        return false;
+      }
+      CheckHResult(km->KeyDown(wParam, lParam, &eaten));
+      return eaten;
+    case WM_KEYUP:
+      CheckHResult(km->TestKeyUp(wParam, lParam, &eaten));
+      if (!eaten) {
+        return false;
+      }
+      CheckHResult(km->KeyUp(wParam, lParam, &eaten));
+      return eaten;
+    case WM_CHAR:
+      // TODO: fallback if not active
+      return true;
+    default:
+      return false;
+  }
 }
 
 void TSFThreadManager::Uninitialize() {
@@ -397,9 +473,7 @@ void TSFThreadManager::Uninitialize() {
   mInitialized = false;
 }
 
-TSFThreadManager::Document TSFThreadManager::ActivateFor(
-  HWND hwnd,
-  TextBox* owner) {
+TSFThreadManager::Document TSFThreadManager::ActivateFor(HWND, TextBox* owner) {
   Document d {};
   if (!mInitialized || !mThreadMgr)
     return d;
@@ -409,21 +483,17 @@ TSFThreadManager::Document TSFThreadManager::ActivateFor(
   // Create store and context
   d.mStore = wil::com_ptr_nothrow<TextStoreACP>(new TextStoreACP(owner));
   DWORD editCookie {};
-  d.mDocMgr->CreateContext(
+  CheckHResult(d.mDocMgr->CreateContext(
     mClientId,
     0,
     static_cast<ITextStoreACP2*>(d.mStore.get()),
     &d.mContext,
-    &editCookie);
-  if (d.mContext) {
-    d.mDocMgr->Push(d.mContext.get());
+    &editCookie));
+  if (!d.mContext) {
+    __debugbreak();
   }
-  // Associate with focus and hwnd
-  if (mThreadMgr) {
-    mThreadMgr->SetFocus(d.mDocMgr.get());
-    wil::com_ptr_nothrow<ITfDocumentMgr> prev;
-    mThreadMgr->AssociateFocus(hwnd, d.mDocMgr.get(), &prev);
-  }
+
+  CheckHResult(d.mDocMgr->Push(d.mContext.get()));
   return d;
 }
 
@@ -434,6 +504,15 @@ void TSFThreadManager::Deactivate(Document& doc) {
   doc.mContext.reset();
   doc.mStore.reset();
   doc.mDocMgr.reset();
+}
+
+void TSFThreadManager::SetFocus(const HWND hwnd, Document* doc) {
+  wil::com_ptr<ITfDocumentMgr> previous;
+  CheckHResult(mThreadMgr->AssociateFocus(
+    hwnd, doc ? doc->mDocMgr.get() : nullptr, std::out_ptr(previous)));
+  auto source = doc->mContext.try_query<ITfSource>();
+  DWORD cookie {};
+  source->AdviseSink(IID_ITextStoreACP2, doc->mStore.get(), &cookie);
 }
 
 }// namespace FredEmmott::GUI::win32_detail

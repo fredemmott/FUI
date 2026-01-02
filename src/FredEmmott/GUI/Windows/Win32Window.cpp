@@ -187,6 +187,10 @@ int Win32Window::WinMain(
   void (*appTick)(Win32Window&),
   const WindowOptions& windowOptions,
   const WinMainOptions& options) {
+  // Some launchers (e.g. debuggers) expect to be able to observe or stop
+  // the process via the console
+  std::ignore = AttachConsole(ATTACH_PARENT_PROCESS);
+
   void (*comCleanupFun)() {nullptr};
   const auto cleanupCOM = wil::scope_exit([options, &comCleanupFun]() {
     if (
@@ -316,6 +320,7 @@ void Win32Window::CreateNativeWindow() {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
     return;
   }
+  ImmAssociateContext(mHwnd.get(), nullptr);
 
   if (mParentHwnd) {
     gInstances.at(mParentHwnd)->mChildren.push_back(mHwnd.get());
@@ -809,6 +814,11 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   if (mHwnd && hwnd != mHwnd.get()) {
     throw std::logic_error("hwnd mismatch");
   }
+  auto& tsf = TSFThreadManager::Get();
+  if (tsf.WndProc(hwnd, uMsg, wParam, lParam)) {
+    return 0;
+  }
+
   switch (uMsg) {
     case WM_GETOBJECT: {
       if (static_cast<long>(lParam) == UiaRootObjectId) {
