@@ -3,10 +3,9 @@
 
 #include "TSFTextStore.hpp"
 
+#include <FredEmmott/GUI/Widgets/TextBox.hpp>
+#include <FredEmmott/GUI/Window.hpp>
 #include <algorithm>
-
-#include "FredEmmott/GUI/Widgets/TextBox.hpp"
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
 
 namespace FredEmmott::GUI::win32_detail {
 
@@ -267,9 +266,6 @@ HRESULT TextStoreACP::SetText(
     pChange->acpOldEnd = static_cast<LONG>(acpEnd);
     pChange->acpNewEnd = static_cast<LONG>(acpStart + cch);
   }
-  if (mSink && (mSinkMask & TS_AS_TEXT_CHANGE)) {
-    mSink->OnTextChange(0, pChange);
-  }
   return S_OK;
 }
 
@@ -320,7 +316,7 @@ HRESULT TextStoreACP::GetTextExt(
     widgetRect.mSize,
   };
 
-  const auto& window = *Immediate::immediate_detail::tWindow;
+  const auto& window = *mOwner->GetOwnerWindow();
   const auto [left, top]
     = window.CanvasPointToNativePoint(canvasRect.GetTopLeft());
   const auto [right, bottom]
@@ -339,14 +335,18 @@ HRESULT TextStoreACP::GetTextExt(
 HRESULT TextStoreACP::GetScreenExt(TsViewCookie, RECT* prc) {
   if (!prc)
     return E_INVALIDARG;
-  RECT rc {};
-  const auto hwnd = static_cast<HWND>(
-    Immediate::immediate_detail::tWindow->GetNativeHandle());
-  GetClientRect(hwnd, &rc);
-  POINT origin {0, 0};
-  ClientToScreen(hwnd, &origin);
-  OffsetRect(&rc, origin.x, origin.y);
-  *prc = rc;
+  const auto widgetRect = mOwner->GetContentRect();
+  const Rect canvasRect {
+    widgetRect.GetTopLeft() + mOwner->GetTopLeftCanvasPoint(),
+    widgetRect.mSize,
+  };
+
+  const auto& window = *mOwner->GetOwnerWindow();
+  const auto [left, top]
+    = window.CanvasPointToNativePoint(canvasRect.GetTopLeft());
+  const auto [right, bottom]
+    = window.CanvasPointToNativePoint(canvasRect.GetBottomRight());
+  *prc = RECT {left, top, right, bottom};
   return S_OK;
 }
 

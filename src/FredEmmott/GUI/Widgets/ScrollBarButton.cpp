@@ -12,7 +12,6 @@ namespace FredEmmott::GUI::Widgets {
 
 namespace {
 const auto ScrollBarButtonStyleClass = StyleClass::Make("ScrollBarButton");
-
 }// namespace
 
 ScrollBarButton::ScrollBarButton(
@@ -20,7 +19,7 @@ ScrollBarButton::ScrollBarButton(
   const ImmutableStyle& style,
   std::function<void(const Point&)> pressCallback,
   std::function<void()> tickCallback)
-  : Widget(id, style, {ScrollBarButtonStyleClass}),
+  : Widget(id, ScrollBarButtonStyleClass, style),
     mPressCallback(pressCallback),
     mTickCallback(tickCallback) {}
 

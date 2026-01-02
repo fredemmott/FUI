@@ -147,7 +147,8 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   const bool isSelected = initiallySelected || (clicked && *clicked);
   item->SetIsChecked(isSelected);
 
-  BeginWidget<Widget>(ID {"pill"}, ComboBoxItemPillStyles());
+  BeginWidget<Widget>(
+    ID {"pill"}, LiteralStyleClass {"ComboBox/pill"}, ComboBoxItemPillStyles());
   EndWidget<Widget>();
   static const ImmutableStyle ContentStyles {
     Style().MinHeight(
@@ -155,7 +156,8 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
       + ComboBoxItemPillStyles()->MarginTop().value_or(0)
       + ComboBoxItemPillStyles()->MarginBottom().value_or(0)),
   };
-  BeginWidget<Widget>(ID {"content"}, ContentStyles);
+  BeginWidget<Widget>(
+    ID {"content"}, LiteralStyleClass {"ComboBox/content"}, ContentStyles);
 
   if (isSelected) {
     FUI_ASSERT(tWindow);

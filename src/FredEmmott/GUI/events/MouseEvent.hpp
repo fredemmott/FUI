@@ -43,14 +43,12 @@ struct MouseEvent final : Event {
   struct VerticalWheelEvent {
     float mDelta {};
   };
-  struct HitTestEvent {};
   std::variant<
     MoveEvent,
     ButtonPressEvent,
     ButtonReleaseEvent,
     HorizontalWheelEvent,
-    VerticalWheelEvent,
-    HitTestEvent>
+    VerticalWheelEvent>
     mDetail {};
 };
 

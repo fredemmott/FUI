@@ -91,6 +91,8 @@ class Window {
 
   [[nodiscard]]
   Widgets::Widget* GetRootWidget() const noexcept;
+  [[nodiscard]]
+  FocusManager* GetFocusManager() const noexcept;
 
  protected:
   virtual void InitializeWindow() = 0;

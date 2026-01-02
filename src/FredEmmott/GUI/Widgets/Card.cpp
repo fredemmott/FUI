@@ -21,6 +21,6 @@ auto& CardStyle() {
 }
 }// namespace
 
-Card::Card(const std::size_t id) : Widget(id, CardStyle(), {CardStyleClass}) {}
+Card::Card(const std::size_t id) : Widget(id, CardStyleClass, CardStyle()) {}
 
 }// namespace FredEmmott::GUI::Widgets

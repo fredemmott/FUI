@@ -4,11 +4,13 @@
 
 #include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Point.hpp>
+#include <FredEmmott/GUI/Widgets/Focusable.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <ranges>
 
 #include "FredEmmott/GUI/assert.hpp"
+#include "FredEmmott/GUI/events/HitTestEvent.hpp"
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "WidgetList.hpp"
 
@@ -154,12 +156,16 @@ void PaintBorder(
 
 Widget::Widget(
   const std::size_t id,
+  const StyleClass primaryClass,
   const ImmutableStyle& immutableStyle,
   const StyleClasses& classes)
-  : mImmutableStyle(immutableStyle),
+  : mOwnerWindow(Immediate::immediate_detail::tWindow),
+    mPrimaryClass(primaryClass),
+    mImmutableStyle(immutableStyle),
     mID(id),
     mClassList(classes),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
+  AddStyleClass(primaryClass);
   YGNodeSetContext(mYoga.get(), new YogaContext {this});
   mStyleTransitions.reset(new StyleTransitions());
 }
@@ -210,6 +216,9 @@ void Widget::AddStyleClass(const StyleClass klass) {
 }
 
 void Widget::ToggleStyleClass(const StyleClass klass, const bool value) {
+  if (klass == mPrimaryClass && !value) {
+    throw std::logic_error("Can't remove the primary class");
+  }
   if (value) {
     this->AddStyleClass(klass);
     return;
@@ -389,6 +398,32 @@ Widget* Widget::DispatchEvent(const Event& e) {
     return nullptr;
   }
 
+  if (const auto it = dynamic_cast<const HitTestEvent*>(&e)) {
+    auto relativeToSelf = *it;
+    const auto yoga = this->GetLayoutNode();
+    const auto display = YGNodeStyleGetDisplay(yoga);
+    if (display != YGDisplayContents) {
+      relativeToSelf = relativeToSelf.WithOffset({
+        -YGNodeLayoutGetLeft(yoga),
+        -YGNodeLayoutGetTop(yoga),
+      });
+    }
+
+    for (auto&& child: mRawDirectChildren) {
+      if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
+        continue;
+      }
+      if (const auto target = child->DispatchEvent(relativeToSelf)) {
+        return target;
+      }
+    }
+    if (dynamic_cast<IFocusable*>(this)) {
+      return this;
+    }
+
+    return nullptr;
+  }
+
   throw std::logic_error("Unhandled event type");
 }
 
@@ -468,10 +503,8 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
     FUI_ASSERT(result.mTarget);
     return result;
   }
-  if (std::holds_alternative<MouseEvent::HitTestEvent>(event.mDetail)) {
-    result.mResult = EventHandlerResult::Default;
-  } else if (std::holds_alternative<MouseEvent::ButtonPressEvent>(
-               event.mDetail)) {
+
+  if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
     result.mResult = this->OnMouseButtonPress(event);
   } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
                event.mDetail)) {
@@ -633,6 +666,9 @@ Point Widget::GetTopLeftCanvasPoint() const {
     position.mY += style.TranslateY().value_or(0);
   }
   return position;
+}
+std::string Widget::GetAccessibilityName() const {
+  return std::format("{}#{}", mPrimaryClass.GetName(), this->GetID());
 }
 
 }// namespace FredEmmott::GUI::Widgets

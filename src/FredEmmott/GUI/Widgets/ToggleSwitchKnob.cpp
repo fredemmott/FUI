@@ -81,7 +81,7 @@ auto& Styles() {
 using namespace widget_detail;
 
 ToggleSwitchKnob::ToggleSwitchKnob(const std::size_t id)
-  : Widget(id, Styles(), {*ToggleSwitchKnobStyleClass}) {
+  : Widget(id, ToggleSwitchKnobStyleClass, Styles()) {
   this->SetChildren({new ToggleSwitchThumb({})});
 }
 

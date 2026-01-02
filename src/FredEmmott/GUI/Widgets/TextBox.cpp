@@ -19,6 +19,13 @@ namespace FredEmmott::GUI::Widgets {
 namespace {
 using namespace win32_detail;
 
+struct TSFContext : public Widgets::Context {
+  win32_detail::TSFThreadManager::Document mDoc;
+  auto GetSink(DWORD mask) const {
+    return mDoc.mStore->GetSink(mask);
+  }
+};
+
 bool IsWordCharacter(UText* text, std::size_t index) {
   const auto c = utext_char32At(text, index);
   return u_isalnum(c) || u_hasBinaryProperty(c, UCHAR_IDEOGRAPHIC);
@@ -32,7 +39,8 @@ auto& TextBoxStyles() {
 }
 }// namespace
 
-TextBox::TextBox(const std::size_t id) : Widget(id, TextBoxStyles(), {}) {
+TextBox::TextBox(const std::size_t id)
+  : Widget(id, LiteralStyleClass {"TextBox"}, TextBoxStyles(), {}) {
   mWindow = Immediate::immediate_detail::tWindow;
 
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBox::Measure);
@@ -97,9 +105,6 @@ void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
 
   // Manage TSF document activation on focus changes
   if (focusChanged) {
-    struct TSFContext : public Widgets::Context {
-      win32_detail::TSFThreadManager::Document mDoc;
-    };
     if (mIsFocused) {
       auto hwnd = static_cast<HWND>(mWindow->GetNativeHandle());
       win32_detail::TSFThreadManager::Get().Initialize(hwnd);
@@ -402,6 +407,10 @@ const TextBox::TextMetrics& TextBox::GetMetrics() const {
   }
 
   mCaches.mTextMetrics.emplace(std::move(ret));
+  if (const auto ctx = this->GetContext<TSFContext>()) {
+    if (const auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE))
+      sink->OnLayoutChange(TS_LC_CHANGE, 1);
+  }
   return mCaches.mTextMetrics.value();
 }
 
@@ -496,6 +505,10 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
       }
     }
   }
+
+  if (const auto ctx = this->GetContext<TSFContext>())
+    if (const auto sink = ctx->GetSink(TS_AS_SEL_CHANGE))
+      sink->OnSelectionChange();
 }
 
 UText* TextBox::GetUText() const noexcept {

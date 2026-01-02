@@ -54,7 +54,8 @@ auto& InnerStyles() {
 class ComboBoxList final : public Widgets::Widget,
                            public Widgets::ISelectionContainer {
  public:
-  explicit ComboBoxList(const std::size_t id) : Widget(id, InnerStyles(), {}) {}
+  explicit ComboBoxList(const std::size_t id)
+    : Widget(id, LiteralStyleClass {"ComboBox/List"}, InnerStyles(), {}) {}
 };
 }// namespace
 
@@ -76,7 +77,8 @@ ComboBoxPopupResult BeginComboBoxPopup(const ID id) {
 
   const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
 
-  BeginWidget<Widget>(ID {0}, OuterStyles());
+  BeginWidget<Widget>(
+    ID {0}, LiteralStyleClass {"ComboBox/Popup"}, OuterStyles());
   BeginWidget<ComboBoxList>(ID {0})->SetMutableStyles(
     Style().MinWidth(std::max(width, ComboBoxPopupThemeMinWidth)));
   return true;

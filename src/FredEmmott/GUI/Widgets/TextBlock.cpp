@@ -36,7 +36,7 @@ consteval bool is_bitflag_enum(utility::type_tag_t<TextBlock::DirtyFlags>) {
 }
 
 TextBlock::TextBlock(const std::size_t id)
-  : Widget(id, TextBlockClassStyles()) {
+  : Widget(id, LiteralStyleClass {"TextBlock"}, TextBlockClassStyles()) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBlock::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }

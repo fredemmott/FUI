@@ -32,6 +32,7 @@ auto& VerticalStyles() {
 StackPanel::StackPanel(const std::size_t id, const Orientation orientation)
   : Widget(
       id,
+      LiteralStyleClass {"StackPanel"},
       (orientation == Orientation::Horizontal) ? HorizontalStyles()
                                                : VerticalStyles(),
       {orientation == Orientation::Horizontal ? *HorizontalStyleClass

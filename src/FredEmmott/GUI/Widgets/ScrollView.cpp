@@ -20,6 +20,7 @@ using namespace widget_detail;
 namespace {
 constexpr LiteralStyleClass ScrollViewStyleClass("ScrollView");
 constexpr LiteralStyleClass ContentOuterStyleClass("ScrollView/ContentOuter");
+constexpr LiteralStyleClass ContentInnerStyleClass("ScrollView/ContentInner");
 
 constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
   std::chrono::milliseconds(100),
@@ -69,15 +70,18 @@ struct ScrollViewContext final : Context {
 }// namespace
 
 ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
-  : Widget(id, ScrollViewStyle(), classes + ScrollViewStyleClass) {
+  : Widget(id, ScrollViewStyleClass, ScrollViewStyle(), classes) {
   this->SetDirectChildren({
     mHorizontalScrollBar
     = new ScrollBar({}, HorizontalScrollBarStyle(), Orientation::Horizontal),
     mVerticalScrollBar
     = new ScrollBar({}, VerticalScrollBarStyle(), Orientation::Vertical),
-    mContentOuter = new Widget({}, {}, {*ContentOuterStyleClass}),
-    mContentInner
-    = new Widget({}, ContentInnerStyle(), {PseudoClasses::LayoutOrphan}),
+    mContentOuter = new Widget({}, ContentOuterStyleClass, {}),
+    mContentInner = new Widget(
+      {},
+      ContentInnerStyleClass,
+      ContentInnerStyle(),
+      {PseudoClasses::LayoutOrphan}),
   });
   mContentYoga.reset(YGNodeNew());
   YGNodeInsertChild(mContentYoga.get(), mContentInner->GetLayoutNode(), 0);

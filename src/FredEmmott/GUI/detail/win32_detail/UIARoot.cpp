@@ -7,8 +7,8 @@
 
 #include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+#include <FredEmmott/GUI/events/HitTestEvent.hpp>
 
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "UIANode.hpp"
 
 namespace FredEmmott::GUI::win32_detail {
@@ -47,6 +47,22 @@ UIARoot::GetPropertyValue(PROPERTYID propertyId, VARIANT* pRetVal) {
     pRetVal->lVal = PtrToLong(mWindow->GetNativeHandle());
     return S_OK;
   }
+  if (propertyId == UIA_BoundingRectanglePropertyId) {
+    UiaRect rect {};
+    CheckHResult(get_BoundingRectangle(&rect));
+
+    pRetVal->vt = VT_ARRAY | VT_R8;
+    pRetVal->parray = SafeArrayCreateVector(VT_R8, 0, 4);
+
+    double* data {};
+    SafeArrayAccessData(pRetVal->parray, reinterpret_cast<void**>(&data));
+    data[0] = rect.left;
+    data[1] = rect.top;
+    data[2] = rect.width;
+    data[3] = rect.height;
+    SafeArrayUnaccessData(pRetVal->parray);
+    return S_OK;
+  }
   pRetVal->vt = VT_EMPTY;
   return S_OK;
 }
@@ -67,6 +83,7 @@ HRESULT STDMETHODCALLTYPE UIARoot::Navigate(
     if (!root)
       return S_OK;
     *pRetVal = new UIANode(mWindow, root, this);
+    (*pRetVal)->AddRef();
     return S_OK;
   }
   return S_OK;
@@ -121,26 +138,28 @@ HRESULT STDMETHODCALLTYPE UIARoot::ElementProviderFromPoint(
   IRawElementProviderFragment** pRetVal) {
   if (!pRetVal)
     return E_INVALIDARG;
-  const auto& window = *Immediate::immediate_detail::tWindow;
-  MouseEvent event;
-  event.mWindowPoint
-    = window.NativePointToCanvasPoint(BasicPoint {x, y}.as<NativePoint>());
-  event.mDetail = MouseEvent::HitTestEvent {};
-  const auto widget = window.GetRootWidget()->DispatchEvent(event);
+  HitTestEvent event {};
+  event.mPoint
+    = mWindow->NativePointToCanvasPoint(BasicPoint {x, y}.as<NativePoint>());
+  const auto widget = mWindow->GetRootWidget()->DispatchEvent(event);
+  if (!widget) {
+    *pRetVal = this;
+    AddRef();
+    return S_OK;
+  }
   *pRetVal = new UIANode(mWindow, widget, this);
+  (*pRetVal)->AddRef();
   return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE
 UIARoot::GetFocus(IRawElementProviderFragment** pRetVal) {
   // Return focused widget if any
-  const auto fm = FocusManager::Get();
-  if (fm) {
-    if (const auto fw = fm->GetFocusedWidget()) {
-      Widgets::Widget* w = std::get<0>(*fw);
-      *pRetVal = new UIANode(mWindow, w, this);
-      return S_OK;
-    }
+  if (const auto fw = mWindow->GetFocusManager()->GetFocusedWidget()) {
+    Widgets::Widget* w = std::get<0>(*fw);
+    *pRetVal = new UIANode(mWindow, w, this);
+    (*pRetVal)->AddRef();
+    return S_OK;
   }
   *pRetVal = this;
   AddRef();

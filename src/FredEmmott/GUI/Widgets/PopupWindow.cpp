@@ -20,7 +20,11 @@ const auto& InvisibleStyle() {
 }// namespace
 
 PopupWindow::PopupWindow(const std::size_t id)
-  : Widget(id, InvisibleStyle(), {PseudoClasses::LayoutOrphan}),
+  : Widget(
+      id,
+      LiteralStyleClass {"PopupWindow"},
+      InvisibleStyle(),
+      {PseudoClasses::LayoutOrphan}),
     mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {}
 
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(

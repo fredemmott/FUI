@@ -81,9 +81,11 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   static const ImmutableStyle InnerStyles {
     Style().Display(YGDisplayContents),
   };
-  BeginWidget<Widget>(ID {"container"}, OuterStyles);
+  BeginWidget<Widget>(
+    ID {"container"}, LiteralStyleClass {"ComboBox/Button/Outer"}, OuterStyles);
   button->SetContextIfUnset<PopupAnchorContext>(GetCurrentParentNode());
-  BeginWidget<Widget>(ID {0}, InnerStyles);
+  BeginWidget<Widget>(
+    ID {0}, LiteralStyleClass {"ComboBox/Button/Inner"}, InnerStyles);
   return {button};
 };
 

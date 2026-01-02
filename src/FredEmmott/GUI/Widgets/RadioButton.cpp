@@ -143,10 +143,14 @@ auto& InnerStyles() {
 }// namespace
 
 RadioButton::RadioButton(std::size_t id)
-  : Widget(id, RadioButtonStyles(), {RadioButtonStyleClass}) {
-  const auto inner = new Widget({}, InnerStyles());
-  const auto outer = (new Widget({}, OuterStyles()))->SetChildren({inner});
-  mFosterParent = new Widget({}, FosterParentStyles());
+  : Widget(id, RadioButtonStyleClass, RadioButtonStyles()) {
+  const auto inner
+    = new Widget({}, LiteralStyleClass {"RadioButton/Inner"}, InnerStyles());
+  const auto outer
+    = (new Widget({}, LiteralStyleClass {"RadioButton/Outer"}, OuterStyles()))
+        ->SetChildren({inner});
+  mFosterParent = new Widget(
+    {}, LiteralStyleClass {"RadioButton/FosterParent"}, FosterParentStyles());
 
   this->SetDirectChildren({outer, mFosterParent});
 }

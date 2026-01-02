@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include "../../../third-party/vcpkg/packages/wil_x64-windows-static/include/wil/wistd_type_traits.h"
+
 namespace FredEmmott::GUI {
 
 struct NegatedStyleClass;
@@ -30,6 +32,10 @@ class StyleClass {
 
   uintptr_t AsCacheKey() const noexcept {
     return std::bit_cast<uintptr_t>(mID.data());
+  }
+
+  std::string_view GetName() const noexcept {
+    return mID;
   }
 
  private:
@@ -56,7 +62,7 @@ template <std::size_t N>
 class LiteralStyleClass {
  public:
   LiteralStyleClass() = delete;
-  constexpr explicit LiteralStyleClass(const char (&name)[N]) noexcept {
+  consteval explicit LiteralStyleClass(const char (&name)[N]) noexcept {
     std::copy(name, name + N, mName);
   }
 

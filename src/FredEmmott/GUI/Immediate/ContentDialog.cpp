@@ -81,7 +81,8 @@ ContentDialogResult BeginContentDialog(const ID id) {
     return false;
   }
 
-  const auto outer = BeginWidget<Widgets::Widget>(ID {0}, OuterStyles());
+  const auto outer = BeginWidget<Widgets::Widget>(
+    ID {0}, LiteralStyleClass {"ContentDialog"}, OuterStyles());
   tContext = outer->GetOrCreateContext<Context>();
 
   static const auto InnerStyle
@@ -322,7 +323,8 @@ BeginContentDialogButtons() {
     static const ImmutableStyle SpacerStyle {
       Style().Width(ContentDialogButtonSpacing),
     };
-    const auto w = BeginWidget<Widgets::Widget>(id, SpacerStyle);
+    const auto w = BeginWidget<Widgets::Widget>(
+      id, LiteralStyleClass {"ContentDialog/spacer"}, SpacerStyle);
     EndWidget<Widgets::Widget>();
     return w;
   };

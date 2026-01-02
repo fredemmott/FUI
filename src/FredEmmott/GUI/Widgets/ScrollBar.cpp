@@ -129,7 +129,7 @@ ScrollBar::ScrollBar(
   const std::size_t id,
   const ImmutableStyle& style,
   const Orientation orientation)
-  : Widget(id, style, {ScrollBarStyleClass}),
+  : Widget(id, ScrollBarStyleClass, style),
     mOrientation(orientation) {
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
   constexpr auto leftGlyph = "\uedd9";
@@ -167,8 +167,8 @@ ScrollBar::ScrollBar(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallDecrement));
   mTrack = new Widget(
     0,
-    (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle(),
-    {ScrollBarTrackStyleClass});
+    ScrollBarTrackStyleClass,
+    (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle());
   mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
   mSmallIncrement = new ScrollBarButton(
     0,

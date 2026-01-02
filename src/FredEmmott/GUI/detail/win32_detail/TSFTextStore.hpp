@@ -133,6 +133,16 @@ class TextStoreACP final : public COMImplementation<ITextStoreACP2> {
     LONG* pacpEnd,
     TS_TEXTCHANGE* pChange) override;
 
+  ITextStoreACPSink* GetSink(const DWORD mask) const {
+    if (!mSink) {
+      return nullptr;
+    }
+    if (!(mSinkMask & mask)) {
+      return nullptr;
+    }
+    return mSink.get();
+  }
+
  private:
   Widgets::TextBox* mOwner {};
   wil::com_ptr_nothrow<ITextStoreACPSink> mSink;

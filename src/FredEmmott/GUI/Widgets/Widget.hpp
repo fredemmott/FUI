@@ -18,6 +18,7 @@ namespace FredEmmott::GUI {
 struct KeyEvent;
 struct KeyReleaseEvent;
 struct KeyPressEvent;
+class Window;
 }// namespace FredEmmott::GUI
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
@@ -47,6 +48,7 @@ class Widget {
 
   explicit Widget(
     std::size_t id,
+    StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
   virtual ~Widget();
@@ -98,7 +100,7 @@ class Widget {
    * Set with `SetContextIfUnset()`
    */
   template <context T>
-  T* GetContext() {
+  T* GetContext() const {
     const auto key = std::type_index(typeid(T));
     if (!mContexts.contains(key)) {
       return nullptr;
@@ -165,6 +167,8 @@ class Widget {
   }
 
   Point GetTopLeftCanvasPoint() const;
+
+  virtual std::string GetAccessibilityName() const;
 
  protected:
   enum class StateFlags {
@@ -243,12 +247,19 @@ class Widget {
 
   void SetDirectChildren(const std::vector<Widget*>& children);
 
+  Window* GetOwnerWindow() const noexcept {
+    return mOwnerWindow;
+  }
+
  private:
   struct MouseEventResult {
     EventHandlerResult mResult {EventHandlerResult::Default};
     Widget* mTarget {nullptr};
   };
   struct StyleTransitions;
+  Window* mOwnerWindow {};
+  StyleClass mPrimaryClass;
+
   unique_ptr<StyleTransitions> mStyleTransitions;
 
   ImmutableStyle mImmutableStyle;

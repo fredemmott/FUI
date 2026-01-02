@@ -18,6 +18,7 @@ struct UIARoot final
       IRawElementProviderFragment,
       IRawElementProviderSimple,
       IRawElementProviderFragmentRoot> {
+  UIARoot() = delete;
   explicit UIARoot(Win32Window* w);
 
   // IRawElementProviderSimple
@@ -50,7 +51,7 @@ struct UIARoot final
   HRESULT STDMETHODCALLTYPE
   GetFocus(IRawElementProviderFragment** pRetVal) override;
 
-  Win32Window* mWindow;
+  Win32Window* mWindow {nullptr};
 };
 
 }// namespace FredEmmott::GUI::win32_detail

@@ -640,8 +640,8 @@ NativePoint Win32Window::CanvasPointToNativePoint(const Point& canvas) const {
 
   RECT window {};
   GetWindowRect(mHwnd.get(), &window);
-  native.mX += padding.left;
-  native.mY += padding.top;
+  native.mX += window.left;
+  native.mY += window.top;
 
   return native;
 }
