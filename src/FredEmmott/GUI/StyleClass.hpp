@@ -11,7 +11,6 @@
 #include "../../../third-party/vcpkg/packages/wil_x64-windows-static/include/wil/wistd_type_traits.h"
 
 namespace FredEmmott::GUI {
-
 struct NegatedStyleClass;
 
 class StyleClass {
@@ -62,8 +61,10 @@ template <std::size_t N>
 class LiteralStyleClass {
  public:
   LiteralStyleClass() = delete;
-  consteval explicit LiteralStyleClass(const char (&name)[N]) noexcept {
-    std::copy(name, name + N, mName);
+  constexpr explicit LiteralStyleClass(const char (&name)[N + 1]) noexcept {
+    for (std::size_t i = 0; i < N; ++i) {
+      mName[i] = name[i];
+    }
   }
 
   StyleClass Get() const noexcept {
@@ -82,9 +83,11 @@ class LiteralStyleClass {
   }
 
  private:
-  char mName[N];
+  char mName[N] {};
   mutable std::optional<StyleClass> mCache;
 };
+template <std::size_t N>
+LiteralStyleClass(const char (&)[N]) -> LiteralStyleClass<N - 1>;
 
 }// namespace FredEmmott::GUI
 
