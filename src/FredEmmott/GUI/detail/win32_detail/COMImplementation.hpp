@@ -26,8 +26,15 @@ class COMImplementation : public Ts... {
   }
 
   HRESULT QueryInterface(const IID& riid, void** ppvObject) override {
+    if (!ppvObject) {
+      return E_INVALIDARG;
+    }
+    *ppvObject = nullptr;
+
     if (riid == __uuidof(IUnknown)) {
-      *ppvObject = static_cast<IUnknown*>(this);
+      auto asFirst
+        = static_cast<std::tuple_element_t<0, std::tuple<Ts...>>*>(this);
+      *ppvObject = static_cast<IUnknown*>(asFirst);
       AddRef();
       return S_OK;
     }
