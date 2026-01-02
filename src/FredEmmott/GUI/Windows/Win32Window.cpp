@@ -813,9 +813,16 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
           return 0;
         }
         if (IS_SURROGATE_PAIR(*mHighSurrogate, wParam)) {
-          // TODO
-          __debugbreak();
+          const wchar_t utf16[] {
+            *std::move(mHighSurrogate),
+            static_cast<wchar_t>(wParam),
+          };
+          const auto text = WideToUtf8(std::wstring_view {utf16, 2});
+          TextInputEvent e {text};
+          this->DispatchEvent(e);
+          return 0;
         }
+        __debugbreak();
         return 0;
       }
       if (wParam < 0x20) {
