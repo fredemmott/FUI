@@ -9,91 +9,23 @@
 #include <FredEmmott/GUI/Widgets/TextBox.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <algorithm>
+#include <print>
 
 namespace FredEmmott::GUI::win32_detail {
 
 using namespace Widgets;
 
-namespace {
-struct WideCharDataObject : COMImplementation<IDataObject> {
-  WideCharDataObject() {
-    CheckHResult(CreateDataAdviseHolder(std::out_ptr(mAdviseHolder)));
-  }
-  explicit WideCharDataObject(const std::wstring_view text)
-    : WideCharDataObject() {
-    mText = text;
-  }
-
-  HRESULT GetData(FORMATETC* format, STGMEDIUM* out) override {
-    if (!SUCCEEDED(QueryGetData(format))) {
-      return DV_E_FORMATETC;
-    }
-    const auto byteCount = mText.size() * sizeof(decltype(mText)::value_type);
-    auto buffer = GlobalAlloc(GMEM_MOVEABLE, byteCount);
-    if (!buffer) {
-      return E_OUTOFMEMORY;
-    }
-    memcpy(GlobalLock(buffer), mText.data(), byteCount);
-    GlobalUnlock(buffer);
-    *out = {
-      .tymed = TYMED_HGLOBAL,
-      .hGlobal = buffer,
-      .pUnkForRelease = nullptr,
-    };
-    return S_OK;
-  }
-
-  HRESULT QueryGetData(FORMATETC* format) override {
-    if (format->cfFormat != CF_UNICODETEXT) {
-      return DV_E_FORMATETC;
-    }
-    if (!(format->tymed & TYMED_HGLOBAL)) {
-      return DV_E_FORMATETC;
-    }
-    return S_OK;
-  }
-
-  void SetText(const std::wstring_view data) {
-    mText = data;
-    CheckHResult(mAdviseHolder->SendOnDataChange(this, 0, 0));
-  }
-
-  HRESULT SetData(FORMATETC*, STGMEDIUM*, BOOL) override {
-    return E_NOTIMPL;
-  }
-
-  HRESULT GetDataHere(FORMATETC*, STGMEDIUM*) override {
-    return E_NOTIMPL;
-  }
-  HRESULT GetCanonicalFormatEtc(FORMATETC*, FORMATETC*) override {
-    return E_NOTIMPL;
-  }
-  HRESULT EnumFormatEtc(DWORD, IEnumFORMATETC**) override {
-    return E_NOTIMPL;
-  }
-  HRESULT DAdvise(
-    FORMATETC* fetc,
-    DWORD advf,
-    IAdviseSink* sink,
-    DWORD* connection) override {
-    return mAdviseHolder->Advise(this, fetc, advf, sink, connection);
-  }
-  HRESULT DUnadvise(DWORD connection) override {
-    return mAdviseHolder->Unadvise(connection);
-  }
-  HRESULT EnumDAdvise(IEnumSTATDATA** data) override {
-    return mAdviseHolder->EnumAdvise(data);
-  }
-
- private:
-  std::wstring mText;
-  wil::com_ptr<IDataAdviseHolder> mAdviseHolder;
-};
-}// namespace
-
 // -------- TextStoreACP ---------
 
 TextStoreACP::TextStoreACP(TextBox* owner) : mOwner(owner) {}
+
+HRESULT TextStoreACP::GetWnd(TsViewCookie, HWND* phwnd) {
+  if (!phwnd) {
+    return E_INVALIDARG;
+  }
+  *phwnd = mOwner->GetOwnerWindow()->GetNativeHandle().mValue;
+  return S_OK;
+}
 
 HRESULT TextStoreACP::AdviseSink(REFIID riid, IUnknown* punk, DWORD dwMask) {
   if (riid != __uuidof(ITextStoreACPSink)) {
@@ -205,7 +137,7 @@ static std::size_t Utf16ToUtf8Index(
   return WideToUtf8(std::wstring(prefix)).size();
 }
 
-static LONG Utf8ToUtf16Index(const std::string& u8, size_t u8Index) {
+static LONG Utf8ToUtf16Index(const std::string_view u8, size_t u8Index) {
   const auto w = Utf8ToWide(u8.substr(0, std::min(u8Index, u8.size())));
   return static_cast<LONG>(w.size());
 }
@@ -215,16 +147,17 @@ HRESULT TextStoreACP::GetSelection(
   const ULONG ulCount,
   TS_SELECTION_ACP* pSelection,
   ULONG* pcFetched) {
+  if (!mLocked) {
+    __debugbreak();
+  }
   if (!pSelection || !pcFetched || ulCount == 0)
     return E_INVALIDARG;
   if (ulIndex != TS_DEFAULT_SELECTION && ulIndex != 0)
     return TS_E_NOSELECTION;
   const auto [selStart, selEnd] = mOwner->GetSelection();
   const auto& text = mOwner->GetText();
-  pSelection[0].acpStart
-    = Utf8ToUtf16Index(std::string {text}, std::min(selStart, selEnd));
-  pSelection[0].acpEnd
-    = Utf8ToUtf16Index(std::string {text}, std::max(selStart, selEnd));
+  pSelection[0].acpStart = Utf8ToUtf16Index(text, std::min(selStart, selEnd));
+  pSelection[0].acpEnd = Utf8ToUtf16Index(text, std::max(selStart, selEnd));
   pSelection[0].style.ase = TS_AE_END;
   pSelection[0].style.fInterimChar = FALSE;
   *pcFetched = 1;
@@ -237,10 +170,8 @@ HRESULT TextStoreACP::SetSelection(ULONG ulCount, const TS_SELECTION_ACP* sel) {
   const auto& text = mOwner->GetText();
   const auto start = Utf16ToUtf8Index(text, sel[0].acpStart);
   const auto end = Utf16ToUtf8Index(text, sel[0].acpEnd);
+  const auto guard = mOwner->AccessibilityUpdateGuard();
   mOwner->SetSelection(start, end);
-  if (mSink && (mSinkMask & TS_AS_SEL_CHANGE)) {
-    mSink->OnSelectionChange();
-  }
   return S_OK;
 }
 
@@ -250,35 +181,44 @@ HRESULT TextStoreACP::GetText(
   WCHAR* pchPlain,
   ULONG cchPlainReq,
   ULONG* pcchPlainOut,
-  TS_RUNINFO*,
-  ULONG /*cRunInfoReq*/,
+  TS_RUNINFO* prgRunInfo,
+  ULONG cRunInfoReq,
   ULONG* pcRunInfoOut,
   LONG* pacpNext) {
   if (!pcchPlainOut)
     return E_INVALIDARG;
   const auto w = GetWideText();
+  acpEnd = (acpEnd == -1) ? static_cast<LONG>(w.size()) : acpEnd;
   if (acpEnd < acpStart)
     std::swap(acpStart, acpEnd);
-  const LONG end = (acpEnd == -1) ? static_cast<LONG>(w.size()) : acpEnd;
-  const LONG start = std::clamp<LONG>(acpStart, 0, end);
-  const LONG count
-    = std::clamp<LONG>(end - start, 0, static_cast<LONG>(w.size() - start));
-  const auto slice = std::wstring_view {w}.substr(start, count);
+  acpStart = std::clamp<LONG>(acpStart, 0, acpEnd);
+  const LONG count = std::clamp<LONG>(
+    acpEnd - acpStart, 0, static_cast<LONG>(w.size() - acpStart));
+  const auto slice = std::wstring_view {w}.substr(acpStart, count);
   if (pchPlain && cchPlainReq) {
     const auto toCopy
       = std::min<ULONG>(cchPlainReq, static_cast<ULONG>(slice.size()));
     memcpy(pchPlain, slice.data(), toCopy * sizeof(WCHAR));
   }
   *pcchPlainOut = static_cast<ULONG>(slice.size());
-  if (pcRunInfoOut)
-    *pcRunInfoOut = 0;// single run
   if (pacpNext)
-    *pacpNext = end;
+    *pacpNext = acpEnd;
+  if (cRunInfoReq) {
+    if (!(pcRunInfoOut && prgRunInfo)) {
+      return E_INVALIDARG;
+    }
+    prgRunInfo[0] = {
+      static_cast<ULONG>(count),
+      TS_RT_PLAIN,
+    };
+    *pcRunInfoOut = 1;// single run
+  }
+
   return S_OK;
 }
 
 HRESULT TextStoreACP::SetText(
-  DWORD,
+  [[maybe_unused]] DWORD flags,
   LONG acpStart,
   LONG acpEnd,
   const WCHAR* pchText,
@@ -294,14 +234,15 @@ HRESULT TextStoreACP::SetText(
   const auto addU8 = WideToUtf8(std::wstring(add));
   const auto newText
     = std::format("{}{}{}", cur.substr(0, left), addU8, cur.substr(right));
-  mOwner->SetText(newText);
   const auto caret = left + addU8.size();
-  mOwner->SetSelection(caret, caret);
   if (pChange) {
     pChange->acpStart = static_cast<LONG>(acpStart);
     pChange->acpOldEnd = static_cast<LONG>(acpEnd);
     pChange->acpNewEnd = static_cast<LONG>(acpStart + cch);
   }
+  const auto guard = mOwner->AccessibilityUpdateGuard();
+  mOwner->SetText(newText);
+  mOwner->SetSelection(caret, caret);
   return S_OK;
 }
 
@@ -337,7 +278,6 @@ HRESULT TextStoreACP::GetTextExt(
   LONG acpEnd,
   RECT* prc,
   BOOL* pfClipped) {
-  __debugbreak();
   if (!prc || !pfClipped)
     return E_INVALIDARG;
   if (acpStart > acpEnd)
@@ -370,7 +310,6 @@ HRESULT TextStoreACP::GetTextExt(
 }
 
 HRESULT TextStoreACP::GetScreenExt(TsViewCookie, RECT* prc) {
-  __debugbreak();
   if (!prc)
     return E_INVALIDARG;
   const auto widgetRect = mOwner->GetContentRect();
@@ -395,7 +334,6 @@ HRESULT TextStoreACP::InsertTextAtSelection(
   LONG* pacpStart,
   LONG* pacpEnd,
   TS_TEXTCHANGE* pChange) {
-  __debugbreak();
   if (!(pacpStart && pacpEnd && pChange))
     return E_INVALIDARG;
   // Map the current selection and call SetText
@@ -431,7 +369,7 @@ bool TSFThreadManager::WndProc(HWND, UINT msg, WPARAM wParam, LPARAM lParam) {
     return false;
   }
   if (!mKeystrokeMgr) {
-    mKeystrokeMgr = wil::try_com_query<ITfKeystrokeMgr>(mThreadMgr.get());
+    mKeystrokeMgr = mThreadMgr.try_query<ITfKeystrokeMgr>();
   }
   if (!mKeystrokeMgr) {
     return false;
@@ -455,9 +393,6 @@ bool TSFThreadManager::WndProc(HWND, UINT msg, WPARAM wParam, LPARAM lParam) {
       }
       CheckHResult(km->KeyUp(wParam, lParam, &eaten));
       return eaten;
-    case WM_CHAR:
-      // TODO: fallback if not active
-      return true;
     default:
       return false;
   }
@@ -486,7 +421,7 @@ TSFThreadManager::Document TSFThreadManager::ActivateFor(HWND, TextBox* owner) {
   CheckHResult(d.mDocMgr->CreateContext(
     mClientId,
     0,
-    static_cast<ITextStoreACP2*>(d.mStore.get()),
+    static_cast<ITextStoreACP*>(d.mStore.get()),
     &d.mContext,
     &editCookie));
   if (!d.mContext) {
@@ -508,11 +443,13 @@ void TSFThreadManager::Deactivate(Document& doc) {
 
 void TSFThreadManager::SetFocus(const HWND hwnd, Document* doc) {
   wil::com_ptr<ITfDocumentMgr> previous;
+  CheckHResult(mThreadMgr->SetFocus(doc->mDocMgr.get()));
   CheckHResult(mThreadMgr->AssociateFocus(
     hwnd, doc ? doc->mDocMgr.get() : nullptr, std::out_ptr(previous)));
   auto source = doc->mContext.try_query<ITfSource>();
   DWORD cookie {};
-  source->AdviseSink(IID_ITextStoreACP2, doc->mStore.get(), &cookie);
+  source->AdviseSink(
+    IID_ITextStoreACP, static_cast<ITextStoreACP*>(doc->mStore.get()), &cookie);
 }
 
 }// namespace FredEmmott::GUI::win32_detail

@@ -13,6 +13,7 @@
 #include <typeindex>
 
 #include "FredEmmott/GUI/events/TextInputEvent.hpp"
+#include "FredEmmott/utility/moved_flag.hpp"
 
 namespace FredEmmott::GUI {
 struct KeyEvent;
@@ -169,8 +170,40 @@ class Widget {
   Point GetTopLeftCanvasPoint() const;
 
   virtual std::string GetAccessibilityName() const;
+  auto AccessibilityUpdateGuard() {
+    if (std::exchange(mAccessibilityUpdateInProgress, true)) {
+      __debugbreak();
+    }
+    struct flag_guard {
+      flag_guard() = delete;
+      flag_guard(const flag_guard&) = delete;
+      flag_guard& operator=(const flag_guard&) = delete;
+      flag_guard(flag_guard&& other) noexcept {
+        *this = std::move(other);
+      }
+      flag_guard& operator=(flag_guard&& other) noexcept {
+        mFlag = std::exchange(other.mFlag, nullptr);
+        return *this;
+      }
+
+      explicit flag_guard(bool* flag) : mFlag(flag) {}
+      ~flag_guard() {
+        if (mFlag) {
+          *mFlag = false;
+        }
+      }
+
+     private:
+      bool* mFlag;
+    };
+    return flag_guard {&mAccessibilityUpdateInProgress};
+  }
 
  protected:
+  bool IsAccessibilityUpdateInProgress() const noexcept {
+    return mAccessibilityUpdateInProgress;
+  }
+
   enum class StateFlags {
     Default = 0,
     Disabled = 1 << 1,
@@ -259,6 +292,8 @@ class Widget {
   struct StyleTransitions;
   Window* mOwnerWindow {};
   StyleClass mPrimaryClass;
+
+  bool mAccessibilityUpdateInProgress {};
 
   unique_ptr<StyleTransitions> mStyleTransitions;
 

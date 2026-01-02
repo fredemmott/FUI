@@ -20,13 +20,14 @@ namespace FredEmmott::GUI::win32_detail {
 
 // Minimal ITextStoreACP2 implementation that proxies a TextBox's text and
 // selection.
-class TextStoreACP final : public COMImplementation<ITextStoreACP2> {
+class TextStoreACP final : public COMImplementation<ITextStoreACP> {
  public:
   explicit TextStoreACP(Widgets::TextBox* owner);
 
   // IUnknown via COMImplementation
 
   // ITextStoreACP
+  HRESULT GetWnd(TsViewCookie vcView, HWND* phwnd) override;
   HRESULT
   AdviseSink(REFIID riid, IUnknown* punk, DWORD dwMask) override;
   HRESULT UnadviseSink(IUnknown* punk) override;

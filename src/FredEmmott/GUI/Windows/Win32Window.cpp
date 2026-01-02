@@ -165,6 +165,21 @@ Win32Window::Win32Window(
     mOptions.mDXGIFactory = mDXGIFactory.get();
   }
 }
+void Win32Window::ProcessNativeEvents() {
+  MSG msg {};
+  while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+    auto& tsf = TSFThreadManager::Get();
+    if (tsf.WndProc(msg.hwnd, msg.message, msg.wParam, msg.lParam)) {
+      continue;
+    }
+
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+    if (this->GetExitCode()) {
+      return;
+    }
+  }
+}
 
 unique_ptr<Win32Window> Win32Window::CreateAny(
   HINSTANCE hinstance,
@@ -205,7 +220,11 @@ int Win32Window::WinMain(
   switch (options.mCOMMode) {
     case COMMode::Uninitialized:
       break;
-    case COMMode::WinRTMultithreaded:
+    case COMMode::WinRTSingleThreaded:
+      CheckHResult(RoInitialize(RO_INIT_SINGLETHREADED));
+      comCleanupFun = &RoUninitialize;
+      break;
+    case COMMode::WinRTMultiThreaded:
       CheckHResult(RoInitialize(RO_INIT_MULTITHREADED));
       comCleanupFun = &RoUninitialize;
       break;
@@ -813,10 +832,6 @@ LRESULT
 Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   if (mHwnd && hwnd != mHwnd.get()) {
     throw std::logic_error("hwnd mismatch");
-  }
-  auto& tsf = TSFThreadManager::Get();
-  if (tsf.WndProc(hwnd, uMsg, wParam, lParam)) {
-    return 0;
   }
 
   switch (uMsg) {

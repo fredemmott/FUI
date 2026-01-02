@@ -95,6 +95,7 @@ class Window {
   FocusManager* GetFocusManager() const noexcept;
 
  protected:
+  virtual void ProcessNativeEvents() = 0;
   virtual void InitializeWindow() = 0;
   virtual void HideWindow() = 0;
   virtual std::unique_ptr<BasicFramePainter> GetFramePainter(

@@ -66,6 +66,10 @@ void TextBox::SetText(const std::string_view text) {
   this->SetSelection(s.mSelectionStart, s.mSelectionEnd);
   YGNodeMarkDirty(this->GetLayoutNode());
 
+  if (IsAccessibilityUpdateInProgress()) {
+    return;
+  }
+
   const auto ctx = this->GetOrCreateContext<TSFContext>();
   if (!ctx) {
     return;
@@ -531,12 +535,18 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
     }
   }
 
-  if (const auto ctx = this->GetContext<TSFContext>()) {
-    if (const auto sink = ctx->GetSink(TS_AS_SEL_CHANGE))
-      sink->OnSelectionChange();
-    if (const auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE))
-      sink->OnLayoutChange(TS_LC_CHANGE, 1);
+  if (IsAccessibilityUpdateInProgress()) {
+    return;
   }
+
+  const auto ctx = this->GetContext<TSFContext>();
+  if (!ctx)
+    return;
+
+  if (const auto sink = ctx->GetSink(TS_AS_SEL_CHANGE))
+    sink->OnSelectionChange();
+  if (const auto sink = ctx->GetSink(TS_AS_LAYOUT_CHANGE))
+    sink->OnLayoutChange(TS_LC_CHANGE, 1);
 }
 
 UText* TextBox::GetUText() const noexcept {

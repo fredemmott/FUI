@@ -28,13 +28,9 @@ std::expected<void, int> Window::BeginFrame() {
   using namespace Immediate::immediate_detail;
 
   mBeginFrameTime = std::chrono::steady_clock::now();
-  MSG msg {};
-  while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-    if (mExitCode.has_value()) {
-      return std::unexpected {mExitCode.value()};
-    }
+  this->ProcessNativeEvents();
+  if (mExitCode.has_value()) {
+    return std::unexpected {mExitCode.value()};
   }
   FUI_ASSERT(!tWindow);
   tWindow = this;
