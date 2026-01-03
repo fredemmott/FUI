@@ -337,7 +337,6 @@ void Widget::Paint(Renderer* renderer) const {
     const auto newHeight = oldHeight * scaleY;
     renderer->Translate((oldWidth - newWidth) / 2, (oldHeight - newHeight) / 2);
     renderer->Scale(scaleX, scaleY);
-    rect.mSize = {rect.GetWidth(), rect.GetHeight()};
   }
 
   PaintBackground(renderer, rect, style);
