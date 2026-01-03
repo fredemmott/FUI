@@ -192,6 +192,10 @@ int Win32Window::WinMain(
   void (*appTick)(Win32Window&),
   const WindowOptions& windowOptions,
   const WinMainOptions& options) {
+  // Some launchers (e.g. debuggers) expect to be able to observe or stop
+  // the process via the console
+  std::ignore = AttachConsole(ATTACH_PARENT_PROCESS);
+
   void (*comCleanupFun)() {nullptr};
   const auto cleanupCOM = wil::scope_exit([options, &comCleanupFun]() {
     if (
