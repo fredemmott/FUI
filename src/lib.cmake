@@ -153,7 +153,6 @@ set(
   FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
 )
 
-find_path(BOOST_INCLUDE_DIRS "boost/headers/.gitkeep" REQUIRED)
 find_package(yoga CONFIG REQUIRED)
 
 target_link_libraries(
