@@ -4,6 +4,7 @@
 
 #include <Windows.h>
 
+#include <tuple>
 #include <utility>
 
 namespace FredEmmott::GUI::win32_detail {
