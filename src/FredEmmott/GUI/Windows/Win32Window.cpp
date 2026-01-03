@@ -659,6 +659,25 @@ NativePoint Win32Window::CanvasPointToNativePoint(const Point& canvas) const {
   return native;
 }
 
+Point Win32Window::NativePointToCanvasPoint(const NativePoint& native) const {
+  FUI_ASSERT(mDPI && mHwnd);
+
+  RECT padding {};
+  AdjustWindowRectEx(
+    &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
+
+  RECT windowRect {};
+  GetWindowRect(mHwnd.get(), &windowRect);
+
+  // Convert to client-relative coordinates
+  Point canvas {
+    static_cast<float>(native.mX - windowRect.left + padding.left) / mDPIScale,
+    static_cast<float>(native.mY - windowRect.top + padding.top) / mDPIScale,
+  };
+
+  return canvas;
+}
+
 LRESULT Win32Window::StaticWindowProc(
   HWND hwnd,
   UINT uMsg,

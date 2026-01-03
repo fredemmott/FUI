@@ -117,6 +117,7 @@ class Win32Window : public Window {
   void ResizeToIdeal() override;
 
   NativePoint CanvasPointToNativePoint(const Point& canvas) const final;
+  Point NativePointToCanvasPoint(const NativePoint& native) const final;
 
   std::unique_ptr<Window> CreatePopup() const final;
 

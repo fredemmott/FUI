@@ -60,9 +60,11 @@ class Window {
   virtual void ResizeToIdeal() = 0;
   [[nodiscard]]
   virtual bool IsDisabled() const = 0;
+  virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;
   [[nodiscard]]
   virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const = 0;
-  virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;
+  [[nodiscard]]
+  virtual Point NativePointToCanvasPoint(const NativePoint& native) const = 0;
 
   /// Start a frame, or provide an exit code.
   [[nodiscard]]
