@@ -145,7 +145,7 @@ float Root::GetHeightForWidth(float width) const {
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {
   if (std::exchange(tNeedAdditionalFrame, false) || !mWidgetRoot) {
-    return FrameRateRequirement::SmoothAnimation;
+    return FrameRateRequirement::SmoothAnimation {};
   }
   return mWidgetRoot->mWidget->GetFrameRateRequirement();
 }

@@ -47,41 +47,43 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
     return;
   }
 
-  const std::chrono::duration minInterval = (maxFPS == 0)
-    ? std::chrono::microseconds::zero()
-    : std::chrono::microseconds {1'000'000 / maxFPS};
-  const std::chrono::duration maxInterval = (minFPS == 0)
-    ? std::chrono::microseconds::max()
-    : std::chrono::microseconds {1'000'000 / minFPS};
+  constexpr std::chrono::microseconds SmoothAnimationInterval
+    = std::chrono::microseconds(1'000'000 / 60);
 
-  auto requestedInterval = std::chrono::microseconds::max();
+  using time_point = std::chrono::steady_clock::time_point;
 
-  switch (mFUIRoot.GetFrameRateRequirement()) {
-    case FrameRateRequirement::SmoothAnimation:
-      requestedInterval = std::chrono::microseconds(1'000'000 / 60);
-      break;
-    case FrameRateRequirement::Caret:
-      if (const auto interval = SystemSettings::Get().GetCaretBlinkInterval()) {
-        requestedInterval
-          = std::chrono::duration_cast<std::chrono::microseconds>(*interval);
-        break;
-      }
-      // fallthrough
-    case FrameRateRequirement::None:
-    default:
-      break;
+  const auto previousFrameAt = mBeginFrameTime;
+  auto thisFrameAt = time_point::max();
+  const auto req = mFUIRoot.GetFrameRateRequirement();
+  if (req.RequiresSmoothAnimation()) {
+    thisFrameAt = previousFrameAt + SmoothAnimationInterval;
   }
-  const auto frameInterval
-    = std::clamp(requestedInterval, minInterval, maxInterval);
-  if (frameInterval == decltype(frameInterval)::max()) {
+  if (const auto after = req.GetAfter()) {
+    thisFrameAt = std::min(thisFrameAt, *after);
+  }
+  if (!req.GetNativeEvents().empty()) {
+    // Not implemented yet
+    __debugbreak();
+  }
+
+  const time_point lowerBound = (maxFPS == 0)
+    ? mBeginFrameTime
+    : mBeginFrameTime + std::chrono::microseconds {1'000'000 / maxFPS};
+  const time_point upperBound = (minFPS == 0)
+    ? time_point::max()
+    : mBeginFrameTime + std::chrono::microseconds {1'000'000 / minFPS};
+  thisFrameAt = std::clamp(thisFrameAt, lowerBound, upperBound);
+
+  if (thisFrameAt == decltype(thisFrameAt)::max()) {
     this->WaitForInput();
-  }
-
-  const auto frameDuration = std::chrono::steady_clock::now() - mBeginFrameTime;
-  if (frameDuration >= frameInterval) {
     return;
   }
-  this->InterruptableWait(frameInterval - frameDuration);
+
+  const auto now = std::chrono::steady_clock::now();
+  if (thisFrameAt < now) {
+    return;
+  }
+  this->InterruptableWait(thisFrameAt - now);
 }
 
 void Window::EndFrame() {

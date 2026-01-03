@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.25..4.2 FATAL_ERROR)
 
 # This is mostly to suppress the incorrect warning that an explicitly provided variable was not used
 if (CMAKE_TOOLCHAIN_FILE)

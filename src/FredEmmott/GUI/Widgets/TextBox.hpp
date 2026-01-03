@@ -125,7 +125,7 @@ class TextBox : public Widget, public IFocusable {
 
   // Caret blinking state
   bool mCaretVisible {true};
-  std::chrono::steady_clock::time_point mLastCaretToggle {};
+  std::chrono::steady_clock::time_point mLastCaretToggleAt {};
 
   // Horizontal scroll position (number of characters hidden off to the left)
   std::size_t mContentScrollX {0};

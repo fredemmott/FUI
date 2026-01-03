@@ -97,10 +97,17 @@ FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
   if (!mIsFocused) {
     return Widget::GetFrameRateRequirement();
   }
+
   if (mActiveState.mSelectionStart != mActiveState.mSelectionEnd) {
     return Widget::GetFrameRateRequirement();
   }
-  return FrameRateRequirement::Caret;
+
+  const auto interval = SystemSettings::Get().GetCaretBlinkInterval();
+  if (!interval) {
+    return Widget::GetFrameRateRequirement();
+  }
+
+  return FrameRateRequirement::After {mLastCaretToggleAt + *interval};
 }
 
 std::wstring_view TextBox::GetTextW() const noexcept {
@@ -201,19 +208,19 @@ void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   if (focusChanged) {
     // Reset blink on focus change
     mCaretVisible = true;
-    mLastCaretToggle = now;
+    mLastCaretToggleAt = now;
     return;
   }
   if (!(isFocused && hasCaret && blinkInterval.has_value())) {
     return;
   }
 
-  if (now - mLastCaretToggle < *blinkInterval) {
+  if (now - mLastCaretToggleAt < *blinkInterval) {
     return;
   }
 
   mCaretVisible = !mCaretVisible;
-  mLastCaretToggle += *blinkInterval;
+  mLastCaretToggleAt += *blinkInterval;
 }
 
 Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
@@ -552,7 +559,7 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
   s.mSelectionEnd = std::min(end, size);
   // Reset caret blink on movement/selection change
   mCaretVisible = true;
-  mLastCaretToggle = std::chrono::steady_clock::now();
+  mLastCaretToggleAt = std::chrono::steady_clock::now();
 
   if (start == 0 || end == 0) {
     mContentScrollX = 0;

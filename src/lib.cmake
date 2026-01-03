@@ -1,5 +1,3 @@
-find_package(yoga CONFIG REQUIRED)
-
 add_library(
   fredemmott-gui
   STATIC
@@ -155,6 +153,9 @@ set(
   FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
 )
 
+find_path(BOOST_INCLUDE_DIRS "boost/headers/.gitkeep" REQUIRED)
+find_package(yoga CONFIG REQUIRED)
+
 target_link_libraries(
   fredemmott-gui
   PUBLIC
@@ -178,6 +179,7 @@ target_include_directories(
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<BUILD_INTERFACE:${BOOST_INCLUDE_DIRS}>"
 )
 target_compile_features(
   fredemmott-gui

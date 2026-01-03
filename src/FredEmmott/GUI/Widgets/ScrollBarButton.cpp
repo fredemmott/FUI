@@ -34,7 +34,7 @@ void ScrollBarButton::SetText(std::string_view text) {
 
 FrameRateRequirement ScrollBarButton::GetFrameRateRequirement() const noexcept {
   if (mNextTick) {
-    return FrameRateRequirement::SmoothAnimation;
+    return FrameRateRequirement::SmoothAnimation {};
   }
   return Widget::GetFrameRateRequirement();
 }
