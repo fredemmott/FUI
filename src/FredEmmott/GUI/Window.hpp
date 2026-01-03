@@ -48,12 +48,10 @@ class Window {
   virtual ~Window() = default;
 
   [[nodiscard]]
-  virtual std::unique_ptr<Window> CreatePopup() const
-    = 0;
+  virtual std::unique_ptr<Window> CreatePopup() const = 0;
   virtual void SetParent(NativeHandle) = 0;
   [[nodiscard]]
-  virtual NativeHandle GetNativeHandle() const noexcept
-    = 0;
+  virtual NativeHandle GetNativeHandle() const noexcept = 0;
   virtual void SetInitialPositionInNativeCoords(const NativePoint& native) = 0;
   virtual void OffsetPositionToDescendant(Widgets::Widget* child) = 0;
   /// Changes the size as little as possible to meet the constraints
@@ -61,11 +59,9 @@ class Window {
   /// Resize to the 'ideal' size
   virtual void ResizeToIdeal() = 0;
   [[nodiscard]]
-  virtual bool IsDisabled() const
-    = 0;
+  virtual bool IsDisabled() const = 0;
   [[nodiscard]]
-  virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const
-    = 0;
+  virtual NativePoint CanvasPointToNativePoint(const Point& canvas) const = 0;
   virtual void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) = 0;
 
   /// Start a frame, or provide an exit code.
@@ -89,16 +85,14 @@ class Window {
   void SetCancelAction(const std::function<void()>&);
 
   [[nodiscard]]
-  virtual bool IsPopup() const noexcept
-    = 0;
+  virtual bool IsPopup() const noexcept = 0;
 
  protected:
   virtual void ProcessNativeEvents() = 0;
   virtual void InitializeWindow() = 0;
   virtual void HideWindow() = 0;
   virtual std::unique_ptr<BasicFramePainter> GetFramePainter(
-    uint8_t mFrameIndex)
-    = 0;
+    uint8_t mFrameIndex) = 0;
   virtual void ResizeIfNeeded() = 0;
   virtual Size GetClientAreaSize() const = 0;
   virtual float GetDPIScale() const = 0;
@@ -108,8 +102,7 @@ class Window {
   /// Wait for the specified amount of time, unless a new frame is requested
   /// sooner
   virtual void InterruptableWait(
-    const std::chrono::steady_clock::duration&) const
-    = 0;
+    const std::chrono::steady_clock::duration&) const = 0;
 
   // This is protected so it can be called outside the usual frame loop, e.g.
   // when resizing on Windows

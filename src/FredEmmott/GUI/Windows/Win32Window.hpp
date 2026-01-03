@@ -138,9 +138,10 @@ class Win32Window : public Window {
   float GetDPIScale() const final;
   Color GetClearColor() const final;
 
-  virtual std::unique_ptr<Win32Window>
-  CreatePopup(HINSTANCE instance, int showCommand, const Options& options) const
-    = 0;
+  virtual std::unique_ptr<Win32Window> CreatePopup(
+    HINSTANCE instance,
+    int showCommand,
+    const Options& options) const = 0;
   virtual IUnknown* GetDirectCompositionTargetDevice() const = 0;
   virtual void CreateRenderTargets() = 0;
   virtual void CleanupFrameContexts() = 0;
