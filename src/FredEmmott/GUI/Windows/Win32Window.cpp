@@ -210,7 +210,11 @@ int Win32Window::WinMain(
   switch (options.mCOMMode) {
     case COMMode::Uninitialized:
       break;
-    case COMMode::WinRTMultithreaded:
+    case COMMode::WinRTSingleThreaded:
+      CheckHResult(RoInitialize(RO_INIT_SINGLETHREADED));
+      comCleanupFun = &RoUninitialize;
+      break;
+    case COMMode::WinRTMultiThreaded:
       CheckHResult(RoInitialize(RO_INIT_MULTITHREADED));
       comCleanupFun = &RoUninitialize;
       break;

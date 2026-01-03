@@ -51,7 +51,8 @@ struct WinMainOptions {
 
   enum class COMMode {
     Uninitialized,
-    WinRTMultithreaded,// implies ApartmentThreaded
+    WinRTSingleThreaded,
+    WinRTMultiThreaded,// implies ApartmentThreaded
   };
   enum class COMCleanupMode {
     None,
@@ -61,7 +62,7 @@ struct WinMainOptions {
     Uninitialized,
     PerMonitorV2,
   };
-  COMMode mCOMMode {COMMode::WinRTMultithreaded};
+  COMMode mCOMMode {COMMode::WinRTSingleThreaded};
   COMCleanupMode mCOMCleanupMode {COMCleanupMode::Uninitialize};
   DPIMode mDPIMode {DPIMode::PerMonitorV2};
 
