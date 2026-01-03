@@ -129,6 +129,7 @@ class Win32Window : public Window {
 
   Win32Window(HINSTANCE instance, int showCommand, const Options& options);
 
+  void ProcessNativeEvents() override;
   void InitializeWindow() final;
   void HideWindow() final;
   void ResizeIfNeeded() final;

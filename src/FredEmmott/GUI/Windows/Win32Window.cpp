@@ -160,6 +160,16 @@ Win32Window::Win32Window(
     mOptions.mDXGIFactory = mDXGIFactory.get();
   }
 }
+void Win32Window::ProcessNativeEvents() {
+  MSG msg {};
+  while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+    if (this->GetExitCode()) {
+      return;
+    }
+  }
+}
 
 unique_ptr<Win32Window> Win32Window::CreateAny(
   HINSTANCE hinstance,
