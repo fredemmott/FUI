@@ -644,16 +644,17 @@ NativePoint Win32Window::CanvasPointToNativePoint(const Point& canvas) const {
   };
 
   // Adjust an all-zero rect to get padding
-  RECT rect {};
+  RECT padding {};
   AdjustWindowRectEx(
-    &rect, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
+    &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
   // The top and left padding will both be <= 0
-  native.mX -= rect.left;
-  native.mY -= rect.top;
+  native.mX -= padding.left;
+  native.mY -= padding.top;
 
-  GetWindowRect(mHwnd.get(), &rect);
-  native.mX += rect.left;
-  native.mY += rect.top;
+  RECT window {};
+  GetWindowRect(mHwnd.get(), &window);
+  native.mX += window.left;
+  native.mY += window.top;
 
   return native;
 }
