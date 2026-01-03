@@ -18,6 +18,7 @@ namespace FredEmmott::GUI {
 struct KeyEvent;
 struct KeyReleaseEvent;
 struct KeyPressEvent;
+class Window;
 }// namespace FredEmmott::GUI
 namespace FredEmmott::GUI::Widgets {
 using namespace FredEmmott::Memory;
@@ -98,7 +99,7 @@ class Widget {
    * Set with `SetContextIfUnset()`
    */
   template <context T>
-  T* GetContext() {
+  T* GetContext() const {
     const auto key = std::type_index(typeid(T));
     if (!mContexts.contains(key)) {
       return nullptr;
@@ -165,6 +166,11 @@ class Widget {
   }
 
   Point GetTopLeftCanvasPoint() const;
+
+  [[nodiscard]]
+  Window* GetOwnerWindow() const noexcept {
+    return mOwnerWindow;
+  }
 
  protected:
   enum class StateFlags {
@@ -249,6 +255,8 @@ class Widget {
     Widget* mTarget {nullptr};
   };
   struct StyleTransitions;
+  Window* mOwnerWindow {};
+
   unique_ptr<StyleTransitions> mStyleTransitions;
 
   ImmutableStyle mImmutableStyle;

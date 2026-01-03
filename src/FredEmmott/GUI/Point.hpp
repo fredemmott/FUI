@@ -34,11 +34,11 @@ struct BasicPoint {
   T mY {};
 
   template <class Self>
-  auto operator+(this const Self& self, const BasicPoint& other) {
+  constexpr auto operator+(this const Self& self, const BasicPoint& other) {
     return Self {self.mX + other.mX, self.mY + other.mY};
   }
 
-  auto& operator+=(const BasicPoint& other) {
+  constexpr auto& operator+=(const BasicPoint& other) {
     mX += other.mX;
     mY += other.mY;
     return *this;
@@ -46,7 +46,7 @@ struct BasicPoint {
 
   template <class U>
     requires is_size_type_v<U>
-  auto& operator+=(const BasicSize<U>& other) {
+  constexpr auto& operator+=(const BasicSize<U>& other) {
     mX = static_cast<T>(mX + other.mWidth);
     mY = static_cast<T>(mY + other.mHeight);
     return *this;
@@ -54,32 +54,32 @@ struct BasicPoint {
 
   template <class Self, class U>
     requires is_size_type_v<U>
-  auto operator+(this const Self& self, const BasicSize<U>& other) {
+  constexpr auto operator+(this const Self& self, const BasicSize<U>& other) {
     auto ret = self;
     ret += other;
     return ret;
   }
 
   template <class Self>
-  auto operator-(this const Self& self, const BasicPoint& other) {
+  constexpr auto operator-(this const Self& self, const BasicPoint& other) {
     return Self {self.mX - other.mX, self.mY - other.mY};
   }
 
-  auto& operator-=(const BasicPoint& other) {
+  constexpr auto& operator-=(const BasicPoint& other) {
     mX -= other.mX;
     mY -= other.mY;
     return *this;
   }
 
   template <class Self>
-  auto operator*(this const Self& self, const T mult) {
+  constexpr auto operator*(this const Self& self, const T mult) {
     return Self {self.mX * mult, self.mY * mult};
   }
 
   constexpr bool operator==(const BasicPoint&) const noexcept = default;
 
   template <class Other>
-  Other as() const noexcept {
+  constexpr Other as() const noexcept {
     if constexpr (requires { typename Other::value_type; }) {
       using U = typename Other::value_type;
       return Other {static_cast<U>(mX), static_cast<U>(mY)};

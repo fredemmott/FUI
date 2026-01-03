@@ -4,11 +4,13 @@
 
 #include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Point.hpp>
+#include <FredEmmott/GUI/Widgets/Focusable.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <ranges>
 
 #include "FredEmmott/GUI/assert.hpp"
+#include "FredEmmott/GUI/events/HitTestEvent.hpp"
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "WidgetList.hpp"
 
@@ -156,7 +158,8 @@ Widget::Widget(
   const std::size_t id,
   const ImmutableStyle& immutableStyle,
   const StyleClasses& classes)
-  : mImmutableStyle(immutableStyle),
+  : mOwnerWindow(Immediate::immediate_detail::tWindow),
+    mImmutableStyle(immutableStyle),
     mID(id),
     mClassList(classes),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
@@ -386,6 +389,32 @@ Widget* Widget::DispatchEvent(const Event& e) {
         const auto target = fm->GetFocusedWidget()) {
       return get<0>(*target)->DispatchTextInputEvent(*it);
     }
+    return nullptr;
+  }
+
+  if (const auto it = dynamic_cast<const HitTestEvent*>(&e)) {
+    auto relativeToSelf = *it;
+    const auto yoga = this->GetLayoutNode();
+    const auto display = YGNodeStyleGetDisplay(yoga);
+    if (display != YGDisplayContents) {
+      relativeToSelf = relativeToSelf.WithOffset({
+        -YGNodeLayoutGetLeft(yoga),
+        -YGNodeLayoutGetTop(yoga),
+      });
+    }
+
+    for (auto&& child: mRawDirectChildren) {
+      if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
+        continue;
+      }
+      if (const auto target = child->DispatchEvent(relativeToSelf)) {
+        return target;
+      }
+    }
+    if (dynamic_cast<IFocusable*>(this)) {
+      return this;
+    }
+
     return nullptr;
   }
 

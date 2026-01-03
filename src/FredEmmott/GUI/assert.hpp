@@ -37,7 +37,8 @@ inline void assert_fail(
 #ifdef _MSVC_TRADITIONAL
 #define FUI_ALWAYS_ASSERT(condition, ...) \
   if (!(condition)) [[unlikely]] { \
-    assert_fail(std::source_location::current(), #condition, ##__VA_ARGS__); \
+    ::FredEmmott::GUI::assert_fail( \
+      std::source_location::current(), #condition, ##__VA_ARGS__); \
   }
 #define FUI_ASSERT(condition, ...) \
   if constexpr (FredEmmott::GUI::Config::Debug) { \
@@ -46,7 +47,7 @@ inline void assert_fail(
 #else
 #define FUI_ALWAYS_ASSERT(condition, ...) \
   if (!(condition)) [[unlikely]] { \
-    assert_fail( \
+    ::FredEmmott::GUI::assert_fail( \
       std::source_location::current(), #condition __VA_OPT__(, ) __VA_ARGS__); \
   }
 #define FUI_ASSERT(condition, ...) \

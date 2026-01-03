@@ -96,6 +96,7 @@ add_library(
   FredEmmott/GUI/Windows/Win32Window.cpp FredEmmott/GUI/Windows/Win32Window.hpp
   FredEmmott/GUI/Window.cpp FredEmmott/GUI/Window.hpp
   FredEmmott/GUI/assert.hpp
+  FredEmmott/GUI/detail/AutomationActivityFlag.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/icu.hpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
@@ -113,9 +114,11 @@ add_library(
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
   FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
+  FredEmmott/GUI/detail/win32_detail/TSFTextStore.cpp FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp
   FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
+  FredEmmott/GUI/events/HitTestEvent.hpp
   FredEmmott/GUI/events/KeyCode.hpp
   FredEmmott/GUI/events/KeyEvent.hpp
   FredEmmott/GUI/events/MouseButton.hpp

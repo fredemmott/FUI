@@ -3,21 +3,38 @@
 
 #include "TextBox.hpp"
 
-#include <print>
-
 #include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/GUI/SystemSettings.hpp"
+#include "FredEmmott/GUI/Window.hpp"
 #include "FredEmmott/GUI/assert.hpp"
 #include "FredEmmott/GUI/detail/icu.hpp"
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
+#include "FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp"
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "FredEmmott/GUI/events/MouseEvent.hpp"
 
 namespace FredEmmott::GUI::Widgets {
-namespace {
-using namespace win32_detail;
 
+using win32_detail::CheckHResult;
+using win32_detail::TextStoreACP;
+using win32_detail::TSFThreadManager;
+
+struct TextBox::Automation : TSFThreadManager::Document {
+  Automation& operator=(const Document& doc) noexcept {
+    static_cast<Document&>(*this) = doc;
+    return *this;
+  }
+
+  [[nodiscard]]
+  ITextStoreACPSink* GetSink(const DWORD mask) const {
+    if (!mStore) {
+      return nullptr;
+    }
+    return mStore->GetSink(mask);
+  }
+};
+
+namespace {
 bool IsWordCharacter(UText* text, std::size_t index) {
   const auto c = utext_char32At(text, index);
   return u_isalnum(c) || u_hasBinaryProperty(c, UCHAR_IDEOGRAPHIC);
@@ -31,9 +48,9 @@ auto& TextBoxStyles() {
 }
 }// namespace
 
-TextBox::TextBox(const std::size_t id) : Widget(id, TextBoxStyles(), {}) {
-  mWindow = Immediate::immediate_detail::tWindow;
-
+TextBox::TextBox(const std::size_t id)
+  : Widget(id, TextBoxStyles(), {}),
+    mAutomation(std::make_unique<Automation>()) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBox::Measure);
 
   this->SetText("H💩ello, world");
@@ -42,18 +59,37 @@ TextBox::TextBox(const std::size_t id) : Widget(id, TextBoxStyles(), {}) {
 TextBox::~TextBox() = default;
 
 void TextBox::SetText(const std::string_view text) {
+  AssertOwnerThread();
+
   auto& s = mActiveState;
   if (text == s.mText) {
     return;
   }
 
-  mCaches = {};
+  const auto oldLength = s.mText.size();
 
   s.mText = std::string {text};
+  mCaches = {};
   this->SetSelection(s.mSelectionStart, s.mSelectionEnd);
   YGNodeMarkDirty(this->GetLayoutNode());
 
-  // TODO: notify IME
+  if (mAutomationFlag) {
+    return;
+  }
+
+  if (const auto sink = mAutomation->GetSink(TS_AS_TEXT_CHANGE)) {
+    const TS_TEXTCHANGE textChange {
+      .acpOldEnd = static_cast<LONG>(oldLength),
+      .acpNewEnd = static_cast<LONG>(s.mText.size()),
+    };
+    CheckHResult(sink->OnTextChange(0, &textChange));
+  }
+  if (const auto sink = mAutomation->GetSink(TS_AS_LAYOUT_CHANGE)) {
+    CheckHResult(sink->OnLayoutChange(TS_LC_CHANGE, 1));
+  }
+  if (const auto sink = mAutomation->GetSink(TS_AS_SEL_CHANGE)) {
+    CheckHResult(sink->OnSelectionChange());
+  }
 }
 
 FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
@@ -67,10 +103,95 @@ FrameRateRequirement TextBox::GetFrameRateRequirement() const noexcept {
   return FrameRateRequirement::Caret;
 }
 
+std::wstring_view TextBox::GetTextW() const noexcept {
+  const auto& text = mActiveState.mText;
+  if (text.empty()) {
+    return {};
+  }
+  auto& wideText = mCaches.mWideText;
+  if (!wideText.empty()) {
+    return wideText;
+  }
+
+  wideText = win32_detail::Utf8ToWide(text);
+  return wideText;
+}
+
+void TextBox::SetTextW(const std::wstring_view wide) {
+  SetText(win32_detail::WideToUtf8(wide));
+}
+
+Rect TextBox::GetContentRect() const noexcept {
+  const auto yoga = this->GetLayoutNode();
+  // Full area of the text box
+  const Rect outerRect = Rect {
+    Point {},
+    Size {
+      YGNodeLayoutGetWidth(yoga),
+      YGNodeLayoutGetHeight(yoga),
+    },
+  };
+  // Where we can render text
+  return outerRect.WithInset(
+    YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeLeft),
+    YGNodeLayoutGetPadding(yoga, YGEdgeTop)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeTop),
+    YGNodeLayoutGetPadding(yoga, YGEdgeRight)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeRight),
+    YGNodeLayoutGetPadding(yoga, YGEdgeBottom)
+      + YGNodeLayoutGetBorder(yoga, YGEdgeBottom));
+}
+
+std::pair<std::size_t, std::size_t> TextBox::GetSelectionW() const {
+  using namespace win32_detail;
+  const auto [begin, end] = GetSelection();
+  const auto wideBegin = Utf8ToWideIndex(mActiveState.mText, begin);
+  const auto wideEnd
+    = (begin == end) ? wideBegin : Utf8ToWideIndex(mActiveState.mText, end);
+  return {wideBegin, wideEnd};
+}
+
+void TextBox::SetSelectionW(const std::size_t begin, const std::size_t end) {
+  using namespace win32_detail;
+  const auto text = GetTextW();
+  const auto utf8Begin = WideToUtf8Index(text, begin);
+  const auto utf8End = (begin == end) ? utf8Begin : WideToUtf8Index(text, end);
+  this->SetSelection(utf8Begin, utf8End);
+}
+
+TextBox::BoundingBox TextBox::GetTextBoundingBoxW(
+  const std::size_t begin,
+  const std::size_t end) const noexcept {
+  using namespace win32_detail;
+  const auto text = GetTextW();
+  const auto utf8Begin = WideToUtf8Index(text, begin);
+  const auto utf8End = (begin == end) ? utf8Begin : WideToUtf8Index(text, end);
+  return GetTextBoundingBox(utf8Begin, utf8End);
+}
+
 void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   const auto isFocused = FocusManager::IsWidgetFocused(this);
   const bool focusChanged = (isFocused != mIsFocused);
   mIsFocused = isFocused;
+
+  // Manage TSF document activation on focus changes
+  if (focusChanged) {
+    if (mIsFocused) {
+      auto& tm = TSFThreadManager::Get();
+      const auto hwnd = this->GetOwnerWindow()->GetNativeHandle().mValue;
+      tm.Initialize(hwnd);
+      *mAutomation = tm.ActivateFor(hwnd, this);
+      tm.SetFocus(hwnd, mAutomation.get());
+      if (const auto sink = mAutomation->GetSink(TS_AS_LAYOUT_CHANGE)) {
+        CheckHResult(sink->OnLayoutChange(TS_LC_CREATE, 1));
+      }
+    } else {
+      auto& tm = TSFThreadManager::Get();
+      tm.Deactivate(*mAutomation);
+      *mAutomation = {};
+    }
+  }
 
   // Blink caret when focused and no selection
   const auto& s = mActiveState;
@@ -111,6 +232,9 @@ Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
 }
 
 void TextBox::DeleteSelection(const DeleteDirection ifSelectionEmpty) {
+  AssertOwnerThread();
+
+  using enum DeleteDirection;
   auto& s = mActiveState;
   if (s.mSelectionStart == s.mSelectionEnd) {
     switch (ifSelectionEmpty) {
@@ -157,14 +281,14 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       if (e.mModifiers == Modifier_Control) {
         const auto [left, right]
           = std::minmax(s.mSelectionStart, s.mSelectionEnd);
-        mWindow->SetClipboardText(s.mText.substr(left, right - left));
+        GetOwnerWindow()->SetClipboardText(s.mText.substr(left, right - left));
       }
       return StopPropagation;
     case Key_X:
       if (e.mModifiers == Modifier_Control) {
         const auto [left, right]
           = std::minmax(s.mSelectionStart, s.mSelectionEnd);
-        mWindow->SetClipboardText(s.mText.substr(left, right - left));
+        GetOwnerWindow()->SetClipboardText(s.mText.substr(left, right - left));
         BeforeOperation(UndoableState::Operation::Cut);
         this->SetText(
           std::format("{}{}", s.mText.substr(0, left), s.mText.substr(right)));
@@ -175,7 +299,7 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       if (e.mModifiers != Modifier_Control) {
         return StopPropagation;
       }
-      const auto pasted = mWindow->GetClipboardText();
+      const auto pasted = GetOwnerWindow()->GetClipboardText();
       if (!pasted) {
         return StopPropagation;
       }
@@ -199,11 +323,11 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       return StopPropagation;
     case Key_Backspace:
       BeforeOperation(UndoableState::Operation::DeleteLeft);
-      this->DeleteSelection(DeleteLeft);
+      this->DeleteSelection(DeleteDirection::DeleteLeft);
       return StopPropagation;
     case Key_Delete:
       BeforeOperation(UndoableState::Operation::DeleteRight);
-      this->DeleteSelection(DeleteRight);
+      this->DeleteSelection(DeleteDirection::DeleteRight);
       return StopPropagation;
     case Key_Home:
       newIdx = 0;
@@ -376,29 +500,22 @@ void TextBox::BeforeOperation(const UndoableState::Operation op) {
 
 void TextBox::PaintOwnContent(
   Renderer* renderer,
-  const Rect& outerRect,
+  const Rect&,
   const Style& style) const {
   const auto& s = mActiveState;
-
-  const auto yoga = this->GetLayoutNode();
-  const Rect rect = outerRect.WithInset(
-    YGNodeLayoutGetPadding(yoga, YGEdgeLeft)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeLeft),
-    YGNodeLayoutGetPadding(yoga, YGEdgeTop)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeTop),
-    YGNodeLayoutGetPadding(yoga, YGEdgeRight)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeRight),
-    YGNodeLayoutGetPadding(yoga, YGEdgeBottom)
-      + YGNodeLayoutGetBorder(yoga, YGEdgeBottom));
+  const auto rect = this->GetContentRect();
 
   const auto& metrics = this->GetMetrics();
-  const auto& color = style.Color().value();
   const auto& font = style.Font().value();
 
+  const auto scrollOffset = metrics.mOffsetX[mContentScrollX];
+
   Point origin {
-    rect.GetLeft(),
+    rect.GetLeft() - scrollOffset,
     rect.GetBottom() - metrics.mDescent,
   };
+
+  const auto& color = style.Color().value();
 
   const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
 
@@ -412,15 +529,10 @@ void TextBox::PaintOwnContent(
   if (left == right) {
     this->PaintCursor(renderer, rect, style);
   } else {
+    const auto selectionBox = this->GetTextBoundingBox(left, right).mRect;
+    renderer->FillRect(Colors::Blue, selectionBox);
     const auto selection = s.mText.substr(left, right - left);
     const auto w = metrics.mOffsetX[right] - metrics.mOffsetX[left];
-    const auto h = rect.GetHeight();
-    renderer->FillRect(
-      Colors::Blue,
-      Rect {
-        Point {origin.mX, origin.mY - h},
-        Size {w, h},
-      });
     renderer->DrawText(Colors::White, rect, font, selection, origin);
     origin.mX += w;
   }
@@ -432,6 +544,8 @@ void TextBox::PaintOwnContent(
 }
 
 void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
+  AssertOwnerThread();
+
   auto& s = mActiveState;
   const auto size = s.mText.size();
   s.mSelectionStart = std::min(start, size);
@@ -439,6 +553,43 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
   // Reset caret blink on movement/selection change
   mCaretVisible = true;
   mLastCaretToggle = std::chrono::steady_clock::now();
+
+  if (start == 0 || end == 0) {
+    mContentScrollX = 0;
+    return;
+  }
+
+  // Adjust scroll to keep caret visible
+  const auto rect = this->GetContentRect();
+  const auto& metrics = this->GetMetrics();
+  const auto caretPos = s.mSelectionEnd;
+  const auto caretX = metrics.mOffsetX[caretPos];
+  const auto scrollX = metrics.mOffsetX[mContentScrollX];
+  const auto contentWidth = rect.GetWidth();
+
+  // If caret is off to the left, scroll left
+  if (caretX < scrollX) {
+    mContentScrollX = caretPos;
+  }
+  // If caret is off to the right, scroll right
+  else if (caretX > scrollX + contentWidth) {
+    // Find the rightmost character position where caret would be visible
+    for (std::size_t i = mContentScrollX; i <= caretPos; ++i) {
+      if (metrics.mOffsetX[caretPos] - metrics.mOffsetX[i] <= contentWidth) {
+        mContentScrollX = i;
+        break;
+      }
+    }
+  }
+
+  if (mAutomationFlag) {
+    return;
+  }
+
+  if (const auto sink = mAutomation->GetSink(TS_AS_SEL_CHANGE))
+    CheckHResult(sink->OnSelectionChange());
+  if (const auto sink = mAutomation->GetSink(TS_AS_LAYOUT_CHANGE))
+    CheckHResult(sink->OnLayoutChange(TS_LC_CHANGE, 1));
 }
 
 UText* TextBox::GetUText() const noexcept {
@@ -536,6 +687,32 @@ std::size_t TextBox::IndexFromLocalX(const float x) const noexcept {
   }
 
   return closestIndex;
+}
+
+TextBox::BoundingBox TextBox::GetTextBoundingBox(
+  const std::size_t begin,
+  const std::size_t end) const noexcept {
+  const auto contentRect = this->GetContentRect();
+  const auto& metrics = this->GetMetrics();
+
+  const auto scrollOffset = metrics.mOffsetX[mContentScrollX];
+  const auto left
+    = contentRect.GetLeft() + metrics.mOffsetX[begin] - scrollOffset;
+  auto width = metrics.mOffsetX[end] - metrics.mOffsetX[begin];
+  const bool clipped = (width > contentRect.GetWidth()) || (left < 0);
+  if (clipped)
+    width = contentRect.GetWidth();
+
+  return BoundingBox {
+    Rect {
+      contentRect.GetTopLeft() + Point {left, 0},
+      Size {
+        width,
+        metrics.mDescent - /* always negative, so addition */ metrics.mAscent,
+      },
+    },
+    clipped,
+  };
 }
 
 YGSize TextBox::Measure(
