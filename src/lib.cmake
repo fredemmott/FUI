@@ -39,6 +39,7 @@ add_library(
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp
   FredEmmott/GUI/LinearGradientBrush.cpp FredEmmott/GUI/LinearGradientBrush.hpp
   FredEmmott/GUI/Orientation.hpp
+  FredEmmott/GUI/NativeWaitable.hpp
   FredEmmott/GUI/Point.hpp
   FredEmmott/GUI/PseudoClasses.cpp FredEmmott/GUI/PseudoClasses.hpp
   FredEmmott/GUI/Rect.hpp

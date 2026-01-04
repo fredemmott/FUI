@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/NativeWaitable.hpp>
 #include <algorithm>
 #include <chrono>
 #include <optional>
 #include <span>
+#include <utility>
 #include <vector>
 
 namespace FredEmmott::GUI {
@@ -15,14 +17,6 @@ struct FrameRateRequirement {
   struct After {
     std::chrono::steady_clock::time_point mValue;
   };
-  struct NativeEvent {
-#ifdef _WIN32
-    void* mHandle {nullptr};
-#else
-    int mFD {-1};
-#endif
-    constexpr auto operator<=>(const NativeEvent&) const = default;
-  };
 
   constexpr FrameRateRequirement() = default;
   constexpr FrameRateRequirement(SmoothAnimation) noexcept
@@ -30,16 +24,16 @@ struct FrameRateRequirement {
   FrameRateRequirement(const After after) noexcept : mAfter(after.mValue) {}
 
   FrameRateRequirement(FrameRateRequirement&&) noexcept = default;
-  FrameRateRequirement(const NativeEvent& e) noexcept {
-    mNativeEvents.emplace_back(e);
+  FrameRateRequirement(const NativeWaitable& e) noexcept {
+    mNativeWaitables.emplace_back(e);
   }
 
   FrameRateRequirement(
-    std::initializer_list<NativeEvent> nativeEvents) noexcept {
-    mNativeEvents.append_range(nativeEvents);
-    std::ranges::sort(mNativeEvents);
-    const auto [first, last] = std::ranges::unique(mNativeEvents);
-    mNativeEvents.erase(first, last);
+    std::initializer_list<NativeWaitable> nativeEvents) noexcept {
+    mNativeWaitables.append_range(nativeEvents);
+    std::ranges::sort(mNativeWaitables);
+    const auto [first, last] = std::ranges::unique(mNativeWaitables);
+    mNativeWaitables.erase(first, last);
   }
 
   template <std::ranges::input_range R>
@@ -64,33 +58,33 @@ struct FrameRateRequirement {
   }
 
   [[nodiscard]]
-  std::span<const NativeEvent> GetNativeEvents() const noexcept {
-    return mNativeEvents;
+  std::span<const NativeWaitable> GetNativeWaitables() const noexcept {
+    return mNativeWaitables;
   }
 
  private:
   bool mSmoothAnimation {false};
   std::optional<std::chrono::steady_clock::time_point> mAfter;
   // Always sorted
-  std::vector<NativeEvent> mNativeEvents;
+  std::vector<NativeWaitable> mNativeWaitables;
 
   // poor man's flat_set (not in MSVC 2022)
   template <class T>
-    requires std::same_as<std::remove_cvref_t<T>, std::vector<NativeEvent>>
-  void MergeNativeEvents(T&& other) noexcept {
+    requires std::same_as<std::remove_cvref_t<T>, std::vector<NativeWaitable>>
+  void MergeNativeWaitables(T&& other) noexcept {
     if (other.empty()) {
       return;
     }
-    if (mNativeEvents.empty()) {
-      mNativeEvents = std::forward<T>(other);
+    if (mNativeWaitables.empty()) {
+      mNativeWaitables = std::forward<T>(other);
       return;
     }
 
-    std::vector<NativeEvent> merged;
-    merged.reserve(mNativeEvents.size() + other.size());
+    std::vector<NativeWaitable> merged;
+    merged.reserve(mNativeWaitables.size() + other.size());
     std::ranges::set_union(
-      mNativeEvents, std::forward<T>(other), std::back_inserter(merged));
-    mNativeEvents = std::move(merged);
+      mNativeWaitables, std::forward<T>(other), std::back_inserter(merged));
+    mNativeWaitables = std::move(merged);
   }
 
   template <class T>
@@ -102,7 +96,7 @@ struct FrameRateRequirement {
     if (other.mAfter && ((!mAfter) || *other.mAfter < *mAfter)) {
       mAfter = other.mAfter;
     }
-    MergeNativeEvents(std::forward_like<T>(other.mNativeEvents));
+    MergeNativeWaitables(std::forward_like<T>(other.mNativeWaitables));
   }
 };
 

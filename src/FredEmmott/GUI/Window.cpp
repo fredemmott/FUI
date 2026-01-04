@@ -61,7 +61,7 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
   if (const auto after = req.GetAfter()) {
     thisFrameAt = std::min(thisFrameAt, *after);
   }
-  if (!req.GetNativeEvents().empty()) {
+  if (!req.GetNativeWaitables().empty()) {
     // Not implemented yet
     __debugbreak();
   }
