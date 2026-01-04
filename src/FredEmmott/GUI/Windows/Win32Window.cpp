@@ -1121,7 +1121,7 @@ void Win32Window::InterruptableWait(
   MsgWaitForMultipleObjects(
     std::size(handles), handles, FALSE, INFINITE, QS_ALLINPUT);
 
-  CancelWaitableTimer(mWaitFrameInterruptEvent.get());
+  CancelWaitableTimer(mFrameIntervalTimer.get());
   ResetEvent(mWaitFrameInterruptEvent.get());
 }
 
