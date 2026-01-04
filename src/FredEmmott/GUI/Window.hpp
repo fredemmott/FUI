@@ -89,6 +89,11 @@ class Window {
   [[nodiscard]]
   virtual bool IsPopup() const noexcept = 0;
 
+  [[nodiscard]]
+  Widgets::Widget* GetRootWidget() const noexcept;
+  [[nodiscard]]
+  FocusManager* GetFocusManager() const noexcept;
+
  protected:
   virtual void ProcessNativeEvents() = 0;
   virtual void InitializeWindow() = 0;

@@ -32,7 +32,7 @@ class ComboBoxWidget final : public Widgets::Widget {
  public:
   using Widget::Widget;
 
-  ComboBoxWidget() : Widget(0, Styles(), {*ComboBoxWidgetStyleClass}) {}
+  ComboBoxWidget() : Widget(0, ComboBoxWidgetStyleClass, Styles()) {}
   bool mIsPopupOpen = false;
 };
 }// namespace
@@ -48,7 +48,8 @@ ComboBoxResult<bool> ComboBox(
     "Selected index {} is >= items.size() {}",
     *selectedIndex,
     items.size());
-  const auto widget = BeginWidget<ComboBoxWidget>(id, ImmutableStyle {});
+  const auto widget = BeginWidget<ComboBoxWidget>(
+    id, LiteralStyleClass {"ComboBox"}, ImmutableStyle {});
 
   const auto button = ComboBoxButton(items[*selectedIndex]);
   if (button.GetValue() /* clicked */) {

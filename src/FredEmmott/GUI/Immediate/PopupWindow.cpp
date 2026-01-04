@@ -115,7 +115,8 @@ PopupResult BeginPopup(const ID id) {
       .Padding(20),
   };
 
-  BeginWidget<Widget>(ID {0}, PopupStyles);
+  BeginWidget<Widget>(
+    ID {0}, LiteralStyleClass {"PopupWindow/Anchor"}, PopupStyles);
 
   return {true};
 }

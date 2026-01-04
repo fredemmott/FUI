@@ -21,8 +21,9 @@ Label::Label(
   const StyleClasses& classes)
   : Widget(
       id,
+      LabelStyleClass,
       style.value_or(TextBlockClassStyles()),
-      classes + LabelStyleClass) {
+      classes) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }

@@ -13,7 +13,7 @@ using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Widgets {
 namespace {
-const auto ToggleSwitchThumbStyleClass = StyleClass::Make("ToggleSwitchThumb");
+const auto ToggleSwitchThumbStyleClass = StyleClass::Make("ToggleSwitch/Thumb");
 
 namespace Styles {
 using namespace StaticTheme::ToggleSwitch;
@@ -116,8 +116,10 @@ const ImmutableStyle& Inner() {
 }// namespace
 
 ToggleSwitchThumb::ToggleSwitchThumb(const std::size_t id)
-  : Widget(id, Styles::Outer(), {ToggleSwitchThumbStyleClass}) {
-  this->SetChildren({mInner = new Widget(0, Styles::Inner())});
+  : Widget(id, ToggleSwitchThumbStyleClass, Styles::Outer()) {
+  this->SetChildren(
+    {mInner = new Widget(
+       0, LiteralStyleClass {"ToggleSwitch/Thumb/Inner"}, Styles::Inner())});
 }
 
 }// namespace FredEmmott::GUI::Widgets

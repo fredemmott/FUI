@@ -9,7 +9,6 @@
 #include <utility>
 
 namespace FredEmmott::GUI {
-
 struct NegatedStyleClass;
 
 class StyleClass {
@@ -30,6 +29,10 @@ class StyleClass {
 
   uintptr_t AsCacheKey() const noexcept {
     return std::bit_cast<uintptr_t>(mID.data());
+  }
+
+  std::string_view GetName() const noexcept {
+    return mID;
   }
 
  private:
@@ -56,8 +59,10 @@ template <std::size_t N>
 class LiteralStyleClass {
  public:
   LiteralStyleClass() = delete;
-  constexpr explicit LiteralStyleClass(const char (&name)[N]) noexcept {
-    std::copy(name, name + N, mName);
+  constexpr explicit LiteralStyleClass(const char (&name)[N + 1]) noexcept {
+    for (std::size_t i = 0; i < N; ++i) {
+      mName[i] = name[i];
+    }
   }
 
   StyleClass Get() const noexcept {
@@ -76,9 +81,11 @@ class LiteralStyleClass {
   }
 
  private:
-  char mName[N];
+  char mName[N] {};
   mutable std::optional<StyleClass> mCache;
 };
+template <std::size_t N>
+LiteralStyleClass(const char (&)[N]) -> LiteralStyleClass<N - 1>;
 
 }// namespace FredEmmott::GUI
 

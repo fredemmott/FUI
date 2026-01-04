@@ -50,9 +50,9 @@ auto& VerticalThumbStyle() {
 ScrollBarThumb::ScrollBarThumb(const Orientation o, std::size_t id)
   : Widget(
       id,
+      ScrollBarThumbStyleClass,
       (o == Orientation::Horizontal) ? HorizontalThumbStyle()
-                                     : VerticalThumbStyle(),
-      {ScrollBarThumbStyleClass}) {}
+                                     : VerticalThumbStyle()) {}
 
 ScrollBarThumb::~ScrollBarThumb() = default;
 

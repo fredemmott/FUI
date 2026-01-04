@@ -48,6 +48,7 @@ class Widget {
 
   explicit Widget(
     std::size_t id,
+    StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
   virtual ~Widget();
@@ -172,6 +173,9 @@ class Widget {
     return mOwnerWindow;
   }
 
+  [[nodiscard]]
+  std::string GetAccessibilityName() const;
+
  protected:
   enum class StateFlags {
     Default = 0,
@@ -255,6 +259,7 @@ class Widget {
   };
   struct StyleTransitions;
   Window* mOwnerWindow {};
+  StyleClass mPrimaryClass;
 
   unique_ptr<StyleTransitions> mStyleTransitions;
 

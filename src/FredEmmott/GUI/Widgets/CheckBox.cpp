@@ -193,15 +193,21 @@ auto& GlyphBackgroundStyles() {
 }// namespace
 
 CheckBox::CheckBox(std::size_t id)
-  : Widget(id, CheckBoxStyles(), {*CheckBoxStyleClass}) {
+  : Widget(
+      id,
+      LiteralStyleClass {"CheckBox"},
+      CheckBoxStyles(),
+      {*CheckBoxStyleClass}) {
   this->SetDirectChildren({
-    (new Widget(0, GlyphBackgroundStyles()))
+    (new Widget(
+       0,
+       LiteralStyleClass {"CheckBox/GlyphContainer"},
+       GlyphBackgroundStyles()))
       ->SetChildren({
         (new Label(0, GlyphStyles(), {*CheckGlyphStyleClass}))
           ->SetText(StaticTheme::CheckBox::CheckBoxCheckedGlyph),
       }),
-    mFosterParent = new Widget(
-      1, FosterParentStyles(), StyleClasses {*FosterParentStyleClass}),
+    mFosterParent = new Widget(1, FosterParentStyleClass, FosterParentStyles()),
   });
 }
 

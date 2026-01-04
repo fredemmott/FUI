@@ -49,7 +49,7 @@ auto& TextBoxStyles() {
 }// namespace
 
 TextBox::TextBox(const std::size_t id)
-  : Widget(id, TextBoxStyles(), {}),
+  : Widget(id, LiteralStyleClass {"TextBox"}, TextBoxStyles(), {}),
     mAutomation(std::make_unique<Automation>()) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBox::Measure);
 

@@ -27,7 +27,7 @@ class RadioButtonsInner : public Widgets::Widget,
                           public Widgets::ISelectionContainer {
  public:
   explicit RadioButtonsInner(std::size_t id)
-    : Widget(id, InnerStyle(), {*InnerStyleClass}) {}
+    : Widget(id, InnerStyleClass, InnerStyle()) {}
 };
 }// namespace
 

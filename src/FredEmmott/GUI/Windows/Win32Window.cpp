@@ -3,6 +3,8 @@
 
 #include "Win32Window.hpp"
 
+#include <UIAutomationClient.h>
+#include <UIAutomationCoreApi.h>
 #include <Windows.h>
 #include <Windowsx.h>
 #include <roapi.h>
@@ -16,6 +18,9 @@
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/UIANode.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/UIARoot.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <boost/container/static_vector.hpp>
@@ -823,7 +828,20 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   if (mHwnd && hwnd != mHwnd.get()) {
     throw std::logic_error("hwnd mismatch");
   }
+
   switch (uMsg) {
+    case WM_GETOBJECT: {
+      if (static_cast<long>(lParam) == UiaRootObjectId) {
+        if (!mUIAProvider) {
+          mUIAProvider = wil::com_ptr_nothrow<IRawElementProviderFragmentRoot>(
+            new win32_detail::UIARoot(this));
+        }
+        wil::com_ptr_nothrow<IRawElementProviderSimple> simple;
+        mUIAProvider->QueryInterface(IID_PPV_ARGS(simple.put()));
+        return UiaReturnRawElementProvider(hwnd, wParam, lParam, simple.get());
+      }
+      break;
+    }
     case WM_ENABLE:
       mIsDisabled = !wParam;
       break;

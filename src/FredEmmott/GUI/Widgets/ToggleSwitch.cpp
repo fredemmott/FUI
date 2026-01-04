@@ -49,11 +49,11 @@ using namespace StaticTheme;
 using namespace widget_detail;
 
 ToggleSwitch::ToggleSwitch(const std::size_t id)
-  : Widget(id, ToggleSwitchStyle(), {*ToggleSwitchStyleClass}) {
+  : Widget(id, ToggleSwitchStyleClass, ToggleSwitchStyle()) {
   this->SetDirectChildren({
     new ToggleSwitchKnob({}),
     mFosterParent
-    = new Widget({}, FosterParentStyle(), {*ToggleSwitchContentStyleClass}),
+    = new Widget({}, ToggleSwitchContentStyleClass, FosterParentStyle()),
   });
 }
 

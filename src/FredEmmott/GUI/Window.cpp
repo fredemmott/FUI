@@ -112,6 +112,12 @@ void Window::SetDefaultAction(const std::function<void()>& action) {
 void Window::SetCancelAction(const std::function<void()>& action) {
   mCancelAction = action;
 }
+Widgets::Widget* Window::GetRootWidget() const noexcept {
+  return GetRoot()->GetWidget();
+}
+FocusManager* Window::GetFocusManager() const noexcept {
+  return GetRoot()->GetFocusManager();
+}
 
 void Window::Paint() {
   this->ResizeIfNeeded();

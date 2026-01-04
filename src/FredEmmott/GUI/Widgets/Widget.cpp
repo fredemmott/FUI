@@ -156,13 +156,16 @@ void PaintBorder(
 
 Widget::Widget(
   const std::size_t id,
+  const StyleClass primaryClass,
   const ImmutableStyle& immutableStyle,
   const StyleClasses& classes)
   : mOwnerWindow(Immediate::immediate_detail::tWindow),
+    mPrimaryClass(primaryClass),
     mImmutableStyle(immutableStyle),
     mID(id),
     mClassList(classes),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
+  AddStyleClass(primaryClass);
   YGNodeSetContext(mYoga.get(), new YogaContext {this});
   mStyleTransitions.reset(new StyleTransitions());
 }
@@ -213,6 +216,9 @@ void Widget::AddStyleClass(const StyleClass klass) {
 }
 
 void Widget::ToggleStyleClass(const StyleClass klass, const bool value) {
+  if (klass == mPrimaryClass && !value) {
+    throw std::logic_error("Can't remove the primary class");
+  }
   if (value) {
     this->AddStyleClass(klass);
     return;
@@ -651,6 +657,9 @@ Point Widget::GetTopLeftCanvasPoint() const {
     position.mY += style.TranslateY().value_or(0);
   }
   return position;
+}
+std::string Widget::GetAccessibilityName() const {
+  return std::format("{}#{}", mPrimaryClass.GetName(), this->GetID());
 }
 
 }// namespace FredEmmott::GUI::Widgets

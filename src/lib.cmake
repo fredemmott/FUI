@@ -114,6 +114,8 @@ add_library(
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
   FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
   FredEmmott/GUI/detail/win32_detail/TSFTextStore.cpp FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp
+  FredEmmott/GUI/detail/win32_detail/UIANode.cpp FredEmmott/GUI/detail/win32_detail/UIANode.hpp
+  FredEmmott/GUI/detail/win32_detail/UIARoot.cpp FredEmmott/GUI/detail/win32_detail/UIARoot.hpp
   FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
@@ -165,7 +167,7 @@ target_link_libraries(
   yoga::yogacore
   Boost::container
 )
-set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject)
+set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject Uiautomationcore)
 target_compile_definitions(
   fredemmott-gui
   PUBLIC

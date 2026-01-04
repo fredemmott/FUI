@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <dcomp.h>
 #include <dwmapi.h>
+#include <uiautomationcore.h>
 #include <wil/com.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
@@ -107,6 +108,10 @@ class Win32Window : public Window {
     return {mHwnd ? mHwnd.get() : nullptr};
   }
 
+  [[nodiscard]] std::string_view GetTitle() const noexcept {
+    return mOptions.mTitle;
+  }
+
   std::optional<std::string> GetClipboardText() const override;
   void SetClipboardText(std::string_view) const override;
 
@@ -169,6 +174,7 @@ class Win32Window : public Window {
     std::chrono::steady_clock::time_point until) const final;
 
  private:
+  wil::com_ptr<IRawElementProviderFragmentRoot> mUIAProvider;
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};
   Options mOptions {};
