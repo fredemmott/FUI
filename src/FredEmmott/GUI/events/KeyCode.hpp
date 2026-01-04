@@ -3,7 +3,6 @@
 #pragma once
 
 #include <FredEmmott/utility/bitflag_enums.hpp>
-#include <FredEmmott/utility/type_tag.hpp>
 #include <cinttypes>
 
 namespace FredEmmott::GUI {
@@ -57,7 +56,7 @@ enum class KeyModifier : uint8_t {
   Modifier_Control = 1 << 1,
   Modifier_Alt = 1 << 2,
 };
-constexpr bool is_bitflag_enum(utility::type_tag_t<KeyModifier>) {
+consteval bool is_bitflag_enum(std::type_identity<KeyModifier>) {
   return true;
 }
 static_assert(utility::bitflag_enum<KeyModifier>);

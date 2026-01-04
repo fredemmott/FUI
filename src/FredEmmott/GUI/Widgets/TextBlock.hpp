@@ -10,7 +10,6 @@
 
 #include <FredEmmott/GUI/Style.hpp>
 #include <FredEmmott/utility/bitflag_enums.hpp>
-#include <FredEmmott/utility/type_tag.hpp>
 
 #include "Widget.hpp"
 
@@ -36,7 +35,7 @@ class TextBlock final : public Widget {
     // https://issues.skia.org/issues/389111535
     Skia_Color = 1 << 2,
   };
-  friend consteval bool is_bitflag_enum(utility::type_tag_t<DirtyFlags>);
+  friend consteval bool is_bitflag_enum(std::type_identity<DirtyFlags>);
 #ifdef FUI_ENABLE_SKIA
   std::unique_ptr<skia::textlayout::Paragraph> mSkiaParagraph;
 #endif

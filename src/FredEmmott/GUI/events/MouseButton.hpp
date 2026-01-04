@@ -17,7 +17,7 @@ enum class MouseButton : uint8_t {
   X1 = 8,
   X2 = 16,
 };
-consteval bool is_bitflag_enum(utility::type_tag_t<MouseButton>) {
+consteval bool is_bitflag_enum(std::type_identity<MouseButton>) {
   return true;
 }
 static_assert(std::to_underlying(MouseButton::Left | MouseButton::Right) == 5);

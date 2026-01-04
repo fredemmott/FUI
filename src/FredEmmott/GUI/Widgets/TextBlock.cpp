@@ -31,7 +31,7 @@ namespace FredEmmott::GUI::Widgets {
 
 using namespace StaticTheme::Generic;
 
-consteval bool is_bitflag_enum(utility::type_tag_t<TextBlock::DirtyFlags>) {
+consteval bool is_bitflag_enum(std::type_identity<TextBlock::DirtyFlags>) {
   return true;
 }
 

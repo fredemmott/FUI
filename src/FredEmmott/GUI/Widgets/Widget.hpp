@@ -183,7 +183,7 @@ class Widget {
     HaveFocus = 1 << 6,
     HaveVisibleFocus = 1 << 7,
   };
-  friend consteval bool is_bitflag_enum(utility::type_tag_t<StateFlags>);
+  friend consteval bool is_bitflag_enum(std::type_identity<StateFlags>);
 
   enum class EventHandlerResult {
     Default,
@@ -195,8 +195,7 @@ class Widget {
     InheritableActiveState = 1 << 1,
     Animating = 1 << 2,
   };
-  friend consteval bool is_bitflag_enum(
-    utility::type_tag_t<ComputedStyleFlags>);
+  friend consteval bool is_bitflag_enum(std::type_identity<ComputedStyleFlags>);
 
   [[nodiscard]]
   virtual ComputedStyleFlags OnComputedStyleChange(
@@ -293,12 +292,11 @@ class Widget {
   bool MatchesStyleSelector(Style::Selector) const;
 };
 
-consteval bool is_bitflag_enum(utility::type_tag_t<Widget::StateFlags>) {
+consteval bool is_bitflag_enum(std::type_identity<Widget::StateFlags>) {
   return true;
 }
 
-consteval bool is_bitflag_enum(
-  utility::type_tag_t<Widget::ComputedStyleFlags>) {
+consteval bool is_bitflag_enum(std::type_identity<Widget::ComputedStyleFlags>) {
   return true;
 }
 

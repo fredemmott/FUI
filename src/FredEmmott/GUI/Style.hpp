@@ -5,7 +5,6 @@
 #include <YGEnums.h>
 
 #include <FredEmmott/utility/drop_last_t.hpp>
-#include <FredEmmott/utility/type_tag.hpp>
 #include <FredEmmott/utility/unordered_map.hpp>
 #include <unordered_set>
 

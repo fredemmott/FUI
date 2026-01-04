@@ -5,11 +5,9 @@
 #include <FredEmmott/type_traits/concepts.hpp>
 #include <utility>
 
-#include "type_tag.hpp"
-
 namespace FredEmmott::utility::adl {
 template <concepts::scoped_enum T>
-consteval bool is_bitflag_enum(type_tag_t<T>) {
+consteval bool is_bitflag_enum(std::type_identity<T>) {
   return false;
 }
 }// namespace FredEmmott::utility::adl
@@ -18,15 +16,21 @@ namespace FredEmmott::utility::detail {
 template <concepts::scoped_enum T>
 consteval bool is_bitflag_enum_helper() {
   using namespace adl;
-  return is_bitflag_enum(type_tag<T>);
+  return is_bitflag_enum(std::type_identity<T> {});
 }
 }// namespace FredEmmott::utility::detail
 
 namespace FredEmmott::utility {
 
-// enable for your type by adding
-// `consteval bool is_bitflag_enum(type_tag_t<YourType>) { return true; }`
-// to the containing namespace
+// enable for your type by adding...
+//
+// ```
+// consteval bool is_bitflag_enum(std::type_identity<YourType>) {
+//   return true;
+// }
+// ```
+//
+// ...to the enclosing namespace
 template <class T>
 concept bitflag_enum = detail::is_bitflag_enum_helper<T>();
 
