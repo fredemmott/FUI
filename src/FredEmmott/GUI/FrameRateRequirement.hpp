@@ -4,7 +4,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <optional>
 #include <span>
+#include <vector>
 
 namespace FredEmmott::GUI {
 
@@ -25,13 +27,14 @@ struct FrameRateRequirement {
   constexpr FrameRateRequirement() = default;
   constexpr FrameRateRequirement(SmoothAnimation) noexcept
     : mSmoothAnimation(true) {}
-  constexpr FrameRateRequirement(const After after) noexcept {
-    if ((!mAfter) || after.mValue < *mAfter) {
-      mAfter = after.mValue;
-    }
+  FrameRateRequirement(const After after) noexcept : mAfter(after.mValue) {}
+
+  FrameRateRequirement(FrameRateRequirement&&) noexcept = default;
+  FrameRateRequirement(const NativeEvent& e) noexcept {
+    mNativeEvents.emplace_back(e);
   }
 
-  constexpr FrameRateRequirement(
+  FrameRateRequirement(
     std::initializer_list<NativeEvent> nativeEvents) noexcept {
     mNativeEvents.append_range(nativeEvents);
     std::ranges::sort(mNativeEvents);
@@ -72,25 +75,34 @@ struct FrameRateRequirement {
   std::vector<NativeEvent> mNativeEvents;
 
   // poor man's flat_set (not in MSVC 2022)
-  void MergeNativeEvents(const FrameRateRequirement& other) noexcept {
-    const auto oldSize = mNativeEvents.end() - mNativeEvents.begin();
-    mNativeEvents.append_range(other.mNativeEvents);
-    auto newItems = std::ranges::subrange(
-      mNativeEvents.begin() + oldSize, mNativeEvents.end());
+  template <class T>
+    requires std::same_as<std::remove_cvref_t<T>, std::vector<NativeEvent>>
+  void MergeNativeEvents(T&& other) noexcept {
+    if (other.empty()) {
+      return;
+    }
+    if (mNativeEvents.empty()) {
+      mNativeEvents = std::forward<T>(other);
+      return;
+    }
 
-    std::ranges::inplace_merge(mNativeEvents, mNativeEvents.begin() + oldSize);
-    const auto [first, last] = std::ranges::unique(mNativeEvents);
-    mNativeEvents.erase(first, last);
+    std::vector<NativeEvent> merged;
+    merged.reserve(mNativeEvents.size() + other.size());
+    std::ranges::set_union(
+      mNativeEvents, std::forward<T>(other), std::back_inserter(merged));
+    mNativeEvents = std::move(merged);
   }
 
-  void Merge(const FrameRateRequirement& other) {
+  template <class T>
+    requires std::same_as<std::remove_cvref_t<T>, FrameRateRequirement>
+  void Merge(T&& other) {
     if (other.mSmoothAnimation) {
       mSmoothAnimation = true;
     }
     if (other.mAfter && ((!mAfter) || *other.mAfter < *mAfter)) {
       mAfter = other.mAfter;
     }
-    MergeNativeEvents(other);
+    MergeNativeEvents(std::forward_like<T>(other.mNativeEvents));
   }
 };
 
