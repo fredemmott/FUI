@@ -390,40 +390,6 @@ void TSFThreadManager::Initialize(HWND) {
   mInitialized = true;
 }
 
-bool TSFThreadManager::WndProc(HWND, UINT msg, WPARAM wParam, LPARAM lParam) {
-  if (!mThreadMgr) {
-    return false;
-  }
-  if (!mKeystrokeMgr) {
-    mKeystrokeMgr = mThreadMgr.try_query<ITfKeystrokeMgr>();
-  }
-  if (!mKeystrokeMgr) {
-    return false;
-  }
-
-  const auto km = mKeystrokeMgr.get();
-  BOOL eaten {FALSE};
-
-  switch (msg) {
-    case WM_KEYDOWN:
-      CheckHResult(km->TestKeyDown(wParam, lParam, &eaten));
-      if (!eaten) {
-        return false;
-      }
-      CheckHResult(km->KeyDown(wParam, lParam, &eaten));
-      return eaten;
-    case WM_KEYUP:
-      CheckHResult(km->TestKeyUp(wParam, lParam, &eaten));
-      if (!eaten) {
-        return false;
-      }
-      CheckHResult(km->KeyUp(wParam, lParam, &eaten));
-      return eaten;
-    default:
-      return false;
-  }
-}
-
 void TSFThreadManager::Uninitialize() {
   if (!mInitialized)
     return;

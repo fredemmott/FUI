@@ -180,8 +180,6 @@ class TSFThreadManager final {
   void Deactivate(Document& doc);
 
   void SetFocus(HWND, Document* doc);
-  [[nodiscard]]
-  bool WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
  private:
   TSFThreadManager() = default;
