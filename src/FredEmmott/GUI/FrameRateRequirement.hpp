@@ -3,12 +3,11 @@
 #pragma once
 
 #include <FredEmmott/GUI/NativeWaitable.hpp>
-#include <algorithm>
+#include <boost/container/flat_set.hpp>
 #include <chrono>
 #include <optional>
 #include <span>
 #include <utility>
-#include <vector>
 
 namespace FredEmmott::GUI {
 
@@ -19,28 +18,24 @@ struct FrameRateRequirement {
   };
 
   constexpr FrameRateRequirement() = default;
+  constexpr FrameRateRequirement(FrameRateRequirement&&) noexcept = default;
   constexpr FrameRateRequirement(SmoothAnimation) noexcept
     : mSmoothAnimation(true) {}
+
   FrameRateRequirement(const After after) noexcept : mAfter(after.mValue) {}
 
-  FrameRateRequirement(FrameRateRequirement&&) noexcept = default;
-  FrameRateRequirement(const NativeWaitable& e) noexcept {
-    mNativeWaitables.emplace_back(e);
-  }
+  FrameRateRequirement(const NativeWaitable& w) noexcept
+    : mNativeWaitables {std::in_place, {w}} {}
 
   FrameRateRequirement(
-    std::initializer_list<NativeWaitable> nativeEvents) noexcept {
-    mNativeWaitables.append_range(nativeEvents);
-    std::ranges::sort(mNativeWaitables);
-    const auto [first, last] = std::ranges::unique(mNativeWaitables);
-    mNativeWaitables.erase(first, last);
-  }
+    std::initializer_list<NativeWaitable> nativeEvents) noexcept
+    : mNativeWaitables(std::in_place, nativeEvents) {}
 
   template <std::ranges::input_range R>
     requires std::same_as<
       std::remove_cvref_t<std::ranges::range_value_t<R>>,
       FrameRateRequirement>
-  FrameRateRequirement(R&& requirements) noexcept {
+  constexpr FrameRateRequirement(R&& requirements) noexcept {
     for (const FrameRateRequirement& other: requirements) {
       Merge(other);
     }
@@ -59,44 +54,43 @@ struct FrameRateRequirement {
 
   [[nodiscard]]
   std::span<const NativeWaitable> GetNativeWaitables() const noexcept {
-    return mNativeWaitables;
+    if (mNativeWaitables) {
+      return *mNativeWaitables;
+    }
+    return {};
   }
 
  private:
   bool mSmoothAnimation {false};
   std::optional<std::chrono::steady_clock::time_point> mAfter;
-  // Always sorted
-  std::vector<NativeWaitable> mNativeWaitables;
-
-  // poor man's flat_set (not in MSVC 2022)
-  template <class T>
-    requires std::same_as<std::remove_cvref_t<T>, std::vector<NativeWaitable>>
-  void MergeNativeWaitables(T&& other) noexcept {
-    if (other.empty()) {
-      return;
-    }
-    if (mNativeWaitables.empty()) {
-      mNativeWaitables = std::forward<T>(other);
-      return;
-    }
-
-    std::vector<NativeWaitable> merged;
-    merged.reserve(mNativeWaitables.size() + other.size());
-    std::ranges::set_union(
-      mNativeWaitables, std::forward<T>(other), std::back_inserter(merged));
-    mNativeWaitables = std::move(merged);
-  }
+  // - Using boost because `std::flat_set` is not available in MSVC 2022
+  //   as of 2026-01-04
+  // - Using `std::optional` because we *really* want the default and
+  //  `SmoothAnimation` constructors to be constexpr; this would need
+  //   C++26's `__cpp_lib_constexpr_flat_set`
+  std::optional<boost::container::flat_set<NativeWaitable>> mNativeWaitables;
 
   template <class T>
     requires std::same_as<std::remove_cvref_t<T>, FrameRateRequirement>
-  void Merge(T&& other) {
+  constexpr void Merge(T&& other) {
     if (other.mSmoothAnimation) {
       mSmoothAnimation = true;
     }
     if (other.mAfter && ((!mAfter) || *other.mAfter < *mAfter)) {
       mAfter = other.mAfter;
     }
-    MergeNativeWaitables(std::forward_like<T>(other.mNativeWaitables));
+
+    if (!other.mNativeWaitables) {
+      return;
+    }
+    if (!mNativeWaitables) {
+      mNativeWaitables = std::forward<T>(other).mNativeWaitables;
+    } else {
+      mNativeWaitables->insert(
+        boost::container::ordered_unique_range,
+        other.mNativeWaitables->begin(),
+        other.mNativeWaitables->end());
+    }
   }
 };
 
