@@ -164,9 +164,9 @@ class Win32Window : public Window {
     return mIsDisabled;
   }
 
-  void WaitForInput() const override;
-  void InterruptableWait(
-    const std::chrono::steady_clock::duration&) const override;
+  void WaitFrameImpl(
+    std::span<const NativeWaitable>,
+    std::chrono::steady_clock::time_point until) const final;
 
  private:
   HINSTANCE mInstanceHandle {nullptr};

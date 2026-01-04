@@ -100,11 +100,17 @@ class Window {
   virtual float GetDPIScale() const = 0;
   virtual Color GetClearColor() const = 0;
   virtual void InitializeGraphicsAPI() = 0;
-  virtual void WaitForInput() const = 0;
-  /// Wait for the specified amount of time, unless a new frame is requested
-  /// sooner
-  virtual void InterruptableWait(
-    const std::chrono::steady_clock::duration&) const = 0;
+  /** Wait for any of:
+   *
+   * - `InterruptWaitFrame()`
+   * - user input
+   * - the specified time to arrive
+   *
+   * `until` may be `time_point::max()` to wait indefinitely
+   */
+  virtual void WaitFrameImpl(
+    std::span<const NativeWaitable>,
+    std::chrono::steady_clock::time_point until) const = 0;
 
   // This is protected so it can be called outside the usual frame loop, e.g.
   // when resizing on Windows

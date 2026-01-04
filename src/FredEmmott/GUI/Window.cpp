@@ -61,10 +61,6 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
   if (const auto after = req.GetAfter()) {
     thisFrameAt = std::min(thisFrameAt, *after);
   }
-  if (!req.GetNativeWaitables().empty()) {
-    // Not implemented yet
-    __debugbreak();
-  }
 
   const time_point lowerBound = (maxFPS == 0)
     ? mBeginFrameTime
@@ -74,16 +70,12 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
     : mBeginFrameTime + std::chrono::microseconds {1'000'000 / minFPS};
   thisFrameAt = std::clamp(thisFrameAt, lowerBound, upperBound);
 
-  if (thisFrameAt == decltype(thisFrameAt)::max()) {
-    this->WaitForInput();
-    return;
-  }
-
   const auto now = std::chrono::steady_clock::now();
   if (thisFrameAt < now) {
     return;
   }
-  this->InterruptableWait(thisFrameAt - now);
+
+  this->WaitFrameImpl(req.GetNativeWaitables(), thisFrameAt);
 }
 
 void Window::EndFrame() {

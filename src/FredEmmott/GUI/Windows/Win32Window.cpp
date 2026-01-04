@@ -18,6 +18,7 @@
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
+#include <boost/container/static_vector.hpp>
 #include <filesystem>
 #include <print>
 #include <thread>
@@ -1092,34 +1093,62 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
     });
 }
 
-void Win32Window::WaitForInput() const {
-  const auto event = mWaitFrameInterruptEvent.get();
-  MsgWaitForMultipleObjects(1, &event, false, INFINITE, QS_ALLINPUT);
-}
-
-void Win32Window::InterruptableWait(
-  const std::chrono::steady_clock::duration& duration) const {
+void Win32Window::WaitFrameImpl(
+  const std::span<const NativeWaitable> callerHandles,
+  const std::chrono::steady_clock::time_point until) const {
   using HighResolutionTimerTicks
     = std::chrono::duration<int64_t, std::ratio<1, 10'000'000>>;
-  const LARGE_INTEGER timeout {
-    .QuadPart
-    = -std::chrono::duration_cast<HighResolutionTimerTicks>(duration).count(),
-  };
-  if (!SetWaitableTimer(
-        mFrameIntervalTimer.get(), &timeout, 0, nullptr, nullptr, false)) {
+  using time_point = std::remove_cvref_t<decltype(until)>;
+  using clock = time_point::clock;
+
+  // callerHandles + interrupt handle + timer handle
+  if (callerHandles.size() + 2 > MAXIMUM_WAIT_OBJECTS) {
     throw std::runtime_error(
       std::format(
-        "Failed to create waitable timer: {}",
-        static_cast<int>(HRESULT_FROM_WIN32(GetLastError()))));
+        "Windows can only wait for up to {} objects; need to wait on {} events "
+        "({} caller-provided)",
+        MAXIMUM_WAIT_OBJECTS,
+        callerHandles.size() + 2,
+        callerHandles.size()));
+  }
+  boost::container::static_vector<HANDLE, MAXIMUM_WAIT_OBJECTS> handles;
+  std::ranges::copy(
+    std::views::transform(callerHandles, &NativeWaitable::mHandle),
+    std::back_inserter(handles));
+  handles.push_back(mWaitFrameInterruptEvent.get());
+
+  if (const auto now = clock::now();
+      until != time_point::max() && until > now) {
+    /* Using SetWaitableTimer because the standard timeout isn't high enough
+     * resolution to maintain a reasonable approximation of 60hz.
+     *
+     * A negative `timeout` is a duration, whereas a positive is a specific
+     * timepoint.
+     *
+     * Despite having an absolute target time, using negative value here to
+     * id needing to convert between `steady_clock` and `system_clock`
+     */
+    const auto duration = until - now;
+    const LARGE_INTEGER timeout {
+      .QuadPart
+      = -std::chrono::duration_cast<HighResolutionTimerTicks>(duration).count(),
+    };
+    if (!SetWaitableTimer(
+          mFrameIntervalTimer.get(), &timeout, 0, nullptr, nullptr, false)) {
+      throw std::runtime_error(
+        std::format(
+          "Failed to create waitable timer: {}",
+          static_cast<int>(HRESULT_FROM_WIN32(GetLastError()))));
+    }
+    handles.push_back(mFrameIntervalTimer.get());
   }
 
-  const HANDLE handles[] = {
-    mFrameIntervalTimer.get(),
-    mWaitFrameInterruptEvent.get(),
-  };
-
   MsgWaitForMultipleObjects(
-    std::size(handles), handles, FALSE, INFINITE, QS_ALLINPUT);
+    static_cast<DWORD>(handles.size()),
+    handles.data(),
+    FALSE,
+    INFINITE,
+    QS_ALLINPUT);
 
   CancelWaitableTimer(mFrameIntervalTimer.get());
   ResetEvent(mWaitFrameInterruptEvent.get());

@@ -154,6 +154,7 @@ set(
   FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
 )
 
+find_package(Boost CONFIG REQUIRED COMPONENTS container)
 find_package(yoga CONFIG REQUIRED)
 
 target_link_libraries(
@@ -163,6 +164,7 @@ target_link_libraries(
   winui3-themes
   # vpckg
   yoga::yogacore
+  Boost::container
 )
 set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject)
 target_compile_definitions(
