@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/utility/moved_flag.hpp>
+#include <felly/moved_flag.hpp>
 #include <stdexcept>
 #include <utility>
 
@@ -44,11 +44,10 @@ struct ScopedResultMixin : UnscopeableResultMixin {
     // C++ allows move elision when assigning to non-volatile lvalues, so,
     // mark it volatile
     [[maybe_unused]]
-    const volatile auto discard
-      = std::move(mMoved);
+    const volatile auto discard = std::move(mMoved);
   }
 
-  utility::moved_flag mMoved;
+  felly::moved_flag mMoved;
 };
 
 template <void (*TEndWidget)(), class TValue, class... TMixins>

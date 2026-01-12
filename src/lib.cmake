@@ -1,3 +1,5 @@
+find_package(felly CONFIG REQUIRED)
+
 add_library(
   fredemmott-gui
   STATIC
@@ -132,7 +134,6 @@ add_library(
   FredEmmott/utility/almost_equal.hpp
   FredEmmott/utility/bitflag_enums.hpp
   FredEmmott/utility/drop_last_t.hpp
-  FredEmmott/utility/moved_flag.hpp
   FredEmmott/utility/unordered_map.hpp
 )
 set(
@@ -164,6 +165,7 @@ target_link_libraries(
   fredemmott-gui-config
   winui3-themes
   # vpckg
+  felly::felly
   yoga::yogacore
   Boost::container
 )

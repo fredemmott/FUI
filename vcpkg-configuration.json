@@ -1,0 +1,13 @@
+{
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/fredemmott/vcpkg-registry",
+      "reference": "master",
+      "baseline": "0caa3ce8dbbddf1b5d0572c795bc1191eb58213c",
+      "packages": [
+        "felly"
+      ]
+    }
+  ]
+}
