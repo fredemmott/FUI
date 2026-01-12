@@ -68,6 +68,8 @@ class TextBox : public Widget, public IFocusable {
   [[nodiscard]] EventHandlerResult OnMouseMove(const MouseEvent&) override;
   [[nodiscard]] EventHandlerResult OnMouseButtonRelease(
     const MouseEvent&) override;
+  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
+    override;
 
  private:
   // Data needed by accessibility or international input

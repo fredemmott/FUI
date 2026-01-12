@@ -3,6 +3,9 @@
 
 #include "TextBox.hpp"
 
+#include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/TextBox.hpp>
+
 #include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "FredEmmott/GUI/Window.hpp"
@@ -12,6 +15,9 @@
 #include "FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp"
 #include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "FredEmmott/GUI/events/MouseEvent.hpp"
+
+using namespace FredEmmott::utility;
+using namespace FredEmmott::GUI::StaticTheme;
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -40,16 +46,15 @@ bool IsWordCharacter(UText* text, std::size_t index) {
   return u_isalnum(c) || u_hasBinaryProperty(c, UCHAR_IDEOGRAPHIC);
 }
 
-auto& TextBoxStyles() {
-  static const ImmutableStyle ret {
-    Style().FlexDirection(YGFlexDirectionRow),
-  };
-  return ret;
-}
+constexpr LiteralStyleClass TextBoxStyleClass("TextBox");
 }// namespace
 
 TextBox::TextBox(const std::size_t id)
-  : Widget(id, LiteralStyleClass {"TextBox"}, TextBoxStyles(), {}),
+  : Widget(
+      id,
+      TextBoxStyleClass,
+      StaticTheme::TextBox::DefaultTextBoxStyle(),
+      {}),
     mAutomation(std::make_unique<Automation>()) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBox::Measure);
 
@@ -737,4 +742,13 @@ YGSize TextBox::Measure(
     -metrics.mAscent,
   };
 }
+
+Widget::ComputedStyleFlags TextBox::OnComputedStyleChange(
+  const Style& style,
+  const StateFlags state) {
+  return Widget::OnComputedStyleChange(style, state)
+    | ComputedStyleFlags::InheritableHoverState
+    | ComputedStyleFlags::InheritableActiveState;
+}
+
 }// namespace FredEmmott::GUI::Widgets
