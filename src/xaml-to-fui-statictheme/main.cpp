@@ -178,6 +178,32 @@ int main(int argc, char** argv) {
   }
 
   SortResources(resources);
+  // Remove identical duplicates
+  {
+    auto it = resources.begin();
+    while (true) {
+      const auto end = resources.end();
+      it = std::ranges::adjacent_find(it, end, {}, &Resource::mName);
+      if (it == end) {
+        break;
+      }
+
+      const auto next = std::next(it);
+      if (it->mValue != next->mValue) {
+        std::println(
+          stderr,
+          "ERROR: Duplicate resource name: {}\n"
+          "First value:\n  {}\n"
+          "Next value:\n  {}\n",
+          it->mName,
+          it->mValue,
+          next->mValue);
+        return EXIT_FAILURE;
+      }
+      it = resources.erase(next);
+      // `it` is not incremented, in case there's 3+ definitions
+    }
+  }
 
   auto header = std::format(
     "// @{} by {}\n//\n// Command line:\n//\n// {}\n",
