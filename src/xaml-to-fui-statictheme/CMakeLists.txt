@@ -170,10 +170,6 @@ add_winui3_component_theme(
   PARENT Generic
 )
 
-add_winui3_component_theme(Deprecated PARENT Common)
-add_winui3_component_theme(Button PARENT Deprecated)
-add_winui3_component_theme(ComboBox PARENT Button)
-
 add_winui3_component_theme(CheckBox PARENT Common)
 add_winui3_component_theme(ContentDialog PARENT Common)
 add_winui3_component_theme(HyperlinkButton PARENT Common)
@@ -182,5 +178,16 @@ add_winui3_component_theme(RadioButtons PARENT Common)
 add_winui3_component_theme(ScrollBar PARENT Common)
 add_winui3_component_theme(ScrollView PARENT Common)
 add_winui3_component_theme(ToggleSwitch PARENT Common)
+
+add_winui3_component_theme(
+  Deprecated
+  PARENT Common
+  SOURCES
+  Deprecated_themeresources.xaml
+  Deprecated_themeresources_any.xaml
+)
+
+add_winui3_component_theme(Button PARENT Deprecated)
+add_winui3_component_theme(ComboBox PARENT Button)
 
 install(TARGETS winui3-themes EXPORT exports)
