@@ -7,6 +7,7 @@
 #include <array>
 #include <bit>
 #include <cmath>
+#include <felly/overload.hpp>
 #include <source_location>
 #include <stdexcept>
 #include <variant>
@@ -188,13 +189,17 @@ class Color final {
 
   template <StaticTheme::Theme TTheme>
   constexpr Constant ResolveForStaticTheme() const {
-    if (const auto it = get_if<Constant>(&mVariant)) {
-      return *it;
-    }
-    if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
-      return (*it)->Resolve(TTheme)->Resolve();
-    }
-    throw std::bad_variant_access {};
+    return std::visit(
+      felly::overload {
+        [](const Constant& v) -> Constant { return v; },
+        [](const StaticThemeColor c) -> Constant {
+          return c->Resolve(TTheme)->Resolve();
+        },
+        [](const SystemTheme::ColorType c) -> Constant {
+          return SystemTheme::Resolve(c).ResolveForStaticTheme<TTheme>();
+        },
+      },
+      mVariant);
   }
 
   template <native_color T>
