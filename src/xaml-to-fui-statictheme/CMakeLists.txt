@@ -50,7 +50,7 @@ add_library(winui3-themes INTERFACE)
 function(add_winui3_theme_file COMPONENT)
   set(options)
   set(oneValueArgs CPP_OUTPUT HPP_OUTPUT DETAIL_HPP_OUTPUT PARENT)
-  set(multiValueArgs SOURCES PUBLIC_INCLUDE_DIRECTORIES)
+  set(multiValueArgs SOURCES PUBLIC_INCLUDE_DIRECTORIES IMPLEMENTATION_USES_NAMESPACES)
   cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if ("PARENT" IN_LIST ARGN)
@@ -80,6 +80,13 @@ function(add_winui3_theme_file COMPONENT)
 
   set(TARGET "fredemmott-gui-StaticTheme-${COMPONENT}")
 
+  set(CLI_ARG_IMPLEMENTATION_USES_NAMESPACES)
+  if (arg_IMPLEMENTATION_USES_NAMESPACES)
+    foreach (NS IN LISTS arg_IMPLEMENTATION_USES_NAMESPACES)
+      list(APPEND CLI_ARG_IMPLEMENTATION_USES_NAMESPACE "--cpp-uses-namespace" "${NS}")
+    endforeach ()
+  endif ()
+
   add_custom_command(
     OUTPUT
     "${arg_CPP_OUTPUT}"
@@ -91,6 +98,7 @@ function(add_winui3_theme_file COMPONENT)
     --hpp-output "${arg_HPP_OUTPUT}"
     --detail-hpp-output "${arg_DETAIL_HPP_OUTPUT}"
     --parent "${PARENT_THEME}"
+    "${CLI_ARG_IMPLEMENTATION_USES_NAMESPACE}"
     "${COMPONENT}"
     "${SOURCES}"
     DEPENDS
@@ -188,6 +196,12 @@ add_winui3_component_theme(
 )
 
 add_winui3_component_theme(Button PARENT Deprecated)
+add_winui3_component_theme(
+  TextBox
+  PARENT Deprecated
+  IMPLEMENTATION_USES_NAMESPACES Common
+)
+
 add_winui3_component_theme(ComboBox PARENT Button)
 
 install(TARGETS winui3-themes EXPORT exports)

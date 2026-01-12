@@ -24,14 +24,15 @@ struct Arguments {
   std::filesystem::path mHppOutput;
   std::filesystem::path mDetailHppOutput;
   std::string mParent;
+  std::vector<std::string> mCppUsesNamespaces;
 };
 
 void ShowUsage(FILE* file, const char* self) {
   std::println(
     file,
     "USAGE: {} [--cpp-output FILE] [--hpp-output FILE] "
-    "[--detail-hpp-output FILE] [--parent PARENT] "
-    "COMPONENT INPUT [INPUT...]\n"
+    "[--detail-hpp-output FILE] [--parent PARENT] [--cpp-uses-namespace NS "
+    "[...]] COMPONENT INPUT [INPUT...]\n"
     "  --parent PARENT: either 'NONE', or the name of a parent component",
     self);
 }
@@ -84,6 +85,20 @@ std::expected<Arguments, ParseArgumentsExitCode> ParseArguments(
         return std::unexpected {SyntaxError};
       }
       ret.mCppOutput = value;
+      continue;
+    }
+
+    if (arg == "--cpp-uses-namespace") {
+      if (++i >= args.size()) {
+        std::println(stderr, "--cpp-uses-namespace requires an argument");
+        return std::unexpected {SyntaxError};
+      }
+      const auto value = args[i];
+      if (value.empty()) {
+        std::println(stderr, "--cpp-uses-namespace value can not be empty");
+        return std::unexpected {SyntaxError};
+      }
+      ret.mCppUsesNamespaces.emplace_back(value);
       continue;
     }
 
@@ -227,6 +242,7 @@ int main(int argc, char** argv) {
     = std::format("FredEmmott::GUI::StaticTheme::{}", arguments->mComponent),
     .mDetailNamespace
     = std::format("detail_StaticTheme_{}", arguments->mComponent),
+    .mCppUsesNamespaces = arguments->mCppUsesNamespaces,
   };
 
   std::size_t outputCount = 0;

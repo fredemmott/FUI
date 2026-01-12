@@ -49,6 +49,7 @@ const {TYPE}* Theme::Get{NAME}() {{
 
 namespace {NAMESPACE}::{DETAIL_NAMESPACE} {{
 
+{EXPLICIT_USING}
 {PARENT_USING}
 
 using enum SystemTheme::ColorType;
@@ -66,6 +67,16 @@ using enum SystemTheme::ColorType;
     fmt::arg("COMPONENT", meta.mComponent),
     fmt::arg("NAMESPACE", meta.mNamespace),
     fmt::arg("DETAIL_NAMESPACE", meta.mDetailNamespace),
+    fmt::arg(
+      "EXPLICIT_USING",
+      meta.mCppUsesNamespaces.empty()
+        ? "// using namespace --cpp-uses-namespace"
+        : (meta.mCppUsesNamespaces | std::views::transform([](auto& ns) {
+             return fmt::format("using namespace {};", ns);
+           })
+           | std::views::join_with('\n') | std::ranges::to<std::string>()
+
+             )),
     fmt::arg(
       "PARENT_USING",
       meta.mParent.empty() ? "// using namespace PARENT;"
