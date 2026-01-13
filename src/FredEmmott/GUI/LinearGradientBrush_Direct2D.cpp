@@ -13,11 +13,23 @@ wil::com_ptr<ID2D1Brush> LinearGradientBrush::GetDirect2DBrush(
   const Rect& rect) const {
   const_cast<LinearGradientBrush*>(this)->InitializeDirect2DBrush(rt);
 
-  auto m = D2D1::Matrix3x2F::Identity();
+  auto m = mDirect2DCache->mScaleMatrix;
   if (mMappingMode == MappingMode::RelativeToBoundingBox) {
-    m = D2D1::Matrix3x2F::Scale(rect.GetWidth(), rect.GetHeight());
+    m = m * D2D1::Matrix3x2F::Scale(rect.GetWidth(), rect.GetHeight());
   }
   m = m * D2D1::Matrix3x2F::Translation(rect.GetLeft(), rect.GetTop());
+  if (mMappingMode == MappingMode::Absolute) {
+    if (mScaleTransform.mScaleX < 0) {
+      const auto brushWidth = mEnd.mX - mStart.mX;
+      const float offset = rect.GetWidth() - brushWidth;
+      m = m * D2D1::Matrix3x2F::Translation(offset, 0);
+    }
+    if (mScaleTransform.mScaleY < 0) {
+      const auto brushHeight = mEnd.mY - mStart.mY;
+      const float offset = rect.GetHeight() - brushHeight;
+      m = m * D2D1::Matrix3x2F::Translation(0, offset);
+    }
+  }
 
   auto brush = mDirect2DCache->mDirect2DBrush;
   brush->SetTransform(m);
@@ -28,8 +40,10 @@ void LinearGradientBrush::InitializeDirect2DBrush(ID2D1RenderTarget* rt) {
   if (mDirect2DCache) {
     return;
   }
+
   mDirect2DCache = std::make_shared<Direct2DCache>();
-  auto& [d2dStops, d2dBrush] = *mDirect2DCache;
+
+  auto& [d2dStops, d2dBrush, scaleMatrix] = *mDirect2DCache;
 
   std::vector<D2D1_GRADIENT_STOP> stops;
   stops.reserve(mStops.size());
@@ -50,6 +64,19 @@ void LinearGradientBrush::InitializeDirect2DBrush(ID2D1RenderTarget* rt) {
     },
     d2dStops.get(),
     d2dBrush.put()));
+
+  float centerX = mScaleTransform.mOrigin.mX;
+  float centerY = mScaleTransform.mOrigin.mY;
+
+  if (mMappingMode == MappingMode::Absolute) {
+    centerX = mStart.mX + (centerX * (mEnd.mX - mStart.mX));
+    centerY = mStart.mY + (centerY * (mEnd.mY - mStart.mY));
+  }
+
+  scaleMatrix = D2D1::Matrix3x2F::Scale(
+    mScaleTransform.mScaleX,
+    mScaleTransform.mScaleY,
+    D2D1::Point2F(centerX, centerY));
 }
 
 }// namespace FredEmmott::GUI

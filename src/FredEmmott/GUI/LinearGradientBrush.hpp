@@ -12,6 +12,7 @@
 #include "Rect.hpp"
 
 #ifdef FUI_ENABLE_SKIA
+#include <skia/core/SkMatrix.h>
 #include <skia/core/SkPaint.h>
 #include <skia/core/SkShader.h>
 #endif
@@ -84,6 +85,7 @@ class LinearGradientBrush final {
   ScaleTransform mScaleTransform {};
 
 #ifdef FUI_ENABLE_SKIA
+  SkMatrix mSkiaScale = SkMatrix::I();
   sk_sp<SkShader> mSkiaShader;
 
   void InitializeSkiaShader();
@@ -92,6 +94,7 @@ class LinearGradientBrush final {
   struct Direct2DCache {
     wil::com_ptr<ID2D1GradientStopCollection> mDirect2DGradientStops;
     wil::com_ptr<ID2D1LinearGradientBrush> mDirect2DBrush;
+    D2D1::Matrix3x2F mScaleMatrix {};
   };
   std::shared_ptr<Direct2DCache> mDirect2DCache;
 
