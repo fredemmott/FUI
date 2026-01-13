@@ -85,8 +85,12 @@ class LinearGradientBrush final {
   ScaleTransform mScaleTransform {};
 
 #ifdef FUI_ENABLE_SKIA
-  SkMatrix mSkiaScale = SkMatrix::I();
-  sk_sp<SkShader> mSkiaShader;
+  struct SkiaCache {
+    sk_sp<SkShader> mShader;
+    SkMatrix mScaleMatrix {};
+    bool operator==(const SkiaCache&) const noexcept = default;
+  };
+  std::optional<SkiaCache> mSkiaCache;
 
   void InitializeSkiaShader();
 #endif

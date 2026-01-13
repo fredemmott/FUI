@@ -11,8 +11,9 @@ namespace FredEmmott::GUI {
 
 SkPaint LinearGradientBrush::GetSkiaPaint(const SkRect& rect) const {
   const_cast<LinearGradientBrush*>(this)->InitializeSkiaShader();
+  const auto& [shader, scaleMatrix] = *mSkiaCache;
 
-  auto m = mSkiaScale;
+  auto m = scaleMatrix;
   if (mMappingMode == MappingMode::RelativeToBoundingBox) {
     m.postScale(rect.width(), rect.height());
   }
@@ -31,21 +32,24 @@ SkPaint LinearGradientBrush::GetSkiaPaint(const SkRect& rect) const {
   }
 
   SkPaint paint;
-  paint.setShader(mSkiaShader->makeWithLocalMatrix(m));
+  paint.setShader(shader->makeWithLocalMatrix(m));
   return paint;
 }
 
 void LinearGradientBrush::InitializeSkiaShader() {
-  if (mSkiaShader) {
+  if (mSkiaCache) {
     return;
   }
+  mSkiaCache.emplace();
+  auto& [shader, scaleMatrix] = *mSkiaCache;
+
   std::vector<float> positions;
   std::vector<SkColor> colors;
   for (auto&& [pos, color]: mStops) {
     positions.push_back(pos);
     colors.push_back(color.as<SkColor>());
   }
- const auto xRange = (mEnd.mX - mStart.mX);
+  const auto xRange = (mEnd.mX - mStart.mX);
   const auto yRange = (mEnd.mY - mStart.mY);
 
   auto centerX = mScaleTransform.mOrigin.mX;
@@ -59,11 +63,11 @@ void LinearGradientBrush::InitializeSkiaShader() {
     centerY *= yRange;
   }
 
-  mSkiaScale.setScale(
+  scaleMatrix.setScale(
     mScaleTransform.mScaleX, mScaleTransform.mScaleY, centerX, centerY);
   const SkPoint ends[] = {{mStart.mX, mStart.mY}, {mEnd.mX, mEnd.mY}};
 
-  mSkiaShader = SkGradientShader::MakeLinear(
+  shader = SkGradientShader::MakeLinear(
     ends, colors.data(), positions.data(), mStops.size(), SkTileMode::kClamp);
 }
 
