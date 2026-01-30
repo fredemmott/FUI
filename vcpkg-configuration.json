@@ -1,10 +1,14 @@
 {
+  "default-registry": {
+    "kind": "builtin",
+    "baseline": "23dc124705fcac41cf35c33dd9541f5094a9c19f"
+  },
   "registries": [
     {
       "kind": "git",
       "repository": "https://github.com/fredemmott/vcpkg-registry",
       "reference": "master",
-      "baseline": "0caa3ce8dbbddf1b5d0572c795bc1191eb58213c",
+      "baseline": "807bc98f5d1d6afb9ad98418deba742347df7443",
       "packages": [
         "felly"
       ]
