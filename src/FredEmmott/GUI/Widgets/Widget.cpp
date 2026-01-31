@@ -332,11 +332,14 @@ void Widget::Paint(Renderer* renderer) const {
     || std::max(scaleX, scaleY)
       > 1.0f + std::numeric_limits<float>::epsilon()) {
     const auto oldWidth = rect.GetWidth();
-    const auto newWidth = oldWidth * scaleX;
     const auto oldHeight = rect.GetHeight();
-    const auto newHeight = oldHeight * scaleY;
-    renderer->Translate((oldWidth - newWidth) / 2, (oldHeight - newHeight) / 2);
+
+    const auto dx = style.TransformOriginX().value_or(0.f) * oldWidth;
+    const auto dy = style.TransformOriginY().value_or(0.f) * oldHeight;
+
+    renderer->Translate(dx, dy);
     renderer->Scale(scaleX, scaleY);
+    renderer->Translate(-dx, -dy);
   }
 
   PaintBackground(renderer, rect, style);

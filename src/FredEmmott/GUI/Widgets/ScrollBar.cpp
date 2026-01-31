@@ -85,6 +85,8 @@ auto MakeSmallChangeBaseStyles() {
     .ScaleY(1, SmallPressedAnimation)
     .TranslateY(0, SmallPressedAnimation)
     .TranslateX(0, SmallPressedAnimation)
+    .TransformOriginX(0.5f)
+    .TransformOriginY(0.5f)
     .Top(0, SmallPressedAnimation)
     .And(Hover, Style().Color(ScrollBarButtonArrowForegroundPointerOver))
     .And(

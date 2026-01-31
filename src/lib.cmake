@@ -87,6 +87,7 @@ add_library(
   FredEmmott/GUI/Widgets/ScrollBarButton.cpp FredEmmott/GUI/Widgets/ScrollBarButton.hpp
   FredEmmott/GUI/Widgets/ScrollBarThumb.cpp FredEmmott/GUI/Widgets/ScrollBarThumb.hpp
   FredEmmott/GUI/Widgets/ScrollView.cpp FredEmmott/GUI/Widgets/ScrollView.hpp
+  FredEmmott/GUI/Widgets/Slider.cpp FredEmmott/GUI/Widgets/Slider.hpp
   FredEmmott/GUI/Widgets/StackPanel.cpp FredEmmott/GUI/Widgets/StackPanel.hpp
   FredEmmott/GUI/Widgets/TextBlock.cpp FredEmmott/GUI/Widgets/TextBlock.hpp
   FredEmmott/GUI/Widgets/TextBox.cpp FredEmmott/GUI/Widgets/TextBox.hpp

@@ -16,6 +16,7 @@ struct Resource {
   T mLight {};
   T mHighContrast {};
 
+  [[nodiscard]]
   constexpr const T* Resolve(const Theme theme = GetCurrent()) const noexcept {
     using enum Theme;
     switch (theme) {

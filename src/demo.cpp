@@ -6,6 +6,8 @@
 #include <map>
 #include <print>
 
+#include "FredEmmott/GUI/Widgets/Slider.hpp"
+
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
 
@@ -206,6 +208,11 @@ static void AppTick(fui::Window& window) {
   if (fuii::TextBox(&text).Caption("I'm a TextBox!")) {
     std::println(stderr, "TextBox changed to {}", text);
   }
+
+  const auto slider
+    = fuii::immediate_detail::ChildlessWidget<fui::Widgets::Slider>(
+      fuii::ID {std::source_location::current()});
+  slider->SetTickFrequency(25);
 
   fuii::EndDisabled();
 
