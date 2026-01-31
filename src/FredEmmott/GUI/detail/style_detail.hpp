@@ -90,6 +90,8 @@ class StyleProperty;
   X(ScaleY, float, Self) \
   X(TextAlign, GUI::TextAlign, SelfAndDescendants) \
   X(Top, float, Self) \
+  X(TransformOriginX, float, Self) \
+  X(TransformOriginY, float, Self) \
   X(TranslateX, float, Self) \
   X(TranslateY, float, Self) \
   X(Width, float, Self)
