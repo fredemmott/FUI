@@ -6,6 +6,7 @@
 #include <map>
 #include <print>
 
+#include "FredEmmott/GUI/Widgets/Slider.hpp"
 #include "FredEmmott/GUI/Widgets/TextBox.hpp"
 
 namespace fui = FredEmmott::GUI;
@@ -205,6 +206,9 @@ static void AppTick(fui::Window& window) {
   }
 
   fuii::immediate_detail::ChildlessWidget<fui::Widgets::TextBox>(
+    fuii::ID {std::source_location::current()});
+
+  fuii::immediate_detail::ChildlessWidget<fui::Widgets::Slider>(
     fuii::ID {std::source_location::current()});
 
   fuii::EndDisabled();
