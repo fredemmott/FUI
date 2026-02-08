@@ -6,8 +6,6 @@
 #include <map>
 #include <print>
 
-#include "FredEmmott/GUI/Widgets/TextBox.hpp"
-
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
 
@@ -204,8 +202,10 @@ static void AppTick(fui::Window& window) {
     std::println(stderr, "Hyperlink clicked");
   }
 
-  fuii::immediate_detail::ChildlessWidget<fui::Widgets::TextBox>(
-    fuii::ID {std::source_location::current()});
+  static std::string text {"Hello 💩 world"};
+  if (fuii::TextBox(&text).Caption("I'm a TextBox!")) {
+    std::println(stderr, "TextBox changed to {}", text);
+  }
 
   fuii::EndDisabled();
 

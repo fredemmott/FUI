@@ -35,6 +35,8 @@ add_library(
   FredEmmott/GUI/Immediate/ScrollView.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
   FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
+  FredEmmott/GUI/Immediate/TextBox.cpp
+  FredEmmott/GUI/Immediate/TextBox.hpp
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
   FredEmmott/GUI/Immediate/selectable_key.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp

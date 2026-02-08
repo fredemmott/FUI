@@ -33,7 +33,14 @@ class TextBox : public Widget, public IFocusable {
   explicit TextBox(std::size_t id);
   ~TextBox() override;
 
-  void SetText(std::string_view);
+  bool mChanged {false};
+
+  enum class ChangeBehavior {
+    MarkChanged,
+    DoNotMarkChanged,
+  };
+
+  void SetText(std::string_view, ChangeBehavior = ChangeBehavior::MarkChanged);
 
   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
   [[nodiscard]] std::string_view GetText() const noexcept {
