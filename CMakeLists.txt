@@ -57,6 +57,7 @@ if (WIN32)
   if (NOT ENABLE_ICU)
     # Use ICU from the Windows SDK instead, which means we need Win10 "Creators Update" (1703), a.k.a "Redstone 2"
     set(NTDDI_VERSION NTDDI_WIN10_RS2)
+    add_compile_definitions(SUPPRESS_LEGACY_ICU_HEADER_WARNINGS)
   endif ()
   add_compile_definitions(
     "_WIN32_WINNT=_WIN32_WINNT_WIN10"
