@@ -120,13 +120,17 @@ void Style::CopyInheritableValues(
       case StylePropertyScope::SelfAndChildren: {
         auto dup = value;
         dup.mScope = StylePropertyScope::Self;
-        dup.mPriority = StylePropertyPriority::Inherited;
+        if (dup.mPriority != StylePropertyPriority::Important) {
+          dup.mPriority = StylePropertyPriority::Inherited;
+        }
         dest.insert_or_assign(key, dup);
         break;
       }
       case StylePropertyScope::SelfAndDescendants: {
         auto dup = value;
-        dup.mPriority = StylePropertyPriority::Inherited;
+        if (dup.mPriority != StylePropertyPriority::Important) {
+          dup.mPriority = StylePropertyPriority::Inherited;
+        }
         dest.insert_or_assign(key, dup);
         break;
       }
