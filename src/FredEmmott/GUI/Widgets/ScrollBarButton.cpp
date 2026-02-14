@@ -5,6 +5,7 @@
 
 #include <Windows.h>
 
+#include "FredEmmott/GUI/StaticTheme/ScrollBar.hpp"
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "Label.hpp"
 
@@ -26,7 +27,11 @@ ScrollBarButton::ScrollBarButton(
 ScrollBarButton::~ScrollBarButton() = default;
 
 void ScrollBarButton::SetText(std::string_view text) {
-  auto label = new Label(0);
+  static const ImmutableStyle FontIconStyle {Style().Font(
+    SystemFont::ResolveGlyphFont(SystemFont::Body)
+      .WithSize(StaticTheme::ScrollBar::ScrollBarButtonArrowIconFontSize))};
+
+  auto label = new Label(0, FontIconStyle);
   label->SetText(text);
   this->SetChildren({label});
 }
