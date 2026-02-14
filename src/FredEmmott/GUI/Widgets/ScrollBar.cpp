@@ -132,10 +132,10 @@ ScrollBar::ScrollBar(
   : Widget(id, ScrollBarStyleClass, style),
     mOrientation(orientation) {
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
-  constexpr auto leftGlyph = "\uedd9";
-  constexpr auto rightGlyph = "\uedda";
-  constexpr auto upGlyph = "\ueddb";
-  constexpr auto downGlyph = "\ueddc";
+  static constexpr auto LeftGlyph = "\uedd9";
+  static constexpr auto RightGlyph = "\uedda";
+  static constexpr auto UpGlyph = "\ueddb";
+  static constexpr auto DownGlyph = "\ueddc";
 
   const auto isHorizontal = (orientation == Orientation::Horizontal);
 
@@ -181,12 +181,12 @@ ScrollBar::ScrollBar(
 
   switch (orientation) {
     case Orientation::Vertical:
-      mSmallDecrement->SetText(upGlyph);
-      mSmallIncrement->SetText(downGlyph);
+      mSmallDecrement->SetText(UpGlyph);
+      mSmallIncrement->SetText(DownGlyph);
       break;
     case Orientation::Horizontal:
-      mSmallDecrement->SetText(leftGlyph);
-      mSmallIncrement->SetText(rightGlyph);
+      mSmallDecrement->SetText(LeftGlyph);
+      mSmallIncrement->SetText(RightGlyph);
       break;
   }
 
