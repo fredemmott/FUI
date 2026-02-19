@@ -30,6 +30,7 @@ class ScrollView final : public Widget {
   Widget* GetFosterParent() const noexcept override;
   void PaintChildren(Renderer* renderer) const override;
   EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
+  void UpdateLayout() override;
 
  private:
   Widget* mContentOuter {};
