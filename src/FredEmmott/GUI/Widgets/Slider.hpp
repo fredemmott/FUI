@@ -14,10 +14,16 @@ class Slider final : public Widget {
   [[nodiscard]] float GetValue() const;
 
   [[nodiscard]]
-  float GetTickFrequency() const {
+  float GetTickFrequency() const noexcept {
     return mTickFrequency;
   }
   void SetTickFrequency(float frequency);
+
+  [[nodiscard]]
+  float GetStepFrequency() const noexcept {
+    return mStepFrequency;
+  }
+  void SetStepFrequency(float frequency);
 
   void SetRange(float min, float max);
 
@@ -39,8 +45,9 @@ class Slider final : public Widget {
   float mValue {0.0f};
   float mMin {0.0f};
   float mMax {100.0f};
+  float mStepFrequency {1.0f};
   float mTickFrequency {};
-  bool mIsDragging {false};
+  std::optional<float> mDraggingValue;
   Widget* mTrack {nullptr};
   Widget* mOuterThumb {nullptr};
   Widget* mInnerThumb {nullptr};

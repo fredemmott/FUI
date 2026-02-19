@@ -115,6 +115,17 @@ float Slider::GetValue() const {
   return mValue;
 }
 
+void Slider::SetStepFrequency(const float frequency) {
+  if (frequency < 0.0f) [[unlikely]] {
+    throw std::logic_error("Step frequency must be positive");
+  }
+  if (frequency < std::numeric_limits<float>::epsilon()) {
+    mStepFrequency = {};
+  } else {
+    mStepFrequency = frequency;
+  }
+}
+
 void Slider::SetRange(const float min, const float max) {
   mMin = min;
   mMax = max;
@@ -126,7 +137,8 @@ void Slider::UpdateLayout() {
 }
 
 void Slider::UpdateThumbPosition() {
-  const float ratio = (mValue - mMin) / (mMax - mMin);
+  const auto renderValue = mDraggingValue.value_or(mValue);
+  const float ratio = (renderValue - mMin) / (mMax - mMin);
 
   const float range = YGNodeLayoutGetWidth(mTrack->GetLayoutNode())
     - SliderHorizontalThumbWidth;
@@ -175,20 +187,32 @@ Widget::EventHandlerResult Slider::OnMouseButtonPress(const MouseEvent& event) {
   if (this->IsDisabled() || !event.IsValid()) {
     return parentResult;
   }
-  mIsDragging = true;
+  mDraggingValue = mValue;
   StartMouseCapture();
   return OnMouseMove(event);
 }
 
 Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
-  mIsDragging = false;
-  EndMouseCapture();
+  if (mDraggingValue) {
+    EndMouseCapture();
+    mDraggingValue.reset();
+    const auto snapFrequency = mStepFrequency;
+    if (snapFrequency < std::numeric_limits<float>::epsilon()) {
+      mValue = *mDraggingValue;
+    } else {
+      const auto offset = *mDraggingValue - mMin;
+      mValue = mMin + (std::round(offset / snapFrequency) * snapFrequency);
+    }
+    mValue = std::clamp(mValue, mMin, mMax);
+    mDraggingValue.reset();
+    mChanged = true;
+  }
   std::ignore = Widget::OnMouseButtonRelease(e);
   return EventHandlerResult::StopPropagation;
 }
 
 Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
-  if (!mIsDragging)
+  if (!mDraggingValue)
     return EventHandlerResult::Default;
 
   const auto trackWidth = YGNodeLayoutGetWidth(mTrack->GetLayoutNode());
@@ -198,8 +222,8 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
     0.0f,
     1.0f);
 
-  mValue = mMin + (ratio * (mMax - mMin));
-  mChanged = true;
+  const auto offset = (ratio * (mMax - mMin));
+  mDraggingValue = std::clamp(mMin + offset, mMin, mMax);
   return EventHandlerResult::StopPropagation;
 }
 
@@ -210,6 +234,7 @@ Widget::ComputedStyleFlags Slider::OnComputedStyleChange(
     | ComputedStyleFlags::InheritableHoverState
     | ComputedStyleFlags::InheritableActiveState;
 }
+
 void Slider::PaintOwnContent(
   Renderer* renderer,
   const Rect& rect,
@@ -246,7 +271,7 @@ void Slider::PaintOwnContent(
 }
 
 void Slider::SetTickFrequency(const float frequency) {
-  if (frequency <= 0.0f) [[unlikely]] {
+  if (frequency < 0.0f) [[unlikely]] {
     throw std::logic_error("Tick frequency must be positive");
   }
   if (frequency < std::numeric_limits<float>::epsilon()) {
