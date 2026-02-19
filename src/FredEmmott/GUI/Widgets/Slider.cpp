@@ -4,6 +4,8 @@
 #include "Slider.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/Slider.hpp>
+#include <FredEmmott/GUI/events/KeyCode.hpp>
+#include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <algorithm>
 
 namespace FredEmmott::GUI::Widgets {
@@ -108,7 +110,7 @@ Slider::Slider(const std::size_t id)
 }
 
 void Slider::SetValue(const float value) {
-  mValue = value;
+  mValue = std::clamp(value, mMin, mMax);
 }
 
 float Slider::GetValue() const {
@@ -129,6 +131,7 @@ void Slider::SetStepFrequency(const float frequency) {
 void Slider::SetRange(const float min, const float max) {
   mMin = min;
   mMax = max;
+  mValue = std::clamp(mValue, mMin, mMax);
 }
 
 void Slider::UpdateLayout() {
@@ -234,6 +237,36 @@ Widget::ComputedStyleFlags Slider::OnComputedStyleChange(
   return Widget::OnComputedStyleChange(style, state)
     | ComputedStyleFlags::InheritableHoverState
     | ComputedStyleFlags::InheritableActiveState;
+}
+
+Widget::EventHandlerResult Slider::OnKeyPress(const KeyPressEvent& e) {
+  if (IsDisabled()) {
+    return Widget::OnKeyPress(e);
+  }
+
+  const auto step = (mStepFrequency > std::numeric_limits<float>::epsilon())
+    ? mStepFrequency
+    : (mMax - mMin) / 10;
+
+  using enum KeyCode;
+  switch (e.mKeyCode) {
+    case Key_LeftArrow:
+    case Key_DownArrow:
+      SetValue(mValue - step);
+      return EventHandlerResult::StopPropagation;
+    case Key_UpArrow:
+    case Key_RightArrow:
+      SetValue(mValue + step);
+      return EventHandlerResult::StopPropagation;
+    case Key_Home:
+      SetValue(mMin);
+      return EventHandlerResult::StopPropagation;
+    case Key_End:
+      SetValue(mMax);
+      return EventHandlerResult::StopPropagation;
+    default:
+      return Widget::OnKeyPress(e);
+  }
 }
 
 void Slider::PaintOwnContent(
