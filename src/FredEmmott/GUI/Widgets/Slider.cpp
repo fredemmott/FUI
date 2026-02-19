@@ -196,7 +196,8 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
   if (mDraggingValue) {
     EndMouseCapture();
     mDraggingValue.reset();
-    const auto snapFrequency = mStepFrequency;
+    const auto snapFrequency
+      = (mSnapTo == SnapTo::Steps) ? mStepFrequency : mTickFrequency;
     if (snapFrequency < std::numeric_limits<float>::epsilon()) {
       mValue = *mDraggingValue;
     } else {

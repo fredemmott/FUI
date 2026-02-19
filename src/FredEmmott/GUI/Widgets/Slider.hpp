@@ -8,7 +8,18 @@ namespace FredEmmott::GUI::Widgets {
 
 class Slider final : public Widget {
  public:
+  enum class SnapTo {
+    Steps,
+    Ticks,
+  };
   explicit Slider(std::size_t id = 0);
+
+  void SetSnapTo(const SnapTo snapTo) {
+    mSnapTo = snapTo;
+  }
+  [[nodiscard]] SnapTo GetSnapTo() const noexcept {
+    return mSnapTo;
+  }
 
   void SetValue(float value);
   [[nodiscard]] float GetValue() const;
@@ -40,8 +51,7 @@ class Slider final : public Widget {
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
  private:
-  void UpdateThumbPosition();
-
+  SnapTo mSnapTo {SnapTo::Steps};
   float mValue {0.0f};
   float mMin {0.0f};
   float mMax {100.0f};
@@ -51,6 +61,8 @@ class Slider final : public Widget {
   Widget* mTrack {nullptr};
   Widget* mOuterThumb {nullptr};
   Widget* mInnerThumb {nullptr};
+
+  void UpdateThumbPosition();
 };
 
 }// namespace FredEmmott::GUI::Widgets
