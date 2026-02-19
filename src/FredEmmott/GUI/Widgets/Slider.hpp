@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "Focusable.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-class Slider final : public Widget {
+class Slider final : public Widget, public IFocusable {
  public:
   enum class SnapTo {
     Steps,
@@ -47,6 +48,7 @@ class Slider final : public Widget {
   EventHandlerResult OnMouseButtonRelease(const MouseEvent&) override;
 
   ComputedStyleFlags OnComputedStyleChange(const Style&, StateFlags) override;
+  EventHandlerResult OnKeyPress(const KeyPressEvent&) override;
 
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
