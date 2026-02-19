@@ -187,6 +187,9 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
     const auto contentWidth = std::floor(w);
     if (!utility::almost_equal(
           contentWidth, YGNodeLayoutGetWidth(mContentYoga.get()))) {
+      // This should be a no-op, but the YGNodeCalculateLayout call can end up
+      // re-using the cached layout inappropriately without this.
+      YGNodeStyleSetWidth(mContentYoga.get(), contentWidth);
       YGNodeCalculateLayout(
         mContentYoga.get(), contentWidth, YGUndefined, YGDirectionLTR);
     }
