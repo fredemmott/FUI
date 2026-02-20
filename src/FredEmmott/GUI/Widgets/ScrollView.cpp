@@ -194,10 +194,6 @@ void ScrollView::PaintChildren(Renderer* renderer) const {
 
 Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   const MouseEvent& e) {
-  if (Widget::OnMouseVerticalWheel(e) == EventHandlerResult::StopPropagation) {
-    return EventHandlerResult::StopPropagation;
-  }
-
   const auto delta = std::get<MouseEvent::VerticalWheelEvent>(e.mDetail).mDelta;
   const auto lines = delta * SystemSettings::Get().GetMouseWheelScrollLines();
   const auto pixels

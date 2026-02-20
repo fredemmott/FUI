@@ -5,13 +5,14 @@
 #include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/Widgets/Focusable.hpp>
+#include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <FredEmmott/GUI/events/HitTestEvent.hpp>
+#include <FredEmmott/GUI/events/KeyEvent.hpp>
+#include <felly/overload.hpp>
 #include <ranges>
 
-#include "FredEmmott/GUI/assert.hpp"
-#include "FredEmmott/GUI/events/HitTestEvent.hpp"
-#include "FredEmmott/GUI/events/KeyEvent.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -355,6 +356,10 @@ void Widget::PaintChildren(Renderer* renderer) const {
   }
 }
 
+void Widget::OnMouseEnter(const MouseEvent&) {}
+
+void Widget::OnMouseLeave(const MouseEvent&) {}
+
 Widget* Widget::SetChildren(const std::vector<Widget*>& children) {
   const auto foster = this->GetFosterParent();
   const auto parent = foster ? foster : this;
@@ -432,6 +437,9 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
   if (GetComputedStyle().PointerEvents() == PointerEvents::None) {
     return {};
   }
+  if (IsDisabled()) {
+    return {};
+  }
 
   auto event = parentEvent;
 
@@ -450,6 +458,8 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
   const auto [x, y] = event.GetPosition();
 
   MouseEventResult result;
+  const bool wasHovered
+    = (mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered;
   if (
     (x < 0 || y < 0 || x > w || y > h)
     && !(gMouseCapture && gMouseCapture->mWidget == this)) {
@@ -470,12 +480,28 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
       -mComputedStyle.TranslateY().value_or(0),
     });
   }
+  const bool isHovered
+    = (mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered;
+  if (
+    holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)
+    && isHovered) {
+    mDirectStateFlags |= StateFlags::Active;
+  }
+  if (holds_alternative<MouseEvent::ButtonReleaseEvent>(event.mDetail)) {
+    mDirectStateFlags &= ~StateFlags::Active;
+  }
 
   if (event.IsValid()) {
     // The same offset will be applied for captured mouse inputs, so we want
     // to use the same offset we were called with, not the post-processed one,
     // as we'll do the same processing when we receive the captured event.
     mMouseCaptureOffset = parentEvent.mOffset;
+  }
+
+  if (isHovered && !wasHovered) {
+    this->OnMouseEnter(event);
+  } else if (wasHovered && !isHovered) {
+    this->OnMouseLeave(event);
   }
 
   // Always propagate unconditionally to allow correct internal states
@@ -497,25 +523,30 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
     return result;
   }
 
-  if (std::holds_alternative<MouseEvent::ButtonPressEvent>(event.mDetail)) {
-    result.mResult = this->OnMouseButtonPress(event);
-  } else if (std::holds_alternative<MouseEvent::ButtonReleaseEvent>(
-               event.mDetail)) {
-    result.mResult = this->OnMouseButtonRelease(event);
-  } else if (std::holds_alternative<MouseEvent::MoveEvent>(event.mDetail)) {
-    result.mResult = this->OnMouseMove(event);
-  } else if (std::holds_alternative<MouseEvent::HorizontalWheelEvent>(
-               event.mDetail)) {
-    result.mResult = this->OnMouseHorizontalWheel(event);
-  } else if (std::holds_alternative<MouseEvent::VerticalWheelEvent>(
-               event.mDetail)) {
-    result.mResult = this->OnMouseVerticalWheel(event);
-#ifndef NDEBUG
-  } else {
-    OutputDebugStringA("Unhandled mouse event type\n");
-    __debugbreak();
-#endif
+  const bool aimedAtThis
+    = event.IsValid() || (gMouseCapture && gMouseCapture->mWidget == this);
+  if (!aimedAtThis) {
+    return result;
   }
+
+  result.mResult = std::visit(
+    felly::overload {
+      [&](const MouseEvent::ButtonPressEvent&) {
+        return this->OnMouseButtonPress(event);
+      },
+      [&](const MouseEvent::ButtonReleaseEvent&) {
+        mDirectStateFlags &= ~StateFlags::Active;
+        return this->OnMouseButtonRelease(event);
+      },
+      [&](const MouseEvent::MoveEvent&) { return this->OnMouseMove(event); },
+      [&](const MouseEvent::HorizontalWheelEvent&) {
+        return this->OnMouseHorizontalWheel(event);
+      },
+      [&](const MouseEvent::VerticalWheelEvent&) {
+        return this->OnMouseVerticalWheel(event);
+      },
+    },
+    event.mDetail);
 
   if (
     result.mResult == EventHandlerResult::StopPropagation && !result.mTarget) {
@@ -587,39 +618,22 @@ Widget::EventHandlerResult Widget::OnTextInput(const TextInputEvent&) {
 }
 
 Widget::EventHandlerResult Widget::OnMouseButtonPress(const MouseEvent&) {
-  if (this->IsDisabled()) {
-    return EventHandlerResult::Default;
-  }
-  if ((mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered) {
-    mDirectStateFlags |= StateFlags::Active;
-  } else {
-    mDirectStateFlags &= ~StateFlags::Active;
-  }
   return EventHandlerResult::Default;
 }
 
 Widget::EventHandlerResult Widget::OnMouseButtonRelease(
   const MouseEvent& event) {
-  if (this->IsDisabled()) {
-    return EventHandlerResult::Default;
-  }
-  constexpr auto Flags = StateFlags::Hovered | StateFlags::Active;
-  const auto isClick = (mDirectStateFlags & Flags) == Flags;
-  mDirectStateFlags &= ~StateFlags::Active;
-  if (isClick) {
-    const auto result = this->OnClick(event);
-    if (result == EventHandlerResult::StopPropagation) {
-      if (const auto fm = FocusManager::Get()) {
-        fm->GivePointerFocus(this);
-      }
+  const auto result = this->OnClick(event);
+  if (result == EventHandlerResult::StopPropagation) {
+    if (const auto fm = FocusManager::Get()) {
+      fm->GivePointerFocus(this);
     }
-    return result;
   }
-
-  return EventHandlerResult::Default;
+  return result;
 }
 
 void Widget::StartMouseCapture() {
+  FUI_ASSERT(!gMouseCapture);
   gMouseCapture = MouseCapture {this, mMouseCaptureOffset};
 }
 

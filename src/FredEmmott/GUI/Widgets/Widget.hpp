@@ -213,6 +213,11 @@ class Widget {
     return EventHandlerResult::Default;
   }
 
+  // These are 'fire-and-forget' events which are separately dispatched for
+  // each widget; as such, there's no propagation behavior to consider, so it
+  // doesn't need to be returned
+  virtual void OnMouseEnter(const MouseEvent&);
+  virtual void OnMouseLeave(const MouseEvent&);
   [[nodiscard]]
   virtual EventHandlerResult OnMouseButtonPress(const MouseEvent&);
   [[nodiscard]]
