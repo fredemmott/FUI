@@ -191,7 +191,9 @@ Style Style::BuiltinBaseline() {
         .TranslateY(0)
         .And(
           PseudoClasses::Disabled,
-          Style().Color(StaticTheme::TextFillColorDisabledBrush))
+          Style()
+            .Color(StaticTheme::TextFillColorDisabledBrush)
+            .Cursor(Cursor::Default, !important))
         .And(
           PseudoClasses::FocusVisible,
           Style()
@@ -204,7 +206,9 @@ Style Style::BuiltinBaseline() {
             .OutlineWidth(2));
   const auto makeBaseline = [](auto& prop) {
     prop.mScope = StylePropertyScope::Self;
-    prop.mPriority = StylePropertyPriority::UserAgentBaseline;
+    if (prop.mPriority != StylePropertyPriority::Important) {
+      prop.mPriority = StylePropertyPriority::UserAgentBaseline;
+    }
   };
   for (auto&& [key, value]: ret.mStorage) {
     VisitStyleProperty(key, makeBaseline, value);
