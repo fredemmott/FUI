@@ -1,12 +1,13 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <felly/overload.hpp>
 
-#include "FredEmmott/GUI/FocusManager.hpp"
-#include "FredEmmott/GUI/assert.hpp"
 #include "Widget.hpp"
 #include "WidgetList.hpp"
 
@@ -266,22 +267,16 @@ bool Widget::MatchesStyleClass(const StyleClass& klass) const {
 }
 
 bool Widget::MatchesStyleSelector(const Style::Selector selector) const {
-  if (const auto it = get_if<const Widget*>(&selector)) {
-    return *it == this;
-  }
-  if (const auto it = get_if<StyleClass>(&selector)) {
-    return MatchesStyleClass(*it);
-  }
-  if (const auto it = get_if<NegatedStyleClass>(&selector)) {
-    return !MatchesStyleClass(it->mStyleClass);
-  }
-  if (holds_alternative<std::monostate>(selector)) {
-    return true;
-  }
-#ifndef NDEBUG
-  __debugbreak();
-#endif
-  return false;
+  return std::visit(
+    felly::overload {
+      [this](const Widget* it) { return it == this; },
+      [this](const StyleClass& it) { return MatchesStyleClass(it); },
+      [this](const NegatedStyleClass& it) {
+        return !MatchesStyleClass(it.mStyleClass);
+      },
+      [](std::monostate) { return true; },
+    },
+    selector);
 }
 
 }// namespace FredEmmott::GUI::Widgets

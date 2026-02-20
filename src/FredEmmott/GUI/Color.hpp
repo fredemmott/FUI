@@ -223,16 +223,19 @@ class Color final {
   float mAlpha {1.f};
 
   constexpr Constant Resolve() const noexcept {
-    if (const auto it = get_if<Constant>(&mVariant)) {
-      return it->WithAlphaMultipliedBy(mAlpha);
-    }
-    if (const auto it = get_if<StaticThemeColor>(&mVariant)) {
-      return (*it)->Resolve()->Resolve().WithAlphaMultipliedBy(mAlpha);
-    }
-    if (const auto it = get_if<SystemTheme::ColorType>(&mVariant)) {
-      return SystemTheme::Resolve(*it).Resolve().WithAlphaMultipliedBy(mAlpha);
-    }
-    std::unreachable();
+    const auto alpha = mAlpha;
+    return std::visit(
+      felly::overload {
+        [=](const Constant& it) { return it.WithAlphaMultipliedBy(alpha); },
+        [=](const StaticThemeColor& it) {
+          return it->Resolve()->Resolve().WithAlphaMultipliedBy(alpha);
+        },
+        [=](const SystemTheme::ColorType& it) {
+          return SystemTheme::Resolve(it).Resolve().WithAlphaMultipliedBy(
+            alpha);
+        },
+      },
+      mVariant);
   }
 };
 
