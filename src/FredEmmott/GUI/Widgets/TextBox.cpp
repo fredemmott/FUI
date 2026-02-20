@@ -726,7 +726,7 @@ TextBox::BoundingBox TextBox::GetTextBoundingBox(
 
   return BoundingBox {
     Rect {
-      contentRect.GetTopLeft() + Point {left, 0},
+      Point {left, contentRect.GetTop()},
       Size {
         width,
         metrics.mDescent - /* always negative, so addition */ metrics.mAscent,
