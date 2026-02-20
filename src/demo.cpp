@@ -45,7 +45,7 @@ static void AppTick(fui::Window& window) {
 
   fuii::Label("Controls").Subtitle();
   fuii::BeginCard();
-  fuii::BeginVStackPanel();
+  fuii::BeginVStackPanel().Styled(fui::Style().FlexGrow(1));
 
   static bool sDisableAll = false;
   // (void) cast to ignore [[nodiscard]] is-changed return value
