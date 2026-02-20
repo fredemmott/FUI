@@ -6,8 +6,6 @@
 #include <map>
 #include <print>
 
-#include "FredEmmott/GUI/Widgets/Slider.hpp"
-
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
 
@@ -209,16 +207,12 @@ static void AppTick(fui::Window& window) {
     std::println(stderr, "TextBox changed to {}", text);
   }
 
-  const auto slider
-    = fuii::immediate_detail::ChildlessWidget<fui::Widgets::Slider>(
-      fuii::ID {std::source_location::current()}, fui::Orientation::Horizontal);
-  slider->SetTickFrequency(25);
-
-  const auto vslider
-    = fuii::immediate_detail::ChildlessWidget<fui::Widgets::Slider>(
-      fuii::ID {std::source_location::current()}, fui::Orientation::Vertical);
-  vslider->SetMutableStyles(fui::Style().Height(120));
-  vslider->SetTickFrequency(25);
+  static float sliderValue {0};
+  fuii::HSlider(&sliderValue).TickFrequency(25);
+  fuii::VSlider(&sliderValue)
+    .TickFrequency(25)
+    .SnapToTicks()
+    .Styled(fui::Style().Height(120));
 
   fuii::EndDisabled();
 
