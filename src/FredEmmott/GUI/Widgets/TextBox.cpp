@@ -388,8 +388,10 @@ Widget::EventHandlerResult TextBox::OnMouseButtonPress(const MouseEvent& e) {
   if (!e.IsValid()) {
     return Default;
   }
-
   (void)Widget::OnMouseButtonPress(e);
+  if (this->IsDisabled()) {
+    return Default;
+  }
 
   // Update caret immediately on press and begin possible drag selection
   const auto pos = e.GetPosition();
