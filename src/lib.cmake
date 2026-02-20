@@ -33,6 +33,8 @@ add_library(
   FredEmmott/GUI/Immediate/Result.hpp
   FredEmmott/GUI/Immediate/Root.cpp FredEmmott/GUI/Immediate/Root.hpp
   FredEmmott/GUI/Immediate/ScrollView.hpp
+  FredEmmott/GUI/Immediate/Slider.cpp
+  FredEmmott/GUI/Immediate/Slider.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
   FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
   FredEmmott/GUI/Immediate/TextBox.cpp
