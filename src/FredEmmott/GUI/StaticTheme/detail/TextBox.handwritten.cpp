@@ -40,7 +40,10 @@ const ImmutableStyle& DefaultTextBoxStyle() {
         Style()
           .BackgroundColor(TextControlBackgroundFocused)
           .BorderColor(TextControlBorderBrushFocused)
-          .Color(TextControlForegroundFocused)),
+          .Color(TextControlForegroundFocused))
+      // TextBox has its own focus indication (typically a colored underline),
+      // we don't want the standard white rounded rect
+      .And(FocusVisible, Style().OutlineWidth(0)),
   };
   return ret;
 }
