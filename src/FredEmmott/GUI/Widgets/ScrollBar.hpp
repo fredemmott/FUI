@@ -77,7 +77,7 @@ class ScrollBar final : public Widget {
 
   void SetValue(float value, ChangeReason);
 
-  void UpdateLayout() override;
+  void UpdateChildSizes();
 
   void OnThumbDrag(Point* delta);
 };

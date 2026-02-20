@@ -192,7 +192,7 @@ ScrollBar::ScrollBar(
       break;
   }
 
-  this->UpdateLayout();
+  this->UpdateChildSizes();
 }
 
 ImmutableStyle ScrollBar::MakeImmutableStyle(
@@ -315,7 +315,7 @@ void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const Point& point) {
   }
 }
 
-void ScrollBar::UpdateLayout() {
+void ScrollBar::UpdateChildSizes() {
   mLargeDecrement->SetMutableStyles(Style().FlexGrow(mValue - mMinimum));
   mThumb->AddMutableStyles(Style().FlexGrow(mThumbSize));
   mLargeIncrement->SetMutableStyles(Style().FlexGrow(mMaximum - mValue));
@@ -352,7 +352,7 @@ void ScrollBar::OnThumbDrag(Point* deltaXY) {
 
 void ScrollBar::SetMinimum(float value) {
   mMinimum = value;
-  this->UpdateLayout();
+  this->UpdateChildSizes();
 }
 
 float ScrollBar::GetMinimum() const {
@@ -364,7 +364,7 @@ void ScrollBar::SetMaximum(float maximum) {
   if (mValue > mMaximum) {
     this->SetValue(maximum);
   }
-  this->UpdateLayout();
+  this->UpdateChildSizes();
 }
 
 float ScrollBar::GetMaximum() const {
@@ -387,7 +387,7 @@ void ScrollBar::SetValue(const float value, const ChangeReason reason) {
   if (mValueChangedCallback) {
     mValueChangedCallback(value, reason);
   }
-  this->UpdateLayout();
+  this->UpdateChildSizes();
 }
 
 float ScrollBar::GetThumbSize() const {
@@ -400,7 +400,7 @@ void ScrollBar::OnValueChanged(ValueChangedCallback cb) {
 
 void ScrollBar::SetThumbSize(float value) {
   mThumbSize = value;
-  this->UpdateLayout();
+  this->UpdateChildSizes();
 }
 
 }// namespace FredEmmott::GUI::Widgets
