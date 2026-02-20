@@ -213,6 +213,7 @@ class Win32Window : public Window {
   const wil::unique_hcursor mDefaultCursor {LoadCursorW(nullptr, IDC_ARROW)};
   const wil::unique_hcursor mPointerCursor {LoadCursorW(nullptr, IDC_HAND)};
   const wil::unique_hcursor mTextCursor {LoadCursorW(nullptr, IDC_IBEAM)};
+  Cursor mWidgetCursorUnderMouse {};
 
   void ResizeSwapchain();
   void AdjustToWindowsTheme();

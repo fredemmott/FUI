@@ -894,13 +894,20 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     }
     case WM_SETCURSOR: {
-      static const wil::unique_hcursor sDefaultCursor {
-        LoadCursor(nullptr, IDC_ARROW)};
       const auto hitTest = LOWORD(lParam);
       if (hitTest == HTCLIENT) {
-        // Hand: sPointerCursor -> IDC_HAND
-        SetCursor(sDefaultCursor.get());
-        return true;
+        switch (mWidgetCursorUnderMouse) {
+          case Cursor::Default:
+            SetCursor(mDefaultCursor.get());
+            return true;
+          case Cursor::Pointer:
+            SetCursor(mPointerCursor.get());
+            return true;
+          case Cursor::Text:
+            SetCursor(mTextCursor.get());
+            return true;
+        }
+        std::unreachable();
       }
       break;
     }
@@ -966,20 +973,11 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       TrackMouseEvent();
       const auto e = MakeMouseEvent(wParam, lParam, mDPIScale);
       if (const auto receiver = this->DispatchEvent(e)) {
-        switch (
-          receiver->GetComputedStyle().Cursor().value_or(Cursor::Default)) {
-          case Cursor::Default:
-            SetCursor(mDefaultCursor.get());
-            break;
-          case Cursor::Pointer:
-            SetCursor(mPointerCursor.get());
-            break;
-          case Cursor::Text:
-            SetCursor(mTextCursor.get());
-            break;
-        }
+        // Handled in response to WM_SETCURSOR
+        mWidgetCursorUnderMouse
+          = receiver->GetComputedStyle().Cursor().value_or(Cursor::Default);
       } else {
-        SetCursor(mDefaultCursor.get());
+        mWidgetCursorUnderMouse = Cursor::Default;
       }
       break;
     }
