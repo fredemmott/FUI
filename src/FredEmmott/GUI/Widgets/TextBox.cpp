@@ -235,18 +235,8 @@ void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
 }
 
 Widget::EventHandlerResult TextBox::OnTextInput(const TextInputEvent& e) {
-  using enum EventHandlerResult;
-  auto& s = mActiveState;
-  const auto& t = e.mText;
-
-  const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
-
-  BeforeOperation(UndoableState::Operation::Typing);
-  this->SetText(
-    std::format("{}{}{}", s.mText.substr(0, left), t, s.mText.substr(right)));
-  this->SetCaret(left + t.size());
-
-  return StopPropagation;
+  this->ReplaceSelection(e.mText, UndoableState::Operation::Typing);
+  return EventHandlerResult::StopPropagation;
 }
 
 void TextBox::DeleteSelection(const DeleteDirection ifSelectionEmpty) {
@@ -307,10 +297,7 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
         const auto [left, right]
           = std::minmax(s.mSelectionStart, s.mSelectionEnd);
         GetOwnerWindow()->SetClipboardText(s.mText.substr(left, right - left));
-        BeforeOperation(UndoableState::Operation::Cut);
-        this->SetText(
-          std::format("{}{}", s.mText.substr(0, left), s.mText.substr(right)));
-        this->SetCaret(left);
+        this->ReplaceSelection({}, UndoableState::Operation::Cut);
       }
       return StopPropagation;
     case Key_V: {
@@ -322,13 +309,7 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
         return StopPropagation;
       }
 
-      BeforeOperation(UndoableState::Operation::Paste);
-      const auto [left, right]
-        = std::minmax(s.mSelectionStart, s.mSelectionEnd);
-      this->SetText(
-        std::format(
-          "{}{}{}", s.mText.substr(0, left), *pasted, s.mText.substr(right)));
-      this->SetCaret(left + pasted->size());
+      this->ReplaceSelection(*pasted, UndoableState::Operation::Paste);
       return StopPropagation;
     }
     case Key_Z:
@@ -379,6 +360,14 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
         newIdx = idx;
       }
       break;
+    case Key_Tab:
+      // Tab and shift-tab are for keyboard navigation; ctrl+tab bypasses
+      // this to allow typing a tab
+      if (e.mModifiers != Modifier_Control) {
+        return Widget::OnKeyPress(e);
+      }
+      this->ReplaceSelection("\t", UndoableState::Operation::Typing);
+      return StopPropagation;
     default:
       break;
   }
@@ -608,6 +597,18 @@ void TextBox::SetSelection(const std::size_t start, const std::size_t end) {
     CheckHResult(sink->OnSelectionChange());
   if (const auto sink = mAutomation->GetSink(TS_AS_LAYOUT_CHANGE))
     CheckHResult(sink->OnLayoutChange(TS_LC_CHANGE, 1));
+}
+
+void TextBox::ReplaceSelection(
+  const std::string_view newContent,
+  const UndoableState::Operation op) {
+  this->BeforeOperation(op);
+  const auto& s = mActiveState;
+  const auto [left, right] = std::minmax(s.mSelectionStart, s.mSelectionEnd);
+  this->SetText(
+    std::format(
+      "{}{}{}", s.mText.substr(0, left), newContent, s.mText.substr(right)));
+  this->SetCaret(left + newContent.size());
 }
 
 UText* TextBox::GetUText() const noexcept {

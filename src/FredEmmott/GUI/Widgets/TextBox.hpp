@@ -173,6 +173,7 @@ class TextBox : public Widget, public IFocusable {
   void SetCaret(const std::size_t pos) {
     this->SetSelection(pos, pos);
   }
+  void ReplaceSelection(std::string_view, UndoableState::Operation);
 };
 
 }// namespace FredEmmott::GUI::Widgets
