@@ -206,7 +206,9 @@ Style Style::BuiltinBaseline() {
             .OutlineWidth(2));
   const auto makeBaseline = [](auto& prop) {
     prop.mScope = StylePropertyScope::Self;
-    if (prop.mPriority != StylePropertyPriority::Important) {
+    if (prop.mPriority == StylePropertyPriority::Important) {
+      prop.mPriority = StylePropertyPriority::UserAgent;
+    } else {
       prop.mPriority = StylePropertyPriority::UserAgentBaseline;
     }
   };
