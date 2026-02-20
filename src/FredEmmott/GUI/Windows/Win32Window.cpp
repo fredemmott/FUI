@@ -974,6 +974,9 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
           case Cursor::Pointer:
             SetCursor(mPointerCursor.get());
             break;
+          case Cursor::Text:
+            SetCursor(mTextCursor.get());
+            break;
         }
       } else {
         SetCursor(mDefaultCursor.get());

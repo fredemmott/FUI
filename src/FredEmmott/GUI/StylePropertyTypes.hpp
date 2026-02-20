@@ -31,6 +31,7 @@ enum class StylePropertyPriority {
 enum class Cursor {
   Default,
   Pointer,// Hand
+  Text,// I-beam cursor
 };
 
 }// namespace FredEmmott::GUI

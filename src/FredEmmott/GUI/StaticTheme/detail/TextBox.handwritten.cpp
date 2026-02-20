@@ -23,6 +23,7 @@ const ImmutableStyle& DefaultTextBoxStyle() {
       .PaddingRight(12)
       .PaddingTop(5)
       .PaddingBottom(6)
+      .Cursor(Cursor::Text)
       .And(
         Disabled,
         Style()
