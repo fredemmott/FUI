@@ -91,7 +91,6 @@ void Root::Paint(Renderer* renderer, const Size& size) {
   YGNodeCalculateLayout(
     mYogaRoot.get(), size.mWidth, size.mHeight, YGDirectionLTR);
 
-  widget->UpdateLayout();
   widget->Tick(frameStartTime);
   widget->Paint(renderer);
 }
@@ -133,7 +132,6 @@ Size Root::GetInitialSize() const {
   if (mWidgetRoot) {
     const auto widget = mWidgetRoot->mWidget.get();
     widget->ComputeStyles({});
-    widget->UpdateLayout();
   }
 
   return GetMinimumWidthAndIdealHeight(mYogaRoot.get());

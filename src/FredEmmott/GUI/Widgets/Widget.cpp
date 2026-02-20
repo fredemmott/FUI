@@ -427,12 +427,6 @@ void Widget::Tick(const std::chrono::steady_clock::time_point& now) {
   }
 }
 
-void Widget::UpdateLayout() {
-  for (auto&& child: mRawDirectChildren) {
-    child->UpdateLayout();
-  }
-}
-
 Widget::MouseEventResult Widget::DispatchMouseEvent(
   const MouseEvent& parentEvent) {
   if (GetComputedStyle().PointerEvents() == PointerEvents::None) {

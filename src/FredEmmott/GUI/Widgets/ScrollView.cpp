@@ -179,6 +179,10 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
 
 void ScrollView::PaintChildren(Renderer* renderer) const {
   const auto node = this->GetLayoutNode();
+  if (YGNodeGetHasNewLayout(node)) {
+    this->UpdateLayout();
+    YGNodeSetHasNewLayout(node, false);
+  }
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
   const auto clipTo = renderer->ScopedClipRect(Size {w, h});
@@ -205,7 +209,8 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
   scrollBar->SetValue(value);
   return EventHandlerResult::StopPropagation;
 }
-void ScrollView::UpdateLayout() {
+
+void ScrollView::UpdateLayout() const {
   const auto node = this->GetLayoutNode();
   const auto w = YGNodeLayoutGetWidth(node);
   const auto h = YGNodeLayoutGetHeight(node);
@@ -220,8 +225,6 @@ void ScrollView::UpdateLayout() {
   YGNodeCalculateLayout(
     mContentYoga.get(), contentWidth, YGUndefined, YGDirectionLTR);
   UpdateScrollBars({w, h});
-
-  Widget::UpdateLayout();
 }
 
 void ScrollView::OnHorizontalScroll(
