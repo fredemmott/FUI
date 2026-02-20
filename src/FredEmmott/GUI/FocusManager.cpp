@@ -51,6 +51,9 @@ FocusManager::GetFocusedWidget() const {
   if (!mFocusedWidget) {
     return std::nullopt;
   }
+  if (mFocusedWidget->IsDisabled()) {
+    return std::nullopt;
+  }
   return std::tuple {mFocusedWidget, mFocusKind};
 }
 
@@ -59,7 +62,11 @@ bool FocusManager::IsWidgetFocused(Widgets::Widget const* widget) {
   if (!fm) {
     return false;
   }
-  return fm->mFocusedWidget == widget;
+  const auto focus = fm->GetFocusedWidget();
+  if (!focus) {
+    return false;
+  }
+  return get<0>(*focus) == widget;
 }
 
 void FocusManager::GivePointerFocus(Widgets::Widget* widget) {
