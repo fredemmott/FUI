@@ -8,6 +8,7 @@
 #include <FredEmmott/GUI/detail/Widget/ScrollBar.hpp>
 
 #include "FredEmmott/GUI/Immediate/Button.hpp"
+#include "FredEmmott/utility/almost_equal.hpp"
 #include "Label.hpp"
 #include "ScrollBarButton.hpp"
 #include "ScrollBarThumb.hpp"
@@ -350,25 +351,14 @@ void ScrollBar::OnThumbDrag(Point* deltaXY) {
   this->SetValue(clampedValue, ChangeReason::Continuous);
 }
 
-void ScrollBar::SetMinimum(float value) {
-  mMinimum = value;
-  this->UpdateChildSizes();
-}
-
-float ScrollBar::GetMinimum() const {
-  return mMinimum;
-}
-
-void ScrollBar::SetMaximum(float maximum) {
-  mMaximum = maximum;
-  if (mValue > mMaximum) {
-    this->SetValue(maximum);
+void ScrollBar::SetRange(const float minimum, const float maximum) {
+  if (maximum < minimum) [[unlikely]] {
+    throw std::logic_error("Maximum must be greater than minimum");
   }
+  mMinimum = minimum;
+  mMaximum = maximum;
+  mValue = std::clamp(mValue, mMinimum, mMaximum);
   this->UpdateChildSizes();
-}
-
-float ScrollBar::GetMaximum() const {
-  return mMaximum;
 }
 
 float ScrollBar::GetValue() const {
@@ -380,12 +370,13 @@ void ScrollBar::SetValue(const float value) {
 }
 
 void ScrollBar::SetValue(const float value, const ChangeReason reason) {
-  if (mValue == value) {
+  const auto clamped = std::clamp(value, mMinimum, mMaximum);
+  if (utility::almost_equal(mValue, value)) {
     return;
   }
-  mValue = value;
+  mValue = clamped;
   if (mValueChangedCallback) {
-    mValueChangedCallback(value, reason);
+    mValueChangedCallback(mValue, reason);
   }
   this->UpdateChildSizes();
 }

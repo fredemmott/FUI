@@ -155,24 +155,24 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
 
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
-    mHorizontalScrollBar->SetMaximum(cw - w);
+    mHorizontalScrollBar->SetRange(0, cw - w);
     mHorizontalScrollBar->AddMutableStyles(Style().Display(YGDisplayFlex));
     mVerticalScrollBar->AddMutableStyles(
       Style().Bottom(StaticTheme::ScrollBar::ScrollBarSize + 4));
   } else {
     mHorizontalScrollBar->SetValue(0);
-    mHorizontalScrollBar->SetMaximum(0);
+    mHorizontalScrollBar->SetRange(0, 0);
     mHorizontalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
     mVerticalScrollBar->AddMutableStyles(Style().Bottom(4));
   }
 
   if (showVScroll) {
     mVerticalScrollBar->SetThumbSize(h);
-    mVerticalScrollBar->SetMaximum(ch - h);
+    mVerticalScrollBar->SetRange(0, ch - h);
     mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayFlex));
   } else {
     mVerticalScrollBar->SetValue(0);
-    mVerticalScrollBar->SetMaximum(0);
+    mVerticalScrollBar->SetRange(0, 0);
     mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
   }
 }
@@ -204,9 +204,7 @@ Widget::EventHandlerResult ScrollView::OnMouseVerticalWheel(
     = lines * SystemFont::Resolve(SystemFont::Body).GetMetrics().mSize;
 
   const auto scrollBar = mVerticalScrollBar;
-  const auto value = std::clamp<float>(
-    scrollBar->GetValue() + pixels, 0, scrollBar->GetMaximum());
-  scrollBar->SetValue(value);
+  scrollBar->SetValue(scrollBar->GetValue() + pixels);
   return EventHandlerResult::StopPropagation;
 }
 

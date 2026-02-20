@@ -28,10 +28,7 @@ class ScrollBar final : public Widget {
 
   ~ScrollBar() override;
 
-  void SetMinimum(float value);
-  [[nodiscard]] float GetMinimum() const;
-  void SetMaximum(float maximum);
-  [[nodiscard]] float GetMaximum() const;
+  void SetRange(float minimum, float maximum);
   void SetValue(float value);
   [[nodiscard]] float GetValue() const;
   void SetThumbSize(float value);
