@@ -15,8 +15,7 @@ using namespace StaticTheme::Slider;
 using namespace StaticTheme::Common;
 
 auto& SliderBaseStyle() {
-  static const ImmutableStyle ret {
-    Style().AlignContent(YGAlignCenter).AlignItems(YGAlignCenter)};
+  static const ImmutableStyle ret {Style().AlignItems(YGAlignCenter)};
   return ret;
 }
 
@@ -43,9 +42,11 @@ auto& VerticalSliderStyle() {
 auto& TrackBaseStyle() {
   static const ImmutableStyle ret {
     Style()
-      .FlexGrow(1)
+      .AlignItems(YGAlignCenter)
+      .AlignSelf(YGAlignCenter)
       .BackgroundColor(SliderTrackBackgroundThemeBrush)
       .BorderRadius(SliderTrackCornerRadius)
+      .FlexGrow(1)
       .MarginTop(SliderPreContentMargin)
       .MarginBottom(SliderPostContentMargin)
       .And(
@@ -56,23 +57,25 @@ auto& TrackBaseStyle() {
 
 auto& HorizontalTrackStyle() {
   static const ImmutableStyle ret {
-    TrackBaseStyle() + Style().Height(SliderTrackThemeHeight)};
+    TrackBaseStyle()
+    + Style().Height(SliderTrackThemeHeight).FlexDirection(YGFlexDirectionRow)};
   return ret;
 }
 
 auto& VerticalTrackStyle() {
   static const ImmutableStyle ret {
-    TrackBaseStyle() + Style().Width(SliderTrackThemeHeight)};
+    TrackBaseStyle()
+    + Style()
+        .Width(SliderTrackThemeHeight)
+        .FlexDirection(YGFlexDirectionColumn)};
   return ret;
 }
 
 auto& OuterThumbBaseStyle() {
   static const ImmutableStyle ret {
     Style()
-      .AlignContent(YGAlignCenter)
       .AlignItems(YGAlignCenter)
       .JustifyContent(YGJustifyCenter)
-      .Position(YGPositionTypeAbsolute)
       .BackgroundColor(SliderOuterThumbBackground)
       .BorderColor(SliderThumbBorderBrush)
       .BorderRadius(SliderThumbCornerRadius)
@@ -142,24 +145,33 @@ auto& InnerThumbStyle() {
 Slider::Slider(const std::size_t id, const Orientation orientation)
   : Widget(
       id,
-      StyleClass::Make("Slider"),
+      LiteralStyleClass("Slider"),
       ((orientation == Orientation::Horizontal) ? HorizontalSliderStyle()
                                                 : VerticalSliderStyle())),
     mOrientation(orientation) {
   const auto isHorizontal = orientation == Orientation::Horizontal;
   mTrack = new Widget(
     {},
-    StyleClass::Make("Slider/Track"),
+    LiteralStyleClass("Slider/Track"),
     isHorizontal ? HorizontalTrackStyle() : VerticalTrackStyle());
   mOuterThumb = new Widget(
     {},
-    StyleClass::Make("Slider/Thumb"),
+    LiteralStyleClass("Slider/Thumb"),
     isHorizontal ? HorizontalOuterThumbStyle() : VerticalOuterThumbStyle());
-  mInnerThumb
-    = new Widget({}, StyleClass::Make("Slider/Thumb/Inner"), InnerThumbStyle());
+  mInnerThumb = new Widget(
+    {}, LiteralStyleClass("Slider/Thumb/Inner"), InnerThumbStyle());
   mOuterThumb->SetChildren({mInnerThumb});
 
-  this->SetChildren({mTrack, mOuterThumb});
+  mBeforeThumb = new Widget({}, LiteralStyleClass("Slider/Thumb/Spacer"), {});
+  mAfterThumb = new Widget({}, LiteralStyleClass("Slider/Thumb/Spacer"), {});
+
+  mTrack->SetChildren({
+    mBeforeThumb,
+    mOuterThumb,
+    mAfterThumb,
+  });
+
+  this->SetChildren({mTrack});
 }
 
 void Slider::SetValue(const float value) {
@@ -199,13 +211,11 @@ void Slider::UpdateThumbPosition() {
   Point fillStart {0, 0};
   Point fillEnd {1, 0};
   if (mOrientation == Orientation::Horizontal) {
-    const auto range = YGNodeLayoutGetWidth(mTrack->GetLayoutNode())
-      - SliderHorizontalThumbWidth;
-    mOuterThumb->SetMutableStyles(Style().Left(ratio * range));
+    mBeforeThumb->SetMutableStyles(Style().FlexGrow(ratio));
+    mAfterThumb->SetMutableStyles(Style().FlexGrow(1.0f - ratio));
   } else {
-    const auto range = YGNodeLayoutGetHeight(mTrack->GetLayoutNode())
-      - SliderVerticalThumbHeight;
-    mOuterThumb->SetMutableStyles(Style().Top((1.0f - ratio) * range));
+    mBeforeThumb->SetMutableStyles(Style().FlexGrow(1.0f - ratio));
+    mAfterThumb->SetMutableStyles(Style().FlexGrow(ratio));
     fillStart = {0, 1};
     fillEnd = {0, 0};
   }

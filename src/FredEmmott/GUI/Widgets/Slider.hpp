@@ -66,6 +66,8 @@ class Slider final : public Widget, public IFocusable {
   Widget* mTrack {nullptr};
   Widget* mOuterThumb {nullptr};
   Widget* mInnerThumb {nullptr};
+  Widget* mBeforeThumb {nullptr};
+  Widget* mAfterThumb {nullptr};
 
   void UpdateThumbPosition();
 };
