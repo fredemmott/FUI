@@ -59,8 +59,6 @@ static void AppTick(fui::Window& window) {
   }
 
   fuii::Label("Hello, world; this text doesn't make the button wider aeg");
-  static uint64_t frameCounter {};
-  fuii::Label("Frame {}##Frames", ++frameCounter);
 
   static bool popupVisible = false;
   if (fuii::Button("Click Me!")
