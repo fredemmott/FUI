@@ -211,8 +211,14 @@ static void AppTick(fui::Window& window) {
 
   const auto slider
     = fuii::immediate_detail::ChildlessWidget<fui::Widgets::Slider>(
-      fuii::ID {std::source_location::current()});
+      fuii::ID {std::source_location::current()}, fui::Orientation::Horizontal);
   slider->SetTickFrequency(25);
+
+  const auto vslider
+    = fuii::immediate_detail::ChildlessWidget<fui::Widgets::Slider>(
+      fuii::ID {std::source_location::current()}, fui::Orientation::Vertical);
+  vslider->SetMutableStyles(fui::Style().Height(120));
+  vslider->SetTickFrequency(25);
 
   fuii::EndDisabled();
 

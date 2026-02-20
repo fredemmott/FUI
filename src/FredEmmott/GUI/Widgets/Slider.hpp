@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Focusable.hpp"
+#include "FredEmmott/GUI/Orientation.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -13,7 +14,8 @@ class Slider final : public Widget, public IFocusable {
     Steps,
     Ticks,
   };
-  explicit Slider(std::size_t id = 0);
+  Slider() = delete;
+  explicit Slider(std::size_t id, Orientation);
 
   void SetSnapTo(const SnapTo snapTo) {
     mSnapTo = snapTo;
@@ -53,6 +55,7 @@ class Slider final : public Widget, public IFocusable {
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
  private:
+  Orientation mOrientation {Orientation::Horizontal};
   SnapTo mSnapTo {SnapTo::Steps};
   float mValue {0.0f};
   float mMin {0.0f};
