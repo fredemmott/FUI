@@ -366,7 +366,7 @@ Widget* Widget::SetChildren(const std::vector<Widget*>& children) {
 Widget* Widget::DispatchEvent(const Event& e) {
   if (const auto it = dynamic_cast<MouseEvent const*>(&e)) {
     if (gMouseCapture) {
-      auto translated = it->WithOffset(gMouseCapture->mOffset);
+      const auto translated = it->WithOffset(gMouseCapture->mOffset);
       return gMouseCapture->mWidget->DispatchMouseEvent(translated).mTarget;
     }
 
@@ -474,7 +474,12 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
     });
   }
 
-  mMouseOffset = event.mOffset;
+  if (event.IsValid()) {
+    // The same offset will be applied for captured mouse inputs, so we want
+    // to use the same offset we were called with, not the post-processed one,
+    // as we'll do the same processing when we receive the captured event.
+    mMouseCaptureOffset = parentEvent.mOffset;
+  }
 
   // Always propagate unconditionally to allow correct internal states
   for (auto&& child: mRawDirectChildren) {
@@ -618,7 +623,7 @@ Widget::EventHandlerResult Widget::OnMouseButtonRelease(
 }
 
 void Widget::StartMouseCapture() {
-  gMouseCapture = MouseCapture {this, mMouseOffset};
+  gMouseCapture = MouseCapture {this, mMouseCaptureOffset};
 }
 
 void Widget::EndMouseCapture() {

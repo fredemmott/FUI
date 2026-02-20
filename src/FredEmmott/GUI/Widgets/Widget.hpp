@@ -281,7 +281,7 @@ class Widget {
 
   std::unordered_map<std::type_index, std::unique_ptr<Context>> mContexts;
 
-  Point mMouseOffset {};
+  Point mMouseCaptureOffset {};
 
   // Returns the innermost widget that received the event.
   [[nodiscard]]
