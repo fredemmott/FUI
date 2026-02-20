@@ -44,7 +44,6 @@ class Slider final : public Widget, public IFocusable {
   bool mChanged {false};
 
  protected:
-  void UpdateLayout() override;
   EventHandlerResult OnMouseMove(const MouseEvent&) override;
   EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;
   EventHandlerResult OnMouseButtonRelease(const MouseEvent&) override;

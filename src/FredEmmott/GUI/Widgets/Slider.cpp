@@ -8,6 +8,8 @@
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <algorithm>
 
+#include "FredEmmott/utility/almost_equal.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
@@ -172,10 +174,15 @@ Slider::Slider(const std::size_t id, const Orientation orientation)
   });
 
   this->SetChildren({mTrack});
+  this->UpdateThumbPosition();
 }
 
 void Slider::SetValue(const float value) {
+  if (utility::almost_equal(value, mValue)) {
+    return;
+  }
   mValue = std::clamp(value, mMin, mMax);
+  this->UpdateThumbPosition();
 }
 
 float Slider::GetValue() const {
@@ -197,11 +204,7 @@ void Slider::SetRange(const float min, const float max) {
   mMin = min;
   mMax = max;
   mValue = std::clamp(mValue, mMin, mMax);
-}
-
-void Slider::UpdateLayout() {
-  Widget::UpdateLayout();
-  UpdateThumbPosition();
+  this->UpdateThumbPosition();
 }
 
 void Slider::UpdateThumbPosition() {
@@ -270,8 +273,13 @@ Widget::EventHandlerResult Slider::OnMouseButtonPress(const MouseEvent& event) {
 
 Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
   if (mDraggingValue) {
-    const auto release = wil::scope_exit([&] { mDraggingValue.reset(); });
     EndMouseCapture();
+
+    const auto release = wil::scope_exit([this] {
+      mDraggingValue.reset();
+      this->UpdateThumbPosition();
+    });
+
     const auto snapFrequency
       = (mSnapTo == SnapTo::Steps) ? mStepFrequency : mTickFrequency;
     if (snapFrequency < std::numeric_limits<float>::epsilon()) {
@@ -318,6 +326,7 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
 
   const auto offset = (ratio * (mMax - mMin));
   mDraggingValue = std::clamp(mMin + offset, mMin, mMax);
+  this->UpdateThumbPosition();
   return EventHandlerResult::StopPropagation;
 }
 
