@@ -2,27 +2,52 @@
 // SPDX-License-Identifier: MIT
 #include "Tooltip.hpp"
 
+#include <FredEmmott/GUI/yoga.hpp>
 #include <stdexcept>
 #include <utility>
 
 #include "Card.hpp"
 #include "FredEmmott/GUI/StaticTheme/ToolTip.hpp"
+#include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "PopupWindow.hpp"
-
 namespace FredEmmott::GUI::Immediate {
 
 namespace {
 
-struct TooltipContext : Widgets::Context {
+struct TooltipAnchorContext : Widgets::Context {
+  Window* mParentWindow {nullptr};
+  std::optional<Point> mAnchorTo;
   bool mVisible {false};
+};
+
+struct TooltipContainerContext : Widgets::Context {
+  Widgets::Widget* mAnchor {};
 };
 
 }// namespace
 
 void EndTooltip() {
-  immediate_detail::EndWidget();
+  using namespace immediate_detail;
+  auto p = GetCurrentParentNode();
+  EndWidget();
+
+  const auto ctx = GetCurrentNode()
+                     ->GetContext<TooltipContainerContext>()
+                     ->mAnchor->GetContext<TooltipAnchorContext>();
+  if (const auto cursorPoint = std::exchange(ctx->mAnchorTo, std::nullopt)) {
+    p->ComputeStyles({});
+    const auto [w, h] = GetMinimumWidthAndIdealHeight(p->GetLayoutNode());
+
+    static constexpr Point FixedOffset {0, -12};
+    const Point contentOffset {-w / 2, -h};
+    const auto point = *cursorPoint + FixedOffset + contentOffset;
+    const auto nativePoint
+      = ctx->mParentWindow->CanvasPointToNativePoint(point);
+    tWindow->SetInitialPositionInNativeCoords(nativePoint);
+  }
+
   EndBasicPopupWindow();
 }
 
@@ -34,15 +59,20 @@ TooltipResult BeginTooltipForPreviousWidget(const ID id) {
     throw std::logic_error("No previous sibling widget");
   }
 
-  const auto ctx = w->GetOrCreateContext<TooltipContext>();
+  const auto ctx = w->GetOrCreateContext<TooltipAnchorContext>();
   const bool wasVisible = ctx->mVisible;
   if (!w->IsHovered()) {
     ctx->mVisible = false;
     return false;
   }
 
-  if (std::exchange(w->mWasStationaryHovered, false)) {
+  const auto hoverEvent = std::exchange(w->mWasStationaryHovered, std::nullopt);
+  if (hoverEvent) {
+    ctx->mParentWindow = tWindow;
     ctx->mVisible = true;
+    if (!wasVisible) {
+      ctx->mAnchorTo = hoverEvent->mWindowPoint;
+    }
   }
 
   if (!ctx->mVisible) {
@@ -81,8 +111,11 @@ TooltipResult BeginTooltipForPreviousWidget(const ID id) {
       .PaddingBottom(ToolTipBorderPaddingBottom)
       .PaddingRight(ToolTipBorderPaddingRight),
   };
-  BeginWidget<Widget>(
+  const auto container = BeginWidget<Widget>(
     ID {0}, LiteralStyleClass {"Tooltip/Root"}, TooltipStyles);
+  if (!wasVisible) {
+    container->GetOrCreateContext<TooltipContainerContext>()->mAnchor = w;
+  }
   return true;
 }
 }// namespace FredEmmott::GUI::Immediate

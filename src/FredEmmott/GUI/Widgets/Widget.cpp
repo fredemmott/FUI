@@ -545,7 +545,7 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
       },
       [&](const MouseEvent::MoveEvent&) { return this->OnMouseMove(event); },
       [&, this](const MouseEvent::HoverEvent&) {
-        mWasStationaryHovered = true;
+        mWasStationaryHovered = event;
         return this->OnMouseHover(event);
       },
       [&](const MouseEvent::HorizontalWheelEvent&) {
