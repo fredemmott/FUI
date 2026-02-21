@@ -7,7 +7,7 @@
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-struct TextBlockStylesMixin {
+struct TextBlockStylesResultMixin {
   template <class Self>
   decltype(auto) Caption(this Self&& self) {
     widget_from_result(self)->AddStyleClass(

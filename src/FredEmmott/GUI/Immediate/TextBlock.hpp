@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/detail/immediate/TextBlockStylesMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/TextBlockStylesResultMixin.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <format>
 
@@ -11,7 +11,7 @@
 namespace FredEmmott::GUI::Immediate {
 
 using TextBlockResult
-  = Result<nullptr, void, immediate_detail::TextBlockStylesMixin>;
+  = Result<nullptr, void, immediate_detail::TextBlockStylesResultMixin>;
 
 TextBlockResult TextBlock(
   std::string_view text,
