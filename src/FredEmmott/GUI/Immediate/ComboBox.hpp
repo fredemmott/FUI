@@ -2,21 +2,26 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/assert.hpp>
+#include <FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp>
 #include <ranges>
 #include <span>
 #include <string>
 #include <vector>
 
-#include "FredEmmott/GUI/assert.hpp"
-#include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
 #include "ID.hpp"
 #include "Result.hpp"
 #include "selectable_key.hpp"
 
 namespace FredEmmott::GUI::Immediate {
+
 template <class TValue = void>
-using ComboBoxResult
-  = Result<nullptr, TValue, immediate_detail::CaptionResultMixin>;
+using ComboBoxResult = Result<
+  nullptr,
+  TValue,
+  immediate_detail::CaptionResultMixin,
+  immediate_detail::ToolTipResultMixin>;
 
 ComboBoxResult<bool> ComboBox(
   std::size_t* selectedIndex,

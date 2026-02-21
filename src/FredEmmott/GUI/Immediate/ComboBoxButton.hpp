@@ -2,18 +2,22 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
-#include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
 #include "Label.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
 template <void (*TEndWidget)() = nullptr, class TValue = void>
-using ComboBoxButtonResult
-  = Result<TEndWidget, TValue, immediate_detail::CaptionResultMixin>;
+using ComboBoxButtonResult = Result<
+  TEndWidget,
+  TValue,
+  immediate_detail::CaptionResultMixin,
+  immediate_detail::ToolTipResultMixin>;
 
 void EndComboBoxButton();
 

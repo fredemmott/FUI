@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
+#include "FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
@@ -43,7 +44,8 @@ using SliderResult = Result<
   nullptr,
   bool,
   immediate_detail::CaptionResultMixin,
-  immediate_detail::SliderResultMixin>;
+  immediate_detail::SliderResultMixin,
+  immediate_detail::ToolTipResultMixin>;
 
 /** Create a horizontal slider.
  *

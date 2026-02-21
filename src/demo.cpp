@@ -124,7 +124,8 @@ static void AppTick(fui::Window& window) {
       "baz",
     };
     if (fuii::ComboBox(&selectedIndex, comboItems)
-          .Caption("Array of strings")) {
+          .Caption("Array of strings")
+          .ToolTip("CB ToolTip")) {
       std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
     }
   }

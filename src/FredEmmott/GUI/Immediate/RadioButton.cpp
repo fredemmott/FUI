@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #include "RadioButton.hpp"
 
+#include "Button.hpp"
 #include "FredEmmott/GUI/Widgets/RadioButton.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 #include "Label.hpp"
@@ -13,7 +14,7 @@ void EndRadioButton() {
   EndWidget<Widgets::RadioButton>();
 }
 
-Result<&EndRadioButton, bool> BeginRadioButton(
+RadioButtonResult<&EndRadioButton, bool> BeginRadioButton(
   const bool isInitiallyChecked,
   const ID id) {
   const auto widget = BeginWidget<Widgets::RadioButton>(id);
@@ -27,7 +28,7 @@ Result<&EndRadioButton, bool> BeginRadioButton(
   };
 }
 
-Result<nullptr, bool> RadioButton(
+RadioButtonResult<nullptr, bool> RadioButton(
   const bool isInitiallyChecked,
   const std::string_view label,
   const ID id) {

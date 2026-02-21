@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 #include "HyperlinkButton.hpp"
 
+#include "Button.hpp"
 #include "FredEmmott/GUI/Widgets/HyperlinkButton.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-Result<nullptr, void, immediate_detail::CaptionResultMixin>
+HyperlinkButtonResult<void>
 HyperlinkButton(bool* clicked, const std::string_view label, const ID id) {
   using namespace immediate_detail;
   auto ret = BeginWidget<Widgets::HyperlinkButton>(id);
@@ -18,7 +19,7 @@ HyperlinkButton(bool* clicked, const std::string_view label, const ID id) {
   return {ret};
 }
 
-Result<nullptr, bool, immediate_detail::CaptionResultMixin> HyperlinkButton(
+HyperlinkButtonResult<bool> HyperlinkButton(
   const std::string_view label,
   const ID id) {
   bool clicked = false;
