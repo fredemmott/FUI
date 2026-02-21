@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "Card.hpp"
-#include "FredEmmott/GUI/StaticTheme/Common.hpp"
+#include "FredEmmott/GUI/StaticTheme/ToolTip.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "PopupWindow.hpp"
@@ -63,14 +63,23 @@ TooltipResult BeginTooltipForPreviousWidget(const ID id) {
       });
   }
   using namespace StaticTheme::Common;
+  using namespace StaticTheme::ToolTip;
   static const ImmutableStyle TooltipStyles {
     Style()
-      .BackgroundColor(AcrylicBackgroundFillColorDefaultBrush)
-      .BorderColor(SurfaceStrokeColorDefaultBrush)
-      .BorderRadius(OverlayCornerRadius)
-      .BorderWidth(2)
+      .BackgroundColor(ToolTipBackgroundBrush)
+      .BorderColor(ToolTipBorderBrush)
+      .BorderRadius(ControlCornerRadius)
+      .BorderWidth(ToolTipBorderThemeThickness)
       .FlexDirection(YGFlexDirectionColumn)
-      .Padding(20),
+      .Font(
+        SystemFont::Resolve(SystemFont::Body)
+          .WithSize(ToolTipContentThemeFontSize))
+      .Color(ToolTipForegroundBrush)
+      .MaxWidth(ToolTipMaxWidth)
+      .PaddingLeft(ToolTipBorderPaddingLeft)
+      .PaddingTop(ToolTipBorderPaddingTop)
+      .PaddingBottom(ToolTipBorderPaddingBottom)
+      .PaddingRight(ToolTipBorderPaddingRight),
   };
   BeginWidget<Widget>(
     ID {0}, LiteralStyleClass {"Tooltip/Root"}, TooltipStyles);

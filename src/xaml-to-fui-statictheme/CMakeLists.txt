@@ -187,6 +187,7 @@ add_winui3_component_theme(ScrollBar PARENT Common)
 add_winui3_component_theme(ScrollView PARENT Common)
 add_winui3_component_theme(Slider PARENT Common)
 add_winui3_component_theme(ToggleSwitch PARENT Common)
+add_winui3_component_theme(ToolTip PARENT Common)
 
 add_winui3_component_theme(
   Deprecated
