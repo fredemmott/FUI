@@ -7,8 +7,8 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-Result<&EndCheckBox>
-BeginCheckBox(bool* pIsChanged, bool* pIsChecked, const ID id) {
+CheckBoxResult<&EndCheckBox, void>
+BeginCheckBox(bool* const pIsChanged, bool* const pIsChecked, const ID id) {
   using namespace immediate_detail;
   using Widgets::CheckBox;
 
@@ -25,8 +25,8 @@ BeginCheckBox(bool* pIsChanged, bool* pIsChecked, const ID id) {
   return {checkbox};
 }
 
-Result<nullptr, bool>
-CheckBox(bool* pIsChecked, const std::string_view label, const ID id) {
+CheckBoxResult<nullptr, bool>
+CheckBox(bool* const pIsChecked, const std::string_view label, const ID id) {
   bool isChecked {false};
   if (pIsChecked) [[likely]] {
     isChecked = *pIsChecked;

@@ -53,7 +53,8 @@ static void AppTick(fui::Window& window) {
   fuii::BeginDisabled(sDisableAll);
 
   static bool sIsChecked {false};
-  if (fuii::CheckBox(&sIsChecked, "I'm a checkbox!")) {
+  if (fuii::CheckBox(&sIsChecked, "I'm a checkbox!")
+        .ToolTip("CheckBox ToolTip")) {
     std::println(
       stderr, "Checkbox changed to {}", sIsChecked ? "checked" : "unchecked");
   }
