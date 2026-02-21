@@ -30,7 +30,10 @@ struct MouseEvent final : Event {
     return ret;
   }
 
-  using MoveEvent = std::monostate;
+  struct MoveEvent {};
+  // The mouse is staying relatively still, within an OS-defined bounding box
+  // for an OS-defined amount of time
+  struct HoverEvent {};
   struct ButtonPressEvent {
     MouseButtons mPressedButtons {};
   };
@@ -45,6 +48,7 @@ struct MouseEvent final : Event {
   };
   std::variant<
     MoveEvent,
+    HoverEvent,
     ButtonPressEvent,
     ButtonReleaseEvent,
     HorizontalWheelEvent,

@@ -225,6 +225,8 @@ class Widget {
   [[nodiscard]]
   virtual EventHandlerResult OnMouseMove(const MouseEvent&);
   [[nodiscard]]
+  virtual EventHandlerResult OnMouseHover(const MouseEvent&);
+  [[nodiscard]]
   virtual EventHandlerResult OnMouseVerticalWheel(const MouseEvent&);
   [[nodiscard]]
   virtual EventHandlerResult OnMouseHorizontalWheel(const MouseEvent&);

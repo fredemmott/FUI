@@ -539,6 +539,7 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
         return this->OnMouseButtonRelease(event);
       },
       [&](const MouseEvent::MoveEvent&) { return this->OnMouseMove(event); },
+      [&](const MouseEvent::HoverEvent&) { return this->OnMouseHover(event); },
       [&](const MouseEvent::HorizontalWheelEvent&) {
         return this->OnMouseHorizontalWheel(event);
       },
@@ -594,6 +595,10 @@ Widget* Widget::DispatchTextInputEvent(const TextInputEvent& e) {
 }
 
 Widget::EventHandlerResult Widget::OnMouseMove(const MouseEvent&) {
+  return EventHandlerResult::Default;
+}
+
+Widget::EventHandlerResult Widget::OnMouseHover(const MouseEvent&) {
   return EventHandlerResult::Default;
 }
 

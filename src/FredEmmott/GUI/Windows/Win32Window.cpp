@@ -307,7 +307,7 @@ void Win32Window::TrackMouseEvent() {
   }
   TRACKMOUSEEVENT tme {
     .cbSize = sizeof(tme),
-    .dwFlags = TME_LEAVE,
+    .dwFlags = TME_LEAVE | TME_HOVER,
     .hwndTrack = mHwnd.get(),
     .dwHoverTime = HOVER_DEFAULT,
   };
@@ -998,6 +998,13 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       } else {
         mWidgetCursorUnderMouse = Cursor::Default;
       }
+      break;
+    }
+    case WM_MOUSEHOVER: {
+      TrackMouseEvent();
+      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      e.mDetail = MouseEvent::HoverEvent {};
+      this->DispatchEvent(e);
       break;
     }
     case WM_MOUSELEAVE: {
