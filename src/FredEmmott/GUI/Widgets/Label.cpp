@@ -33,6 +33,7 @@ Widget* Label::SetText(std::string_view text) {
     return this;
   }
   mText = std::string {text};
+  mCachedMeasurement.reset();
 
   if (!mFont) {
     return this;
@@ -106,6 +107,7 @@ Widget::ComputedStyleFlags Label::OnComputedStyleChange(
   StateFlags) {
   if (mFont != style.Font()) {
     mFont = style.Font().value();
+    mCachedMeasurement.reset();
     YGNodeMarkDirty(this->GetLayoutNode());
   }
 
@@ -118,17 +120,19 @@ YGSize Label::Measure(
   [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
-  const auto self = static_cast<Label*>(FromYogaNode(node));
+  auto& self = *static_cast<Label*>(FromYogaNode(node));
 
-  const auto& font = self->mFont;
-  const auto& text = self->mText;
+  if (self.mCachedMeasurement) {
+    return *self.mCachedMeasurement;
+  }
+
+  const auto& font = self.mFont;
+  const auto& text = self.mText;
 
   const auto tw = font.MeasureTextWidth(text);
 
-  return {
-    tw,
-    -font.GetMetrics().mAscent,
-  };
+  self.mCachedMeasurement.emplace(tw, -font.GetMetrics().mAscent);
+  return *self.mCachedMeasurement;
 }
 
 }// namespace FredEmmott::GUI::Widgets
