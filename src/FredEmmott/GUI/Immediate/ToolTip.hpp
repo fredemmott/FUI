@@ -22,4 +22,10 @@ using ToolTipResult = Result<
 ToolTipResult BeginToolTipForPreviousWidget(
   ID id = ID {std::source_location::current()});
 
+namespace immediate_detail {
+[[nodiscard]]
+ToolTipResult BeginToolTipForWidget(Widgets::Widget*, ID);
+
+}
+
 }// namespace FredEmmott::GUI::Immediate
