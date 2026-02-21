@@ -67,7 +67,8 @@ class LiteralStyleClass {
 
   StyleClass Get() const noexcept {
     if (!mCache.has_value()) {
-      mCache = StyleClass::Make(mName);
+      const std::string_view sv {mName, N};
+      mCache = StyleClass::Make(sv);
     }
     return mCache.value();
   }
