@@ -45,7 +45,16 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
       return hint;
     }
   }
-  return GetClampedMinimumWidth(node, 128, YGNodeLayoutGetWidth(yoga));
+  const auto contentMax = YGNodeLayoutGetWidth(yoga);
+
+  // SearchMin should be a reasonable value for a normal window, but we can have
+  // valid *tiny* windows, like tooltips. If their max size is smaller than
+  // SearchMin, we... can't grow it, and the max size is probably the ideal size
+  static constexpr auto SearchMin = 128;
+  if (contentMax <= SearchMin) {
+    return contentMax;
+  }
+  return GetClampedMinimumWidth(node, 128, contentMax);
 }
 
 float GetClampedMinimumWidth(
