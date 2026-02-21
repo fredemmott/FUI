@@ -10,16 +10,16 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-void EndTooltip();
+void EndToolTip();
 
-using TooltipResult = Result<
-  &EndTooltip,
+using ToolTipResult = Result<
+  &EndToolTip,
   bool,
   immediate_detail::WidgetlessResultMixin,
   immediate_detail::ConditionallyScopeableResultMixin>;
 
 [[nodiscard]]
-TooltipResult BeginTooltipForPreviousWidget(
-  const ID id = ID {std::source_location::current()});
+ToolTipResult BeginToolTipForPreviousWidget(
+  ID id = ID {std::source_location::current()});
 
 }// namespace FredEmmott::GUI::Immediate

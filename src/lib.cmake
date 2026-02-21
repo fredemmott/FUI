@@ -40,8 +40,8 @@ add_library(
   FredEmmott/GUI/Immediate/TextBox.cpp
   FredEmmott/GUI/Immediate/TextBox.hpp
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
-  FredEmmott/GUI/Immediate/Tooltip.cpp
-  FredEmmott/GUI/Immediate/Tooltip.hpp
+  FredEmmott/GUI/Immediate/ToolTip.cpp
+  FredEmmott/GUI/Immediate/ToolTip.hpp
   FredEmmott/GUI/Immediate/selectable_key.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp

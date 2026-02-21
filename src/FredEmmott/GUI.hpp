@@ -25,7 +25,7 @@
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>
 #include <FredEmmott/GUI/Immediate/TextBox.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
-#include <FredEmmott/GUI/Immediate/Tooltip.hpp>
+#include <FredEmmott/GUI/Immediate/ToolTip.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <string_view>
 
