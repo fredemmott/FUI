@@ -29,12 +29,13 @@ constexpr auto NormalAnimation = CubicBezierStyleTransition(
 constexpr auto ColorAnimation
   = LinearStyleTransition(ControlFasterAnimationDuration);
 
-constexpr auto NormalHeight = 12;
+constexpr auto NormalHeight = 12.0f;
 constexpr auto NormalWidth = NormalHeight;
-constexpr auto HoverHeight = 14;
+constexpr auto HoverHeight = 14.0f;
+constexpr auto HoverScale = HoverHeight / NormalHeight;
 constexpr auto Margin = 3;
-constexpr auto HoverMarginDiff = (HoverHeight - NormalHeight) / 2;
 constexpr auto ActiveWidth = 17;
+constexpr auto ActiveScaleX = ActiveWidth / NormalWidth;
 constexpr auto ParentWidth = 40;
 
 auto InnerBase() {
@@ -44,15 +45,18 @@ auto InnerBase() {
     .BorderColor(std::nullopt, ColorAnimation)
     .BorderRadius(NormalHeight / 2, FasterAnimation)
     .FlexGrow(1)
-    .Margin(std::nullopt, FasterAnimation)
+    .TransformOriginX(0.5f)
+    .TransformOriginY(0.5f)
+    .ScaleX(1.0f, FasterAnimation)
+    .ScaleY(1.0f, FasterAnimation)
+    .TranslateX(0.0f, FasterAnimation)
     .And(
       Hover,
       Style()
         .BorderRadius(HoverHeight / 2)
-        .MarginBottom(-HoverMarginDiff)
-        .MarginLeft(-HoverMarginDiff)
-        .MarginRight(-HoverMarginDiff)
-        .MarginTop(-HoverMarginDiff));
+        .ScaleX(HoverScale)
+        .ScaleY(HoverScale))
+    .And(Active, Style().ScaleX(ActiveScaleX));
 }
 
 auto InnerOn() {
@@ -74,8 +78,7 @@ auto InnerOn() {
       Style()
         .BackgroundColor(ToggleSwitchKnobFillOnPressed)
         .BorderColor(ToggleSwitchStrokeOnPressed)
-        .MarginLeft(NormalWidth - ActiveWidth)
-        .MarginRight(2 * -HoverMarginDiff));
+        .TranslateX(-(ActiveWidth - HoverHeight) / 2));
 }
 
 auto InnerOff() {
@@ -83,23 +86,21 @@ auto InnerOff() {
     .BackgroundColor(ToggleSwitchKnobFillOff)
     .And(Disabled, Style().BackgroundColor(ToggleSwitchKnobFillOffDisabled))
     .And(Hover, Style().BackgroundColor(ToggleSwitchKnobFillOffPointerOver))
-    .And(
-      Active,
-      Style()
-        .BackgroundColor(ToggleSwitchKnobFillOffPressed)
-        .MarginLeft(0)
-        .MarginRight(NormalWidth - ActiveWidth));
+    .And(Active, Style().BackgroundColor(ToggleSwitchKnobFillOffPressed));
 }
 
 const ImmutableStyle& Outer() {
   static const ImmutableStyle ret {
     Style()
       .Height(NormalHeight)
-      .Left(Margin, NormalAnimation)
       .Position(YGPositionTypeAbsolute)
+      .Left(Margin)
       .Top(Margin)
       .Width(NormalWidth)
-      .And(Checked, Style().Left(ParentWidth - ((2 * Margin) + NormalWidth))),
+      .TranslateX(0, NormalAnimation)
+      .And(
+        Checked,
+        Style().TranslateX(ParentWidth - ((2 * Margin) + NormalWidth))),
   };
   return ret;
 }
