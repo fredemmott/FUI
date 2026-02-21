@@ -104,6 +104,13 @@ auto& InnerStyles() {
   using namespace PseudoClasses;
   constexpr auto SizeAnimation = CubicBezierStyleTransition(
     ControlNormalAnimationDuration, ControlFastOutSlowInKeySpline);
+
+  // We scale the thumb as that only affects visuals, not layouts - in
+  // particular, it doesn't propagate the dirty flag to all ancestor nodes
+  static constexpr auto HoverScale = 14.f / RadioButtonCheckGlyphSize;
+  static constexpr auto ActiveScale = 10.f / RadioButtonCheckGlyphSize;
+  static constexpr auto DisabledScale = HoverScale;
+
   static const ImmutableStyle ret {
     Style()
       .AlignContent(YGAlignCenter)
@@ -112,30 +119,34 @@ auto& InnerStyles() {
       .BackgroundColor(RadioButtonCheckGlyphFill)
       .BorderColor(RadioButtonCheckGlyphStroke)
       .BorderRadius(7)
-      .Height(RadioButtonCheckGlyphSize, SizeAnimation)
-      .Width(RadioButtonCheckGlyphSize, SizeAnimation)
+      .Height(RadioButtonCheckGlyphSize)
+      .Width(RadioButtonCheckGlyphSize)
+      .ScaleX(1, SizeAnimation)
+      .ScaleY(1, SizeAnimation)
+      .TransformOriginX(0.5f)
+      .TransformOriginY(0.5f)
       .And(
         Hover,
         Style()
           .BackgroundColor(RadioButtonCheckGlyphFillPointerOver)
           .BorderColor(RadioButtonCheckGlyphStrokePointerOver)
-          .Height(14)
-          .Width(14))
+          .ScaleX(HoverScale)
+          .ScaleY(HoverScale))
       .And(
         Active,
         Style()
           .BackgroundColor(RadioButtonCheckGlyphFillPressed)
           .BorderColor(RadioButtonCheckGlyphStrokePressed)
           .BorderRadius(6)
-          .Height(10)
-          .Width(10))
+          .ScaleX(ActiveScale)
+          .ScaleY(ActiveScale))
       .And(
         Disabled,
         Style()
           .BackgroundColor(RadioButtonCheckGlyphFillDisabled)
           .BorderColor(RadioButtonCheckGlyphStrokeDisabled)
-          .Height(14)
-          .Width(14))
+          .ScaleX(DisabledScale)
+          .ScaleY(DisabledScale))
       .And(!Checked, Style().Display(YGDisplayNone)),
   };
   return ret;
