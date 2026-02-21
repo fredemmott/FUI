@@ -1,6 +1,6 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
-#include "Tooltip.hpp"
+#include "ToolTip.hpp"
 
 #include <FredEmmott/GUI/yoga.hpp>
 #include <stdexcept>
@@ -16,26 +16,26 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace {
 
-struct TooltipAnchorContext : Widgets::Context {
+struct ToolTipAnchorContext : Widgets::Context {
   Window* mParentWindow {nullptr};
   std::optional<Point> mAnchorTo;
   bool mVisible {false};
 };
 
-struct TooltipContainerContext : Widgets::Context {
+struct ToolTipContainerContext : Widgets::Context {
   Widgets::Widget* mAnchor {};
 };
 
 }// namespace
 
-void EndTooltip() {
+void EndToolTip() {
   using namespace immediate_detail;
   auto p = GetCurrentParentNode();
   EndWidget();
 
   const auto ctx = GetCurrentNode()
-                     ->GetContext<TooltipContainerContext>()
-                     ->mAnchor->GetContext<TooltipAnchorContext>();
+                     ->GetContext<ToolTipContainerContext>()
+                     ->mAnchor->GetContext<ToolTipAnchorContext>();
   if (const auto cursorPoint = std::exchange(ctx->mAnchorTo, std::nullopt)) {
     p->ComputeStyles({});
     const auto [w, h] = GetMinimumWidthAndIdealHeight(p->GetLayoutNode());
@@ -52,14 +52,14 @@ void EndTooltip() {
 }
 
 [[nodiscard]]
-TooltipResult BeginTooltipForPreviousWidget(const ID id) {
+ToolTipResult BeginToolTipForPreviousWidget(const ID id) {
   using namespace immediate_detail;
   const auto w = GetCurrentNode();
   if (!w) [[unlikely]] {
     throw std::logic_error("No previous sibling widget");
   }
 
-  const auto ctx = w->GetOrCreateContext<TooltipAnchorContext>();
+  const auto ctx = w->GetOrCreateContext<ToolTipAnchorContext>();
   const bool wasVisible = ctx->mVisible;
   if (!w->IsHovered()) {
     ctx->mVisible = false;
@@ -94,7 +94,7 @@ TooltipResult BeginTooltipForPreviousWidget(const ID id) {
   }
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ToolTip;
-  static const ImmutableStyle TooltipStyles {
+  static const ImmutableStyle ToolTipStyles {
     Style()
       .BackgroundColor(ToolTipBackgroundBrush)
       .BorderColor(ToolTipBorderBrush)
@@ -112,9 +112,9 @@ TooltipResult BeginTooltipForPreviousWidget(const ID id) {
       .PaddingRight(ToolTipBorderPaddingRight),
   };
   const auto container = BeginWidget<Widget>(
-    ID {0}, LiteralStyleClass {"Tooltip/Root"}, TooltipStyles);
+    ID {0}, LiteralStyleClass {"ToolTip/Root"}, ToolTipStyles);
   if (!wasVisible) {
-    container->GetOrCreateContext<TooltipContainerContext>()->mAnchor = w;
+    container->GetOrCreateContext<ToolTipContainerContext>()->mAnchor = w;
   }
   return true;
 }
