@@ -5,7 +5,7 @@
 
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
-#include <print>
+#include <felly/scope_exit.hpp>
 
 #include "FredEmmott/GUI/StaticTheme.hpp"
 
@@ -87,9 +87,15 @@ void Root::Paint(Renderer* renderer, const Size& size) {
 
   const auto frameStartTime = std::chrono::steady_clock::now();
 
+  FUI_ASSERT(YGNodeGetChild(mYogaRoot.get(), 0) == widget->GetLayoutNode());
+  FUI_ASSERT(YGNodeGetParent(widget->GetLayoutNode()) == mYogaRoot.get());
+
   widget->ComputeStyles({});
   YGNodeCalculateLayout(
     mYogaRoot.get(), size.mWidth, size.mHeight, YGDirectionLTR);
+
+  FUI_ASSERT(
+    !YGFloatIsUndefined(YGNodeLayoutGetWidth(widget->GetLayoutNode())));
 
   widget->Tick(frameStartTime);
   widget->Paint(renderer);
@@ -103,6 +109,9 @@ bool Root::CanFit(float width, float height) const {
   if (width <= 0 || height <= 0) {
     return false;
   }
+  const auto checkParents = ScopedYogaParentCheck(mYogaRoot.get());
+  const auto fixParents
+    = felly::scope_exit([node = mYogaRoot.get()] { FixYogaChildren(node); });
   const unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
   const auto yoga = testRoot.get();
   YGNodeStyleSetWidth(yoga, std::ceil(width));

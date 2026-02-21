@@ -27,7 +27,11 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
   // This workaround is suggested here:
   //
   // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
-  unique_ptr<YGNode> owned {YGNodeClone(node)};
+  const auto checkParents = ScopedYogaParentCheck(node);
+  const auto fixParents = felly::scope_exit([node] {
+    FixYogaChildren(const_cast<YGNodeRef>(node));
+  });
+  const unique_ptr<YGNode> owned {YGNodeClone(node)};
   auto yoga = owned.get();
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
   YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
@@ -61,8 +65,12 @@ float GetClampedMinimumWidth(
   YGNodeConstRef node,
   float min,
   float max,
-  ClampedMinimumWidthHint hint) {
-  unique_ptr<YGNode> owned {YGNodeClone(node)};
+  const ClampedMinimumWidthHint hint) {
+  const auto checkParents = ScopedYogaParentCheck(node);
+  const auto fixParents = felly::scope_exit([node] {
+    FixYogaChildren(const_cast<YGNodeRef>(node));
+  });
+  const unique_ptr<YGNode> owned {YGNodeClone(node)};
   const auto yoga = owned.get();
 
   if (hint == ClampedMinimumWidthHint::MinimumIsLikely) {
@@ -96,6 +104,11 @@ float GetMinimumWidth(YGNodeConstRef node) {
 }
 
 float GetIdealHeight(YGNodeConstRef node, float width) {
+  const auto checkParents = ScopedYogaParentCheck(node);
+  const auto fixParents = felly::scope_exit([node] {
+    FixYogaChildren(const_cast<YGNodeRef>(node));
+  });
+
   const unique_ptr<YGNode> owned {YGNodeClone(node)};
   const auto yoga = owned.get();
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);

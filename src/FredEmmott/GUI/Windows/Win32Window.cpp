@@ -373,14 +373,17 @@ void Win32Window::CreateNativeWindow() {
   }
   if (mOffsetToChild) {
     const auto yogaRoot = this->GetRoot()->GetLayoutNode();
+#ifndef NDEBUG
+    // We've needed `YGNodeSwapChild(yogaRoot, yogaChild, 1)` in the past,
+    // but as the yoga functions now do that implicitly when operating on a
+    // cloned node, this shouldn't be needed.
+    //
+    // e.g. past bug: https://github.com/fredemmott/FUI/issues/73
+    FUI_ALWAYS_ASSERT(YGNodeGetChildCount(yogaRoot) == 1);
     const auto yogaChild = this->GetRoot()->GetWidget()->GetLayoutNode();
-
-    FUI_ASSERT(YGNodeGetChildCount(yogaRoot) == 1);
-    FUI_ASSERT(YGNodeGetChild(yogaRoot, 0) == yogaChild);
-    // Due to the asserts above, this should do nothing - however, it fixes
-    // what appears to be a caching bug in Yoga 3.2.1
-    // https://github.com/fredemmott/FUI/issues/73
-    YGNodeSetChildren(yogaRoot, &yogaChild, 1);
+    FUI_ALWAYS_ASSERT(YGNodeGetChild(yogaRoot, 0) == yogaChild);
+    FUI_ASSERT(YGNodeGetParent(yogaChild) == yogaRoot);
+#endif
 
     YGNodeCalculateLayout(
       yogaRoot, mNCRect.right - mNCRect.left, YGUndefined, YGDirectionLTR);
