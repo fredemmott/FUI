@@ -95,6 +95,9 @@ void Label::PaintOwnContent(
     }
   }
 
+  FUI_ASSERT(!std::isnan(rect.mSize.mWidth));
+  FUI_ASSERT(!std::isnan(rect.mSize.mHeight));
+
   renderer->DrawText(style.Color().value(), rect, mFont, mText, baseline);
 }
 
