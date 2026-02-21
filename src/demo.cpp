@@ -81,7 +81,10 @@ static void AppTick(fui::Window& window) {
   }
 
   static bool sShowAccentPopup = false;
-  if (fuii::Button("Accent style").Caption("Accent button").Accent()) {
+  if (fuii::Button("Accent style")
+        .Caption("Accent button")
+        .Accent()
+        .ToolTip("Fluent ToolTip")) {
     std::println(stderr, "Accent clicked");
     sShowAccentPopup = true;
   }

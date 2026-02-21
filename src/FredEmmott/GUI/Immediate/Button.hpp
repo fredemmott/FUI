@@ -6,9 +6,9 @@
 #include <FredEmmott/GUI/StaticTheme/Button.hpp>
 #include <FredEmmott/GUI/Widgets/Button.hpp>
 #include <FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp>
+#include <FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
-#include "Button.hpp"
 #include "Label.hpp"
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
@@ -51,8 +51,12 @@ inline void EndButton() {
 }
 
 template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
-using ButtonResult
-  = Result<TEndWidget, TValue, immediate_detail::ButtonResultMixin, TMixins...>;
+using ButtonResult = Result<
+  TEndWidget,
+  TValue,
+  immediate_detail::ButtonResultMixin,
+  immediate_detail::ToolTipResultMixin,
+  TMixins...>;
 
 /** Start a button containing a child widget; for multiple widgets, use
  * a layout.

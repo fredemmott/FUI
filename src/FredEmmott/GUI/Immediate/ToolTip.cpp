@@ -13,7 +13,6 @@
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "PopupWindow.hpp"
 namespace FredEmmott::GUI::Immediate {
-
 namespace {
 
 struct ToolTipAnchorContext : Widgets::Context {
@@ -54,7 +53,12 @@ void EndToolTip() {
 [[nodiscard]]
 ToolTipResult BeginToolTipForPreviousWidget(const ID id) {
   using namespace immediate_detail;
-  const auto w = GetCurrentNode();
+  return BeginToolTipForWidget(GetCurrentNode(), id);
+}
+
+namespace immediate_detail {
+[[nodiscard]]
+ToolTipResult BeginToolTipForWidget(Widgets::Widget* w, const ID id) {
   if (!w) [[unlikely]] {
     throw std::logic_error("No previous sibling widget");
   }
@@ -118,4 +122,5 @@ ToolTipResult BeginToolTipForPreviousWidget(const ID id) {
   }
   return true;
 }
+}// namespace immediate_detail
 }// namespace FredEmmott::GUI::Immediate
