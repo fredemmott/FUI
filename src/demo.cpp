@@ -67,6 +67,9 @@ static void AppTick(fui::Window& window) {
     popupVisible = true;
     std::println(stderr, "Clicked!");
   }
+  if (auto tt = fuii::BeginTooltipForPreviousWidget().Scoped()) {
+    fuii::Label("This is a tooltip");
+  }
 
   if (const auto popup = fuii::BeginPopup(&popupVisible).Scoped()) {
     const auto card = fuii::BeginCard().Scoped();

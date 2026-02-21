@@ -358,6 +358,9 @@ void Win32Window::CreateNativeWindow() {
   if (mParentHwnd) {
     gInstances.at(mParentHwnd)->mChildren.push_back(mHwnd.get());
   }
+  if ((mOptions.mWindowExStyle & WS_EX_LAYERED) == WS_EX_LAYERED) {
+    SetLayeredWindowAttributes(mHwnd.get(), 0, 255, LWA_ALPHA);
+  }
 
   this->TrackMouseEvent();
 
@@ -1236,6 +1239,39 @@ void Win32Window::SetResizeMode(
     rect.bottom - rect.top,
     SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
 }
+
+void Win32Window::MutateStyles(
+  void (*mutator)(DWORD* styles, DWORD* extendedStyles)) {
+  auto styles = mOptions.mWindowStyle;
+  auto extendedStyles = mOptions.mWindowExStyle;
+  mutator(&styles, &extendedStyles);
+  if (mOptions.mWindowStyle != styles) {
+    mOptions.mWindowStyle = styles;
+    SetWindowLongPtrW(mHwnd.get(), GWL_STYLE, styles);
+  }
+  if (mOptions.mWindowExStyle != extendedStyles) {
+    mOptions.mWindowExStyle = extendedStyles;
+    SetWindowLongPtrW(mHwnd.get(), GWL_EXSTYLE, extendedStyles);
+  }
+
+  if (!mHwnd.get()) {
+    return;
+  }
+
+  SetWindowPos(
+    mHwnd.get(),
+    nullptr,
+    0,
+    0,
+    0,
+    0,
+    SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+  if ((mOptions.mWindowExStyle & WS_EX_LAYERED) == WS_EX_LAYERED) {
+    SetLayeredWindowAttributes(mHwnd.get(), 0, 255, LWA_ALPHA);
+  }
+}
+
 void Win32Window::InterruptWaitFrame() {
   SetEvent(mWaitFrameInterruptEvent.get());
 }

@@ -260,6 +260,11 @@ void Widget::SetIsDirectlyDisabled(bool value) {
   }
 }
 
+bool Widget::IsHovered() const {
+  return ((mDirectStateFlags | mInheritedStateFlags) & StateFlags::Hovered)
+    == StateFlags::Hovered;
+}
+
 void Widget::SetMutableStyles(const Style& styles) {
   if (styles == mMutableStyles) {
     return;
@@ -539,7 +544,10 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
         return this->OnMouseButtonRelease(event);
       },
       [&](const MouseEvent::MoveEvent&) { return this->OnMouseMove(event); },
-      [&](const MouseEvent::HoverEvent&) { return this->OnMouseHover(event); },
+      [&, this](const MouseEvent::HoverEvent&) {
+        mWasStationaryHovered = true;
+        return this->OnMouseHover(event);
+      },
       [&](const MouseEvent::HorizontalWheelEvent&) {
         return this->OnMouseHorizontalWheel(event);
       },

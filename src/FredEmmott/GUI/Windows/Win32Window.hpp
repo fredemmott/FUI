@@ -129,6 +129,8 @@ class Win32Window : public Window {
   void SetIsModal(bool modal);
   void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) override;
 
+  void MutateStyles(void (*)(DWORD* styles, DWORD* extendedStyles));
+
   void InterruptWaitFrame() override;
 
  protected:

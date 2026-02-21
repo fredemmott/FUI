@@ -53,6 +53,8 @@ class Widget {
     const StyleClasses& = {});
   virtual ~Widget();
 
+  bool mWasStationaryHovered = false;
+
   void AddStyleClass(StyleClass);
   void ToggleStyleClass(StyleClass, bool value);
 
@@ -138,6 +140,9 @@ class Widget {
   [[nodiscard]]
   bool IsDirectlyDisabled() const;
   void SetIsDirectlyDisabled(bool value);
+
+  [[nodiscard]]
+  bool IsHovered() const;
 
   // A periodic event at an undefined interval; use for animations etc
   virtual void Tick(const std::chrono::steady_clock::time_point& now);
