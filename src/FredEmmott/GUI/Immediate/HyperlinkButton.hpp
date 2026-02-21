@@ -3,24 +3,33 @@
 #pragma once
 
 #include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
+#include "FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
-Result<nullptr, void, immediate_detail::CaptionResultMixin> HyperlinkButton(
+template <class TValue>
+using HyperlinkButtonResult = Result<
+  nullptr,
+  TValue,
+  immediate_detail::CaptionResultMixin,
+  immediate_detail::TextBlockStylesResultMixin,
+  immediate_detail::ToolTipResultMixin>;
+
+HyperlinkButtonResult<void> HyperlinkButton(
   bool* clicked,
   std::string_view label,
   ID id = ID {std::source_location::current()});
 
 [[nodiscard]]
-Result<nullptr, bool, immediate_detail::CaptionResultMixin> HyperlinkButton(
+HyperlinkButtonResult<bool> HyperlinkButton(
   std::string_view label,
   ID id = ID {std::source_location::current()});
 
 template <class... Args>
   requires(sizeof...(Args) >= 1)
 [[nodiscard]]
-Result<nullptr, bool, immediate_detail::CaptionResultMixin> HyperlinkButton(
+HyperlinkButtonResult<bool> HyperlinkButton(
   std::format_string<Args...> format,
   Args&&... args) {
   const auto [id, text] = ParsedID(format, std::forward<Args>(args)...);

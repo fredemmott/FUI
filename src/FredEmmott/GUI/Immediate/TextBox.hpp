@@ -8,6 +8,7 @@
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
 #include "FredEmmott/GUI/Widgets/TextBlock.hpp"
+#include "FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
@@ -15,8 +16,11 @@ inline void EndTextBox() {
   immediate_detail::EndWidget<Widgets::TextBox>();
 }
 
-using TextBoxResult
-  = Result<&EndTextBox, bool, immediate_detail::CaptionResultMixin>;
+using TextBoxResult = Result<
+  &EndTextBox,
+  bool,
+  immediate_detail::CaptionResultMixin,
+  immediate_detail::ToolTipResultMixin>;
 
 [[nodiscard]]
 TextBoxResult TextBox(

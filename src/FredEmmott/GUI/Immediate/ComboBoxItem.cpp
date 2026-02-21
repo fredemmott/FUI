@@ -135,7 +135,7 @@ auto& ComboBoxItemPillStyles() {
 
 }// namespace
 
-Result<&EndComboBoxItem>
+ComboBoxItemResult<&EndComboBoxItem, void>
 BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   using namespace immediate_detail;
   const auto item = BeginWidget<ComboBoxItemButton>(
@@ -173,7 +173,7 @@ void EndComboBoxItem() {
   EndWidget<ComboBoxItemButton>();
 }
 
-Result<nullptr, bool>
+ComboBoxItemResult<nullptr, bool>
 ComboBoxItem(bool initiallySelected, std::string_view label, ID id) {
   bool clicked = false;
   const auto item = BeginComboBoxItem(&clicked, initiallySelected, id);

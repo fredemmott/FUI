@@ -7,6 +7,7 @@
 
 namespace FredEmmott::GUI::Immediate {
 void EndRadioButtons();
+
 /** Container for multiple RadioButton items.
  *
  * Not strictly required, however:

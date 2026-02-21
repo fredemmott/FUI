@@ -5,6 +5,7 @@
 #include <concepts>
 #include <type_traits>
 
+#include "FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "ID.hpp"
 #include "Result.hpp"
@@ -13,13 +14,18 @@
 namespace FredEmmott::GUI::Immediate {
 
 void EndRadioButton();
+
+template <void (*TEndWidget)(), class TValue>
+using RadioButtonResult
+  = Result<TEndWidget, TValue, immediate_detail::ToolTipResultMixin>;
+
 [[nodiscard]]
-Result<&EndRadioButton, bool> BeginRadioButton(
+RadioButtonResult<&EndRadioButton, bool> BeginRadioButton(
   bool isInitiallyChecked,
   ID id = ID {std::source_location::current()});
 
 template <selectable_key T>
-Result<&EndRadioButton, bool> BeginRadioButton(
+RadioButtonResult<&EndRadioButton, bool> BeginRadioButton(
   T* checkedIndex,
   const T index,
   const ID id = ID {std::source_location::current()}) {
@@ -32,13 +38,13 @@ Result<&EndRadioButton, bool> BeginRadioButton(
 }
 
 [[nodiscard]]
-Result<nullptr, bool> RadioButton(
+RadioButtonResult<nullptr, bool> RadioButton(
   bool isInitiallyChecked,
   std::string_view label,
   ID = ID {std::source_location::current()});
 
 template <selectable_key T>
-Result<nullptr, bool> RadioButton(
+RadioButtonResult<nullptr, bool> RadioButton(
   T* checkedIndex,
   const T index,
   const std::string_view label,
@@ -53,7 +59,7 @@ Result<nullptr, bool> RadioButton(
 
 template <class... Args>
   requires(sizeof...(Args) > 0)
-Result<nullptr, bool> RadioButton(
+RadioButtonResult<nullptr, bool> RadioButton(
   const bool isInitiallyChecked,
   std::format_string<Args...> format,
   Args&&... args) {
@@ -65,7 +71,7 @@ Result<nullptr, bool> RadioButton(
 template <selectable_key T, class... Args>
   requires(sizeof...(Args) > 0)
   && ((!std::same_as<ID, std::decay_t<Args>>) && ...)
-Result<nullptr, bool> RadioButton(
+RadioButtonResult<nullptr, bool> RadioButton(
   T* checkedIndex,
   const T index,
   std::format_string<Args...> format,

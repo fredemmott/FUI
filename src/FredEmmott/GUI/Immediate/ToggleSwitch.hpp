@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
 #include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
+#include "FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp"
 #include "Result.hpp"
 
 namespace FredEmmott::GUI::Immediate {
@@ -75,6 +76,7 @@ using ToggleSwitchResult = Result<
   TEndWidget,
   TValue,
   immediate_detail::CaptionResultMixin,
+  immediate_detail::ToolTipResultMixin,
   TMixins...>;
 template <void (*TEndWidget)() = nullptr, class TValue = void>
 using LabeledToggleSwitchResult = ToggleSwitchResult<
