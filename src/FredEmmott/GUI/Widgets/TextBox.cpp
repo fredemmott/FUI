@@ -304,12 +304,11 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
       if (e.mModifiers != Modifier_Control) {
         return StopPropagation;
       }
-      const auto pasted = GetOwnerWindow()->GetClipboardText();
-      if (!pasted) {
-        return StopPropagation;
+
+      if (const auto pasted = GetOwnerWindow()->GetClipboardText()) {
+        this->ReplaceSelection(*pasted, UndoableState::Operation::Paste);
       }
 
-      this->ReplaceSelection(*pasted, UndoableState::Operation::Paste);
       return StopPropagation;
     }
     case Key_Z:
@@ -323,6 +322,14 @@ Widget::EventHandlerResult TextBox::OnKeyPress(const KeyPressEvent& e) {
     case Key_Backspace:
       BeforeOperation(UndoableState::Operation::DeleteLeft);
       this->DeleteSelection(DeleteDirection::DeleteLeft);
+      return StopPropagation;
+    case Key_Insert:
+      if (e.mModifiers == Modifier_Shift) {
+        // Shift-Insert is an alternative paste
+        if (const auto pasted = GetOwnerWindow()->GetClipboardText()) {
+          this->ReplaceSelection(*pasted, UndoableState::Operation::Paste);
+        }
+      }
       return StopPropagation;
     case Key_Delete:
       BeforeOperation(UndoableState::Operation::DeleteRight);

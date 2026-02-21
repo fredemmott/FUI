@@ -21,6 +21,7 @@ enum class KeyCode : uint8_t {
   Key_UpArrow = 0x26,
   Key_RightArrow = 0x27,
   Key_DownArrow = 0x28,
+  Key_Insert = 0x2D,
   Key_Delete = 0x2E,
   Key_A = 0x41,
   Key_B = 0x42,
