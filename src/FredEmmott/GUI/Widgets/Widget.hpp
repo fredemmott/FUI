@@ -53,7 +53,7 @@ class Widget {
     const StyleClasses& = {});
   virtual ~Widget();
 
-  bool mWasStationaryHovered = false;
+  std::optional<MouseEvent> mWasStationaryHovered;
 
   void AddStyleClass(StyleClass);
   void ToggleStyleClass(StyleClass, bool value);
