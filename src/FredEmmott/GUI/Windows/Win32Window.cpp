@@ -1001,6 +1001,9 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     }
     case WM_MOUSEHOVER: {
+      // WM_MOUSEHOVER is a special, one-shot event; we need to set the flag
+      // explicitly to force TrackMouseEvent() to actually re-do the call
+      mTrackingMouseEvents = false;
       TrackMouseEvent();
       auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
       e.mDetail = MouseEvent::HoverEvent {};
