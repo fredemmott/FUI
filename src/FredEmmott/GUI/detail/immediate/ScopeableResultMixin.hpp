@@ -14,14 +14,14 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
  *
  * Requires `std::same_as<TValue, bool>`
  */
-struct ConditionallyScopeableResultMixin {};
+struct [[nodiscard]] ConditionallyScopeableResultMixin {};
 struct UnscopeableResultMixin {};
 
 // For use as a base case with std::conditional_t
 struct EmptyResultMixin {};
 
 template <void (*TEndWidget)()>
-struct ScopedResultMixin : UnscopeableResultMixin {
+struct [[nodiscard]] ScopedResultMixin : UnscopeableResultMixin {
   ScopedResultMixin() = default;
 
   ScopedResultMixin(const ScopedResultMixin&) = delete;
@@ -51,9 +51,8 @@ struct ScopedResultMixin : UnscopeableResultMixin {
 };
 
 template <void (*TEndWidget)(), class TValue, class... TMixins>
-struct ScopeableResultMixin {
+struct [[nodiscard]] ScopeableResultMixin {
   template <class Self>
-  [[nodiscard]]
   decltype(auto) Scoped(this Self&& self)
     requires std::is_rvalue_reference_v<decltype(self)>
   {
@@ -75,5 +74,5 @@ struct ScopeableResultMixin<nullptr, T, TMixins...> {};
 
 template <void (*TEndWidget)(), class T, class... TMixins>
   requires(std::derived_from<TMixins, UnscopeableResultMixin> || ...)
-struct ScopeableResultMixin<TEndWidget, T, TMixins...> {};
+struct [[nodiscard]] ScopeableResultMixin<TEndWidget, T, TMixins...> {};
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
