@@ -167,7 +167,7 @@ Style Style::InheritableValues() const noexcept {
       ret.mAnd, selector, [](const auto& tuple) -> const auto& {
         return std::get<0>(tuple);
       });
-    if (it == ret.mAnd.end()) {
+    if (it != ret.mAnd.end()) {
       ret.mAnd.erase(it);
     }
     ret.mAnd.emplace_back(selector, dup);
