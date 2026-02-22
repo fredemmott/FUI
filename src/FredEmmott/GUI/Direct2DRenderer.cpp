@@ -8,6 +8,7 @@
 #include <FredEmmott/GUI/Font.hpp>
 #include <FredEmmott/GUI/Rect.hpp>
 #include <felly/overload.hpp>
+#include <felly/scope_exit.hpp>
 
 #include "assert.hpp"
 #include "detail/direct_write_detail/DirectWriteFontProvider.hpp"
@@ -26,13 +27,13 @@ Direct2DRenderer::~Direct2DRenderer() {
 }
 
 void Direct2DRenderer::PushLayer(const float alpha) {
-  D2D1_MATRIX_3X2_F transform {};
-  mDeviceContext->GetTransform(&transform);
+  mStateStack.emplace();
+  auto& state = mStateStack.top();
+  mDeviceContext->GetTransform(&state.mTransform);
 
   // 99.9% opaque is close enough to fully opaque
   const bool isFullyOpaque = std::abs(alpha - 1.0f) < 0.001;
   if (isFullyOpaque) {
-    mStateStack.emplace(transform);
     return;
   }
 
@@ -43,20 +44,17 @@ void Direct2DRenderer::PushLayer(const float alpha) {
   };
 
   mDeviceContext->PushLayer(&params, nullptr);
-  mStateStack.emplace(NativeLayer {transform});
+  state.mHaveNativeLayer = true;
 }
 
 void Direct2DRenderer::PopLayer() {
-  auto state = std::move(mStateStack.top());
-  mStateStack.pop();
-  std::visit(
-    felly::overload {
-      [this](const D2D1_MATRIX_3X2_F& m) { mDeviceContext->SetTransform(m); },
-      [this](const NativeLayer& nl) {
-        mDeviceContext->PopLayer();
-        mDeviceContext->SetTransform(nl.mTransform);
-      }},
-    state);
+  const auto pop = felly::scope_exit([this] { mStateStack.pop(); });
+
+  auto& state = mStateStack.top();
+  if (state.mHaveNativeLayer) {
+    mDeviceContext->PopLayer();
+  }
+  mDeviceContext->SetTransform(state.mTransform);
 }
 
 void Direct2DRenderer::PushClipRect(const Rect& rect) {
