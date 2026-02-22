@@ -7,6 +7,7 @@
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/Font.hpp>
 #include <FredEmmott/GUI/Rect.hpp>
+#include <felly/overload.hpp>
 
 #include "assert.hpp"
 #include "detail/direct_write_detail/DirectWriteFontProvider.hpp"
@@ -24,11 +25,14 @@ Direct2DRenderer::~Direct2DRenderer() {
   FUI_ASSERT(mStateStack.empty());
 }
 
-void Direct2DRenderer::PushLayer(float alpha) {
-  if (std::abs(alpha - 1.0f) <= std::numeric_limits<float>::epsilon()) {
-    D2D1_MATRIX_3X2_F t {};
-    mDeviceContext->GetTransform(&t);
-    mStateStack.push(t);
+void Direct2DRenderer::PushLayer(const float alpha) {
+  D2D1_MATRIX_3X2_F transform {};
+  mDeviceContext->GetTransform(&transform);
+
+  // 99.9% opaque is close enough to fully opaque
+  const bool isFullyOpaque = std::abs(alpha - 1.0f) < 0.001;
+  if (isFullyOpaque) {
+    mStateStack.emplace(transform);
     return;
   }
 
@@ -39,21 +43,20 @@ void Direct2DRenderer::PushLayer(float alpha) {
   };
 
   mDeviceContext->PushLayer(&params, nullptr);
-  mStateStack.push(NativeLayer {});
+  mStateStack.emplace(NativeLayer {transform});
 }
 
 void Direct2DRenderer::PopLayer() {
-  if (const auto t = get_if<D2D1_MATRIX_3X2_F>(&mStateStack.top()); t) {
-    mDeviceContext->SetTransform(*t);
-    mStateStack.pop();
-    return;
-  }
-  if (holds_alternative<NativeLayer>(mStateStack.top())) {
-    mStateStack.pop();
-    mDeviceContext->PopLayer();
-    return;
-  }
-  throw std::logic_error("Invalid state stack");
+  auto state = std::move(mStateStack.top());
+  mStateStack.pop();
+  std::visit(
+    felly::overload {
+      [this](const D2D1_MATRIX_3X2_F& m) { mDeviceContext->SetTransform(m); },
+      [this](const NativeLayer& nl) {
+        mDeviceContext->PopLayer();
+        mDeviceContext->SetTransform(nl.mTransform);
+      }},
+    state);
 }
 
 void Direct2DRenderer::PushClipRect(const Rect& rect) {

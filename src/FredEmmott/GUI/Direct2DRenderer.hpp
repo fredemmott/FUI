@@ -71,7 +71,9 @@ class Direct2DRenderer final : public Renderer {
 
  private:
   /// Marker for needing an ID2D1RenderTarget::PopLayer()
-  struct NativeLayer : std::monostate {};
+  struct NativeLayer {
+    D2D1_MATRIX_3X2_F mTransform {};
+  };
   using StateStackFrame = std::variant<NativeLayer, D2D1_MATRIX_3X2_F>;
   std::stack<StateStackFrame> mStateStack;
 
