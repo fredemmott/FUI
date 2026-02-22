@@ -22,6 +22,7 @@ namespace {
 
 constexpr LiteralStyleClass ScrollBarStyleClass {"ScrollBar"};
 constexpr LiteralStyleClass ScrollBarTrackStyleClass {"ScrollBar/Track"};
+constexpr LiteralStyleClass ScrollBarThumbStyleClass {"ScrollBar/Thumb"};
 constexpr LiteralStyleClass ScrollBarSmallChangeButtonStyleClass {
   "ScrollBar/SmallChangeButton"};
 
@@ -68,13 +69,15 @@ auto& HorizontalTrackStyle() {
       .FlexDirection(YGFlexDirectionRow)
       .MarginLeft(TrackThumbMargin)
       .MarginRight(TrackThumbMargin)
+      .Height(ScrollBarSize)
       .Descendants(
-        LiteralStyleClass {"ScrollBar/Thumb"},
-        Style()
-          .Height(ScrollBarHorizontalThumbMinHeight, ContractAnimation)
-          .And(
-            PseudoClasses::Hover,
-            Style().Height(ScrollBarSize, ExpandAnimation))),
+        ScrollBarThumbStyleClass,
+        Style().ScaleY(
+          ScrollBarHorizontalThumbMinHeight / ScrollBarSize, ContractAnimation))
+      .And(
+        PseudoClasses::Hover,
+        Style().Descendants(
+          ScrollBarThumbStyleClass, Style().ScaleY(1.0f, ExpandAnimation))),
   };
   return ret;
 }
@@ -87,13 +90,17 @@ auto& VerticalTrackStyle() {
       .FlexDirection(YGFlexDirectionColumn)
       .MarginBottom(TrackThumbMargin)
       .MarginTop(TrackThumbMargin)
+      .Width(ScrollBarSize)
       .Descendants(
-        LiteralStyleClass {"ScrollBar/Thumb"},
+        ScrollBarThumbStyleClass,
         Style()
-          .Width(ScrollBarVerticalThumbMinWidth, ContractAnimation)
-          .And(
-            PseudoClasses::Hover,
-            Style().Width(ScrollBarSize, ExpandAnimation))),
+          .ScaleX(
+            ScrollBarVerticalThumbMinWidth / ScrollBarSize, ContractAnimation)
+          .TransformOriginX(1.0f))
+      .And(
+        PseudoClasses::Hover,
+        Style().Descendants(
+          ScrollBarThumbStyleClass, Style().ScaleX(1.0f, ExpandAnimation))),
   };
   return ret;
 }
