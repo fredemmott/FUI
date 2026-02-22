@@ -15,6 +15,7 @@ class ScrollBarThumb final : public Widget {
   ~ScrollBarThumb() override;
 
   void OnDrag(std::function<void(Point*)> callback);
+  void OnDrop(std::function<void(Point)> callback);
 
  protected:
   EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;
@@ -23,6 +24,7 @@ class ScrollBarThumb final : public Widget {
 
  private:
   std::function<void(Point*)> mOnDragCallback;
+  std::function<void(Point)> mOnDropCallback;
   std::optional<Point> mDragStart {};
 };
 

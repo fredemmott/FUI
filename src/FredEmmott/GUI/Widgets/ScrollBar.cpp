@@ -9,7 +9,6 @@
 
 #include "FredEmmott/GUI/Immediate/Button.hpp"
 #include "FredEmmott/utility/almost_equal.hpp"
-#include "Label.hpp"
 #include "ScrollBarButton.hpp"
 #include "ScrollBarThumb.hpp"
 #include "WidgetList.hpp"
@@ -22,29 +21,51 @@ using namespace ScrollBarDetail;
 namespace {
 
 constexpr LiteralStyleClass ScrollBarStyleClass {"ScrollBar"};
-constexpr LiteralStyleClass ScrollBarTrackStyleClass {"ScrollBarTrack"};
+constexpr LiteralStyleClass ScrollBarTrackStyleClass {"ScrollBar/Track"};
 
-auto BaseStyles() {
+auto& BaseStyles() {
   using namespace PseudoClasses;
-  return Style()
-    .BackgroundColor(ScrollBarBackground)
-    .And(Disabled, Style().BackgroundColor(ScrollBarBackgroundDisabled))
-    .And(Hover, Style().BackgroundColor(ScrollBarBackgroundPointerOver));
+  static const ImmutableStyle ret {
+    Style()
+      .BackgroundColor(ScrollBarBackground)
+      .And(Disabled, Style().BackgroundColor(ScrollBarBackgroundDisabled))
+      .And(Hover, Style().BackgroundColor(ScrollBarBackgroundPointerOver))};
+  return ret;
 }
 
 auto& HorizontalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles() + Style().FlexDirection(YGFlexDirectionRow),
+    BaseStyles()
+      + Style()
+          .FlexDirection(YGFlexDirectionRow)
+          .Descendants(
+            LiteralStyleClass {"ScrollBar/Thumb"},
+            Style()
+              .Height(ScrollBarHorizontalThumbMinHeight, ContractAnimation)
+              .And(
+                PseudoClasses::Hover,
+                Style().Height(ScrollBarSize, ExpandAnimation))),
   };
   return ret;
 }
 
 auto& VerticalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles() + Style().FlexDirection(YGFlexDirectionColumn),
+    BaseStyles()
+      + Style()
+          .FlexDirection(YGFlexDirectionColumn)
+          .Descendants(
+            LiteralStyleClass {"ScrollBar/Thumb"},
+            Style()
+              .Width(ScrollBarVerticalThumbMinWidth, ContractAnimation)
+              .And(
+                PseudoClasses::Hover,
+                Style().Width(ScrollBarSize, ExpandAnimation))),
   };
   return ret;
 }
+
+constexpr auto TrackThumbMargin = 2.f;
 
 auto& HorizontalTrackStyle() {
   static const ImmutableStyle ret {
@@ -52,8 +73,8 @@ auto& HorizontalTrackStyle() {
       .Display(YGDisplayFlex)
       .FlexGrow(1)
       .FlexDirection(YGFlexDirectionRow)
-      .MarginLeft(2.f)
-      .MarginRight(2.f),
+      .MarginLeft(TrackThumbMargin)
+      .MarginRight(TrackThumbMargin),
   };
   return ret;
 }
@@ -64,8 +85,8 @@ auto& VerticalTrackStyle() {
       .Display(YGDisplayFlex)
       .FlexGrow(1)
       .FlexDirection(YGFlexDirectionColumn)
-      .MarginBottom(2.f)
-      .MarginTop(2.f),
+      .MarginBottom(TrackThumbMargin)
+      .MarginTop(TrackThumbMargin),
   };
   return ret;
 }
@@ -151,6 +172,7 @@ ScrollBar::ScrollBar(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement));
   mThumb = new ScrollBarThumb(orientation, 0);
   mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
+  mThumb->OnDrop([this](const Point&) { this->UpdateChildSizes(); });
   mLargeIncrement = new ScrollBarButton(
     0,
     LargeChangeStyles(),
@@ -222,20 +244,6 @@ Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
         .Top((mOrientation == Orientation::Vertical) ? 0 : -3.0f);
   mSmallDecrement->SetMutableStyles(smallChangeStyles);
   mSmallIncrement->SetMutableStyles(smallChangeStyles);
-
-  if (mOrientation == Orientation::Horizontal) {
-    mThumb->AddMutableStyles(
-      Style().Height(
-        static_cast<float>(
-          hovered ? ScrollBarSize : ScrollBarHorizontalThumbMinHeight),
-        hovered ? ExpandAnimation : ContractAnimation));
-  } else {
-    mThumb->AddMutableStyles(
-      Style().Width(
-        static_cast<float>(
-          hovered ? ScrollBarSize : ScrollBarVerticalThumbMinWidth),
-        hovered ? ExpandAnimation : ContractAnimation));
-  }
 
   return Widget::OnComputedStyleChange(style, state);
 }
@@ -318,7 +326,7 @@ void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const Point& point) {
 
 void ScrollBar::UpdateChildSizes() {
   mLargeDecrement->SetMutableStyles(Style().FlexGrow(mValue - mMinimum));
-  mThumb->AddMutableStyles(Style().FlexGrow(mThumbSize));
+  mThumb->SetMutableStyles(Style().FlexGrow(mThumbSize));
   mLargeIncrement->SetMutableStyles(Style().FlexGrow(mMaximum - mValue));
 }
 
@@ -328,16 +336,17 @@ void ScrollBar::OnThumbDrag(Point* deltaXY) {
     return;
   }
 
-  const auto measureFun = (mOrientation == Orientation::Horizontal)
+  const auto getLength = (mOrientation == Orientation::Horizontal)
     ? &YGNodeLayoutGetWidth
     : &YGNodeLayoutGetHeight;
-  const auto rangePixels = measureFun(mLargeDecrement->GetLayoutNode())
-    + measureFun(mLargeIncrement->GetLayoutNode());
+  const auto trackLength = getLength(mTrack->GetLayoutNode());
+  const auto thumbLength = getLength(mThumb->GetLayoutNode());
+  const auto usableLength = trackLength - thumbLength;
 
   const auto deltaPtr
     = (mOrientation == Orientation::Horizontal) ? &Point::mX : &Point::mY;
   const auto deltaPixels = std::invoke(deltaPtr, deltaXY);
-  const auto valuePerPixel = rangeV / rangePixels;
+  const auto valuePerPixel = rangeV / usableLength;
   const auto deltaV = deltaPixels * valuePerPixel;
 
   const auto rawValue = mValue + deltaV;
@@ -352,12 +361,22 @@ void ScrollBar::OnThumbDrag(Point* deltaXY) {
 }
 
 void ScrollBar::SetRange(const float minimum, const float maximum) {
+  using utility::almost_equal;
   if (maximum < minimum) [[unlikely]] {
     throw std::logic_error("Maximum must be greater than minimum");
   }
+
+  const auto clamped = std::clamp(mValue, minimum, maximum);
+
+  if (
+    almost_equal(mMinimum, minimum) && almost_equal(mMaximum, maximum)
+    && almost_equal(clamped, mValue)) {
+    return;
+  }
+
   mMinimum = minimum;
   mMaximum = maximum;
-  mValue = std::clamp(mValue, mMinimum, mMaximum);
+  mValue = clamped;
   this->UpdateChildSizes();
 }
 
@@ -370,15 +389,37 @@ void ScrollBar::SetValue(const float value) {
 }
 
 void ScrollBar::SetValue(const float value, const ChangeReason reason) {
+  FUI_ASSERT(!std::isnan(value));
   const auto clamped = std::clamp(value, mMinimum, mMaximum);
-  if (utility::almost_equal(mValue, value)) {
+  if (utility::almost_equal(mValue, clamped)) {
     return;
   }
   mValue = clamped;
   if (mValueChangedCallback) {
     mValueChangedCallback(mValue, reason);
   }
-  this->UpdateChildSizes();
+
+  if (reason != ChangeReason::Continuous) {
+    this->UpdateChildSizes();
+    return;
+  }
+
+  // Use Translate instead to avoid relayout while dragging
+  mLargeDecrement->SetMutableStyles(Style().Display(YGDisplayNone));
+  mLargeIncrement->SetMutableStyles(Style().Display(YGDisplayNone));
+  const auto getLength = (mOrientation == Orientation::Horizontal)
+    ? &YGNodeLayoutGetWidth
+    : &YGNodeLayoutGetHeight;
+  const auto trackLength = getLength(mTrack->GetLayoutNode());
+  const auto thumbLength = getLength(mThumb->GetLayoutNode());
+  const auto usableLength = trackLength - thumbLength;
+  const auto delta = usableLength * (value - mMinimum) / (mMaximum - mMinimum);
+
+  if (mOrientation == Orientation::Horizontal) {
+    mThumb->SetMutableStyles(Style().TranslateX(delta).Width(thumbLength));
+  } else {
+    mThumb->SetMutableStyles(Style().TranslateY(delta).Height(thumbLength));
+  }
 }
 
 float ScrollBar::GetThumbSize() const {
@@ -389,7 +430,10 @@ void ScrollBar::OnValueChanged(ValueChangedCallback cb) {
   mValueChangedCallback = std::move(cb);
 }
 
-void ScrollBar::SetThumbSize(float value) {
+void ScrollBar::SetThumbSize(const float value) {
+  if (utility::almost_equal(value, mThumbSize)) {
+    return;
+  }
   mThumbSize = value;
   this->UpdateChildSizes();
 }

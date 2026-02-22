@@ -19,8 +19,6 @@ auto BaseThumbStyle() {
   return Style()
     .BackgroundColor(ScrollBarThumbFill)
     .BorderRadius(ScrollBarCornerRadius)
-    .Height(std::nullopt, ContractAnimation)
-    .Width(std::nullopt, ExpandAnimation)
     .And(Disabled, Style().BackgroundColor(ScrollBarThumbFillDisabled))
     .And(Hover, Style().BackgroundColor(ScrollBarThumbFillPointerOver));
 }
@@ -29,8 +27,8 @@ auto& HorizontalThumbStyle() {
   static const ImmutableStyle ret {
     BaseThumbStyle()
       + Style()
-          .Height(ScrollBarHorizontalThumbMinHeight)
-          .Width(ScrollBarHorizontalThumbMinWidth),
+          .MinHeight(ScrollBarHorizontalThumbMinHeight)
+          .MinWidth(ScrollBarHorizontalThumbMinWidth),
   };
   return ret;
 }
@@ -39,8 +37,8 @@ auto& VerticalThumbStyle() {
   static const ImmutableStyle ret {
     BaseThumbStyle()
       + Style()
-          .Height(ScrollBarVerticalThumbMinHeight)
-          .Width(ScrollBarVerticalThumbMinWidth),
+          .MinHeight(ScrollBarVerticalThumbMinHeight)
+          .MinWidth(ScrollBarVerticalThumbMinWidth),
   };
   return ret;
 }
@@ -69,7 +67,10 @@ Widget::EventHandlerResult ScrollBarThumb::OnMouseButtonPress(
 }
 
 void ScrollBarThumb::OnDrag(std::function<void(Point*)> callback) {
-  mOnDragCallback = callback;
+  mOnDragCallback = std::move(callback);
+}
+void ScrollBarThumb::OnDrop(std::function<void(Point)> callback) {
+  mOnDropCallback = std::move(callback);
 }
 
 ScrollBarThumb::EventHandlerResult ScrollBarThumb::OnMouseMove(
@@ -91,7 +92,11 @@ Widget::EventHandlerResult ScrollBarThumb::OnMouseButtonRelease(
   if (this->IsDisabled() || !mDragStart.has_value()) {
     return EventHandlerResult::Default;
   }
-  (void)Widget::OnMouseButtonRelease(e);
+  std::ignore = Widget::OnMouseButtonRelease(e);
+
+  if (mOnDropCallback) {
+    mOnDropCallback(e.mWindowPoint - *mDragStart);
+  }
 
   mDragStart = std::nullopt;
   this->EndMouseCapture();
