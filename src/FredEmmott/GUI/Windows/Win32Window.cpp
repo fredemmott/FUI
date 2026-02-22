@@ -144,6 +144,12 @@ void Win32Window::InitializeWindow() {
 
   this->AdjustToWindowsTheme();
 
+  if (
+    (mOptions.mWindowExStyle & WS_EX_NOACTIVATE) == WS_EX_NOACTIVATE
+    && mShowCommand == SW_SHOWDEFAULT) {
+    mShowCommand = SW_SHOWNOACTIVATE;
+  }
+
   ShowWindow(mHwnd.get(), mShowCommand);
 }
 
