@@ -40,8 +40,28 @@ class Slider final : public Widget, public IFocusable {
   void SetStepFrequency(float frequency);
 
   void SetRange(float min, float max);
+  [[nodiscard]]
+  auto GetRange() const noexcept {
+    return std::tuple(mMin, mMax);
+  }
 
   bool mChanged {false};
+
+  [[nodiscard]]
+  bool IsDragging() const noexcept {
+    return mDraggingValue.has_value();
+  }
+
+  [[nodiscard]]
+  float GetSnappedDraggingValue() const;
+  [[nodiscard]]
+  Point GetTrackOriginOffset() const;
+  [[nodiscard]]
+  float GetDraggingTrackOffset() const {
+    return mDraggingTrackOffset.value();
+  }
+  [[nodiscard]]
+  float GetTrackLength() const;
 
  protected:
   EventHandlerResult OnMouseMove(const MouseEvent&) override;
@@ -62,6 +82,7 @@ class Slider final : public Widget, public IFocusable {
   float mStepFrequency {1.0f};
   float mTickFrequency {};
   std::optional<float> mDraggingValue;
+  std::optional<float> mDraggingTrackOffset;
   Widget* mTrack {nullptr};
   Widget* mOuterThumb {nullptr};
   Widget* mInnerThumb {nullptr};
@@ -69,6 +90,8 @@ class Slider final : public Widget, public IFocusable {
   Widget* mAfterThumb {nullptr};
 
   void UpdateThumbPosition();
+  [[nodiscard]]
+  float GetSnappedValue(float) const noexcept;
 };
 
 }// namespace FredEmmott::GUI::Widgets

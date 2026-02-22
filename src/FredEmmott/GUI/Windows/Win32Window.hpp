@@ -167,6 +167,8 @@ class Win32Window : public Window {
       || (mOptions.mWindowExStyle & WS_EX_TOOLWINDOW);
   }
 
+  void SetIsToolTip() override;
+
   bool IsDisabled() const override {
     return mIsDisabled;
   }
@@ -190,6 +192,7 @@ class Win32Window : public Window {
   wil::unique_hwnd mHwnd;
   std::vector<HWND> mChildren;
 
+  bool mIsToolTip {false};
   float mDPIScale = {1.0f};
   std::optional<DWORD> mDPI;
   RECT mNCRect {};

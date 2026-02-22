@@ -296,6 +296,16 @@ void Slider::UpdateThumbPosition() {
           SliderTrackValueFillDisabled, SliderTrackFillDisabled))));
 }
 
+float Slider::GetSnappedValue(float value) const noexcept {
+  const auto snapFrequency
+    = (mSnapTo == SnapTo::Steps) ? mStepFrequency : mTickFrequency;
+  if (snapFrequency >= std::numeric_limits<float>::epsilon()) {
+    const auto offset = value - mMin;
+    value = mMin + (std::round(offset / snapFrequency) * snapFrequency);
+  }
+  return std::clamp(value, mMin, mMax);
+}
+
 Widget::EventHandlerResult Slider::OnMouseButtonPress(const MouseEvent& event) {
   const auto parentResult = Widget::OnMouseButtonPress(event);
   if (this->IsDisabled() || !event.IsValid()) {
@@ -312,55 +322,69 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
 
     const auto release = wil::scope_exit([this] {
       mDraggingValue.reset();
+      mDraggingTrackOffset.reset();
       this->UpdateThumbPosition();
     });
 
-    const auto snapFrequency
-      = (mSnapTo == SnapTo::Steps) ? mStepFrequency : mTickFrequency;
-    if (snapFrequency < std::numeric_limits<float>::epsilon()) {
-      mValue = *mDraggingValue;
-    } else {
-      const auto offset = *mDraggingValue - mMin;
-      mValue = mMin + (std::round(offset / snapFrequency) * snapFrequency);
-    }
-    mValue = std::clamp(mValue, mMin, mMax);
+    mValue = this->GetSnappedValue(*mDraggingValue);
     mChanged = true;
   }
   std::ignore = Widget::OnMouseButtonRelease(e);
   return EventHandlerResult::StopPropagation;
 }
 
+float Slider::GetSnappedDraggingValue() const {
+  return GetSnappedValue(*mDraggingValue);
+}
+
+Point Slider::GetTrackOriginOffset() const {
+  const auto tl
+    = mTrack->GetTopLeftCanvasPoint() - this->GetTopLeftCanvasPoint();
+  return tl
+    + Point {
+      SliderHorizontalThumbWidth / 2,
+      YGNodeLayoutGetHeight(mTrack->GetLayoutNode()) / 2};
+}
+
+float Slider::GetTrackLength() const {
+  if (mOrientation == Orientation::Horizontal) {
+    return YGNodeLayoutGetWidth(mTrack->GetLayoutNode());
+  } else {
+    return YGNodeLayoutGetHeight(mTrack->GetLayoutNode());
+  }
+}
+
 Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
   if (!mDraggingValue)
     return EventHandlerResult::Default;
 
-  const float ratio = [&event, this] {
+  const auto ratio = [&event, this] {
     switch (mOrientation) {
       case Orientation::Horizontal: {
         const auto trackLength = YGNodeLayoutGetWidth(mTrack->GetLayoutNode());
         const auto usableLength = trackLength - SliderHorizontalThumbWidth;
-        return std::clamp(
-          (event.GetPosition().mX - (SliderHorizontalThumbWidth / 2))
-            / usableLength,
+        mDraggingTrackOffset = std::clamp(
+          event.GetPosition().mX - (SliderHorizontalThumbWidth / 2),
           0.0f,
-          1.0f);
+          usableLength);
+        return *mDraggingTrackOffset / usableLength;
       }
       case Orientation::Vertical: {
         const auto trackLength = YGNodeLayoutGetHeight(mTrack->GetLayoutNode());
         const auto usableLength = trackLength - SliderVerticalThumbHeight;
-        return 1.0f
-          - std::clamp(
-                 (event.GetPosition().mY - (SliderVerticalThumbHeight / 2))
-                   / usableLength,
-                 0.0f,
-                 1.0f);
+        mDraggingTrackOffset = std::clamp(
+          usableLength
+            - (event.GetPosition().mY - (SliderVerticalThumbHeight / 2)),
+          0.0f,
+          usableLength);
+        return *mDraggingTrackOffset / usableLength;
       }
     }
     std::unreachable();
   }();
 
-  const auto offset = (ratio * (mMax - mMin));
-  mDraggingValue = std::clamp(mMin + offset, mMin, mMax);
+  const auto valueOffset = ratio * (mMax - mMin);
+  mDraggingValue = std::clamp(mMin + valueOffset, mMin, mMax);
   this->UpdateThumbPosition();
   return EventHandlerResult::StopPropagation;
 }
