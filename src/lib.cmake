@@ -70,6 +70,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/ToolTip.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/ToolTip.handwritten.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
   FredEmmott/GUI/StyleClass.cpp FredEmmott/GUI/StyleClass.hpp
   FredEmmott/GUI/StyleProperty.hpp

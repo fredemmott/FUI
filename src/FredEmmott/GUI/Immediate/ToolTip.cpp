@@ -96,27 +96,10 @@ ToolTipResult BeginToolTipForWidget(Widgets::Widget* w, const ID id) {
           | WS_EX_TRANSPARENT | WS_EX_LAYERED;
       });
   }
-  using namespace StaticTheme::Common;
-  using namespace StaticTheme::ToolTip;
-  static const ImmutableStyle ToolTipStyles {
-    Style()
-      .BackgroundColor(ToolTipBackgroundBrush)
-      .BorderColor(ToolTipBorderBrush)
-      .BorderRadius(ControlCornerRadius)
-      .BorderWidth(ToolTipBorderThemeThickness)
-      .FlexDirection(YGFlexDirectionColumn)
-      .Font(
-        SystemFont::Resolve(SystemFont::Body)
-          .WithSize(ToolTipContentThemeFontSize))
-      .Color(ToolTipForegroundBrush)
-      .MaxWidth(ToolTipMaxWidth)
-      .PaddingLeft(ToolTipBorderPaddingLeft)
-      .PaddingTop(ToolTipBorderPaddingTop)
-      .PaddingBottom(ToolTipBorderPaddingBottom)
-      .PaddingRight(ToolTipBorderPaddingRight),
-  };
   const auto container = BeginWidget<Widget>(
-    ID {0}, LiteralStyleClass {"ToolTip/Root"}, ToolTipStyles);
+    ID {0},
+    LiteralStyleClass {"ToolTip/Root"},
+    StaticTheme::ToolTip::DefaultToolTipStyle());
   if (!wasVisible) {
     container->GetOrCreateContext<ToolTipContainerContext>()->mAnchor = w;
   }
