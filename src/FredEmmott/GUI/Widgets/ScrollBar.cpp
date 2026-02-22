@@ -22,46 +22,37 @@ namespace {
 
 constexpr LiteralStyleClass ScrollBarStyleClass {"ScrollBar"};
 constexpr LiteralStyleClass ScrollBarTrackStyleClass {"ScrollBar/Track"};
+constexpr LiteralStyleClass ScrollBarSmallChangeButtonStyleClass {
+  "ScrollBar/SmallChangeButton"};
 
-auto& BaseStyles() {
+auto BaseStyles() {
+  // Not using an ImmutableStyle as this is only used by two functions which
+  // themselves compose it into an ImmutableStyle; save a little memory
   using namespace PseudoClasses;
-  static const ImmutableStyle ret {
-    Style()
-      .BackgroundColor(ScrollBarBackground)
-      .And(Disabled, Style().BackgroundColor(ScrollBarBackgroundDisabled))
-      .And(Hover, Style().BackgroundColor(ScrollBarBackgroundPointerOver))};
-  return ret;
+  return Style()
+    .BackgroundColor(ScrollBarBackground)
+    .Descendants(
+      ScrollBarSmallChangeButtonStyleClass,
+      Style().Opacity(0.0f, ContractAnimation))
+    .And(Disabled, Style().BackgroundColor(ScrollBarBackgroundDisabled))
+    .And(
+      Hover,
+      Style()
+        .BackgroundColor(ScrollBarBackgroundPointerOver)
+        .Descendants(
+          ScrollBarSmallChangeButtonStyleClass,
+          Style().Opacity(1.0f, ExpandAnimation)));
 }
 
 auto& HorizontalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles()
-      + Style()
-          .FlexDirection(YGFlexDirectionRow)
-          .Descendants(
-            LiteralStyleClass {"ScrollBar/Thumb"},
-            Style()
-              .Height(ScrollBarHorizontalThumbMinHeight, ContractAnimation)
-              .And(
-                PseudoClasses::Hover,
-                Style().Height(ScrollBarSize, ExpandAnimation))),
-  };
+    BaseStyles() + Style().FlexDirection(YGFlexDirectionRow)};
   return ret;
 }
 
 auto& VerticalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles()
-      + Style()
-          .FlexDirection(YGFlexDirectionColumn)
-          .Descendants(
-            LiteralStyleClass {"ScrollBar/Thumb"},
-            Style()
-              .Width(ScrollBarVerticalThumbMinWidth, ContractAnimation)
-              .And(
-                PseudoClasses::Hover,
-                Style().Width(ScrollBarSize, ExpandAnimation))),
-  };
+    BaseStyles() + Style().FlexDirection(YGFlexDirectionColumn)};
   return ret;
 }
 
@@ -74,7 +65,14 @@ auto& HorizontalTrackStyle() {
       .FlexGrow(1)
       .FlexDirection(YGFlexDirectionRow)
       .MarginLeft(TrackThumbMargin)
-      .MarginRight(TrackThumbMargin),
+      .MarginRight(TrackThumbMargin)
+      .Descendants(
+        LiteralStyleClass {"ScrollBar/Thumb"},
+        Style()
+          .Height(ScrollBarHorizontalThumbMinHeight, ContractAnimation)
+          .And(
+            PseudoClasses::Hover,
+            Style().Height(ScrollBarSize, ExpandAnimation))),
   };
   return ret;
 }
@@ -86,7 +84,14 @@ auto& VerticalTrackStyle() {
       .FlexGrow(1)
       .FlexDirection(YGFlexDirectionColumn)
       .MarginBottom(TrackThumbMargin)
-      .MarginTop(TrackThumbMargin),
+      .MarginTop(TrackThumbMargin)
+      .Descendants(
+        LiteralStyleClass {"ScrollBar/Thumb"},
+        Style()
+          .Width(ScrollBarVerticalThumbMinWidth, ContractAnimation)
+          .And(
+            PseudoClasses::Hover,
+            Style().Width(ScrollBarSize, ExpandAnimation))),
   };
   return ret;
 }
@@ -202,6 +207,9 @@ ScrollBar::ScrollBar(
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallIncrement));
 
+  mSmallDecrement->AddStyleClass(ScrollBarSmallChangeButtonStyleClass);
+  mSmallIncrement->AddStyleClass(ScrollBarSmallChangeButtonStyleClass);
+
   this->SetChildren({mSmallDecrement, mTrack, mSmallIncrement});
 
   switch (orientation) {
@@ -231,22 +239,6 @@ ImmutableStyle ScrollBar::MakeImmutableStyle(
   std::unreachable();
 }
 ScrollBar::~ScrollBar() = default;
-
-Widget::ComputedStyleFlags ScrollBar::OnComputedStyleChange(
-  const Style& style,
-  StateFlags state) {
-  const bool hovered = (state & StateFlags::Hovered) == StateFlags::Hovered;
-  auto smallChangeStyles
-    = Style()
-        .Opacity(
-          (hovered ? 1.0f : 0.0f),
-          (hovered ? ExpandAnimation : ContractAnimation))
-        .Top((mOrientation == Orientation::Vertical) ? 0 : -3.0f);
-  mSmallDecrement->SetMutableStyles(smallChangeStyles);
-  mSmallIncrement->SetMutableStyles(smallChangeStyles);
-
-  return Widget::OnComputedStyleChange(style, state);
-}
 
 void ScrollBar::ScrollBarButtonTick(ButtonTickKind kind) {
   const float min = (kind == ButtonTickKind::LargeDecrement)

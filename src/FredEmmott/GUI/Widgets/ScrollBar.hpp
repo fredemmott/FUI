@@ -35,11 +35,6 @@ class ScrollBar final : public Widget {
   [[nodiscard]] float GetThumbSize() const;
   void OnValueChanged(ValueChangedCallback);
 
- protected:
-  [[nodiscard]]
-  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
-    override;
-
  private:
   Orientation mOrientation;
 
