@@ -111,24 +111,23 @@ auto& ComboBoxItemPillStyles() {
     Style()
       .BackgroundColor(ComboBoxItemPillFillBrush)
       .BorderRadius(ComboBoxItemPillCornerRadius)
-      .Height(0, PillHeightAnimation)
+      .Height(ComboBoxItemPillHeight)
+      .ScaleY(0, PillHeightAnimation)
       .MarginLeft(0.5)
       .MarginRight(6)
       .MarginTop(2.5)
-      .Top(0, PillHeightAnimation)
+      .TranslateY(0, PillHeightAnimation)
       .Width(ComboBoxItemPillWidth)
       .And(
         Checked,
-        Style()
-          .Height(ComboBoxItemPillHeight)
-          .And(
-            Active,
-            Style()
-              .Height(ComboBoxItemPillHeight * ComboBoxItemPillMinScale)
-              .Top(
-                (ComboBoxItemPillHeight
-                 - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
-                / 2))),
+        Style().ScaleY(1.0f).And(
+          Active,
+          Style()
+            .ScaleY(ComboBoxItemPillMinScale)
+            .TranslateY(
+              (ComboBoxItemPillHeight
+               - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
+              / 2))),
   };
   return ret;
 }

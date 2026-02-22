@@ -109,8 +109,8 @@ void EndComboBoxButton() {
       .FlexGrow(0)
       .MarginLeft(14)
       .MarginRight(14)
-      .Top(0, FasterAnimation)
-      .And(Active, Style().Top(2)));
+      .TranslateY(0, FasterAnimation)
+      .And(Active, Style().TranslateY(2)));
 
   EndWidget<Button>();
 }
