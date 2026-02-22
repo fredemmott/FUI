@@ -209,18 +209,53 @@ void Slider::SetRange(const float min, const float max) {
 
 void Slider::UpdateThumbPosition() {
   const auto renderValue = mDraggingValue.value_or(mValue);
-  const float ratio = (renderValue - mMin) / (mMax - mMin);
+  const auto ratio = (renderValue - mMin) / (mMax - mMin);
 
   Point fillStart {0, 0};
   Point fillEnd {1, 0};
+
+  // Handle dragging differently to dropping because:
+  // - while we're dragging, we want to avoid re-layout every frame for
+  //   performance, so we don't want to modify FlexGrow every frame, as that
+  //   marks the layout as dirty, including all ancestors and descendants. So,
+  //   we hide the spacers, and use Translate instead
+  // - after drop, we want a layout that can be recalculated independently of
+  //   this widget, e.g. while resizing parent, so we use ratio-based spacers
+  //   with 0 Translate
+  if (mDraggingValue) {
+    mBeforeThumb->SetMutableStyles(Style().Display(YGDisplayNone));
+    mAfterThumb->SetMutableStyles(Style().Display(YGDisplayNone));
+  }
+
   if (mOrientation == Orientation::Horizontal) {
-    mBeforeThumb->SetMutableStyles(Style().FlexGrow(ratio));
-    mAfterThumb->SetMutableStyles(Style().FlexGrow(1.0f - ratio));
+    if (mDraggingValue) {
+      static constexpr auto ThumbLength = SliderHorizontalThumbWidth;
+      const auto usableLength
+        = YGNodeLayoutGetWidth(mTrack->GetLayoutNode()) - ThumbLength;
+      mOuterThumb->SetMutableStyles(Style().TranslateX(ratio * usableLength));
+    } else {
+      mBeforeThumb->SetMutableStyles(
+        Style().Display(YGDisplayFlex).FlexGrow(ratio));
+      mAfterThumb->SetMutableStyles(
+        Style().Display(YGDisplayFlex).FlexGrow(1.0f - ratio));
+      mOuterThumb->SetMutableStyles(Style().TranslateX(0));
+    }
   } else {
-    mBeforeThumb->SetMutableStyles(Style().FlexGrow(1.0f - ratio));
-    mAfterThumb->SetMutableStyles(Style().FlexGrow(ratio));
     fillStart = {0, 1};
     fillEnd = {0, 0};
+    if (mDraggingValue) {
+      static constexpr auto ThumbLength = SliderVerticalThumbHeight;
+      const auto usableLength
+        = YGNodeLayoutGetHeight(mTrack->GetLayoutNode()) - ThumbLength;
+      mOuterThumb->SetMutableStyles(
+        Style().TranslateY((1.0f - ratio) * usableLength));
+    } else {
+      mBeforeThumb->SetMutableStyles(
+        Style().Display(YGDisplayFlex).FlexGrow(1.0f - ratio));
+      mAfterThumb->SetMutableStyles(
+        Style().Display(YGDisplayFlex).FlexGrow(ratio));
+      mOuterThumb->SetMutableStyles(Style().TranslateY(0));
+    }
   }
 
   // This is not generally a safe assumption, but as we're built against
