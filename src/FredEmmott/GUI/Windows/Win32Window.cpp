@@ -623,6 +623,11 @@ void Win32Window::ApplySizeConstraints() {
 }
 
 void Win32Window::ApplySizeConstraints(RECT* ncrect) const {
+  if (mIsToolTip) {
+    // Keep tool tips in place, don't keep them within a single monitor
+    return;
+  }
+
   const_cast<Win32Window*>(this)->WMSizingProc(
     WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(ncrect));
 
@@ -1154,6 +1159,14 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
       .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
       .mDXGIFactory = mDXGIFactory.get(),
     });
+}
+
+void Win32Window::SetIsToolTip() {
+  this->MutateStyles([]([[maybe_unused]] DWORD* styles, DWORD* extendedStyles) {
+    *extendedStyles |= WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT
+      | WS_EX_LAYERED;
+  });
+  mIsToolTip = true;
 }
 
 void Win32Window::WaitFrameImpl(

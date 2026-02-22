@@ -32,8 +32,7 @@ void EndToolTip() {
   auto p = GetCurrentParentNode();
   EndWidget();
 
-  const auto ctx = GetCurrentNode()
-                     ->GetContext<ToolTipContainerContext>()
+  const auto ctx = p->GetContext<ToolTipContainerContext>()
                      ->mAnchor->GetContext<ToolTipAnchorContext>();
   if (const auto cursorPoint = std::exchange(ctx->mAnchorTo, std::nullopt)) {
     p->ComputeStyles({});
@@ -89,12 +88,7 @@ ToolTipResult BeginToolTipForWidget(Widgets::Widget* w, const ID id) {
   }
 
   if (!wasVisible) {
-    const auto window = static_cast<Win32Window*>(tWindow);
-    window->MutateStyles(
-      []([[maybe_unused]] DWORD* styles, DWORD* extendedStyles) {
-        *extendedStyles |= WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW
-          | WS_EX_TRANSPARENT | WS_EX_LAYERED;
-      });
+    tWindow->SetIsToolTip();
   }
   const auto container = BeginWidget<Widget>(
     ID {0},

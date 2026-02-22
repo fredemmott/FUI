@@ -88,6 +88,7 @@ class Window {
 
   [[nodiscard]]
   virtual bool IsPopup() const noexcept = 0;
+  virtual void SetIsToolTip() = 0;
 
   [[nodiscard]]
   Widgets::Widget* GetRootWidget() const noexcept;
