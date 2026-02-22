@@ -30,6 +30,8 @@ auto BaseStyles() {
   // themselves compose it into an ImmutableStyle; save a little memory
   using namespace PseudoClasses;
   return Style()
+    .AlignItems(YGAlignCenter)
+    .AlignContent(YGAlignCenter)
     .BackgroundColor(ScrollBarBackground)
     .Descendants(
       ScrollBarSmallChangeButtonStyleClass,
@@ -134,7 +136,7 @@ auto& HorizontalSmallChangeStyles() {
 
 auto& VerticalSmallChangeStyles() {
   static const ImmutableStyle ret {
-    MakeSmallChangeBaseStyles() + Style().Left(2.f),
+    MakeSmallChangeBaseStyles(),
   };
   return ret;
 }
