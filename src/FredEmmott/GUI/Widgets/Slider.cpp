@@ -339,10 +339,18 @@ float Slider::GetSnappedDraggingValue() const {
 
 Point Slider::GetTrackOriginOffset() const {
   const auto tl = mTrack->GetTopLeftCanvasPoint(this);
+  if (mOrientation == Orientation::Horizontal) {
+    return tl
+      + Point {
+        SliderHorizontalThumbWidth / 2,
+        YGNodeLayoutGetHeight(mTrack->GetLayoutNode()) / 2};
+  }
+  // Vertical
   return tl
     + Point {
-      SliderHorizontalThumbWidth / 2,
-      YGNodeLayoutGetHeight(mTrack->GetLayoutNode()) / 2};
+      YGNodeLayoutGetWidth(mTrack->GetLayoutNode()) / 2,
+      (SliderVerticalThumbHeight / 2),
+    };
 }
 
 float Slider::GetTrackLength() const {

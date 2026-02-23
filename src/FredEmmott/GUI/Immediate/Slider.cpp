@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "FredEmmott/GUI/StaticTheme/Slider.hpp"
 #include "PopupWindow.hpp"
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
@@ -49,7 +50,8 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
 
   if (w->IsDragging()) {
     using namespace StaticTheme::ToolTip;
-    static constexpr auto VerticalPadding = 32;
+    static constexpr auto ArbitraryHeight = ToolTipContentThemeFontSize * 3;
+    static constexpr auto ArbitraryPadding = ArbitraryHeight;
     const auto parentWindow = tWindow;
     const bool isHorizontal = (orientation == Orientation::Horizontal);
     const auto ctx = w->GetOrCreateContext<SliderImmediateContext>();
@@ -61,26 +63,31 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
       const auto height = isHorizontal
         ? std::numeric_limits<float>::quiet_NaN()
         : (YGNodeLayoutGetHeight(w->GetLayoutNode())
-           + ToolTipContentThemeFontSize + (2 * VerticalPadding));
+           + ToolTipContentThemeFontSize + (2 * ArbitraryPadding));
       const auto windowOffset = isHorizontal
         ? Point {ToolTipMaxWidth / 2, 56}
-        : Point {ToolTipMaxWidth + 12, VerticalPadding};
-      const auto windowOrigin = isHorizontal
-        ? (w->GetTrackOriginOffset() + w->GetTopLeftCanvasPoint()
-           - windowOffset)
-        : (w->GetTopLeftCanvasPoint() - windowOffset);
+        : Point {ToolTipMaxWidth + 12, ArbitraryPadding};
+      const auto windowOrigin
+        = w->GetTopLeftCanvasPoint() + w->GetTrackOriginOffset() - windowOffset;
 
       tWindow->SetIsToolTip();
       tWindow->SetInitialPositionInNativeCoords(
         parentWindow->CanvasPointToNativePoint(windowOrigin));
       ctx->mRootStyle = ImmutableStyle {
-        Style().Height(height).Width(width)
+        Style().Height(height).Width(width).PaddingTop(
+          isHorizontal ? 0 : windowOffset.mY)
         //.BackgroundColor(Color::Constant::FromRGBA32(0x550000FF))
       };
       ctx->mCenteringContainerStyle = ImmutableStyle {
         Style()
-          .PaddingTop(
-            isHorizontal ? 0 : VerticalPadding + w->GetTrackOriginOffset().mY)
+          .Height(
+            isHorizontal ? std::numeric_limits<float>::quiet_NaN()
+                         : ArbitraryHeight)
+          .MarginTop(
+            isHorizontal
+              ? 0
+              : (w->GetTrackLength()
+                 - (StaticTheme::Slider::SliderVerticalThumbHeight + (ArbitraryHeight / 2))))
           .Width(ToolTipMaxWidth)
           .AlignItems(YGAlignFlexEnd)
           .AlignContent(YGAlignFlexEnd)
