@@ -40,11 +40,21 @@ ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
 void Button::Invoke() {
   mWasActivated = true;
 }
+Widget::EventHandlerResult Button::OnMouseButtonPress(const MouseEvent& e) {
+  std::ignore = Widget::OnMouseButtonPress(e);
+  return EventHandlerResult::StopPropagation;
+}
+
+Widget::EventHandlerResult Button::OnMouseButtonRelease(const MouseEvent& e) {
+  std::ignore = Widget::OnMouseButtonRelease(e);
+  return EventHandlerResult::StopPropagation;
+}
 
 Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {
   this->Invoke();
   return EventHandlerResult::StopPropagation;
 }
+
 Widget::ComputedStyleFlags Button::OnComputedStyleChange(
   const Style& style,
   const StateFlags state) {

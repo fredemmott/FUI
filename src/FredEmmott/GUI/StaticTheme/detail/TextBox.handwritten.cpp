@@ -19,11 +19,15 @@ const ImmutableStyle& DefaultTextBoxStyle() {
       .BorderRadius(ControlCornerRadius)
       .BorderWidth(1)
       .Color(TextControlForeground)
+      .FlexDirection(YGFlexDirectionRow)
       .PaddingLeft(12)
       .PaddingRight(12)
       .PaddingTop(5)
       .PaddingBottom(6)
       .Cursor(Cursor::Text)
+      .Descendants(
+        TextBoxButtonInvisibleWhenInactiveStyleClass,
+        Style().Opacity(0).PointerEvents(PointerEvents::None))
       .And(
         Disabled,
         Style()
@@ -41,11 +45,50 @@ const ImmutableStyle& DefaultTextBoxStyle() {
         Style()
           .BackgroundColor(TextControlBackgroundFocused)
           .BorderColor(TextControlBorderBrushFocused)
-          .Color(TextControlForegroundFocused))
+          .Color(TextControlForegroundFocused)
+          .Descendants(
+            TextBoxButtonInvisibleWhenInactiveStyleClass,
+            Style().Opacity(1).PointerEvents(PointerEvents::Auto)))
       // TextBox has its own focus indication (typically a colored underline),
       // we don't want the standard white rounded rect
       .And(FocusVisible, Style().OutlineWidth(0)),
   };
+  return ret;
+}
+const ImmutableStyle& DefaultTextBoxButtonStyle() {
+  using namespace PseudoClasses;
+  using namespace StaticTheme::Generic;
+  static const ImmutableStyle ret {
+    Style()
+      .Cursor(Cursor::Default)
+      .BackgroundColor(TextControlButtonBackground)
+      .BorderColor(TextControlButtonBorderBrush)
+      .BorderRadius(ControlCornerRadius)
+      .BorderWidth(Generic::TextControlBorderThemeThickness)
+      .Color(TextControlForeground)
+      .PaddingLeft(HelperButtonThemePaddingLeft)
+      .PaddingTop(HelperButtonThemePaddingTop)
+      .PaddingBottom(HelperButtonThemePaddingBottom)
+      .PaddingRight(HelperButtonThemePaddingRight)
+      .And(
+        Hover,
+        Style()
+          .BackgroundColor(TextControlButtonBackgroundPointerOver)
+          .BorderColor(TextControlButtonBorderBrushPointerOver)
+          .Color(TextControlButtonForegroundPointerOver))
+      .And(
+        Active,
+        Style()
+          .BackgroundColor(TextControlButtonBackgroundPressed)
+          .BorderColor(TextControlButtonBorderBrushPressed)
+          .Color(TextControlButtonForegroundPressed))
+      .And(Disabled, Style().Opacity(0))
+      .Descendants(
+        {},
+        Style().Font(
+          SystemFont::ResolveGlyphFont(SystemFont::Body)
+            .WithSize(TextBoxIconFontSize),
+          !important))};
   return ret;
 }
 

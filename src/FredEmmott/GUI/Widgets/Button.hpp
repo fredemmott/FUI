@@ -22,6 +22,8 @@ class Button : public Widget, public IInvocable {
   }
 
  protected:
+  EventHandlerResult OnMouseButtonPress(const MouseEvent& e) override;
+  EventHandlerResult OnMouseButtonRelease(const MouseEvent& e) override;
   EventHandlerResult OnClick(const MouseEvent& e) override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;

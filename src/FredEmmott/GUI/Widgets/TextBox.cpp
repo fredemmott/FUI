@@ -47,6 +47,20 @@ bool IsWordCharacter(UText* text, std::size_t index) {
 }
 
 constexpr LiteralStyleClass TextBoxStyleClass("TextBox");
+constexpr LiteralStyleClass TextContainerStyleClass("TextBox/Text");
+constexpr LiteralStyleClass ButtonsStyleClass("TextBox/Buttons");
+
+auto& TextContainerStyles() {
+  static const ImmutableStyle ret {Style().FlexGrow(1)};
+  return ret;
+}
+
+auto& ButtonContainerStyles() {
+  static const ImmutableStyle ret {
+    Style().FlexGrow(0).FlexShrink(0),
+  };
+  return ret;
+}
 }// namespace
 
 TextBox::TextBox(const std::size_t id)
@@ -56,8 +70,12 @@ TextBox::TextBox(const std::size_t id)
       StaticTheme::TextBox::DefaultTextBoxStyle(),
       {}),
     mAutomation(std::make_unique<Automation>()) {
-  YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBox::Measure);
+  mTextContainer
+    = new Widget({}, TextContainerStyleClass, TextContainerStyles());
+  mButtons = new Widget({}, ButtonsStyleClass, ButtonContainerStyles());
+  this->SetDirectChildren({mTextContainer, mButtons});
 
+  YGNodeSetMeasureFunc(mTextContainer->GetLayoutNode(), &TextBox::Measure);
   this->SetText("H💩ello, world");
 }
 
@@ -77,7 +95,7 @@ void TextBox::SetText(const std::string_view text) {
   s.mText = std::string {text};
   mCaches = {};
   this->SetSelection(s.mSelectionStart, s.mSelectionEnd);
-  YGNodeMarkDirty(this->GetLayoutNode());
+  YGNodeMarkDirty(mTextContainer->GetLayoutNode());
 
   if (mAutomationFlag) {
     return;
@@ -181,6 +199,10 @@ TextBox::BoundingBox TextBox::GetTextBoundingBoxW(
   const auto utf8Begin = WideToUtf8Index(text, begin);
   const auto utf8End = (begin == end) ? utf8Begin : WideToUtf8Index(text, end);
   return GetTextBoundingBox(utf8Begin, utf8End);
+}
+
+Widget* TextBox::GetFosterParent() const noexcept {
+  return mButtons;
 }
 
 void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
@@ -401,7 +423,6 @@ Widget::EventHandlerResult TextBox::OnMouseButtonPress(const MouseEvent& e) {
   mMouseSelectionAnchor = idx;
   this->SetCaret(idx);
 
-  // Capture mouse for drag selection
   this->StartMouseCapture();
 
   // Give focus to this widget so caret is visible and keyboard works
@@ -744,7 +765,9 @@ YGSize TextBox::Measure(
   [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
-  const auto& self = *static_cast<TextBox*>(FromYogaNode(node));
+  // Getting the parent as `node` is the 'text' child node
+  const auto& self = *static_cast<TextBox*>(
+    FromYogaNode(YGNodeGetParent(const_cast<YGNodeRef>(node))));
 
   const auto& metrics = self.GetMetrics();
 
@@ -752,14 +775,6 @@ YGSize TextBox::Measure(
     metrics.mOffsetX.back(),
     -metrics.mAscent,
   };
-}
-
-Widget::ComputedStyleFlags TextBox::OnComputedStyleChange(
-  const Style& style,
-  const StateFlags state) {
-  return Widget::OnComputedStyleChange(style, state)
-    | ComputedStyleFlags::InheritableHoverState
-    | ComputedStyleFlags::InheritableActiveState;
 }
 
 }// namespace FredEmmott::GUI::Widgets

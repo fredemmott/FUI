@@ -64,6 +64,7 @@ class TextBox : public Widget, public IFocusable {
     const noexcept;
 
  protected:
+  Widget* GetFosterParent() const noexcept override;
   void Tick(const std::chrono::steady_clock::time_point& now) override;
   EventHandlerResult OnTextInput(const TextInputEvent&) override;
   EventHandlerResult OnKeyPress(const KeyPressEvent&) override;
@@ -73,8 +74,6 @@ class TextBox : public Widget, public IFocusable {
   [[nodiscard]] EventHandlerResult OnMouseMove(const MouseEvent&) override;
   [[nodiscard]] EventHandlerResult OnMouseButtonRelease(
     const MouseEvent&) override;
-  ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
-    override;
 
  private:
   // Data needed by accessibility or international input
@@ -122,6 +121,9 @@ class TextBox : public Widget, public IFocusable {
     unique_ptr<UBreakIterator, &ubrk_close> mWordIterator;
     std::optional<TextMetrics> mTextMetrics;
   };
+
+  Widget* mTextContainer {};
+  Widget* mButtons {};
 
   UndoableState mActiveState {};
   UndoableState mUndoState {};

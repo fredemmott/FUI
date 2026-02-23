@@ -39,7 +39,7 @@ class FocusManager final {
   /// Thread-local
   static FocusManager* Get();
   static void PushInstance(FocusManager*);
-  static void PopInstance(FocusManager*);
+  static void PopInstance(const FocusManager*);
 
  private:
   Widgets::Widget* mRootWidget {};

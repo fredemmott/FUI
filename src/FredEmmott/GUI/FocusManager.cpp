@@ -36,7 +36,7 @@ void FocusManager::PushInstance(FocusManager* it) {
   tInstances.push(it);
 }
 
-void FocusManager::PopInstance(FocusManager* it) {
+void FocusManager::PopInstance([[maybe_unused]] const FocusManager* const it) {
   FUI_ASSERT(it == tInstances.top());
   tInstances.pop();
 }

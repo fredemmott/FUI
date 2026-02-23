@@ -251,6 +251,7 @@ class Widget {
    *
    * Use `SetDirectChildren()` for internal sub-widgets
    */
+  [[nodiscard]]
   virtual Widget* GetFosterParent() const noexcept {
     return nullptr;
   }

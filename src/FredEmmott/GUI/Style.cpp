@@ -149,6 +149,7 @@ Style Style::InheritableValues() const noexcept {
   CopyInheritableValues<TYPE>(ret.mStorage, mStorage);
   FUI_ENUM_STYLE_PROPERTY_TYPES(COPY_STORAGE)
 #undef COPY_STORAGE
+  ret.mDescendants = mDescendants;
   for (auto&& [selector, rhs]: mDescendants) {
     if (holds_alternative<std::monostate>(selector)) {
       ret += rhs;

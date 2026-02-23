@@ -24,7 +24,7 @@ Root::Root() {
 Root::~Root() {}
 
 void Root::BeginFrame() {
-  if (!tStack.empty()) {
+  if (!tStack.empty()) [[unlikely]] {
     throw std::logic_error(
       "BeginFrame() called, but frame already in progress");
   }
@@ -32,10 +32,15 @@ void Root::BeginFrame() {
   tStack.push_back({});
   if (mWidgetRoot) {
     tStack.front().mPending.push_back(mWidgetRoot->mWidget.get());
+    FocusManager::PushInstance(&mWidgetRoot->mFocusManager);
   }
 }
 
 void Root::EndFrame() {
+  if (mWidgetRoot) {
+    FocusManager::PopInstance(&mWidgetRoot->mFocusManager);
+  }
+
   if (tStack.size() != 1) {
     throw std::logic_error("EndFrame() called, but children are open");
   }
