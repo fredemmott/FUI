@@ -27,7 +27,7 @@ class ID final {
   explicit constexpr ID(const std::size_t id) : mID(id) {}
 
   explicit constexpr ID(const std::source_location& location)
-    : mID((location.line() << 24) | (location.column() & 0xff)) {}
+    : mID((location.line() << 8) | (location.column() & 0xff)) {}
 
   template <class... TArgs>
     requires(sizeof...(TArgs) > 0)
