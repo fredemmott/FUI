@@ -49,6 +49,7 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
     *pValue = w->GetValue();
   } else {
     w->SetValue(*pValue);
+    w->mChanged = false;
   }
 
   const auto ctx = w->GetOrCreateContext<SliderImmediateContext>();
