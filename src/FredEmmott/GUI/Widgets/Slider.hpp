@@ -63,6 +63,17 @@ class Slider final : public Widget, public IFocusable {
   [[nodiscard]]
   float GetTrackLength() const;
 
+  [[nodiscard]]
+  bool ConsumeWasThumbHovered() const noexcept {
+    const auto outerHovered
+      = std::exchange(mOuterThumb->mWasStationaryHovered, std::nullopt)
+          .has_value();
+    const auto innerHovered
+      = std::exchange(mInnerThumb->mWasStationaryHovered, std::nullopt)
+          .has_value();
+    return outerHovered || innerHovered;
+  }
+
  protected:
   EventHandlerResult OnMouseMove(const MouseEvent&) override;
   EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;

@@ -355,9 +355,11 @@ Point Slider::GetTrackOriginOffset() const {
 
 float Slider::GetTrackLength() const {
   if (mOrientation == Orientation::Horizontal) {
-    return YGNodeLayoutGetWidth(mTrack->GetLayoutNode());
+    return YGNodeLayoutGetWidth(mTrack->GetLayoutNode())
+      - SliderHorizontalThumbWidth;
   } else {
-    return YGNodeLayoutGetHeight(mTrack->GetLayoutNode());
+    return YGNodeLayoutGetHeight(mTrack->GetLayoutNode())
+      - SliderVerticalThumbHeight;
   }
 }
 
