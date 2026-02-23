@@ -178,10 +178,12 @@ Slider::Slider(const std::size_t id, const Orientation orientation)
 }
 
 void Slider::SetValue(const float value) {
-  if (utility::almost_equal(value, mValue)) {
+  const auto clamped = std::clamp(value, mMin, mMax);
+  if (utility::almost_equal(clamped, mValue)) {
     return;
   }
-  mValue = std::clamp(value, mMin, mMax);
+  mChanged = true;
+  mValue = clamped;
   this->UpdateThumbPosition();
 }
 
@@ -326,8 +328,7 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
       this->UpdateThumbPosition();
     });
 
-    mValue = this->GetSnappedValue(*mDraggingValue);
-    mChanged = true;
+    this->SetValue(this->GetSnappedValue(*mDraggingValue));
   }
   std::ignore = Widget::OnMouseButtonRelease(e);
   return EventHandlerResult::StopPropagation;
