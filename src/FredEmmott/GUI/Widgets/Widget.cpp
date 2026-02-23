@@ -674,9 +674,10 @@ void Widget::SetIsChecked(const bool value) {
   }
 }
 
-Point Widget::GetTopLeftCanvasPoint() const {
+Point Widget::GetTopLeftCanvasPoint(const Widget* const relativeTo) const {
   Point position {};
-  for (auto widget = this; widget; widget = widget->GetParent()) {
+  for (auto widget = this; widget && widget != relativeTo;
+       widget = widget->GetParent()) {
     const auto yoga = widget->GetLayoutNode();
     position.mX += YGNodeLayoutGetLeft(yoga);
     position.mY += YGNodeLayoutGetTop(yoga);

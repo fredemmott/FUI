@@ -170,7 +170,8 @@ class Widget {
     return mComputedStyle;
   }
 
-  Point GetTopLeftCanvasPoint() const;
+  [[nodiscard]]
+  Point GetTopLeftCanvasPoint(const Widget* relativeTo = nullptr) const;
 
   [[nodiscard]]
   Window* GetOwnerWindow() const noexcept {

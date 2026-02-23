@@ -338,8 +338,7 @@ float Slider::GetSnappedDraggingValue() const {
 }
 
 Point Slider::GetTrackOriginOffset() const {
-  const auto tl
-    = mTrack->GetTopLeftCanvasPoint() - this->GetTopLeftCanvasPoint();
+  const auto tl = mTrack->GetTopLeftCanvasPoint(this);
   return tl
     + Point {
       SliderHorizontalThumbWidth / 2,
