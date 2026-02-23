@@ -14,7 +14,11 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 namespace {
 
 struct SliderImmediateContext : Widgets::Context {
-  enum class ToolTipReason { Dragging, Hover };
+  enum class ToolTipReason {
+    Dragging,
+    Hover,
+    KeyboardValueChange,
+  };
 
   ImmutableStyle mRootStyle;
   ImmutableStyle mCenteringContainerStyle;
@@ -55,6 +59,10 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
   const auto ctx = w->GetOrCreateContext<SliderImmediateContext>();
   if (w->ConsumeWasThumbHovered()) {
     ctx->mToolTipReason = SliderImmediateContext::ToolTipReason::Hover;
+  }
+  if (w->ConsumeWasModifiedByKeyboard()) {
+    ctx->mToolTipReason
+      = SliderImmediateContext::ToolTipReason::KeyboardValueChange;
   }
   if (w->IsDragging()) {
     ctx->mToolTipReason = SliderImmediateContext::ToolTipReason::Dragging;

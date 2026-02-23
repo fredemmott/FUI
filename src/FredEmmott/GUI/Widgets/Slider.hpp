@@ -64,7 +64,7 @@ class Slider final : public Widget, public IFocusable {
   float GetTrackLength() const;
 
   [[nodiscard]]
-  bool ConsumeWasThumbHovered() const noexcept {
+  bool ConsumeWasThumbHovered() noexcept {
     const auto outerHovered
       = std::exchange(mOuterThumb->mWasStationaryHovered, std::nullopt)
           .has_value();
@@ -72,6 +72,10 @@ class Slider final : public Widget, public IFocusable {
       = std::exchange(mInnerThumb->mWasStationaryHovered, std::nullopt)
           .has_value();
     return outerHovered || innerHovered;
+  }
+  [[nodiscard]]
+  bool ConsumeWasModifiedByKeyboard() noexcept {
+    return std::exchange(mWasModifiedByKeyboard, false);
   }
 
  protected:
@@ -99,6 +103,8 @@ class Slider final : public Widget, public IFocusable {
   Widget* mInnerThumb {nullptr};
   Widget* mBeforeThumb {nullptr};
   Widget* mAfterThumb {nullptr};
+
+  bool mWasModifiedByKeyboard {false};
 
   void UpdateThumbPosition();
   [[nodiscard]]

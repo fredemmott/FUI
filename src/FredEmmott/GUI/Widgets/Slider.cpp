@@ -420,16 +420,20 @@ Widget::EventHandlerResult Slider::OnKeyPress(const KeyPressEvent& e) {
   switch (e.mKeyCode) {
     case Key_LeftArrow:
     case Key_DownArrow:
+      mWasModifiedByKeyboard = true;
       SetValue(mValue - step);
       return EventHandlerResult::StopPropagation;
     case Key_UpArrow:
     case Key_RightArrow:
+      mWasModifiedByKeyboard = true;
       SetValue(mValue + step);
       return EventHandlerResult::StopPropagation;
     case Key_Home:
+      mWasModifiedByKeyboard = true;
       SetValue(mMin);
       return EventHandlerResult::StopPropagation;
     case Key_End:
+      mWasModifiedByKeyboard = true;
       SetValue(mMax);
       return EventHandlerResult::StopPropagation;
     default:
