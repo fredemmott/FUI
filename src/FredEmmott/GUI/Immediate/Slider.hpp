@@ -13,6 +13,7 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace immediate_detail {
 struct SliderResultMixin {
+  using value_formatter_t = std::string (*)(float);
   template <class Self>
   decltype(auto) Range(this Self&& self, float min, float max) {
     widget_from_result<Widgets::Slider>(self)->SetRange(min, max);
@@ -37,6 +38,17 @@ struct SliderResultMixin {
       Widgets::Slider::SnapTo::Ticks);
     return std::forward<Self>(self);
   }
+
+  template <class Self>
+  decltype(auto) ValueFormatter(
+    this Self&& self,
+    const value_formatter_t formatter) {
+    SetValueFormatter(widget_from_result<Widgets::Slider>(self), formatter);
+    return std::forward<Self>(self);
+  }
+
+ private:
+  static void SetValueFormatter(Widgets::Slider*, value_formatter_t);
 };
 }// namespace immediate_detail
 
