@@ -213,7 +213,7 @@ CheckBox::CheckBox(std::size_t id)
 
 void CheckBox::Toggle() {
   SetIsChecked(!IsChecked());
-  mChanged = true;
+  mWasChanged = true;
 }
 
 Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {

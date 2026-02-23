@@ -68,7 +68,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
     id, ComboBoxButtonStyles(), StyleClasses {ComboBoxButtonClass});
 
   if (clicked) {
-    *clicked = std::exchange(button->mClicked, false);
+    *clicked = button->ConsumeWasActivated();
   }
 
   using namespace StaticTheme::Common;

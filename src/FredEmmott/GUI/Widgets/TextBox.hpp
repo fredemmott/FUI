@@ -33,14 +33,12 @@ class TextBox : public Widget, public IFocusable {
   explicit TextBox(std::size_t id);
   ~TextBox() override;
 
-  bool mChanged {false};
+  [[nodiscard]]
+  bool ConsumeWasChanged() noexcept {
+    return std::exchange(mWasChanged, false);
+  }
 
-  enum class ChangeBehavior {
-    MarkChanged,
-    DoNotMarkChanged,
-  };
-
-  void SetText(std::string_view, ChangeBehavior = ChangeBehavior::MarkChanged);
+  void SetText(std::string_view);
 
   FrameRateRequirement GetFrameRateRequirement() const noexcept override;
   [[nodiscard]] std::string_view GetText() const noexcept {
@@ -91,6 +89,7 @@ class TextBox : public Widget, public IFocusable {
 #else
   void AssertOwnerThread() const {}
 #endif
+  bool mWasChanged {false};
 
   struct TextMetrics {
     // Cumulative width at each byte index into the UTF-8 string.

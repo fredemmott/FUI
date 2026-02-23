@@ -12,14 +12,20 @@ class HyperlinkButton final : public Widget, public IInvocable {
   HyperlinkButton(std::size_t id, const StyleClasses& classes = {});
   ~HyperlinkButton() override;
 
-  bool mClicked {false};
-
   void Invoke() override;
+
+  [[nodiscard]]
+  bool ConsumeWasActivated() noexcept {
+    return std::exchange(mWasActivated, false);
+  }
 
  protected:
   [[nodiscard]] EventHandlerResult OnClick(const MouseEvent&) override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
+
+ private:
+  bool mWasActivated {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

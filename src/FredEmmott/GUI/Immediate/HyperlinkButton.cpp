@@ -13,7 +13,7 @@ HyperlinkButton(bool* clicked, const std::string_view label, const ID id) {
   auto ret = BeginWidget<Widgets::HyperlinkButton>(id);
   Label(label).Styled(Style().TextAlign(TextAlign::Center).FlexGrow(1));
   if (clicked) {
-    *clicked = std::exchange(ret->mClicked, false);
+    *clicked = ret->ConsumeWasActivated();
   }
   EndWidget<Widgets::HyperlinkButton>();
   return {ret};

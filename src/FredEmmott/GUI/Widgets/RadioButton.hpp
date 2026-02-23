@@ -15,10 +15,14 @@ class RadioButton final : public Widget, public ISelectionItem {
   using Widget::IsChecked;
   using Widget::SetIsChecked;
 
-  bool mChanged {false};
-
+  [[nodiscard]]
   bool IsSelected() const noexcept override;
   void Select() override;
+
+  [[nodiscard]]
+  bool ConsumeWasChanged() noexcept {
+    return std::exchange(mWasChanged, false);
+  }
 
  protected:
   Widget* GetFosterParent() const noexcept override;
@@ -28,6 +32,7 @@ class RadioButton final : public Widget, public ISelectionItem {
 
  private:
   Widget* mFosterParent {};
+  bool mWasChanged {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

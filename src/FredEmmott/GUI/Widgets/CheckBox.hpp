@@ -13,9 +13,12 @@ class CheckBox final : public Widget, public IToggleable {
   using Widget::IsChecked;
   using Widget::SetIsChecked;
 
-  bool mChanged {false};
-
   void Toggle() override;
+
+  [[nodiscard]]
+  bool ConsumeWasChanged() noexcept {
+    return std::exchange(mWasChanged, false);
+  }
 
  protected:
   EventHandlerResult OnClick(const MouseEvent& event) override;
@@ -25,6 +28,7 @@ class CheckBox final : public Widget, public IToggleable {
 
  private:
   Widget* mFosterParent {nullptr};
+  bool mWasChanged {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

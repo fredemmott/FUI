@@ -63,9 +63,7 @@ TextBox::TextBox(const std::size_t id)
 
 TextBox::~TextBox() = default;
 
-void TextBox::SetText(
-  const std::string_view text,
-  const ChangeBehavior behavior) {
+void TextBox::SetText(const std::string_view text) {
   AssertOwnerThread();
 
   auto& s = mActiveState;
@@ -73,10 +71,7 @@ void TextBox::SetText(
     return;
   }
 
-  if (behavior == ChangeBehavior::MarkChanged) {
-    mChanged = true;
-  }
-
+  mWasChanged = true;
   const auto oldLength = s.mText.size();
 
   s.mText = std::string {text};

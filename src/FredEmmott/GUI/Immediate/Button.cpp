@@ -10,7 +10,7 @@ ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
   using Button = Widgets::Button;
   const auto button = BeginWidget<Button>(id);
   if (clicked) {
-    *clicked = std::exchange(button->mClicked, false);
+    *clicked = button->ConsumeWasActivated();
   }
   return button;
 }

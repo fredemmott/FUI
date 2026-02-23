@@ -140,7 +140,7 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   const auto item = BeginWidget<ComboBoxItemButton>(
     id, ComboBoxItemStyles(), StyleClasses {});
   if (clicked) {
-    *clicked = std::exchange(item->mClicked, false);
+    *clicked = item->ConsumeWasActivated();
   }
 
   const bool isSelected = initiallySelected || (clicked && *clicked);

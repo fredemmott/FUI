@@ -16,7 +16,7 @@ HyperlinkButton::HyperlinkButton(std::size_t id, const StyleClasses& classes)
 HyperlinkButton::~HyperlinkButton() = default;
 
 void HyperlinkButton::Invoke() {
-  mClicked = true;
+  mWasActivated = true;
 }
 
 Widget::EventHandlerResult HyperlinkButton::OnClick(const MouseEvent&) {

@@ -38,7 +38,7 @@ ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
 }
 
 void Button::Invoke() {
-  mClicked = true;
+  mWasActivated = true;
 }
 
 Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {

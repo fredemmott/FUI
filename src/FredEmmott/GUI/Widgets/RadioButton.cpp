@@ -189,7 +189,7 @@ void RadioButton::Select() {
     return;
   }
   this->SetIsChecked(true);
-  mChanged = true;
+  mWasChanged = true;
 }
 
 Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {

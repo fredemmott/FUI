@@ -12,11 +12,14 @@ TextBoxResult TextBox(std::string* text, const ID id) {
   }
 
   const auto w = immediate_detail::ChildlessWidget<Widgets::TextBox>(id);
-  if (std::exchange(w->mChanged, false)) {
+  if (w->ConsumeWasChanged()) {
     *text = w->GetText();
     return {w, true};
   }
-  w->SetText(*text, Widgets::TextBox::ChangeBehavior::DoNotMarkChanged);
+
+  w->SetText(*text);
+  std::ignore = w->ConsumeWasChanged();
+
   return {w, false};
 }
 

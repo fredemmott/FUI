@@ -14,9 +14,12 @@ class ToggleSwitch final : public Widget, public IToggleable {
   bool IsOn() const noexcept;
   void SetIsOn(bool) noexcept;
 
-  bool mChanged {false};
-
   void Toggle() override;
+
+  [[nodiscard]]
+  bool ConsumeWasChanged() noexcept {
+    return std::exchange(mWasChanged, false);
+  }
 
  protected:
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
@@ -30,6 +33,7 @@ class ToggleSwitch final : public Widget, public IToggleable {
 
  private:
   Widget* mFosterParent {nullptr};
+  bool mWasChanged {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

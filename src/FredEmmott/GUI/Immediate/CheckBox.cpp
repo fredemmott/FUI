@@ -13,7 +13,7 @@ BeginCheckBox(bool* const pIsChanged, bool* const pIsChecked, const ID id) {
   using Widgets::CheckBox;
 
   const auto checkbox = BeginWidget<CheckBox>(id);
-  const auto isChanged = std::exchange(checkbox->mChanged, false);
+  const auto isChanged = checkbox->ConsumeWasChanged();
   if (pIsChanged) {
     *pIsChanged = isChanged;
   }
@@ -21,6 +21,7 @@ BeginCheckBox(bool* const pIsChanged, bool* const pIsChecked, const ID id) {
     *pIsChecked = checkbox->IsChecked();
   } else if (pIsChecked) {
     checkbox->SetIsChecked(*pIsChecked);
+    std::ignore = checkbox->ConsumeWasChanged();
   }
   return {checkbox};
 }

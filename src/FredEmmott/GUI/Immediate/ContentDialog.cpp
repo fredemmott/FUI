@@ -392,7 +392,7 @@ static ContentDialogButtonResult<TButton> ContentDialogButtonImpl(
   }
 
   const bool clicked
-    = ctx.mBinding && std::exchange(ctx.mBinding->mButton->mClicked, false);
+    = ctx.mBinding && ctx.mBinding->mButton->ConsumeWasActivated();
   if (tContext && clicked) {
     ClosePopupWindow();
   }

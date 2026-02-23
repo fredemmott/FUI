@@ -42,7 +42,7 @@ BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
   using Widgets::ToggleSwitch;
 
   const auto toggle = BeginWidget<ToggleSwitch>(id);
-  const auto isChanged = std::exchange(toggle->mChanged, false);
+  const auto isChanged = toggle->ConsumeWasChanged();
   if (pIsChanged) {
     *pIsChanged = isChanged;
   }
@@ -50,6 +50,7 @@ BeginToggleSwitch(bool* pIsChanged, bool* pIsOn, const ID id) {
     *pIsOn = toggle->IsOn();
   } else if (pIsOn) {
     toggle->SetIsOn(*pIsOn);
+    std::ignore = toggle->ConsumeWasChanged();
   }
   return {toggle};
 }
