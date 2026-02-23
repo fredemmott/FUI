@@ -3,24 +3,37 @@
 #include "Slider.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/ToolTip.hpp>
+#include <FredEmmott/utility/almost_equal.hpp>
 #include <stdexcept>
 #include <utility>
 
 #include "PopupWindow.hpp"
 
-namespace FredEmmott::GUI::Immediate {
-
+namespace FredEmmott::GUI::Immediate::immediate_detail {
 namespace {
 
 struct SliderImmediateContext : Widgets::Context {
   ImmutableStyle mRootStyle;
   ImmutableStyle mCenteringContainerStyle;
+  SliderResultMixin::value_formatter_t mValueFormatter {nullptr};
+
+  std::string FormatValue(const Widgets::Slider* const w, const float value)
+    const {
+    if (mValueFormatter) {
+      return mValueFormatter(value);
+    }
+    const auto freq = w->GetStepFrequency();
+    const bool isIntegral = utility::almost_equal(freq, std::round(freq));
+    if (isIntegral) {
+      return std::to_string(std::llround(value));
+    }
+    return std::to_string(value);
+  }
 };
 
 [[nodiscard]]
 SliderResult
 SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
-  using namespace immediate_detail;
   if (!pValue) [[unlikely]] {
     throw std::logic_error("Slider requires a non-null value pointer");
   }
@@ -102,7 +115,7 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
       ID {0}, LiteralStyleClass {"Slider/ValueToolTip"}, DefaultToolTipStyle());
 
     // 4. The text :)
-    Label(std::to_string(w->GetSnappedDraggingValue()), ID {0});
+    Label(ctx->FormatValue(w, w->GetSnappedDraggingValue()), ID {0});
 
     EndWidget();
     EndWidget();
@@ -114,12 +127,21 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
 }
 }// namespace
 
+void SliderResultMixin::SetValueFormatter(
+  Widgets::Slider* w,
+  const value_formatter_t fn) {
+  w->GetOrCreateContext<SliderImmediateContext>()->mValueFormatter = fn;
+}
+
+}// namespace FredEmmott::GUI::Immediate::immediate_detail
+
+namespace FredEmmott::GUI::Immediate {
 SliderResult HSlider(float* pValue, const ID id) {
-  return SliderImpl(pValue, Orientation::Horizontal, id);
+  return immediate_detail::SliderImpl(pValue, Orientation::Horizontal, id);
 }
 
 SliderResult VSlider(float* pValue, const ID id) {
-  return SliderImpl(pValue, Orientation::Vertical, id);
+  return immediate_detail::SliderImpl(pValue, Orientation::Vertical, id);
 }
 
 }// namespace FredEmmott::GUI::Immediate
