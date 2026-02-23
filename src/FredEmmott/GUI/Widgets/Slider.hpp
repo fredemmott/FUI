@@ -45,8 +45,6 @@ class Slider final : public Widget, public IFocusable {
     return std::tuple(mMin, mMax);
   }
 
-  bool mChanged {false};
-
   [[nodiscard]]
   bool IsDragging() const noexcept {
     return mDraggingValue.has_value();
@@ -74,8 +72,13 @@ class Slider final : public Widget, public IFocusable {
     return outerHovered || innerHovered;
   }
   [[nodiscard]]
-  bool ConsumeWasModifiedByKeyboard() noexcept {
-    return std::exchange(mWasModifiedByKeyboard, false);
+  bool ConsumeWasChanged() noexcept {
+    return std::exchange(mWasChanged, false);
+  }
+
+  [[nodiscard]]
+  bool ConsumeDidReceiveKeyboardInput() noexcept {
+    return std::exchange(mDidReceiveKeyboardInput, false);
   }
 
  protected:
@@ -104,7 +107,8 @@ class Slider final : public Widget, public IFocusable {
   Widget* mBeforeThumb {nullptr};
   Widget* mAfterThumb {nullptr};
 
-  bool mWasModifiedByKeyboard {false};
+  bool mWasChanged {false};
+  bool mDidReceiveKeyboardInput {false};
 
   void UpdateThumbPosition();
   [[nodiscard]]

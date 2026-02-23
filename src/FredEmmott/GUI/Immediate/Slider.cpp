@@ -17,7 +17,7 @@ struct SliderImmediateContext : Widgets::Context {
   enum class ToolTipReason {
     Dragging,
     Hover,
-    KeyboardValueChange,
+    KeyboardInput,
   };
 
   ImmutableStyle mRootStyle;
@@ -48,21 +48,20 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
 
   const auto w = ChildlessWidget<Widgets::Slider>(id, orientation);
 
-  const auto changed = std::exchange(w->mChanged, false);
+  const auto changed = w->ConsumeWasChanged();
   if (changed) {
     *pValue = w->GetValue();
   } else {
     w->SetValue(*pValue);
-    w->mChanged = false;
+    std::ignore = w->ConsumeWasChanged();
   }
 
   const auto ctx = w->GetOrCreateContext<SliderImmediateContext>();
   if (w->ConsumeWasThumbHovered()) {
     ctx->mToolTipReason = SliderImmediateContext::ToolTipReason::Hover;
   }
-  if (w->ConsumeWasModifiedByKeyboard()) {
-    ctx->mToolTipReason
-      = SliderImmediateContext::ToolTipReason::KeyboardValueChange;
+  if (w->ConsumeDidReceiveKeyboardInput()) {
+    ctx->mToolTipReason = SliderImmediateContext::ToolTipReason::KeyboardInput;
   }
   if (w->IsDragging()) {
     ctx->mToolTipReason = SliderImmediateContext::ToolTipReason::Dragging;

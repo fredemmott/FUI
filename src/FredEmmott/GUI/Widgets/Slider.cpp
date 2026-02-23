@@ -182,7 +182,7 @@ void Slider::SetValue(const float value) {
   if (utility::almost_equal(clamped, mValue)) {
     return;
   }
-  mChanged = true;
+  mWasChanged = true;
   mValue = clamped;
   this->UpdateThumbPosition();
 }
@@ -420,20 +420,20 @@ Widget::EventHandlerResult Slider::OnKeyPress(const KeyPressEvent& e) {
   switch (e.mKeyCode) {
     case Key_LeftArrow:
     case Key_DownArrow:
-      mWasModifiedByKeyboard = true;
+      mDidReceiveKeyboardInput = true;
       SetValue(mValue - step);
       return EventHandlerResult::StopPropagation;
     case Key_UpArrow:
     case Key_RightArrow:
-      mWasModifiedByKeyboard = true;
+      mDidReceiveKeyboardInput = true;
       SetValue(mValue + step);
       return EventHandlerResult::StopPropagation;
     case Key_Home:
-      mWasModifiedByKeyboard = true;
+      mDidReceiveKeyboardInput = true;
       SetValue(mMin);
       return EventHandlerResult::StopPropagation;
     case Key_End:
-      mWasModifiedByKeyboard = true;
+      mDidReceiveKeyboardInput = true;
       SetValue(mMax);
       return EventHandlerResult::StopPropagation;
     default:
