@@ -58,6 +58,7 @@ class TextBox : public Widget, public IFocusable {
 
   [[nodiscard]] std::pair<std::size_t, std::size_t> GetSelectionW() const;
   void SetSelectionW(std::size_t begin, std::size_t end);
+  void SelectAll();
 
   [[nodiscard]]
   BoundingBox GetTextBoundingBoxW(std::size_t begin, std::size_t end)

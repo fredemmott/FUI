@@ -25,6 +25,7 @@ struct SliderImmediateContext : Widgets::Context {
   SliderResultMixin::value_formatter_t mValueFormatter {nullptr};
   std::optional<ToolTipReason> mToolTipReason;
 
+  [[nodiscard]]
   std::string FormatValue(const Widgets::Slider* const w, const float value)
     const {
     if (mValueFormatter) {

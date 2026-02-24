@@ -14,6 +14,7 @@
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>
 #include <FredEmmott/GUI/Immediate/HyperlinkButton.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>
+#include <FredEmmott/GUI/Immediate/NumberBox.hpp>
 #include <FredEmmott/GUI/Immediate/PopupWindow.hpp>
 #include <FredEmmott/GUI/Immediate/PushID.hpp>
 #include <FredEmmott/GUI/Immediate/RadioButton.hpp>

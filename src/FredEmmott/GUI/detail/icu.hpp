@@ -10,6 +10,7 @@
 
 #if defined(FUI_ENABLE_ICU)
 #include <unicode/ubrk.h>
+#include <unicode/unum.h>
 #include <unicode/utext.h>
 #elif defined(NTDDI_VERSION) && NTDDI_VERSION >= NTDDI_WIN10_RS2
 // Use ICU from the Windows SDK
@@ -19,3 +20,21 @@ static_assert(FredEmmott::GUI::Config::MinimumWindowsTarget >= NTDDI_VERSION);
 #else
 #error "No usable ICU header"
 #endif
+
+namespace FredEmmott::GUI::detail {
+
+template <class T>
+  requires(sizeof(T) == sizeof(UChar))
+[[nodiscard]]
+const UChar* uchar_cast(const T* const p) {
+  return reinterpret_cast<const UChar*>(p);
+}
+
+template <class T>
+  requires(sizeof(T) == sizeof(UChar))
+[[nodiscard]]
+UChar* uchar_cast(T* const p) {
+  return reinterpret_cast<UChar*>(p);
+}
+
+}// namespace FredEmmott::GUI::detail

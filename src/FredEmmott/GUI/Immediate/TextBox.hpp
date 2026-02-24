@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <FredEmmott/GUI/Immediate/Result.hpp>
-#include <FredEmmott/GUI/Widgets/TextBox.hpp>
-#include <FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp>
-#include <FredEmmott/GUI/detail/immediate/Widget.hpp>
-
-#include "FredEmmott/GUI/Widgets/TextBlock.hpp"
+#include "FredEmmott/GUI/Immediate/Result.hpp"
+#include "FredEmmott/GUI/Widgets/TextBox.hpp"
+#include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
 #include "FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp"
+#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
