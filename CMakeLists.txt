@@ -37,18 +37,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(MINIMUM_CPLUSPLUS 202302)
 
 if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
-  # https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md
   set(
     CMAKE_MSVC_RUNTIME_LIBRARY
     "MultiThreaded$<$<CONFIG:Debug>:Debug>"
   )
-  add_link_options(
-    "/DEFAULTLIB:ucrt$<$<CONFIG:Debug>:d>.lib" # include the dynamic UCRT
-    "/NODEFAULTLIB:libucrt$<$<CONFIG:Debug>:d>.lib" # remove the static UCRT
-  )
+  option(ENABLE_HYBRID_CRT "Use the Hybrid CRT" ON)
+
+  if (ENABLE_HYBRID_CRT)
+    # https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md
+    add_link_options(
+      "/DEFAULTLIB:ucrt$<$<CONFIG:Debug>:d>.lib" # include the dynamic UCRT
+      "/NODEFAULTLIB:libucrt$<$<CONFIG:Debug>:d>.lib" # remove the static UCRT
+    )
+  endif ()
 elseif (ENABLE_SKIA)
   message(FATAL_ERROR "Advanced text features require SkParagraph, which is only available with vcpkg static triplets}")
 endif ()
+
 
 project(FUI VERSION 0.0.1 LANGUAGES CXX)
 
