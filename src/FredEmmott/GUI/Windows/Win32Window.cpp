@@ -510,11 +510,8 @@ void Win32Window::SetClipboardText(const std::string_view utf8) const {
 }
 
 void Win32Window::InitializeDirectComposition() {
-  CheckHResult(
+  const bool haveDComp = SUCCEEDED(
     DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
-  CheckHResult(mCompositionDevice->CreateTargetForHwnd(
-    mHwnd.get(), true, mCompositionTarget.put()));
-  CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
 
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
     .Width = static_cast<UINT>(mClientSize.cx),
@@ -524,18 +521,34 @@ void Win32Window::InitializeDirectComposition() {
     .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
     .BufferCount = SwapChainLength,
     .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-    .AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED,
+    .AlphaMode
+    = haveDComp ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE,
     .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
   };
 
-  CheckHResult(mDXGIFactory->CreateSwapChainForComposition(
+  if (haveDComp) {
+    CheckHResult(mCompositionDevice->CreateTargetForHwnd(
+      mHwnd.get(), true, mCompositionTarget.put()));
+    CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
+
+    CheckHResult(mDXGIFactory->CreateSwapChainForComposition(
+      this->GetDirectCompositionTargetDevice(),
+      &swapChainDesc,
+      nullptr,
+      mSwapChain.put()));
+    CheckHResult(mCompositionVisual->SetContent(mSwapChain.get()));
+    CheckHResult(mCompositionTarget->SetRoot(mCompositionVisual.get()));
+    CheckHResult(mCompositionDevice->Commit());
+    return;
+  }
+
+  CheckHResult(mDXGIFactory->CreateSwapChainForHwnd(
     this->GetDirectCompositionTargetDevice(),
+    mHwnd.get(),
     &swapChainDesc,
     nullptr,
+    nullptr,
     mSwapChain.put()));
-  CheckHResult(mCompositionVisual->SetContent(mSwapChain.get()));
-  CheckHResult(mCompositionTarget->SetRoot(mCompositionVisual.get()));
-  CheckHResult(mCompositionDevice->Commit());
 }
 
 void Win32Window::ResizeSwapchain() {
