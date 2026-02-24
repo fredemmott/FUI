@@ -8,7 +8,7 @@
       "kind": "git",
       "repository": "https://github.com/fredemmott/vcpkg-registry",
       "reference": "master",
-      "baseline": "807bc98f5d1d6afb9ad98418deba742347df7443",
+      "baseline": "9a3c4fdcc1257fd3ec5d83a656f8446506f04494",
       "packages": [
         "felly"
       ]
