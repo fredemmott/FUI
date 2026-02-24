@@ -4,6 +4,7 @@
 #include "TextBox.handwritten.hpp"
 
 #include <FredEmmott/GUI/PseudoClasses.hpp>
+#include <FredEmmott/GUI/StaticTheme/RepeatButton.hpp>
 #include <FredEmmott/GUI/StaticTheme/TextBox.hpp>
 #include <FredEmmott/GUI/Style.hpp>
 
@@ -27,7 +28,10 @@ const ImmutableStyle& DefaultTextBoxStyle() {
       .Cursor(Cursor::Text)
       .Descendants(
         TextBoxButtonInvisibleWhenInactiveStyleClass,
-        Style().Opacity(0).PointerEvents(PointerEvents::None))
+        Style()
+          .Opacity(0)
+          .PointerEvents(PointerEvents::None)
+          .And(Disabled, Style().Opacity(0)))
       .And(
         Disabled,
         Style()
@@ -61,12 +65,12 @@ const ImmutableStyle& DefaultTextBoxButtonStyle() {
   using namespace StaticTheme::Generic;
   static const ImmutableStyle ret {
     Style()
-      .Cursor(Cursor::Default)
       .BackgroundColor(TextControlButtonBackground)
       .BorderColor(TextControlButtonBorderBrush)
       .BorderRadius(ControlCornerRadius)
       .BorderWidth(Generic::TextControlBorderThemeThickness)
       .Color(TextControlForeground)
+      .Cursor(Cursor::Default)
       .PaddingLeft(HelperButtonThemePaddingLeft)
       .PaddingTop(HelperButtonThemePaddingTop)
       .PaddingBottom(HelperButtonThemePaddingBottom)
@@ -83,7 +87,12 @@ const ImmutableStyle& DefaultTextBoxButtonStyle() {
           .BackgroundColor(TextControlButtonBackgroundPressed)
           .BorderColor(TextControlButtonBorderBrushPressed)
           .Color(TextControlButtonForegroundPressed))
-      .And(Disabled, Style().Opacity(0))
+      .And(
+        Disabled,
+        Style()
+          .BackgroundColor(RepeatButtonBackgroundDisabled)
+          .BorderColor(RepeatButtonBorderBrushDisabled)
+          .Color(RepeatButtonForegroundDisabled))
       .Descendants(
         {},
         Style().Font(
