@@ -190,6 +190,10 @@ void TextBox::SetSelectionW(const std::size_t begin, const std::size_t end) {
   this->SetSelection(utf8Begin, utf8End);
 }
 
+void TextBox::SelectAll() {
+  this->SetSelection(0, mActiveState.mText.size());
+}
+
 TextBox::BoundingBox TextBox::GetTextBoundingBoxW(
   const std::size_t begin,
   const std::size_t end) const noexcept {

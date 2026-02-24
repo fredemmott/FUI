@@ -25,6 +25,8 @@ add_library(
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
+  FredEmmott/GUI/Immediate/NumberBox.cpp
+  FredEmmott/GUI/Immediate/NumberBox.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/PushID.cpp FredEmmott/GUI/Immediate/PushID.hpp
   FredEmmott/GUI/Immediate/RadioButton.cpp FredEmmott/GUI/Immediate/RadioButton.hpp
@@ -231,7 +233,7 @@ endif ()
 
 if (ENABLE_ICU)
   find_package(PkgConfig REQUIRED)
-  pkg_check_modules(ICU REQUIRED IMPORTED_TARGET icu-uc)
+  pkg_check_modules(ICU REQUIRED IMPORTED_TARGET icu-uc icu-i18n)
   target_link_libraries(fredemmott-gui PRIVATE PkgConfig::ICU)
 elseif (WIN32)
   list(APPEND WINDOWS_SDK_LIBRARIES icuuc icuin)

@@ -228,6 +228,9 @@ static void AppTick(fui::Window& window) {
     .SnapToTicks()
     .Styled(fui::Style().Height(120));
 
+  static std::optional<int> numberBoxValue;
+  fuii::NumberBox(&numberBoxValue);
+
   fuii::EndDisabled();
 
   fuii::EndStackPanel();
