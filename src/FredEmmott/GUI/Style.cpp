@@ -192,9 +192,7 @@ Style Style::BuiltinBaseline() {
         .TranslateY(0)
         .And(
           PseudoClasses::Disabled,
-          Style()
-            .Color(StaticTheme::TextFillColorDisabledBrush)
-            .Cursor(Cursor::Default, !important))
+          Style().Color(StaticTheme::TextFillColorDisabledBrush))
         .And(
           PseudoClasses::FocusVisible,
           Style()

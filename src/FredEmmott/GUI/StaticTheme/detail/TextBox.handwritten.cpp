@@ -33,7 +33,8 @@ const ImmutableStyle& DefaultTextBoxStyle() {
         Style()
           .BackgroundColor(TextControlBackgroundDisabled)
           .BorderColor(TextControlBorderBrushDisabled)
-          .Color(TextControlForegroundDisabled))
+          .Color(TextControlForegroundDisabled)
+          .Cursor(Cursor::Default))
       .And(
         Hover,
         Style()

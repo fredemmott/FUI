@@ -44,7 +44,8 @@ const ImmutableStyle& DefaultHyperlinkButtonStyle() {
         Style()
           .BackgroundColor(HyperlinkButtonBackgroundDisabled)
           .BorderColor(HyperlinkButtonBorderBrushDisabled)
-          .Color(HyperlinkButtonForegroundDisabled)),
+          .Color(HyperlinkButtonForegroundDisabled)
+          .Cursor(Cursor::Default)),
   };
   return ret;
 };
