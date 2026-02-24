@@ -33,7 +33,8 @@
       "description": "Enable support for Direct2D+DirectWrite+D3D11"
     },
     "icu": {
-      "description": "Use the ICU library; on Windows, increases the binary size but reduces the minimum version"
+      "description": "Use the ICU library; on Windows, increases the binary size but reduces the minimum version",
+      "dependencies": [ "icu" ]
     },
     "skia": {
       "description": "Enable support for Skia",

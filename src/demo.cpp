@@ -38,7 +38,15 @@ static void AppTick(fui::Window& window) {
     // Could call EndCard() and EndVStackPanel() instead of .Scoped();
     const auto card = fuii::BeginCard().Scoped();
     const auto layout = fuii::BeginVStackPanel().Scoped();
-    fuii::Label("Backend: {}", fui::GetBackendDescription());
+    fuii::Label(
+      "Backend: {} ({} ICU)",
+      fui::GetBackendDescription(),
+#ifdef FUI_ENABLE_ICU
+      "bundled"
+#else
+      "Windows"
+#endif
+    );
     fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
     fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
   }
