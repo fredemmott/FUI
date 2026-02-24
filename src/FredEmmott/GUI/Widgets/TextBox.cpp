@@ -76,7 +76,6 @@ TextBox::TextBox(const std::size_t id)
   this->SetDirectChildren({mTextContainer, mButtons});
 
   YGNodeSetMeasureFunc(mTextContainer->GetLayoutNode(), &TextBox::Measure);
-  this->SetText("H💩ello, world");
 }
 
 TextBox::~TextBox() = default;
