@@ -57,7 +57,7 @@ auto& TextContainerStyles() {
 
 auto& ButtonContainerStyles() {
   static const ImmutableStyle ret {
-    Style().FlexGrow(0).FlexShrink(0),
+    Style().FlexGrow(0).FlexShrink(0).Gap(4),
   };
   return ret;
 }
