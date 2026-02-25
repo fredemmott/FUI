@@ -22,6 +22,8 @@ add_library(
   FredEmmott/GUI/Immediate/ContentDialog.cpp FredEmmott/GUI/Immediate/ContentDialog.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
+  FredEmmott/GUI/Immediate/GPUTexture.cpp
+  FredEmmott/GUI/Immediate/GPUTexture.hpp
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
@@ -87,6 +89,8 @@ add_library(
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
   FredEmmott/GUI/Widgets/CheckBox.cpp FredEmmott/GUI/Widgets/CheckBox.hpp
   FredEmmott/GUI/Widgets/Focusable.hpp
+  FredEmmott/GUI/Widgets/GPUTexture.cpp
+  FredEmmott/GUI/Widgets/GPUTexture.hpp
   FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp

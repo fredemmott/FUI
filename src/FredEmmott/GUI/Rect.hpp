@@ -27,6 +27,7 @@ struct BasicRect {
   BasicPoint<T> mTopLeft;
   BasicSize<T> mSize;
 
+  constexpr BasicRect() = default;
   constexpr BasicRect(const BasicSize<T>& size) : mSize(size) {}
 
   constexpr BasicRect(const BasicPoint<T>& topLeft, const BasicSize<T>& size)

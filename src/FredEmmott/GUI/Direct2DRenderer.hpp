@@ -71,14 +71,10 @@ class Direct2DRenderer final : public Renderer {
     std::string_view text,
     const Point& baseline) override;
 
-  enum class TextureHandleKind {
-    LegacySharedHandle,// D3D11_RESOURCE_MISC_SHARED
-    NTHandle,// D3D11_RESOURCE_MISC_SHARED_NTHANDLE
-  };
-
   [[nodiscard]]
-  std::unique_ptr<ImportedTexture> ImportTexture(HANDLE, TextureHandleKind)
-    const;
+  std::unique_ptr<ImportedTexture> ImportTexture(
+    ImportedTexture::HandleKind,
+    HANDLE) const;
 
   [[nodiscard]]
   std::unique_ptr<ImportedFence> ImportFence(HANDLE) const;

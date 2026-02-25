@@ -238,17 +238,19 @@ void Direct2DRenderer::DrawText(
 }
 
 std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportTexture(
-  HANDLE const handle,
-  const TextureHandleKind kind) const {
+  const ImportedTexture::HandleKind kind,
+  HANDLE const handle) const {
+  using enum ImportedTexture::HandleKind;
+
   wil::com_ptr<ID3D11Texture2D> texture;
   switch (kind) {
-    case TextureHandleKind::LegacySharedHandle:
-      CheckHResult(mD3DDevice->OpenSharedResource(
-        handle, __uuidof(ID3D11Texture2D), texture.put_void()));
+    case LegacySharedHandle:
+      CheckHResult(
+        mD3DDevice->OpenSharedResource(handle, IID_PPV_ARGS(texture.put())));
       break;
-    case TextureHandleKind::NTHandle:
-      CheckHResult(mD3DDevice->OpenSharedResource1(
-        handle, __uuidof(ID3D11Texture2D), texture.put_void()));
+    case NTHandle:
+      CheckHResult(
+        mD3DDevice->OpenSharedResource1(handle, IID_PPV_ARGS(texture.put())));
       break;
   }
   const auto surface = texture.query<IDXGISurface>();

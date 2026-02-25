@@ -17,6 +17,13 @@ namespace FredEmmott::GUI {
  * Only 2D textures are supported.
  */
 struct ImportedTexture {
+#ifdef _WIN32
+  enum class HandleKind {
+    LegacySharedHandle,// D3D11_RESOURCE_MISC_SHARED
+    NTHandle,// D3D11_RESOURCE_MISC_SHARED_NTHANDLE
+  };
+#endif
+
   virtual ~ImportedTexture() = default;
 };
 

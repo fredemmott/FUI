@@ -12,6 +12,7 @@
 #include <FredEmmott/GUI/Immediate/ContentDialog.hpp>
 #include <FredEmmott/GUI/Immediate/Disabled.hpp>
 #include <FredEmmott/GUI/Immediate/FontIcon.hpp>
+#include <FredEmmott/GUI/Immediate/GPUTexture.hpp>
 #include <FredEmmott/GUI/Immediate/HyperlinkButton.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>
 #include <FredEmmott/GUI/Immediate/NumberBox.hpp>
