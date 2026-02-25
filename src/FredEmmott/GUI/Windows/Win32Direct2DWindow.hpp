@@ -4,7 +4,7 @@
 #pragma once
 
 #include <d2d1_3.h>
-#include <d3d11.h>
+#include <d3d11_4.h>
 #include <dwrite.h>
 #include <wil/com.h>
 
@@ -36,7 +36,7 @@ class Win32Direct2DWindow final : public Win32Window {
   std::shared_ptr<SharedResources> mSharedResources;
   static std::weak_ptr<SharedResources> gSharedResources;
 
-  wil::com_ptr<ID3D11Device> mD3DDevice;
+  wil::com_ptr<ID3D11Device5> mD3DDevice;
   wil::com_ptr<ID3D11DeviceContext> mD3DDeviceContext;
   wil::com_ptr<ID2D1Factory3> mD2DFactory;
   wil::com_ptr<ID2D1Device2> mD2DDevice;

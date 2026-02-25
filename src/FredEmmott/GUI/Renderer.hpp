@@ -12,6 +12,25 @@
 
 namespace FredEmmott::GUI {
 
+/** VRAM imported from some other API
+ *
+ * Only 2D textures are supported.
+ */
+struct ImportedTexture {
+  virtual ~ImportedTexture() = default;
+};
+
+/** A CPU <-> GPU synchronization primitive with increasing values.
+ *
+ * For example, a Direct3D fence, Vulkan timeline semaphore, or similar.
+ *
+ * **NOT** like a Vulkan fence - those are just bool flags, not incrementing
+ * values.
+ */
+struct ImportedFence {
+  virtual ~ImportedFence() = default;
+};
+
 class Renderer {
  public:
   virtual ~Renderer() = default;
@@ -46,40 +65,34 @@ class Renderer {
 
   virtual void FillRect(const Brush& brush, const Rect& rect) = 0;
   virtual void
-  StrokeRect(const Brush& brush, const Rect& rect, float thickness = 0)
-    = 0;
+  StrokeRect(const Brush& brush, const Rect& rect, float thickness = 0) = 0;
   virtual void DrawLine(
     const Brush& brush,
     const Point& start,
     const Point& end,
-    float thickness = 0)
-    = 0;
+    float thickness = 0) = 0;
 
   virtual void
-  FillRoundedRect(const Brush& brush, const Rect& rect, float radius)
-    = 0;
+  FillRoundedRect(const Brush& brush, const Rect& rect, float radius) = 0;
   virtual void FillRoundedRect(
     const Brush& brush,
     const Rect& rect,
     float topLeftRadius,
     float topRightRadius,
     float bottomRightRadius,
-    float bottomLeftRadius)
-    = 0;
+    float bottomLeftRadius) = 0;
   virtual void StrokeRoundedRect(
     const Brush& brush,
     const Rect& rect,
     float radius,
-    float thickness = 0)
-    = 0;
+    float thickness = 0) = 0;
 
   virtual void DrawText(
     const Brush& brush,
     const Rect& brushRect,
     const Font& font,
     std::string_view text,
-    const Point& baseline)
-    = 0;
+    const Point& baseline) = 0;
 };
 
 }// namespace FredEmmott::GUI

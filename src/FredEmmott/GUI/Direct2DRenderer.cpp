@@ -3,6 +3,8 @@
 
 #include "Direct2DRenderer.hpp"
 
+#include <d3d11.h>
+
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/Font.hpp>
@@ -19,8 +21,32 @@ using namespace FredEmmott::GUI::win32_detail;
 using namespace FredEmmott::GUI::font_detail;
 
 namespace FredEmmott::GUI {
-Direct2DRenderer::Direct2DRenderer(ID2D1DeviceContext* deviceContext)
-  : mDeviceContext(deviceContext) {}
+
+namespace {
+
+struct ImportedDirect2DTexture : ImportedTexture {
+  ~ImportedDirect2DTexture() override = default;
+
+  wil::com_ptr<ID2D1Bitmap1> mBitmap;
+};
+
+struct ImportedDirect3DFence : ImportedFence {
+  ~ImportedDirect3DFence() override = default;
+  wil::com_ptr<ID3D11Fence> mFence;
+};
+
+}// namespace
+
+Direct2DRenderer::Direct2DRenderer(
+  ID3D11Device5* device,
+  ID2D1DeviceContext* deviceContext)
+  : mD3DDevice(device),
+    mDeviceContext(deviceContext) {
+  wil::com_ptr<ID3D11DeviceContext3> dc3;
+  mD3DDevice->GetImmediateContext3(dc3.put());
+  // ID3D11DeviceContext4 for Wait(fence, value)
+  dc3.query_to(mD3DDeviceContext.put());
+}
 
 Direct2DRenderer::~Direct2DRenderer() {
   FUI_ASSERT(mStateStack.empty());
@@ -210,6 +236,66 @@ void Direct2DRenderer::DrawText(
     D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
     DWRITE_MEASURING_MODE_NATURAL);
 }
+
+std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportTexture(
+  HANDLE const handle,
+  const TextureHandleKind kind) const {
+  wil::com_ptr<ID3D11Texture2D> texture;
+  switch (kind) {
+    case TextureHandleKind::LegacySharedHandle:
+      CheckHResult(mD3DDevice->OpenSharedResource(
+        handle, __uuidof(ID3D11Texture2D), texture.put_void()));
+      break;
+    case TextureHandleKind::NTHandle:
+      CheckHResult(mD3DDevice->OpenSharedResource1(
+        handle, __uuidof(ID3D11Texture2D), texture.put_void()));
+      break;
+  }
+  const auto surface = texture.query<IDXGISurface>();
+  wil::com_ptr<ID2D1Bitmap1> bitmap;
+  CheckHResult(mDeviceContext->CreateBitmapFromDxgiSurface(
+    surface.get(), nullptr, bitmap.put()));
+  auto ret = std::make_unique<ImportedDirect2DTexture>();
+  ret->mBitmap = std::move(bitmap);
+  return ret;
+}
+
+std::unique_ptr<ImportedFence> Direct2DRenderer::ImportFence(
+  HANDLE const handle) const {
+  wil::com_ptr<ID3D11Fence> fence;
+  CheckHResult(mD3DDevice->OpenSharedFence(handle, IID_PPV_ARGS(fence.put())));
+  auto ret = std::make_unique<ImportedDirect3DFence>();
+  ret->mFence = std::move(fence);
+  return ret;
+}
+
+void Direct2DRenderer::DrawTexture(
+  const Rect& sourceRect,
+  const Rect& destRect,
+  ImportedTexture* const rawTexture,
+  ImportedFence* const rawFence,
+  uint64_t fenceValue) {
+#ifndef NDEBUG
+#define IMPL_CAST dynamic_cast
+#else
+#define IMPL_CAST static_cast
+#endif
+  FUI_ASSERT(rawTexture);
+  FUI_ASSERT(rawFence);
+  FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
+  const auto texture
+    = IMPL_CAST<ImportedDirect2DTexture*>(rawTexture)->mBitmap.get();
+  const auto fence = IMPL_CAST<ImportedDirect3DFence*>(rawFence)->mFence.get();
+  CheckHResult(mD3DDeviceContext->Wait(fence, fenceValue));
+  mDeviceContext->DrawBitmap(
+    texture,
+    destRect,
+    1.0,
+    D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
+    sourceRect,
+    nullptr);
+}
+
 void Direct2DRenderer::PostTransform(const D2D1_MATRIX_3X2_F& transform) {
   D2D1_MATRIX_3X2_F combined {};
   mDeviceContext->GetTransform(&combined);

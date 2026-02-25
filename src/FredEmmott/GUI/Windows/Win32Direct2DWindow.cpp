@@ -26,7 +26,7 @@ class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
   FramePainter(Win32Direct2DWindow* window, uint8_t frameIndex)
     : mWindow(window),
       mFrameIndex(frameIndex),
-      mRenderer(window->mD2DDeviceContext.get()) {
+      mRenderer(window->mD3DDevice.get(), window->mD2DDeviceContext.get()) {
     mWindow->BeforePaintFrame(frameIndex);
   }
 
@@ -45,7 +45,7 @@ class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
 };
 
 struct Win32Direct2DWindow::SharedResources {
-  wil::com_ptr<ID3D11Device> mD3DDevice;
+  wil::com_ptr<ID3D11Device5> mD3DDevice;
   wil::com_ptr<ID3D11DeviceContext> mD3DDeviceContext;
   wil::com_ptr<ID2D1Factory3> mD2DFactory;
   wil::com_ptr<ID2D1Device2> mD2DDevice;
@@ -82,6 +82,7 @@ Win32Direct2DWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
   CheckHResult(dxgiFactory->EnumAdapters(0, adapter.put()));
 
   D3D_FEATURE_LEVEL featureLevel;
+  wil::com_ptr<ID3D11Device> device;
   CheckHResult(D3D11CreateDevice(
     adapter.get(),
     D3D_DRIVER_TYPE_UNKNOWN,
@@ -90,9 +91,10 @@ Win32Direct2DWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
     featureLevels,
     ARRAYSIZE(featureLevels),
     D3D11_SDK_VERSION,
-    ret->mD3DDevice.put(),
+    device.put(),
     &featureLevel,
     ret->mD3DDeviceContext.put()));
+  device.query_to(ret->mD3DDevice.put());
 
   // Create D2D factory
   D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
@@ -107,8 +109,7 @@ Win32Direct2DWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
     reinterpret_cast<void**>(ret->mD2DFactory.put())));
 
   // Create D2D device
-  wil::com_ptr<IDXGIDevice> dxgiDevice;
-  CheckHResult(ret->mD3DDevice->QueryInterface(IID_PPV_ARGS(dxgiDevice.put())));
+  const auto dxgiDevice = ret->mD3DDevice.query<IDXGIDevice>();
 
   CheckHResult(
     ret->mD2DFactory->CreateDevice(dxgiDevice.get(), ret->mD2DDevice.put()));

@@ -4,19 +4,23 @@
 #pragma once
 
 #include <d2d1_1.h>
+#include <d3d11_4.h>
 #include <dwrite.h>
 
 #include <FredEmmott/GUI/config.hpp>
 #include <stack>
 
 #include "Renderer.hpp"
+#include "Size.hpp"
 
 namespace FredEmmott::GUI {
 
 class Direct2DRenderer final : public Renderer {
  public:
   Direct2DRenderer() = delete;
-  explicit Direct2DRenderer(ID2D1DeviceContext* deviceContext);
+  explicit Direct2DRenderer(
+    ID3D11Device5* device,
+    ID2D1DeviceContext* deviceContext);
   ~Direct2DRenderer() override;
 
   // State management
@@ -67,16 +71,40 @@ class Direct2DRenderer final : public Renderer {
     std::string_view text,
     const Point& baseline) override;
 
-  ID2D1DeviceContext* mDeviceContext = nullptr;
+  enum class TextureHandleKind {
+    LegacySharedHandle,// D3D11_RESOURCE_MISC_SHARED
+    NTHandle,// D3D11_RESOURCE_MISC_SHARED_NTHANDLE
+  };
+
+  [[nodiscard]]
+  std::unique_ptr<ImportedTexture> ImportTexture(HANDLE, TextureHandleKind)
+    const;
+
+  [[nodiscard]]
+  std::unique_ptr<ImportedFence> ImportFence(HANDLE) const;
+
+  void DrawTexture(
+    const Rect& sourceRect,
+    const Rect& destRect,
+    ImportedTexture* texture,
+    ImportedFence* fence,
+    uint64_t fenceValue);
 
  private:
   struct StateStackFrame {
     D2D1_MATRIX_3X2_F mTransform {};
     bool mHaveNativeLayer {false};
   };
+  ID3D11Device5* mD3DDevice = nullptr;
+  wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
+  ID2D1DeviceContext* mDeviceContext = nullptr;
+
   std::stack<StateStackFrame> mStateStack;
 
   void PostTransform(const D2D1_MATRIX_3X2_F&);
+
+  friend ID2D1DeviceContext* direct2d_device_context_cast(
+    Renderer* renderer) noexcept;
 };
 
 inline Direct2DRenderer* direct2d_renderer_cast(Renderer* renderer) noexcept {
