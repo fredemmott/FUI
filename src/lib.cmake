@@ -101,6 +101,8 @@ add_library(
   FredEmmott/GUI/Widgets/ScrollView.cpp FredEmmott/GUI/Widgets/ScrollView.hpp
   FredEmmott/GUI/Widgets/Slider.cpp FredEmmott/GUI/Widgets/Slider.hpp
   FredEmmott/GUI/Widgets/StackPanel.cpp FredEmmott/GUI/Widgets/StackPanel.hpp
+  FredEmmott/GUI/Widgets/SwapChainPanel.cpp
+  FredEmmott/GUI/Widgets/SwapChainPanel.hpp
   FredEmmott/GUI/Widgets/TextBlock.cpp FredEmmott/GUI/Widgets/TextBlock.hpp
   FredEmmott/GUI/Widgets/TextBox.cpp FredEmmott/GUI/Widgets/TextBox.hpp
   FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
