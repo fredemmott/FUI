@@ -90,6 +90,12 @@ class Direct2DRenderer final : public Renderer {
   std::shared_ptr<GPUCompletionFlag> GetGPUCompletionFlagForCurrentFrame()
     const override;
 
+  // Not calling this 'GetNativeDevice' because there's both the D2D and D3D
+  // ones
+  auto GetD3DDevice() const {
+    return mD3DDevice;
+  }
+
  private:
   struct StateStackFrame {
     D2D1_MATRIX_3X2_F mTransform {};
