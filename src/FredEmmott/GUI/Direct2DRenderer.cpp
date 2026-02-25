@@ -39,9 +39,11 @@ struct ImportedDirect3DFence : ImportedFence {
 
 Direct2DRenderer::Direct2DRenderer(
   ID3D11Device5* device,
-  ID2D1DeviceContext* deviceContext)
+  ID2D1DeviceContext* deviceContext,
+  std::shared_ptr<GPUCompletionFlag> frameCompletionFlag)
   : mD3DDevice(device),
-    mDeviceContext(deviceContext) {
+    mDeviceContext(deviceContext),
+    mFrameCompletionFlag(std::move(frameCompletionFlag)) {
   wil::com_ptr<ID3D11DeviceContext3> dc3;
   mD3DDevice->GetImmediateContext3(dc3.put());
   // ID3D11DeviceContext4 for Wait(fence, value)
@@ -296,6 +298,11 @@ void Direct2DRenderer::DrawTexture(
     D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
     sourceRect,
     nullptr);
+}
+
+std::shared_ptr<GPUCompletionFlag>
+Direct2DRenderer::GetGPUCompletionFlagForCurrentFrame() const {
+  return mFrameCompletionFlag;
 }
 
 void Direct2DRenderer::PostTransform(const D2D1_MATRIX_3X2_F& transform) {

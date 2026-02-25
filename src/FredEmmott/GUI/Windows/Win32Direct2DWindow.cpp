@@ -20,13 +20,46 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 using namespace direct_write_detail;
 
+namespace {
+struct D3D11CompletionFlag : GPUCompletionFlag {
+  D3D11CompletionFlag(ID3D11Fence* const fence, const uint64_t fenceValue)
+    : mEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr)),
+      mFence(fence),
+      mFenceValue(fenceValue) {
+    CheckHResult(mFence->SetEventOnCompletion(fenceValue, mEvent.get()));
+  }
+  ~D3D11CompletionFlag() override = default;
+
+  bool IsComplete() const override {
+    return mFence->GetCompletedValue() >= mFenceValue;
+  }
+
+  void Wait() const override {
+    if (!IsComplete()) {
+      WaitForSingleObject(mEvent.get(), INFINITE);
+    }
+  }
+
+ private:
+  wil::unique_event mEvent;
+  wil::com_ptr<ID3D11Fence> mFence {nullptr};
+  uint64_t mFenceValue {};
+};
+
+}// namespace
+
 class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
  public:
   FramePainter() = delete;
   FramePainter(Win32Direct2DWindow* window, uint8_t frameIndex)
     : mWindow(window),
       mFrameIndex(frameIndex),
-      mRenderer(window->mD3DDevice.get(), window->mD2DDeviceContext.get()) {
+      mRenderer(
+        window->mD3DDevice.get(),
+        window->mD2DDeviceContext.get(),
+        std::make_shared<D3D11CompletionFlag>(
+          window->mFence.get(),
+          ++window->mFenceValue)) {
     mWindow->BeforePaintFrame(frameIndex);
   }
 
@@ -143,6 +176,8 @@ void Win32Direct2DWindow::InitializeD3D() {
   mSharedResources = SharedResources::Get(this->GetDXGIFactory());
   mD3DDevice = mSharedResources->mD3DDevice;
   mD3DDeviceContext = mSharedResources->mD3DDeviceContext;
+  CheckHResult(mD3DDevice->CreateFence(
+    mFenceValue, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(mFence.put())));
 }
 
 void Win32Direct2DWindow::InitializeDirect2D() {

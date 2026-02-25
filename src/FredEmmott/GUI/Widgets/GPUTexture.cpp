@@ -3,7 +3,6 @@
 
 #include "GPUTexture.hpp"
 
-#include "FredEmmott/GUI/Direct2DRenderer.hpp"
 #include "FredEmmott/GUI/detail/immediate_detail.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -11,7 +10,9 @@ namespace FredEmmott::GUI::Widgets {
 GPUTexture::GPUTexture(const std::size_t id)
   : Widget(id, LiteralStyleClass {"GPUTexture"}, {}) {}
 
-GPUTexture::~GPUTexture() = default;
+GPUTexture::~GPUTexture() {
+  this->ClearImportedResourceCache();
+};
 
 void GPUTexture::SetContent(
   const ImportedTexture::HandleKind kind,
@@ -21,29 +22,44 @@ void GPUTexture::SetContent(
   const Rect& sourceRect,
   const std::optional<Rect>& destRect) {
   mTextureHandleKind = kind;
-  mTexture = texture;
-  mFence = fence;
+  mTextureHandle = texture;
+  mFenceHandle = fence;
   mFenceValue = fenceValue;
   mSourceRect = sourceRect;
   mDestRect = destRect;
+}
+
+void GPUTexture::ClearImportedResourceCache() {
+  const auto textures = std::exchange(mTextures, {});
+  const auto fences = std::exchange(mFences, {});
+  for (auto&& it: textures | std::views::values) {
+    it.mFlag->Wait();
+  }
+  for (auto&& it: fences | std::views::values) {
+    it.mFlag->Wait();
+  }
 }
 
 void GPUTexture::PaintOwnContent(
   Renderer* renderer,
   const Rect& widgetRect,
   const Style&) const {
-  if (!mTexture) {
+  if (!mTextureHandle) {
     return;
   }
-  FUI_ASSERT(mFence);
+  FUI_ASSERT(mFenceHandle);
   FUI_ASSERT(mFenceValue);
-  const auto rendererImpl = direct2d_renderer_cast(renderer);
-  if (!rendererImpl) {
-    return;
+
+  auto& texture = mTextures[mTextureHandle];
+  if (!texture.mTexture) {
+    texture.mTexture
+      = renderer->ImportTexture(mTextureHandleKind, mTextureHandle);
   }
-  const auto texture
-    = rendererImpl->ImportTexture(mTextureHandleKind, mTexture);
-  const auto fence = rendererImpl->ImportFence(mFence);
+  auto& fence = mFences[mFenceHandle];
+  if (!fence.mFence) {
+    fence.mFence = renderer->ImportFence(mFenceHandle);
+  }
+  texture.mFlag = fence.mFlag = renderer->GetGPUCompletionFlagForCurrentFrame();
 
   auto dest = widgetRect;
   if (mDestRect) {
@@ -52,8 +68,8 @@ void GPUTexture::PaintOwnContent(
   }
 
   renderer->PushClipRect(widgetRect);
-  rendererImpl->DrawTexture(
-    mSourceRect, dest, texture.get(), fence.get(), mFenceValue);
+  renderer->DrawTexture(
+    mSourceRect, dest, texture.mTexture.get(), fence.mFence.get(), mFenceValue);
   renderer->PopClipRect();
 }
 

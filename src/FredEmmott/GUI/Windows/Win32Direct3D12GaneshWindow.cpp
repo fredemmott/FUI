@@ -102,6 +102,32 @@ void ConfigureD3DDebugLayer(
   CheckHResult(infoQueue->PushStorageFilter(&filter));
 #endif
 }
+
+struct D3D12CompletionFlag : GPUCompletionFlag {
+  D3D12CompletionFlag(ID3D12Fence* const fence, const uint64_t fenceValue)
+    : mEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr)),
+      mFence(fence),
+      mFenceValue(fenceValue) {
+    CheckHResult(mFence->SetEventOnCompletion(fenceValue, mEvent.get()));
+  }
+  ~D3D12CompletionFlag() override = default;
+
+  bool IsComplete() const override {
+    return mFence->GetCompletedValue() >= mFenceValue;
+  }
+
+  void Wait() const override {
+    if (!IsComplete()) {
+      WaitForSingleObject(mEvent.get(), INFINITE);
+    }
+  }
+
+ private:
+  wil::unique_event mEvent;
+  wil::com_ptr<ID3D12Fence> mFence {nullptr};
+  uint64_t mFenceValue {};
+};
+
 }// namespace
 
 class Win32Direct3D12GaneshWindow::FramePainter final
@@ -111,7 +137,15 @@ class Win32Direct3D12GaneshWindow::FramePainter final
   FramePainter(Win32Direct3D12GaneshWindow* window, uint8_t frameIndex)
     : mWindow(window),
       mFrameIndex(frameIndex),
-      mRenderer(window->mFrames.at(frameIndex).mSkSurface->getCanvas()) {
+      mRenderer(
+        SkiaRenderer::NativeDevice {
+          window->mD3DDevice.get(),
+          window->mD3DCommandQueue.get(),
+          window->mSkContext.get()},
+        window->mFrames.at(frameIndex).mSkSurface->getCanvas(),
+        std::make_shared<D3D12CompletionFlag>(
+          window->mD3DFence.get(),
+          window->mFrames.at(frameIndex).mFenceValue)) {
     mWindow->BeforePaintFrame(frameIndex);
   }
 
@@ -148,10 +182,11 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
   auto ret = std::shared_ptr<SharedResources>(new SharedResources());
 
 #ifndef NDEBUG
-  wil::com_ptr<ID3D12Debug> d3d12Debug;
+  wil::com_ptr<ID3D12Debug5> d3d12Debug;
   D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
   if (d3d12Debug) {
     d3d12Debug->EnableDebugLayer();
+    d3d12Debug->SetEnableAutoName(true);
   }
 #endif
 
@@ -289,11 +324,12 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
 
 void Win32Direct3D12GaneshWindow::AfterPaintFrame(uint8_t frameIndex) {
   auto& frame = mFrames.at(frameIndex);
+  FUI_ASSERT(frame.mFenceValue > 0);
+  FUI_ASSERT(frame.mFenceValue == mFenceValue);
 
   GrD3DFenceInfo fenceInfo {};
   fenceInfo.fFence.retain(mD3DFence.get());
-  fenceInfo.fValue = ++mFenceValue;
-  frame.mFenceValue = fenceInfo.fValue;
+  fenceInfo.fValue = frame.mFenceValue;
   GrBackendSemaphore flushSemaphore;
   flushSemaphore.initDirect3D(fenceInfo);
 
@@ -334,19 +370,19 @@ std::unique_ptr<Win32Window> Win32Direct3D12GaneshWindow::CreatePopup(
 
 std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>
 Win32Direct3D12GaneshWindow::GetFramePainter(uint8_t frameIndex) {
+  auto& frame = mFrames.at(frameIndex);
+
+  if (frame.mFenceValue) {
+    mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
+    WaitForSingleObject(mFenceEvent.get(), INFINITE);
+  }
+  frame.mFenceValue = ++mFenceValue;
+
   return std::unique_ptr<BasicFramePainter> {
     new FramePainter(this, frameIndex)};
 }
 
-void Win32Direct3D12GaneshWindow::BeforePaintFrame(uint8_t frameIndex) {
-  const auto& frame = mFrames.at(frameIndex);
-
-  if (!frame.mFenceValue) {
-    return;
-  }
-
-  mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
-  WaitForSingleObject(mFenceEvent.get(), INFINITE);
-}
+void Win32Direct3D12GaneshWindow::BeforePaintFrame(
+  [[maybe_unused]] uint8_t frameIndex) {}
 
 }// namespace FredEmmott::GUI

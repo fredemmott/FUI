@@ -9,11 +9,20 @@ target_link_libraries(
   PRIVATE
   fredemmott-gui
 )
-target_include_directories(
-  fredemmott-gui-demo
-  PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}"
-)
+if (WIN32)
+  # Used for VRAMTexture() demo even if using Skia
+  #
+  # If FUI isn't using D3D11+D2D, this tests cross-API texture and fence behavior
+  foreach (NAME IN ITEMS DXGI D3d11)
+    find_library("${NAME}_PATH" "${NAME}" REQUIRED)
+    target_link_libraries(fredemmott-gui PRIVATE "${${NAME}_PATH}")
+  endforeach ()
+  target_include_directories(
+    fredemmott-gui-demo
+    PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+endif ()
 
 set(NAME fui-demo)
 if (ENABLE_SKIA)

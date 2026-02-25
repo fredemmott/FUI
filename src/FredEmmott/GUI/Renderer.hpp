@@ -38,6 +38,13 @@ struct ImportedFence {
   virtual ~ImportedFence() = default;
 };
 
+struct GPUCompletionFlag {
+  virtual ~GPUCompletionFlag() = default;
+  [[nodiscard]]
+  virtual bool IsComplete() const = 0;
+  virtual void Wait() const = 0;
+};
+
 class Renderer {
  public:
   virtual ~Renderer() = default;
@@ -100,6 +107,24 @@ class Renderer {
     const Font& font,
     std::string_view text,
     const Point& baseline) = 0;
+
+  [[nodiscard]]
+  virtual std::unique_ptr<ImportedTexture> ImportTexture(
+    ImportedTexture::HandleKind,
+    HANDLE) const = 0;
+
+  [[nodiscard]]
+  virtual std::unique_ptr<ImportedFence> ImportFence(HANDLE) const = 0;
+
+  virtual void DrawTexture(
+    const Rect& sourceRect,
+    const Rect& destRect,
+    ImportedTexture* texture,
+    ImportedFence* fence,
+    uint64_t fenceValue) = 0;
+
+  virtual std::shared_ptr<GPUCompletionFlag>
+  GetGPUCompletionFlagForCurrentFrame() const = 0;
 };
 
 }// namespace FredEmmott::GUI

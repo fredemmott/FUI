@@ -20,7 +20,8 @@ class Direct2DRenderer final : public Renderer {
   Direct2DRenderer() = delete;
   explicit Direct2DRenderer(
     ID3D11Device5* device,
-    ID2D1DeviceContext* deviceContext);
+    ID2D1DeviceContext* deviceContext,
+    std::shared_ptr<GPUCompletionFlag> frameCompletionFlag);
   ~Direct2DRenderer() override;
 
   // State management
@@ -74,17 +75,20 @@ class Direct2DRenderer final : public Renderer {
   [[nodiscard]]
   std::unique_ptr<ImportedTexture> ImportTexture(
     ImportedTexture::HandleKind,
-    HANDLE) const;
+    HANDLE) const override;
 
   [[nodiscard]]
-  std::unique_ptr<ImportedFence> ImportFence(HANDLE) const;
+  std::unique_ptr<ImportedFence> ImportFence(HANDLE) const override;
 
   void DrawTexture(
     const Rect& sourceRect,
     const Rect& destRect,
     ImportedTexture* texture,
     ImportedFence* fence,
-    uint64_t fenceValue);
+    uint64_t fenceValue) override;
+
+  std::shared_ptr<GPUCompletionFlag> GetGPUCompletionFlagForCurrentFrame()
+    const override;
 
  private:
   struct StateStackFrame {
@@ -94,6 +98,7 @@ class Direct2DRenderer final : public Renderer {
   ID3D11Device5* mD3DDevice = nullptr;
   wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
   ID2D1DeviceContext* mDeviceContext = nullptr;
+  std::shared_ptr<GPUCompletionFlag> mFrameCompletionFlag;
 
   std::stack<StateStackFrame> mStateStack;
 

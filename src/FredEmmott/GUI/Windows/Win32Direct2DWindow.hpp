@@ -51,6 +51,9 @@ class Win32Direct2DWindow final : public Win32Window {
   // which automatically rotates to the front of the swapchain
   FrameContext mFrame {};
 
+  wil::com_ptr<ID3D11Fence> mFence;
+  uint64_t mFenceValue {};
+
   void InitializeD3D();
   void InitializeDirect2D();
 

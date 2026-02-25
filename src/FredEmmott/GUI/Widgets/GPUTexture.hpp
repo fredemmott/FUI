@@ -22,17 +22,31 @@ class GPUTexture final : public Widget {
     const Rect& sourceRect,
     const std::optional<Rect>& destRect = std::nullopt);
 
+  void ClearImportedResourceCache();
+
  protected:
   void PaintOwnContent(Renderer*, const Rect&, const Style& style)
     const override;
 
  private:
   ImportedTexture::HandleKind mTextureHandleKind {};
-  HANDLE mTexture {};
-  HANDLE mFence {};
+  HANDLE mTextureHandle {};
+  HANDLE mFenceHandle {};
   uint64_t mFenceValue {};
   Rect mSourceRect {};
   std::optional<Rect> mDestRect {};
+
+  struct TextureAndFlag {
+    std::unique_ptr<ImportedTexture> mTexture;
+    std::shared_ptr<GPUCompletionFlag> mFlag;
+  };
+  struct FenceAndFlag {
+    std::unique_ptr<ImportedFence> mFence;
+    std::shared_ptr<GPUCompletionFlag> mFlag;
+  };
+
+  mutable std::unordered_map<HANDLE, TextureAndFlag> mTextures {};
+  mutable std::unordered_map<HANDLE, FenceAndFlag> mFences {};
 };
 
 }// namespace FredEmmott::GUI::Widgets

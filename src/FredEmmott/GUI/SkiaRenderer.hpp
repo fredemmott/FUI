@@ -7,13 +7,30 @@
 #include <FredEmmott/GUI/config.hpp>
 
 #include "Renderer.hpp"
+#include "Windows/Win32Direct3D12GaneshWindow.hpp"
+
+#ifdef _WIN32
+struct ID3D12Device;
+#endif
+
+#include <skia/gpu/ganesh/GrDirectContext.h>
 
 namespace FredEmmott::GUI {
 
 class SkiaRenderer final : public Renderer {
  public:
+  struct NativeDevice {
+#ifdef _WIN32
+    ID3D12Device* mD3DDevice {nullptr};
+    ID3D12CommandQueue* mD3DCommandQueue {nullptr};
+    GrDirectContext* mSkiaContext {nullptr};
+#endif
+  };
   SkiaRenderer() = delete;
-  explicit SkiaRenderer(SkCanvas*);
+  explicit SkiaRenderer(
+    const NativeDevice&,
+    SkCanvas*,
+    std::shared_ptr<GPUCompletionFlag>);
   ~SkiaRenderer() override;
 
   // State management
@@ -68,8 +85,28 @@ class SkiaRenderer final : public Renderer {
     return mCanvas;
   }
 
+  [[nodiscard]]
+  std::unique_ptr<ImportedTexture> ImportTexture(
+    ImportedTexture::HandleKind,
+    HANDLE) const override;
+
+  [[nodiscard]]
+  std::unique_ptr<ImportedFence> ImportFence(HANDLE) const override;
+
+  void DrawTexture(
+    const Rect& sourceRect,
+    const Rect& destRect,
+    ImportedTexture* texture,
+    ImportedFence* fence,
+    uint64_t fenceValue) override;
+
+  std::shared_ptr<GPUCompletionFlag> GetGPUCompletionFlagForCurrentFrame()
+    const override;
+
  private:
+  NativeDevice mNativeDevice {};
   SkCanvas* mCanvas {nullptr};
+  std::shared_ptr<GPUCompletionFlag> mFrameCompletionFlag;
 #ifndef NDEBUG
   std::size_t mStackDepth {};
 #endif

@@ -3,15 +3,52 @@
 
 #include "SkiaRenderer.hpp"
 
+#include <skia/core/SkImage.h>
 #include <skia/core/SkRRect.h>
 
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
 
 #include "assert.hpp"
 
+#ifdef _WIN32
+#include <d3d12.h>
+#include <skia/gpu/ganesh/GrBackendSemaphore.h>
+#include <skia/gpu/ganesh/GrBackendSurface.h>
+#include <skia/gpu/ganesh/SkImageGanesh.h>
+#include <skia/gpu/ganesh/d3d/GrD3DTypes.h>
+#include <wil/com.h>
+
+#include "detail/win32_detail.hpp"
+#endif
+
 namespace FredEmmott::GUI {
 
-SkiaRenderer::SkiaRenderer(SkCanvas* canvas) : mCanvas(canvas) {
+namespace {
+struct ImportedSkiaTexture : ImportedTexture {
+  ~ImportedSkiaTexture() override = default;
+
+#ifdef _WIN32
+  wil::com_ptr<ID3D12Resource> mTexture;
+#endif
+  sk_sp<SkImage> mSkiaImage;
+};
+
+struct ImportedSkiaFence : ImportedFence {
+  ~ImportedSkiaFence() override = default;
+
+#ifdef _WIN32
+  GrD3DFenceInfo mSkiaFence {};
+#endif
+};
+}// namespace
+
+SkiaRenderer::SkiaRenderer(
+  const NativeDevice& nativeDevice,
+  SkCanvas* canvas,
+  std::shared_ptr<GPUCompletionFlag> frameCompletionFlag)
+  : mNativeDevice(nativeDevice),
+    mCanvas(canvas),
+    mFrameCompletionFlag(std::move(frameCompletionFlag)) {
   FUI_ASSERT(canvas != nullptr);
   FUI_ASSERT(
     renderer_detail::GetRenderAPI() == renderer_detail::RenderAPI::Skia);
@@ -147,6 +184,116 @@ void SkiaRenderer::DrawText(
   paint.setStyle(SkPaint::Style::kFill_Style);
   mCanvas->drawString(
     SkString {text}, baseline.mX, baseline.mY, font.as<SkFont>(), paint);
+}
+
+std::unique_ptr<ImportedTexture> SkiaRenderer::ImportTexture(
+  [[maybe_unused]] const ImportedTexture::HandleKind kind,
+  HANDLE const handle) const {
+  FUI_ASSERT(
+    kind == ImportedTexture::HandleKind::NTHandle,
+    "Only NT HANDLEs are supported when using D3D12 (via Skia)");
+  FUI_ASSERT(handle);
+
+  auto ret = std::make_unique<ImportedSkiaTexture>();
+  win32_detail::CheckHResult(mNativeDevice.mD3DDevice->OpenSharedHandle(
+    handle, IID_PPV_ARGS(ret->mTexture.put())));
+
+  const auto d3dDesc = ret->mTexture->GetDesc();
+  const GrD3DTextureResourceInfo skiaDesc {
+    ret->mTexture.get(),
+    /* alloc = */ nullptr,
+    D3D12_RESOURCE_STATE_COMMON,
+    d3dDesc.Format,
+    d3dDesc.SampleDesc.Count,
+    d3dDesc.MipLevels,
+    d3dDesc.SampleDesc.Quality,
+  };
+
+  auto colorType = SkColorType::kUnknown_SkColorType;
+  switch (d3dDesc.Format) {
+    case DXGI_FORMAT_R8G8B8A8_UNORM:
+      colorType = SkColorType::kRGBA_8888_SkColorType;
+      break;
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+      colorType = SkColorType::kRGBA_8888_SkColorType;
+      break;
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+      colorType = SkColorType::kBGRA_8888_SkColorType;
+      break;
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+      colorType = SkColorType::kBGRA_8888_SkColorType;
+      break;
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+      colorType = SkColorType::kRGBA_F16_SkColorType;
+      break;
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+      colorType = SkColorType::kRGBA_1010102_SkColorType;
+      break;
+    default:
+      throw std::runtime_error(
+        std::format(
+          "Unsupported DXGI format: {}", std::to_underlying(d3dDesc.Format)));
+  }
+
+  const GrBackendTexture skiaTexture(d3dDesc.Width, d3dDesc.Height, skiaDesc);
+  ret->mSkiaImage = SkImages::AdoptTextureFrom(
+    mNativeDevice.mSkiaContext,
+    skiaTexture,
+    kTopLeft_GrSurfaceOrigin,
+    colorType);
+
+  return std::move(ret);
+}
+
+std::unique_ptr<ImportedFence> SkiaRenderer::ImportFence(
+  const HANDLE handle) const {
+  FUI_ASSERT(handle);
+  auto ret = std::make_unique<ImportedSkiaFence>();
+  win32_detail::CheckHResult(mNativeDevice.mD3DDevice->OpenSharedHandle(
+    handle, IID_PPV_ARGS(&ret->mSkiaFence.fFence)));
+  return std::move(ret);
+}
+
+void SkiaRenderer::DrawTexture(
+  const Rect& sourceRect,
+  const Rect& destRect,
+  ImportedTexture* const rawTexture,
+  ImportedFence* const rawFence,
+  const uint64_t fenceValue) {
+  FUI_ASSERT(rawTexture);
+  FUI_ASSERT(rawFence);
+  FUI_ASSERT(fenceValue, "A wait for fence 0 always succeeds");
+
+#ifndef NDEBUG
+#define IMPL_CAST dynamic_cast
+#else
+#define IMPL_CAST static_cast
+#endif
+  const auto skiaImage
+    = IMPL_CAST<ImportedSkiaTexture*>(rawTexture)->mSkiaImage.get();
+  const auto fence = &IMPL_CAST<ImportedSkiaFence*>(rawFence)->mSkiaFence;
+#undef IMPL_CAST
+  FUI_ASSERT(skiaImage && fence);
+
+#ifdef _WIN32
+  fence->fValue = fenceValue;
+  GrBackendSemaphore semaphore;
+  semaphore.initDirect3D(*fence);
+  mNativeDevice.mSkiaContext->wait(1, &semaphore, false);
+#endif
+
+  mCanvas->drawImageRect(
+    skiaImage,
+    sourceRect,
+    destRect,
+    SkSamplingOptions {SkFilterMode::kNearest},
+    nullptr,
+    SkCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
+}
+
+std::shared_ptr<GPUCompletionFlag>
+SkiaRenderer::GetGPUCompletionFlagForCurrentFrame() const {
+  return mFrameCompletionFlag;
 }
 
 }// namespace FredEmmott::GUI
