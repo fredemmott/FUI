@@ -4,6 +4,13 @@ This is a work-in-progress, visually recreating WinUI3 using Skia, and an API th
 
 While it is capable of rendering to texture for integration in other rendering pipelines, it is primarily intended for GUI app development.
 
+While the API 'feels' immediate-mode, this is a wrapper over an internal retained-mode framework that provides features like:
+
+- Layout inspired by CSS Flexbox ([Yoga](https://www.yogalayout.dev))
+- Managed animations
+- System APIs for international and emoji input
+- 🚧 System APIs for accessibility (WIP)
+
 You shouldn't use this (yet?).
 
 ## Example
