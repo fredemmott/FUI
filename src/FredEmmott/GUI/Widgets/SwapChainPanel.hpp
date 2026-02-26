@@ -4,6 +4,9 @@
 
 #include "Widget.hpp"
 
+struct ID3D11Device3;
+struct ID3D12Device;
+
 namespace FredEmmott::GUI::Widgets {
 
 class SwapChainPanel final : public Widget {
@@ -64,9 +67,18 @@ class SwapChainPanel final : public Widget {
   std::shared_ptr<Resources> mResources;
 
   void Init(Renderer* renderer, const Size& size);
+
 #ifdef FUI_ENABLE_DIRECT2D
   [[nodiscard]]
+  bool InitD3D11(ID3D11Device3*, Renderer*, const Size&);
+  [[nodiscard]]
   bool InitD3D11(Renderer*, const Size&);
+#endif
+#ifdef FUI_ENABLE_SKIA
+  [[nodiscard]]
+  bool InitD3D12(ID3D12Device*, Renderer*, const Size&);
+  [[nodiscard]]
+  bool InitSkia(Renderer*, const Size&);
 #endif
 };
 

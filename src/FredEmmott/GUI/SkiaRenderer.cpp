@@ -262,7 +262,7 @@ void SkiaRenderer::DrawTexture(
   const uint64_t fenceValue) {
   FUI_ASSERT(rawTexture);
   FUI_ASSERT(rawFence);
-  FUI_ASSERT(fenceValue, "A wait for fence 0 always succeeds");
+  FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
 
 #ifndef NDEBUG
 #define IMPL_CAST dynamic_cast
