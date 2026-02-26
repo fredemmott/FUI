@@ -27,9 +27,6 @@ namespace {
 struct ImportedSkiaTexture : ImportedTexture {
   ~ImportedSkiaTexture() override = default;
 
-#ifdef _WIN32
-  wil::com_ptr<ID3D12Resource> mTexture;
-#endif
   sk_sp<SkImage> mSkiaImage;
 };
 
@@ -194,20 +191,12 @@ std::unique_ptr<ImportedTexture> SkiaRenderer::ImportTexture(
     "Only NT HANDLEs are supported when using D3D12 (via Skia)");
   FUI_ASSERT(handle);
 
+  wil::com_ptr<ID3D12Resource> texture;
   auto ret = std::make_unique<ImportedSkiaTexture>();
   win32_detail::CheckHResult(mNativeDevice.mD3DDevice->OpenSharedHandle(
-    handle, IID_PPV_ARGS(ret->mTexture.put())));
+    handle, IID_PPV_ARGS(texture.put())));
 
-  const auto d3dDesc = ret->mTexture->GetDesc();
-  const GrD3DTextureResourceInfo skiaDesc {
-    ret->mTexture.get(),
-    /* alloc = */ nullptr,
-    D3D12_RESOURCE_STATE_COMMON,
-    d3dDesc.Format,
-    d3dDesc.SampleDesc.Count,
-    d3dDesc.MipLevels,
-    d3dDesc.SampleDesc.Quality,
-  };
+  const auto d3dDesc = texture->GetDesc();
 
   auto colorType = SkColorType::kUnknown_SkColorType;
   switch (d3dDesc.Format) {
@@ -234,6 +223,17 @@ std::unique_ptr<ImportedTexture> SkiaRenderer::ImportTexture(
         std::format(
           "Unsupported DXGI format: {}", std::to_underlying(d3dDesc.Format)));
   }
+
+  const GrD3DTextureResourceInfo skiaDesc {
+    // AdoptTextureFrom() takes ownership of the texture
+    texture.detach(),
+    /* alloc = */ nullptr,
+    D3D12_RESOURCE_STATE_COMMON,
+    d3dDesc.Format,
+    d3dDesc.SampleDesc.Count,
+    d3dDesc.MipLevels,
+    d3dDesc.SampleDesc.Quality,
+  };
 
   const GrBackendTexture skiaTexture(d3dDesc.Width, d3dDesc.Height, skiaDesc);
   ret->mSkiaImage = SkImages::AdoptTextureFrom(
