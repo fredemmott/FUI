@@ -37,7 +37,7 @@ class Win32Direct2DWindow final : public Win32Window {
   static std::weak_ptr<SharedResources> gSharedResources;
 
   wil::com_ptr<ID3D11Device5> mD3DDevice;
-  wil::com_ptr<ID3D11DeviceContext> mD3DDeviceContext;
+  wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
   wil::com_ptr<ID2D1Factory3> mD2DFactory;
   wil::com_ptr<ID2D1Device2> mD2DDevice;
   wil::com_ptr<ID2D1DeviceContext2> mD2DDeviceContext;
@@ -45,6 +45,7 @@ class Win32Direct2DWindow final : public Win32Window {
 
   struct FrameContext {
     wil::com_ptr<ID2D1Bitmap1> mD2DTargetBitmap;
+    uint64_t mFenceValue {};
   };
 
   // We're ultimately backed by D3D11, which exposes a single magical buffer
@@ -52,7 +53,7 @@ class Win32Direct2DWindow final : public Win32Window {
   FrameContext mFrame {};
 
   wil::com_ptr<ID3D11Fence> mFence;
-  uint64_t mFenceValue {};
+  uint64_t mUsedFenceValue {0};
 
   void InitializeD3D();
   void InitializeDirect2D();

@@ -11,6 +11,7 @@ class Button : public Widget, public IInvocable {
  public:
   explicit Button(std::size_t id);
   explicit Button(std::size_t id, const ImmutableStyle&, const StyleClasses&);
+  ~Button() override;
 
   static ImmutableStyle MakeImmutableStyle(const Style& mixin);
 

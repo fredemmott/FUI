@@ -3,6 +3,7 @@
 
 #include "SwapChainPanel.hpp"
 
+#include <felly/guarded_data.hpp>
 #include <felly/numeric_cast.hpp>
 
 #include "FredEmmott/GUI/Window.hpp"
@@ -22,64 +23,95 @@ constexpr auto SwapChainLength = 3;
 }// namespace
 
 struct SwapChainPanel::Resources {
+  struct GuardedData {
+    std::optional<Submission> mContent;
+    Window* mOwnerWindow {};
+  };
+
+  Resources() = delete;
   virtual ~Resources() = default;
-  std::array<HANDLE, SwapChainLength> mTextureHandles;
+  explicit Resources(GuardedData gd) : mGuarded(std::move(gd)) {}
+
+  felly::guarded_data<GuardedData> mGuarded;
+
+  std::array<HANDLE, SwapChainLength> mTextureHandles {};
   std::array<std::unique_ptr<ImportedTexture>, SwapChainLength>
-    mImportedTextures;
+    mImportedTextures {};
   std::array<bool, SwapChainLength> mHandlesAreNew {true};
   BasicSize<DWORD> mTextureSize;
 
   HANDLE mFenceHandle {};
   std::unique_ptr<ImportedFence> mFence;
 
-  struct D3D11;
-};
-
+  std::atomic_flag mReady;
+  std::atomic<uint64_t> mNextFrameNumber {};
 #ifdef FUI_ENABLE_DIRECT2D
-struct SwapChainPanel::Resources::D3D11 : SwapChainPanel::Resources {
-  ~D3D11() override = default;
-
-  std::array<wil::com_ptr<ID3D11Texture2D1>, SwapChainLength> mTextures;
-  wil::com_ptr<ID3D11Fence> mFence;
-  HANDLE mFenceHandle {};
-};
+  struct D3D11 {
+    std::array<wil::com_ptr<ID3D11Texture2D1>, SwapChainLength> mTextures;
+  };
+  D3D11 mD3D11 {};
 #endif
+};
 
 SwapChainPanel::SwapChainPanel(const std::size_t id)
-  : Widget(id, LiteralStyleClass {"SwapChainPanel"}, {}) {}
+  : Widget(id, LiteralStyleClass {"SwapChainPanel"}, {}) {
+  mResources.reset(new Resources(
+    Resources::GuardedData {.mOwnerWindow = this->GetOwnerWindow()}));
+}
 
-SwapChainPanel::~SwapChainPanel() = default;
+SwapChainPanel::~SwapChainPanel() {
+  mResources->mGuarded.lock()->mOwnerWindow = nullptr;
+}
 
-SwapChainBeginFrameInfo SwapChainPanel::BeginFrame() {
-  mReady.wait(false);
-  const auto frameNumber = mNextFrameNumber++;
+SwapChainPanel::SwapChain SwapChainPanel::GetSwapChain() const noexcept {
+  return SwapChain {mResources};
+}
+
+SwapChainPanel::SwapChain::~SwapChain() {}
+std::optional<SwapChainPanel::SwapChain::BeginFrameInfo>
+SwapChainPanel::SwapChain::BeginFrame() {
+  FUI_ASSERT(!mStrong);
+  mStrong = mWeak.lock();
+  if (!mStrong) {
+    return {};
+  }
+
+  mStrong->mReady.wait(false);
+  const auto frameNumber = mStrong->mNextFrameNumber++;
   const auto idx = frameNumber % SwapChainLength;
-  return SwapChainBeginFrameInfo {
+  return BeginFrameInfo {
     .mSequenceNumber = frameNumber,
     .mTextureSize = {
-      static_cast<uint16_t>(mResources->mTextureSize.mWidth),
-      static_cast<uint16_t>(mResources->mTextureSize.mHeight),
+      static_cast<uint16_t>(mStrong->mTextureSize.mWidth),
+      static_cast<uint16_t>(mStrong->mTextureSize.mHeight),
       },
-    .mMustFlushCachedHandles = mResources->mHandlesAreNew[idx],
-    .mTexture = mResources->mTextureHandles[idx],
+    .mMustFlushCachedHandles = mStrong->mHandlesAreNew[idx],
+    .mTexture = mStrong->mTextureHandles[idx],
   };
 }
 
-void SwapChainPanel::EndFrame(
-  const SwapChainBeginFrameInfo& begin,
-  const SwapChainEndFrameInfo& end) {
-  FUI_ASSERT(begin.mSequenceNumber == mNextFrameNumber - 1);
+void SwapChainPanel::SwapChain::EndFrame(
+  const BeginFrameInfo& begin,
+  const EndFrameInfo& end) {
+  FUI_ASSERT(mStrong);
+
+  FUI_ASSERT(begin.mSequenceNumber == mStrong->mNextFrameNumber - 1);
   const auto idx = begin.mSequenceNumber % SwapChainLength;
-  mResources->mHandlesAreNew[idx] = false;
+  mStrong->mHandlesAreNew[idx] = false;
 
   Submission ret {
-    .mTexture = mResources->mImportedTextures[idx].get(),
+    .mTexture = mStrong->mImportedTextures[idx].get(),
     .mFenceIsNew = end.mFenceIsNew,
     .mFenceHandle = end.mFence,
     .mFenceValue = end.mFenceValue,
   };
-  mContent.lock()->emplace(std::move(ret));
-  GetOwnerWindow()->InterruptWaitFrame();
+
+  auto guarded = mStrong->mGuarded.lock();
+  if (guarded->mOwnerWindow) {
+    guarded->mContent = std::move(ret);
+    guarded->mOwnerWindow->InterruptWaitFrame();
+  }
+  mStrong.reset();
 }
 
 void SwapChainPanel::PaintOwnContent(
@@ -88,28 +120,29 @@ void SwapChainPanel::PaintOwnContent(
   const Style&) const {
   const_cast<SwapChainPanel*>(this)->Init(renderer, rect.mSize);
 
-  const auto content = mContent.lock();
-  if (!(content && content->has_value())) {
+  const auto lock = mResources->mGuarded.lock();
+  if (!lock->mContent) {
     return;
   }
+  auto& content = *lock->mContent;
 
   const auto r = mResources.get();
-  if ((*content)->mFenceIsNew || (*content)->mFenceHandle != r->mFenceHandle) {
-    r->mFenceHandle = (*content)->mFenceHandle;
+  if (content.mFenceIsNew || content.mFenceHandle != r->mFenceHandle) {
+    r->mFenceHandle = content.mFenceHandle;
     r->mFence = renderer->ImportFence(r->mFenceHandle);
   }
   renderer->DrawTexture(
-    rect, rect, (*content)->mTexture, r->mFence.get(), (*content)->mFenceValue);
+    rect, rect, content.mTexture, r->mFence.get(), content.mFenceValue);
 }
 
 void SwapChainPanel::Init(Renderer* renderer, const Size& size) {
-  if (mReady.test()) {
+  if (mResources && mResources->mReady.test()) {
     return;
   }
   const auto initialized = InitD3D11(renderer, size);
   FUI_ALWAYS_ASSERT(initialized);
-  FUI_ALWAYS_ASSERT(!mReady.test_and_set());
-  mReady.notify_all();
+  FUI_ALWAYS_ASSERT(!mResources->mReady.test_and_set());
+  mResources->mReady.notify_all();
 }
 
 #ifdef FUI_ENABLE_DIRECT2D
@@ -119,7 +152,7 @@ bool SwapChainPanel::InitD3D11(Renderer* raw, const Size& size) {
     return false;
   }
   auto d3d = renderer->GetD3DDevice();
-  auto r = std::make_unique<Resources::D3D11>();
+  const auto r = mResources.get();
 
   r->mTextureSize = {
     felly::numeric_cast<DWORD>(size.mWidth),
@@ -137,7 +170,7 @@ bool SwapChainPanel::InitD3D11(Renderer* raw, const Size& size) {
     = D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED,
   };
   for (auto i = 0; i < SwapChainLength; ++i) {
-    auto& texture = r->mTextures[i];
+    auto& texture = r->mD3D11.mTextures[i];
     CheckHResult(d3d->CreateTexture2D1(&desc, nullptr, texture.put()));
     const auto resource = texture.query<IDXGIResource1>();
     CheckHResult(resource->CreateSharedHandle(
@@ -149,7 +182,6 @@ bool SwapChainPanel::InitD3D11(Renderer* raw, const Size& size) {
       ImportedTexture::HandleKind::NTHandle, r->mTextureHandles[i]);
   }
 
-  mResources = std::move(r);
   return true;
 }
 #endif

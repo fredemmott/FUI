@@ -21,7 +21,12 @@ Root::Root() {
   YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
 }
+
 Root::~Root() {}
+
+void Root::Reset() {
+  mWidgetRoot.reset();
+}
 
 void Root::BeginFrame() {
   if (!tStack.empty()) [[unlikely]] {

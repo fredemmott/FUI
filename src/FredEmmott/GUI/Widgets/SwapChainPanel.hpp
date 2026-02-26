@@ -2,41 +2,58 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <felly/guarded_data.hpp>
-
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-struct SwapChainBeginFrameInfo {
-  uint64_t mSequenceNumber {};
-  BasicSize<uint16_t> mTextureSize {};
-
-  bool mMustFlushCachedHandles {};
-
-  HANDLE mTexture {};
-};
-
-struct SwapChainEndFrameInfo {
-  HANDLE mFence {};
-  uint64_t mFenceValue {};
-  bool mFenceIsNew {true};
-};
-
 class SwapChainPanel final : public Widget {
+ private:
+  struct Resources;
+
  public:
+  struct SwapChain final {
+    constexpr SwapChain() = default;
+    explicit SwapChain(std::weak_ptr<Resources> weak)
+      : mWeak(std::move(weak)) {}
+    SwapChain(const SwapChain&) = default;
+    SwapChain(SwapChain&&) = default;
+    SwapChain& operator=(const SwapChain&) = default;
+    SwapChain& operator=(SwapChain&&) = default;
+    ~SwapChain();
+
+    struct BeginFrameInfo {
+      uint64_t mSequenceNumber {};
+      BasicSize<uint16_t> mTextureSize {};
+
+      bool mMustFlushCachedHandles {};
+
+      HANDLE mTexture {};
+    };
+
+    struct EndFrameInfo {
+      HANDLE mFence {};
+      uint64_t mFenceValue {};
+      bool mFenceIsNew {true};
+    };
+
+    [[nodiscard]]
+    std::optional<BeginFrameInfo> BeginFrame();
+    void EndFrame(const BeginFrameInfo&, const EndFrameInfo&);
+
+   private:
+    std::weak_ptr<Resources> mWeak;
+    std::shared_ptr<Resources> mStrong;
+  };
+
   explicit SwapChainPanel(std::size_t id);
   ~SwapChainPanel() override;
 
-  [[nodiscard]]
-  SwapChainBeginFrameInfo BeginFrame();
-  void EndFrame(const SwapChainBeginFrameInfo&, const SwapChainEndFrameInfo&);
+  SwapChain GetSwapChain() const noexcept;
 
  protected:
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
  private:
-  struct Resources;
   struct Submission {
     ImportedTexture* mTexture {};
     bool mFenceIsNew {};
@@ -44,11 +61,7 @@ class SwapChainPanel final : public Widget {
     uint64_t mFenceValue {};
   };
 
-  std::atomic_flag mReady;
-  std::unique_ptr<Resources> mResources;
-  std::atomic<uint64_t> mNextFrameNumber {};
-
-  felly::guarded_data<std::optional<Submission>> mContent;
+  std::shared_ptr<Resources> mResources;
 
   void Init(Renderer* renderer, const Size& size);
 #ifdef FUI_ENABLE_DIRECT2D

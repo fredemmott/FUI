@@ -137,14 +137,15 @@ struct TextureProducer {
   }
 };
 struct SwapChainPusher {
-  fui::Widgets::SwapChainPanel* mPanel;
+  fui::Widgets::SwapChainPanel::SwapChain mSwapChain;
   wil::unique_handle mFence {};
   std::atomic<uint64_t> mFenceValue {};
   bool mEarlySignal {false};
 
   static constexpr fui::Size Size {128, 128};
 
-  SwapChainPusher(fui::Widgets::SwapChainPanel* panel) : mPanel(panel) {
+  SwapChainPusher(fui::Widgets::SwapChainPanel::SwapChain swapChain)
+    : mSwapChain(std::move(swapChain)) {
     mThread = std::jthread {std::bind_front(&SwapChainPusher::Run, this)};
   }
 
@@ -184,12 +185,15 @@ struct SwapChainPusher {
     static constexpr float Green[4] {0.f, 1.f, 0.f, 1.f};
     static constexpr float White[4] {1.f, 1.f, 1.f, 1.f};
     while (!stop.stop_requested()) {
-      const auto begin = mPanel->BeginFrame();
+      const auto begin = mSwapChain.BeginFrame();
+      if (!begin) {
+        return;
+      }
 
       const auto start = std::chrono::steady_clock::now();
       wil::com_ptr<ID3D11Texture2D> texture;
       CheckHResult(device->OpenSharedResource1(
-        begin.mTexture, IID_PPV_ARGS(texture.put())));
+        begin->mTexture, IID_PPV_ARGS(texture.put())));
       wil::com_ptr<ID3D11RenderTargetView> rtv;
       CheckHResult(
         device->CreateRenderTargetView(texture.get(), nullptr, rtv.put()));
@@ -221,12 +225,12 @@ struct SwapChainPusher {
         CheckHResult(context->Signal(fence.get(), mFenceValue));
       }
 
-      const fui::Widgets::SwapChainEndFrameInfo end {
+      const fui::Widgets::SwapChainPanel::SwapChain::EndFrameInfo end {
         .mFence = mFence.get(),
         .mFenceValue = mFenceValue,
         .mFenceIsNew = std::exchange(fenceIsNew, false),
       };
-      mPanel->EndFrame(begin, end);
+      mSwapChain.EndFrame(*begin, end);
 
       const auto elapsed = std::chrono::steady_clock::now() - start;
       std::this_thread::sleep_for(std::chrono::milliseconds(100) - elapsed);
@@ -470,7 +474,7 @@ static void AppTick(fui::Window& window) {
     fui::Style()
       .Width(SwapChainPusher::Size.mWidth)
       .Height(SwapChainPusher::Size.mHeight));
-  static SwapChainPusher swapChainPusher {swapChainPanel};
+  static SwapChainPusher swapChainPusher {swapChainPanel->GetSwapChain()};
   swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
 
   fuii::EndStackPanel();
