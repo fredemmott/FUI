@@ -17,16 +17,19 @@ concept hashable = requires(T v) {
 
 class ID final {
  public:
+  using value_type = uint64_t;
   ID() = delete;
-
-  template <hashable T>
-  explicit constexpr ID(const T& id) : mID(std::hash<T> {}(id)) {}
 
   template <size_t N>
   explicit constexpr ID(const char (&id)[N])
     : ID(std::string_view {id, N - 1}) {}
 
-  explicit constexpr ID(const std::size_t id) : mID(id) {}
+  explicit constexpr ID(const std::convertible_to<value_type> auto id)
+    : mID(id) {}
+
+  template <hashable T>
+    requires(!std::convertible_to<T, value_type>)
+  explicit constexpr ID(const T& id) : mID(std::hash<T> {}(id)) {}
 
   explicit constexpr ID(const std::source_location& location);
 
@@ -43,48 +46,34 @@ class ID final {
   }
 
   [[nodiscard]]
-  constexpr std::size_t GetValue() const noexcept {
+  constexpr value_type GetValue() const noexcept {
     return mID;
   }
 
  private:
-  std::size_t mID {};
-  constexpr std::size_t static HashStep(
-    const std::size_t hash,
+  value_type mID {};
+  static_assert(sizeof(value_type) == 8);
+  static constexpr value_type FNVPrime = 0x00000100000001b3;
+  static constexpr value_type FNVOffsetBasis = 0xcbf29ce484222325;
+
+  static constexpr value_type HashStep(
+    const value_type hash,
     const uint8_t byte) {
-    return (hash ^ byte) * FNVPrime();
+    return (hash ^ byte) * FNVPrime;
   }
 
   template <std::integral T>
     requires(!std::same_as<uint8_t, T>)
-  constexpr std::size_t static HashMixin(std::size_t hash, const T value) {
+  constexpr value_type static HashMixin(value_type hash, const T value) {
     for (auto&& byte: std::bit_cast<std::array<uint8_t, sizeof(T)>>(value)) {
       hash = HashStep(hash, byte);
     }
     return hash;
   }
 
-  // ReSharper disable once CppDFAConstantFunctionResult
-  static constexpr std::size_t FNVPrime() {
-    if constexpr (sizeof(std::size_t) == 8) {
-      return 0x00000100000001b3;
-    } else if constexpr (sizeof(std::size_t) == 4) {
-      return 0x01000193;
-    }
-  }
-
-  // ReSharper disable once CppDFAConstantFunctionResult
-  static constexpr std::size_t FNVOffsetBasis() {
-    if constexpr (sizeof(std::size_t) == 8) {
-      return 0xcbf29ce484222325;
-    } else if constexpr (sizeof(std::size_t) == 4) {
-      return 0x811c9dc5;
-    }
-  }
-
   /// FNV-1a
-  static constexpr std::size_t Hash(const std::string_view str) {
-    std::size_t hash = FNVOffsetBasis();
+  static constexpr value_type Hash(const std::string_view str) {
+    value_type hash = FNVOffsetBasis;
     for (const auto byte: str) {
       hash = HashStep(hash, static_cast<uint8_t>(byte));
     }

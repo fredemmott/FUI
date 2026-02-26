@@ -9,6 +9,8 @@
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
+static_assert(std::same_as<ID::value_type, Widgets::Widget::id_type>);
+
 template <std::derived_from<Widgets::Widget> T, class... Args>
 T* BeginWidget(const ID id, Args&&... args) {
   auto& frame = tStack.back();

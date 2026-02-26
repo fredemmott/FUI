@@ -156,7 +156,7 @@ void PaintBorder(
 }// namespace
 
 Widget::Widget(
-  const std::size_t id,
+  const id_type id,
   const StyleClass primaryClass,
   const ImmutableStyle& immutableStyle,
   const StyleClasses& classes)

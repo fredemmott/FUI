@@ -40,6 +40,8 @@ concept context = std::derived_from<T, Context>;
 
 class Widget {
  public:
+  using id_type = uint64_t;
+
   Widget() = delete;
   Widget(const Widget&) = delete;
   Widget(Widget&&) = delete;
@@ -47,7 +49,7 @@ class Widget {
   Widget& operator=(Widget&&) = delete;
 
   explicit Widget(
-    std::size_t id,
+    id_type id,
     StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
@@ -67,7 +69,7 @@ class Widget {
     return mYoga.get();
   }
 
-  std::size_t GetID() const noexcept {
+  id_type GetID() const noexcept {
     return mID;
   }
 
@@ -277,7 +279,7 @@ class Widget {
   unique_ptr<StyleTransitions> mStyleTransitions;
 
   ImmutableStyle mImmutableStyle;
-  const std::size_t mID {};
+  const id_type mID {};
   StyleClasses mClassList;
   unique_ptr<YGNode> mYoga;
 
