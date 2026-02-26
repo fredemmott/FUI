@@ -59,7 +59,7 @@ class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
         window->mD2DDeviceContext.get(),
         std::make_shared<D3D11CompletionFlag>(
           window->mFence.get(),
-          ++window->mFenceValue)) {
+          window->mFrame.mFenceValue = ++window->mUsedFenceValue)) {
     mWindow->BeforePaintFrame(frameIndex);
   }
 
@@ -79,7 +79,7 @@ class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
 
 struct Win32Direct2DWindow::SharedResources {
   wil::com_ptr<ID3D11Device5> mD3DDevice;
-  wil::com_ptr<ID3D11DeviceContext> mD3DDeviceContext;
+  wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
   wil::com_ptr<ID2D1Factory3> mD2DFactory;
   wil::com_ptr<ID2D1Device2> mD2DDevice;
   wil::com_ptr<IDWriteFactory> mDWriteFactory;
@@ -116,6 +116,7 @@ Win32Direct2DWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
 
   D3D_FEATURE_LEVEL featureLevel;
   wil::com_ptr<ID3D11Device> device;
+  wil::com_ptr<ID3D11DeviceContext> deviceContext;
   CheckHResult(D3D11CreateDevice(
     adapter.get(),
     D3D_DRIVER_TYPE_UNKNOWN,
@@ -126,8 +127,9 @@ Win32Direct2DWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
     D3D11_SDK_VERSION,
     device.put(),
     &featureLevel,
-    ret->mD3DDeviceContext.put()));
+    deviceContext.put()));
   device.query_to(ret->mD3DDevice.put());
+  deviceContext.query_to(ret->mD3DDeviceContext.put());
 
   // Create D2D factory
   D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
@@ -177,7 +179,7 @@ void Win32Direct2DWindow::InitializeD3D() {
   mD3DDevice = mSharedResources->mD3DDevice;
   mD3DDeviceContext = mSharedResources->mD3DDeviceContext;
   CheckHResult(mD3DDevice->CreateFence(
-    mFenceValue, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(mFence.put())));
+    0, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(mFence.put())));
 }
 
 void Win32Direct2DWindow::InitializeDirect2D() {
@@ -197,6 +199,7 @@ Win32Direct2DWindow::Win32Direct2DWindow(
   : Win32Window(instance, showCommand, options) {}
 
 Win32Direct2DWindow::~Win32Direct2DWindow() {
+  GetRoot()->Reset();
   this->CleanupFrameContexts();
 }
 
@@ -217,6 +220,7 @@ void Win32Direct2DWindow::CreateRenderTargets() {
 void Win32Direct2DWindow::AfterPaintFrame([[maybe_unused]] uint8_t frameIndex) {
   CheckHResult(mD2DDeviceContext->EndDraw());
   CheckHResult(GetSwapChain()->Present(0, DXGI_PRESENT_ALLOW_TEARING));
+  CheckHResult(mD3DDeviceContext->Signal(mFence.get(), mFrame.mFenceValue));
   mD2DDeviceContext->SetTarget(nullptr);
 }
 
@@ -241,7 +245,6 @@ Win32Direct2DWindow::GetFramePainter(uint8_t frameIndex) {
 void Win32Direct2DWindow::BeforePaintFrame(
   [[maybe_unused]] uint8_t frameIndex) {
   mD2DDeviceContext->SetTarget(mFrame.mD2DTargetBitmap.get());
-
   mD2DDeviceContext->BeginDraw();
   const auto dpi = GetDPIScale() * USER_DEFAULT_SCREEN_DPI;
   const auto scale = 1 / GetDPIScale();

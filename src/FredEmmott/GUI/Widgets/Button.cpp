@@ -27,6 +27,8 @@ Button::Button(
   const StyleClasses& classes)
   : Widget(id, ButtonStyleClass, style, classes) {}
 
+Button::~Button() = default;
+
 ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
   return ImmutableStyle {
     StaticTheme::Button::DefaultButtonStyle()

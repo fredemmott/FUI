@@ -129,6 +129,10 @@ class Window {
     return &mFUIRoot;
   }
 
+  auto GetRoot() noexcept {
+    return &mFUIRoot;
+  }
+
   void ResetToFirstBackBuffer();
 
   void DispatchEvent(const KeyEvent&);

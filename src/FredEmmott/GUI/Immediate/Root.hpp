@@ -20,6 +20,9 @@ class Root final {
  public:
   Root();
   ~Root();
+
+  void Reset();
+
   void BeginFrame();
   void EndFrame();
   void Paint(Renderer*, const Size&);
