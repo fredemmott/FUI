@@ -103,6 +103,10 @@ class SkiaRenderer final : public Renderer {
   std::shared_ptr<GPUCompletionFlag> GetGPUCompletionFlagForCurrentFrame()
     const override;
 
+  const NativeDevice& GetNativeDevice() const noexcept {
+    return mNativeDevice;
+  }
+
  private:
   NativeDevice mNativeDevice {};
   SkCanvas* mCanvas {nullptr};

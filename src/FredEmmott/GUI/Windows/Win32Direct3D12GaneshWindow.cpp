@@ -108,6 +108,7 @@ struct D3D12CompletionFlag : GPUCompletionFlag {
     : mEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr)),
       mFence(fence),
       mFenceValue(fenceValue) {
+    FUI_ASSERT(fenceValue > 0);
     CheckHResult(mFence->SetEventOnCompletion(fenceValue, mEvent.get()));
   }
   ~D3D12CompletionFlag() override = default;
@@ -272,6 +273,7 @@ Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
+  GetRoot()->Reset();
   this->CleanupFrameContexts();
 }
 
@@ -349,6 +351,7 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
   mSkContext->flushAndSubmit(GrSyncCpu::kYes);
 
   const auto fenceValue = ++mFenceValue;
+  FUI_ASSERT(fenceValue > 0);
   CheckHResult(mD3DCommandQueue->Signal(mD3DFence.get(), fenceValue));
   CheckHResult(mD3DFence->SetEventOnCompletion(fenceValue, mFenceEvent.get()));
   WaitForSingleObject(mFenceEvent.get(), INFINITE);
@@ -373,7 +376,9 @@ Win32Direct3D12GaneshWindow::GetFramePainter(uint8_t frameIndex) {
   auto& frame = mFrames.at(frameIndex);
 
   if (frame.mFenceValue) {
-    mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get());
+    FUI_ASSERT(frame.mFenceValue > 0);
+    CheckHResult(
+      mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get()));
     WaitForSingleObject(mFenceEvent.get(), INFINITE);
   }
   frame.mFenceValue = ++mFenceValue;
