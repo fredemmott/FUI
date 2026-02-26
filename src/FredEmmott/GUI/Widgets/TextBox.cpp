@@ -63,7 +63,7 @@ auto& ButtonContainerStyles() {
 }
 }// namespace
 
-TextBox::TextBox(const std::size_t id)
+TextBox::TextBox(const id_type id)
   : Widget(
       id,
       TextBoxStyleClass,

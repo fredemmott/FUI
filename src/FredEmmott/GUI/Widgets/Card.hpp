@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class Card final : public Widget {
  public:
-  explicit Card(std::size_t id);
+  explicit Card(id_type id);
 };
 
 }// namespace FredEmmott::GUI::Widgets

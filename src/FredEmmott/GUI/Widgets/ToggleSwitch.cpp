@@ -48,7 +48,7 @@ auto& FosterParentStyle() {
 using namespace StaticTheme;
 using namespace widget_detail;
 
-ToggleSwitch::ToggleSwitch(const std::size_t id)
+ToggleSwitch::ToggleSwitch(const id_type id)
   : Widget(id, ToggleSwitchStyleClass, ToggleSwitchStyle()) {
   this->SetDirectChildren({
     new ToggleSwitchKnob({}),

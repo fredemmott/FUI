@@ -69,7 +69,7 @@ struct SwapChainPanel::Resources {
 #endif
 };
 
-SwapChainPanel::SwapChainPanel(const std::size_t id)
+SwapChainPanel::SwapChainPanel(const id_type id)
   : Widget(id, LiteralStyleClass {"SwapChainPanel"}, {}) {
   mResources.reset(new Resources(
     Resources::GuardedData {.mOwnerWindow = this->GetOwnerWindow()}));

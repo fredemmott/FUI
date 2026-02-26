@@ -15,7 +15,7 @@ class Slider final : public Widget, public IFocusable {
     Ticks,
   };
   Slider() = delete;
-  explicit Slider(std::size_t id, Orientation);
+  explicit Slider(id_type id, Orientation);
 
   void SetSnapTo(const SnapTo snapTo) {
     mSnapTo = snapTo;

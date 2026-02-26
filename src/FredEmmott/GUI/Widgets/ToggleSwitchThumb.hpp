@@ -7,7 +7,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ToggleSwitchThumb final : public Widget {
  public:
-  explicit ToggleSwitchThumb(std::size_t id);
+  explicit ToggleSwitchThumb(id_type id);
 
  private:
   Widget* mInner {nullptr};

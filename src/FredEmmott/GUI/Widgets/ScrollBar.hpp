@@ -21,8 +21,8 @@ class ScrollBar final : public Widget {
   };
   using ValueChangedCallback = std::function<void(float, ChangeReason)>;
 
-  ScrollBar(std::size_t id, Orientation);
-  ScrollBar(std::size_t id, const ImmutableStyle&, Orientation);
+  ScrollBar(id_type id, Orientation);
+  ScrollBar(id_type id, const ImmutableStyle&, Orientation);
 
   static ImmutableStyle MakeImmutableStyle(Orientation, const Style& mixin);
 

@@ -192,7 +192,7 @@ auto& GlyphBackgroundStyles() {
 
 }// namespace
 
-CheckBox::CheckBox(std::size_t id)
+CheckBox::CheckBox(id_type id)
   : Widget(
       id,
       LiteralStyleClass {"CheckBox"},

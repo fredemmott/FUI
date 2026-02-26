@@ -69,7 +69,7 @@ struct ScrollViewContext final : Context {
 
 }// namespace
 
-ScrollView::ScrollView(std::size_t id, const StyleClasses& classes)
+ScrollView::ScrollView(id_type id, const StyleClasses& classes)
   : Widget(id, ScrollViewStyleClass, ScrollViewStyle(), classes) {
   this->SetDirectChildren({
     mHorizontalScrollBar

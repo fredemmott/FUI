@@ -29,7 +29,7 @@ auto& VerticalStyles() {
 
 }// namespace
 
-StackPanel::StackPanel(const std::size_t id, const Orientation orientation)
+StackPanel::StackPanel(const id_type id, const Orientation orientation)
   : Widget(
       id,
       LiteralStyleClass {"StackPanel"},

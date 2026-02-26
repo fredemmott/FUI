@@ -153,7 +153,7 @@ auto& InnerStyles() {
 }
 }// namespace
 
-RadioButton::RadioButton(std::size_t id)
+RadioButton::RadioButton(id_type id)
   : Widget(id, RadioButtonStyleClass, RadioButtonStyles()) {
   const auto inner
     = new Widget({}, LiteralStyleClass {"RadioButton/Inner"}, InnerStyles());

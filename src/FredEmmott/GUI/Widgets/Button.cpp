@@ -19,10 +19,10 @@ auto& ButtonStyles() {
 }
 }// namespace
 
-Button::Button(const std::size_t id) : Button(id, ButtonStyles(), {}) {}
+Button::Button(const id_type id) : Button(id, ButtonStyles(), {}) {}
 
 Button::Button(
-  const std::size_t id,
+  const id_type id,
   const ImmutableStyle& style,
   const StyleClasses& classes)
   : Widget(id, ButtonStyleClass, style, classes) {}

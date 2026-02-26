@@ -10,7 +10,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class PopupWindow final : public Widget {
  public:
-  PopupWindow(std::size_t id);
+  PopupWindow(id_type id);
 
   Window* GetWindow() const noexcept {
     return mWindow.get();

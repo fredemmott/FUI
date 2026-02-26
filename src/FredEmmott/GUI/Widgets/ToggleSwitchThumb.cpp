@@ -116,7 +116,7 @@ const ImmutableStyle& Inner() {
 
 }// namespace
 
-ToggleSwitchThumb::ToggleSwitchThumb(const std::size_t id)
+ToggleSwitchThumb::ToggleSwitchThumb(const id_type id)
   : Widget(id, ToggleSwitchThumbStyleClass, Styles::Outer()) {
   this->SetChildren(
     {mInner = new Widget(

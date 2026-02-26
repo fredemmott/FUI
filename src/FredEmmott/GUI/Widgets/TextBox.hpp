@@ -30,7 +30,7 @@ class TextBox : public Widget, public IFocusable {
     Rect mRect;
     bool mClipped {false};
   };
-  explicit TextBox(std::size_t id);
+  explicit TextBox(id_type id);
   ~TextBox() override;
 
   [[nodiscard]]

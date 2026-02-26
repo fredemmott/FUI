@@ -48,7 +48,7 @@ class SwapChainPanel final : public Widget {
     std::shared_ptr<Resources> mStrong;
   };
 
-  explicit SwapChainPanel(std::size_t id);
+  explicit SwapChainPanel(id_type id);
   ~SwapChainPanel() override;
 
   SwapChain GetSwapChain() const noexcept;

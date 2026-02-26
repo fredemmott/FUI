@@ -16,7 +16,7 @@ const auto ScrollBarButtonStyleClass = StyleClass::Make("ScrollBarButton");
 }// namespace
 
 ScrollBarButton::ScrollBarButton(
-  const std::size_t id,
+  const id_type id,
   const ImmutableStyle& style,
   std::function<void(const Point&)> pressCallback,
   std::function<void()> tickCallback)

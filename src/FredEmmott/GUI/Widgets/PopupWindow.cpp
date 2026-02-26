@@ -19,7 +19,7 @@ const auto& InvisibleStyle() {
 
 }// namespace
 
-PopupWindow::PopupWindow(const std::size_t id)
+PopupWindow::PopupWindow(const id_type id)
   : Widget(
       id,
       LiteralStyleClass {"PopupWindow"},

@@ -10,7 +10,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class StackPanel final : public Widget {
  public:
-  StackPanel(std::size_t id, Orientation);
+  StackPanel(id_type id, Orientation);
 };
 
 }// namespace FredEmmott::GUI::Widgets

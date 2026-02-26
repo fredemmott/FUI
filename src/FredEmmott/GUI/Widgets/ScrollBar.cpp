@@ -156,7 +156,7 @@ auto& LargeChangeStyles() {
 }
 }// namespace
 
-ScrollBar::ScrollBar(const std::size_t id, const Orientation orientation)
+ScrollBar::ScrollBar(const id_type id, const Orientation orientation)
   : ScrollBar(
       id,
       (orientation == Orientation::Horizontal) ? HorizontalStyles()
@@ -164,7 +164,7 @@ ScrollBar::ScrollBar(const std::size_t id, const Orientation orientation)
       orientation) {}
 
 ScrollBar::ScrollBar(
-  const std::size_t id,
+  const id_type id,
   const ImmutableStyle& style,
   const Orientation orientation)
   : Widget(id, ScrollBarStyleClass, style),

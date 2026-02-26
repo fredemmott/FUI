@@ -144,7 +144,7 @@ auto& InnerThumbStyle() {
 
 }// namespace
 
-Slider::Slider(const std::size_t id, const Orientation orientation)
+Slider::Slider(const id_type id, const Orientation orientation)
   : Widget(
       id,
       LiteralStyleClass("Slider"),

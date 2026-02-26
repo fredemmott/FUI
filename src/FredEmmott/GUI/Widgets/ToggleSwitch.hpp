@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ToggleSwitch final : public Widget, public IToggleable {
  public:
-  explicit ToggleSwitch(std::size_t id);
+  explicit ToggleSwitch(id_type id);
 
   [[nodiscard]]
   bool IsOn() const noexcept;

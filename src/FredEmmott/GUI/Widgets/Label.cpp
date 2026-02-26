@@ -16,7 +16,7 @@ constexpr LiteralStyleClass LabelStyleClass("Label");
 }
 
 Label::Label(
-  std::size_t id,
+  id_type id,
   const std::optional<ImmutableStyle>& style,
   const StyleClasses& classes)
   : Widget(

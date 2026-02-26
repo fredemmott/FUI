@@ -7,7 +7,7 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-GPUTexture::GPUTexture(const std::size_t id)
+GPUTexture::GPUTexture(const id_type id)
   : Widget(id, LiteralStyleClass {"GPUTexture"}, {}) {}
 
 GPUTexture::~GPUTexture() {

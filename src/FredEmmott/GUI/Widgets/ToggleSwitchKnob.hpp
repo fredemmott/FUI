@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ToggleSwitchKnob final : public Widget {
  public:
-  explicit ToggleSwitchKnob(std::size_t id);
+  explicit ToggleSwitchKnob(id_type id);
 };
 
 }// namespace FredEmmott::GUI::Widgets

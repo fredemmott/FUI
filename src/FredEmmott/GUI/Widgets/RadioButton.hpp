@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class RadioButton final : public Widget, public ISelectionItem {
  public:
-  explicit RadioButton(std::size_t id);
+  explicit RadioButton(id_type id);
   ~RadioButton() override;
 
   using Widget::IsChecked;

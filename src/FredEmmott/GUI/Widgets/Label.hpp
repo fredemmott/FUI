@@ -11,7 +11,7 @@ namespace FredEmmott::GUI::Widgets {
 class Label final : public Widget {
  public:
   Label(
-    std::size_t id,
+    id_type id,
     const std::optional<ImmutableStyle>& = {},
     const StyleClasses& = {});
 

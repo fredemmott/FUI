@@ -15,7 +15,7 @@ class ScrollView final : public Widget {
     Hidden,
   };
 
-  explicit ScrollView(std::size_t id, const StyleClasses& classes = {});
+  explicit ScrollView(id_type id, const StyleClasses& classes = {});
   ~ScrollView() override;
 
   [[nodiscard]]
