@@ -10,6 +10,12 @@ target_link_libraries(
   fredemmott-gui
 )
 if (WIN32)
+  target_sources(
+    fredemmott-gui-demo
+    PRIVATE
+    demo_win32.cpp
+    demo_win32.hpp
+  )
   # Used for VRAMTexture() demo even if using Skia
   #
   # If FUI isn't using D3D11+D2D, this tests cross-API texture and fence behavior
