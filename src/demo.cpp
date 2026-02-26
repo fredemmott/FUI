@@ -10,7 +10,6 @@
 #include <map>
 #include <print>
 
-#include "FredEmmott/GUI/Widgets/SwapChainPanel.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
 
 namespace fui = FredEmmott::GUI;
@@ -467,14 +466,11 @@ static void AppTick(fui::Window& window) {
       fui::Style()
         .Width(TextureProducer::Size.mWidth)
         .Height(TextureProducer::Size.mHeight));
-  auto swapChainPanel
-    = fuii::immediate_detail::ChildlessWidget<fui::Widgets::SwapChainPanel>(
-      fuii::ID {std::source_location::current()});
-  swapChainPanel->SetMutableStyles(
+  auto swapChainPanel = fuii::SwapChainPanel().Styled(
     fui::Style()
       .Width(SwapChainPusher::Size.mWidth)
       .Height(SwapChainPusher::Size.mHeight));
-  static SwapChainPusher swapChainPusher {swapChainPanel->GetSwapChain()};
+  static SwapChainPusher swapChainPusher {swapChainPanel.GetSwapChain()};
   swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
 
   fuii::EndStackPanel();

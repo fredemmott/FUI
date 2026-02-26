@@ -24,6 +24,7 @@
 #include <FredEmmott/GUI/Immediate/ScrollView.hpp>
 #include <FredEmmott/GUI/Immediate/Slider.hpp>
 #include <FredEmmott/GUI/Immediate/StackPanel.hpp>
+#include <FredEmmott/GUI/Immediate/SwapChainPanel.hpp>
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>
 #include <FredEmmott/GUI/Immediate/TextBox.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
