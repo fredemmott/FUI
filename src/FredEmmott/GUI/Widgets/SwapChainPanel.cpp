@@ -122,8 +122,7 @@ void SwapChainPanel::SwapChain::EndFrame(
     .mFenceValue = end.mFenceValue,
   };
 
-  auto guarded = mStrong->mGuarded.lock();
-  if (guarded->mOwnerWindow) {
+  if (auto guarded = mStrong->mGuarded.lock(); guarded->mOwnerWindow) {
     guarded->mContent = std::move(ret);
     guarded->mOwnerWindow->InterruptWaitFrame();
   }
