@@ -466,12 +466,14 @@ static void AppTick(fui::Window& window) {
       fui::Style()
         .Width(TextureProducer::Size.mWidth)
         .Height(TextureProducer::Size.mHeight));
-  auto swapChainPanel = fuii::SwapChainPanel().Styled(
-    fui::Style()
-      .Width(SwapChainPusher::Size.mWidth)
-      .Height(SwapChainPusher::Size.mHeight));
-  static SwapChainPusher swapChainPusher {swapChainPanel.GetSwapChain()};
-  swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
+  fuii::SwapChainPanel([](const auto& swapChain) {
+    static SwapChainPusher swapChainPusher {swapChain};
+    swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
+  })
+    .Styled(
+      fui::Style()
+        .Width(SwapChainPusher::Size.mWidth)
+        .Height(SwapChainPusher::Size.mHeight));
 
   fuii::EndStackPanel();
   fuii::EndCard();

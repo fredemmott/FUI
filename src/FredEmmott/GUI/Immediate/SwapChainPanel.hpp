@@ -12,6 +12,7 @@
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
 struct SwapChainPanelResultMixin {
+  [[nodiscard]]
   auto GetSwapChain(this auto&& self) {
     return widget_from_result<Widgets::SwapChainPanel>(self)->GetSwapChain();
   }
@@ -29,7 +30,9 @@ struct SwapChainPanelResultMixin {
   decltype(auto) GetSwapChain(
     this Self&& self,
     std::invocable<Widgets::SwapChainPanel::SwapChain> auto&& fn) {
-    fn(widget_from_result<Widgets::SwapChainPanel>(self)->GetSwapChain());
+    std::invoke(
+      std::forward<decltype(fn)>(fn),
+      widget_from_result<Widgets::SwapChainPanel>(self)->GetSwapChain());
     return std::forward<Self>(self);
   }
 };
@@ -49,6 +52,16 @@ using SwapChainPanelResult = Result<
 inline SwapChainPanelResult SwapChainPanel(
   const ID id = ID {std::source_location::current()}) {
   return immediate_detail::ChildlessWidget<Widgets::SwapChainPanel>(id);
+}
+
+template <class T>
+  requires requires(SwapChainPanelResult r, std::remove_cvref_t<T> v) {
+    std::ignore = r.GetSwapChain(v);
+  }
+inline SwapChainPanelResult SwapChainPanel(
+  T&& swapChainReceiver,
+  const ID id = ID {std::source_location::current()}) {
+  return SwapChainPanel(id).GetSwapChain(std::forward<T>(swapChainReceiver));
 }
 
 }// namespace FredEmmott::GUI::Immediate
