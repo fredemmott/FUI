@@ -33,6 +33,7 @@ class StyleProperty;
   X(AlignContent, YGAlign, Self) \
   X(AlignItems, YGAlign, Self) \
   X(AlignSelf, YGAlign, Self) \
+  X(AspectRatio, float, Self) \
   X(BackgroundColor, Brush, Self) \
   X(BorderBottomLeftRadius, float, Self) \
   X(BorderBottomRightRadius, float, Self) \

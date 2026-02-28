@@ -18,7 +18,8 @@ namespace FredEmmott::GUI::Immediate {
 
 class Root final {
  public:
-  Root();
+  Root() = delete;
+  Root(Widgets::Widget* root, Widgets::Widget* immediateRoot);
   ~Root();
 
   void Reset();
@@ -34,20 +35,25 @@ class Root final {
   YGNodeRef GetLayoutNode() const;
   Size GetInitialSize() const;
 
-  Widgets::Widget* GetWidget() const;
   FocusManager* GetFocusManager() const;
+
+  Widgets::Widget* GetImplementationRoot() const {
+    return mActualRoot;
+  }
+
+  Widgets::Widget* GetImmediateRoot() const {
+    return mImmediateRoot;
+  }
 
   float GetHeightForWidth(float) const;
   FrameRateRequirement GetFrameRateRequirement() const;
 
-  Widgets::Widget* DispatchEvent(const Event*);
+  Widgets::Widget* DispatchEvent(const Event&);
 
  private:
-  struct WidgetRoot {
-    unique_ptr<Widgets::Widget> mWidget;
-    FocusManager mFocusManager;
-  };
-  std::optional<WidgetRoot> mWidgetRoot;
+  Widgets::Widget* mActualRoot {};
+  Widgets::Widget* mImmediateRoot {};
+  FocusManager mFocusManager;
   unique_ptr<YGNode> mYogaRoot;
 };
 

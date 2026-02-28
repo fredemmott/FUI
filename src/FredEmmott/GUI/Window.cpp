@@ -13,11 +13,18 @@
 
 namespace FredEmmott::GUI {
 
-Window::Window(const uint8_t swapChainLength)
-  : mSwapChainLength(swapChainLength) {}
+Window::Window(
+  Widgets::Widget* actualRoot,
+  Widgets::Widget* immediateRoot,
+  const uint8_t swapChainLength)
+  : mSwapChainLength(swapChainLength),
+    mFUIRoot(actualRoot, immediateRoot) {}
 
 std::expected<void, int> Window::BeginFrame() {
-  std::call_once(mGraphicsAPIFlag, [this]() { this->InitializeGraphicsAPI(); });
+  std::call_once(mGraphicsAPIFlag, [this]() {
+    this->InitializeGraphicsAPI();
+    this->InitializeWidgetTree();
+  });
   // We may have failed since the last window message without it being directly
   // caused by a window message to this window.
   //
@@ -54,7 +61,7 @@ void Window::WaitFrame(unsigned int minFPS, unsigned int maxFPS) const {
 
   const auto previousFrameAt = mBeginFrameTime;
   auto thisFrameAt = time_point::max();
-  const auto req = mFUIRoot.GetFrameRateRequirement();
+  const auto req = this->GetFrameRateRequirement();
   if (req.RequiresSmoothAnimation()) {
     thisFrameAt = previousFrameAt + SmoothAnimationInterval;
   }
@@ -113,7 +120,7 @@ void Window::SetCancelAction(const std::function<void()>& action) {
   mCancelAction = action;
 }
 Widgets::Widget* Window::GetRootWidget() const noexcept {
-  return GetRoot()->GetWidget();
+  return GetRoot()->GetImmediateRoot();
 }
 FocusManager* Window::GetFocusManager() const noexcept {
   return GetRoot()->GetFocusManager();
@@ -128,11 +135,11 @@ void Window::Paint() {
     const auto layer = renderer->ScopedLayer();
     renderer->Clear(this->GetClearColor());
     renderer->Scale(this->GetDPIScale());
-    mFUIRoot.Paint(renderer, this->GetClientAreaSize());
+    mFUIRoot.Paint(renderer, this->GetCanvasSize());
     if (IsDisabled()) {
       renderer->FillRect(
         *StaticTheme::Common::SmokeFillColorDefaultBrush->Resolve(),
-        this->GetClientAreaSize());
+        this->GetCanvasSize());
     }
   }
 
@@ -144,12 +151,7 @@ void Window::ResetToFirstBackBuffer() {
 }
 
 Widgets::Widget* Window::DispatchEvent(const MouseEvent& e) {
-  const auto fm = GetRoot()->GetFocusManager();
-  FocusManager::PushInstance(fm);
-  const auto popFocusManager
-    = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
-
-  return GetRoot()->GetWidget()->DispatchEvent(e);
+  return GetRoot()->DispatchEvent(e);
 }
 
 void Window::DispatchEvent(const KeyEvent& e) {
@@ -158,7 +160,7 @@ void Window::DispatchEvent(const KeyEvent& e) {
   const auto popFocusManager
     = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
 
-  if (GetRoot()->GetWidget()->DispatchEvent(e)) {
+  if (GetRoot()->DispatchEvent(e)) {
     return;
   }
   const auto pe = dynamic_cast<KeyPressEvent const*>(&e);
@@ -191,12 +193,7 @@ void Window::DispatchEvent(const KeyEvent& e) {
 }
 
 void Window::DispatchEvent(const TextInputEvent& e) {
-  const auto fm = GetRoot()->GetFocusManager();
-  FocusManager::PushInstance(fm);
-  const auto popFocusManager
-    = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
-
-  (void)GetRoot()->GetWidget()->DispatchEvent(e);
+  std::ignore = GetRoot()->DispatchEvent(e);
 }
 
 }// namespace FredEmmott::GUI

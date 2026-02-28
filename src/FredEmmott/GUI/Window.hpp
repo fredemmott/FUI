@@ -44,18 +44,23 @@ class Window {
     AllowGrow = 2,
     Allow = AllowShrink | AllowGrow,
   };
-  Window(uint8_t swapChainLength);
+  Window(
+    Widgets::Widget* actualRoot,
+    Widgets::Widget* immediateRoot,
+    uint8_t swapChainLength);
   virtual ~Window() = default;
 
   [[nodiscard]]
   virtual std::unique_ptr<Window> CreatePopup() const = 0;
   virtual void SetParent(NativeHandle) = 0;
+  virtual void SetTitle(std::string_view) = 0;
+  // return false if window subtitles are not supported
+  [[nodiscard]]
+  virtual bool SetSubtitle(std::string_view) = 0;
   [[nodiscard]]
   virtual NativeHandle GetNativeHandle() const noexcept = 0;
   virtual void SetInitialPositionInNativeCoords(const NativePoint& native) = 0;
   virtual void OffsetPositionToDescendant(Widgets::Widget* child) = 0;
-  /// Changes the size as little as possible to meet the constraints
-  virtual void ApplySizeConstraints() = 0;
   /// Resize to the 'ideal' size
   virtual void ResizeToIdeal() = 0;
   [[nodiscard]]
@@ -102,10 +107,11 @@ class Window {
   virtual std::unique_ptr<BasicFramePainter> GetFramePainter(
     uint8_t mFrameIndex) = 0;
   virtual void ResizeIfNeeded() = 0;
-  virtual Size GetClientAreaSize() const = 0;
+  virtual Size GetCanvasSize() const = 0;
   virtual float GetDPIScale() const = 0;
   virtual Color GetClearColor() const = 0;
   virtual void InitializeGraphicsAPI() = 0;
+  virtual void InitializeWidgetTree() {}
   /** Wait for any of:
    *
    * - `InterruptWaitFrame()`

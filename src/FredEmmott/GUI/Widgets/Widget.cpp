@@ -269,6 +269,11 @@ bool Widget::IsHovered() const {
     == StateFlags::Hovered;
 }
 
+bool Widget::IsActive() const {
+  return ((mDirectStateFlags | mInheritedStateFlags) & StateFlags::Active)
+    == StateFlags::Active;
+}
+
 void Widget::SetMutableStyles(const Style& styles) {
   if (styles == mMutableStyles) {
     return;

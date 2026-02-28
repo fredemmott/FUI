@@ -41,6 +41,19 @@ struct FrameRateRequirement {
     }
   }
 
+  template <
+    std::convertible_to<FrameRateRequirement> First,
+    std::convertible_to<FrameRateRequirement> Second,
+    std::convertible_to<FrameRateRequirement>... Rest>
+  constexpr FrameRateRequirement(
+    First&& first,
+    Second&& second,
+    Rest&&... rest) noexcept
+    : FrameRateRequirement(std::forward<First>(first)) {
+    Merge(std::forward<Second>(second));
+    (Merge(std::forward<Rest>(rest)), ...);
+  }
+
   [[nodiscard]]
   bool RequiresSmoothAnimation() const noexcept {
     return mSmoothAnimation;

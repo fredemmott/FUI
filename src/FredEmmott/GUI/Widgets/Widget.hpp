@@ -162,6 +162,9 @@ class Widget {
 
   [[nodiscard]]
   bool IsHovered() const;
+  // pressed
+  [[nodiscard]]
+  bool IsActive() const;
 
   // A periodic event at an undefined interval; use for animations etc
   virtual void Tick(const std::chrono::steady_clock::time_point& now);
@@ -179,6 +182,7 @@ class Widget {
     const auto foster = this->GetFosterParent();
     return (foster ? foster : this)->mRawDirectChildren;
   }
+  /// Returns `this`
   Widget* SetChildren(const std::vector<Widget*>& children);
 
   /// Returns the Widget that ultimately handled the event, or nullptr

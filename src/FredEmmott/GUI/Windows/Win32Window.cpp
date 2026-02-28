@@ -10,10 +10,13 @@
 #include <roapi.h>
 #include <wil/resource.h>
 #include <wil/win32_helpers.h>
+#include <yoga/yoga.h>
 
+#include <FredEmmott/GUI/ExitException.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <FredEmmott/GUI/SystemSettings.hpp>
+#include <FredEmmott/GUI/Widgets/TitleBar.hpp>
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
@@ -23,13 +26,11 @@
 #include <FredEmmott/GUI/detail/win32_detail/UIARoot.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
+#include <FredEmmott/GUI/events/TextInputEvent.hpp>
 #include <boost/container/static_vector.hpp>
+#include <felly/numeric_cast.hpp>
 #include <filesystem>
 #include <print>
-#include <thread>
-
-#include "FredEmmott/GUI/ExitException.hpp"
-#include "FredEmmott/GUI/events/TextInputEvent.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
@@ -42,6 +43,24 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 
 namespace {
+constexpr bool DebugMouseMapping = false;
+
+constexpr LiteralStyleClass ActualRootStyleClass {"Win32Window/Root"};
+constexpr LiteralStyleClass ImmediateRootStyleClass {
+  "Win32Window/ImmediateRoot"};
+auto& ActualRootStyles() {
+  static const ImmutableStyle ret {
+    Style().FlexDirection(YGFlexDirectionColumn).FlexGrow(1),
+  };
+  return ret;
+}
+auto& ImmediateRootStyles() {
+  static const ImmutableStyle ret {
+    ActualRootStyles() + Style().FlexShrink(1).FlexGrow(1),
+  };
+  return ret;
+}
+
 thread_local Win32Window* gInstanceCreatingWindow {nullptr};
 KeyCode KeyCodeFromVirtualKey(const UINT vk) {
   return static_cast<KeyCode>(vk);
@@ -70,15 +89,9 @@ std::wstring GetDefaultWindowClassName() {
     std::filesystem::path(thisExe.get()).filename().wstring());
 }
 
-MouseEvent MakeMouseEvent(
-  const WPARAM wParam,
-  const POINT clientPos,
-  const float dpiScale) {
+MouseEvent MakeMouseEvent(const WPARAM wParam, const Point canvasPoint) {
   MouseEvent ret;
-  ret.mWindowPoint = {
-    clientPos.x / dpiScale,
-    clientPos.y / dpiScale,
-  };
+  ret.mWindowPoint = canvasPoint;
 
   if (wParam & MK_LBUTTON) {
     ret.mButtons |= MouseButton::Left;
@@ -99,22 +112,6 @@ MouseEvent MakeMouseEvent(
   return ret;
 }
 
-MouseEvent
-MakeMouseEventFromClientLPARAM(WPARAM wParam, LPARAM lParam, float dpiScale) {
-  return MakeMouseEvent(
-    wParam, POINT {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)}, dpiScale);
-}
-
-MouseEvent MakeMouseEventFromScreenLPARAM(
-  HWND const hwnd,
-  const WPARAM wParam,
-  const LPARAM lParam,
-  const float dpiScale) {
-  POINT pt {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-  ScreenToClient(hwnd, &pt);
-  return MakeMouseEvent(wParam, pt, dpiScale);
-}
-
 }// namespace
 
 void Win32Window::AdjustToWindowsTheme() {
@@ -132,6 +129,19 @@ void Win32Window::AdjustToWindowsTheme() {
     DWMWA_SYSTEMBACKDROP_TYPE,
     &backdropType,
     sizeof(backdropType)));
+}
+
+void Win32Window::InitializeWidgetTree() {
+  FUI_ASSERT(!mTitleBar);
+  if (
+    ((mOptions.mWindowStyle & WS_POPUP) == WS_POPUP)
+    || !mOptions.mAllowModernTitleBar) {
+    mActualRoot->SetChildren({mImmediateRoot});
+  } else {
+    mTitleBar = new Widgets::TitleBar(0);
+    mTitleBar->SetTitle(mOptions.mTitle);
+    mActualRoot->SetChildren({mTitleBar, mImmediateRoot});
+  }
 }
 
 void Win32Window::InitializeWindow() {
@@ -168,7 +178,25 @@ Win32Window::Win32Window(
   const HINSTANCE hInstance,
   int nCmdShow,
   const Options& options)
-  : Window(SwapChainLength),
+  : Win32Window(
+      std::make_unique<Widgets::Widget>(
+        0,
+        ActualRootStyleClass,
+        ActualRootStyles()),
+      new Widgets::Widget(1, ImmediateRootStyleClass, ImmediateRootStyles()),
+      hInstance,
+      nCmdShow,
+      options) {}
+
+Win32Window::Win32Window(
+  std::unique_ptr<Widgets::Widget> actualRoot,
+  Widgets::Widget* immediateRoot,
+  HINSTANCE hInstance,
+  int nCmdShow,
+  const Options& options)
+  : Window(actualRoot.get(), immediateRoot, SwapChainLength),
+    mActualRoot(std::move(actualRoot)),
+    mImmediateRoot(immediateRoot),
     mInstanceHandle(hInstance),
     mShowCommand(nCmdShow),
     mOptions(options),
@@ -189,7 +217,9 @@ Win32Window::Win32Window(
     mOptions.mDXGIFactory = mDXGIFactory.get();
   }
 }
+
 void Win32Window::DestroyWindow() {
+  FUI_ASSERT(mHwnd);
   mHwnd.reset();
 }
 
@@ -302,7 +332,7 @@ int Win32Window::WinMain(
   }
 }
 
-void Win32Window::TrackMouseEvent() {
+void Win32Window::TrackMouseEvent(const MouseTrackingArea where) {
   if (mTrackingMouseEvents) {
     return;
   }
@@ -312,6 +342,9 @@ void Win32Window::TrackMouseEvent() {
     .hwndTrack = mHwnd.get(),
     .dwHoverTime = HOVER_DEFAULT,
   };
+  if (where == MouseTrackingArea::NonClient) {
+    tme.dwFlags |= TME_NONCLIENT;
+  }
   ::TrackMouseEvent(&tme);
   mTrackingMouseEvents = true;
 }
@@ -356,6 +389,10 @@ void Win32Window::CreateNativeWindow() {
     return;
   }
   FUI_ASSERT(GetWindowLongPtrW(mHwnd.get(), GWLP_USERDATA));
+  if (mTitleBar) {
+    const MARGINS margins {};
+    CheckHResult(DwmExtendFrameIntoClientArea(mHwnd.get(), &margins));
+  }
 
   if (mParentHwnd) {
     FUI_ASSERT(GetWindowLongPtrW(mParentHwnd, GWLP_USERDATA));
@@ -365,16 +402,15 @@ void Win32Window::CreateNativeWindow() {
     SetLayeredWindowAttributes(mHwnd.get(), 0, 255, LWA_ALPHA);
   }
 
-  this->TrackMouseEvent();
+  this->UpdateGeometry();
 
-  this->SetDPI(GetDpiForWindow(mHwnd.get()));
-
-  GetWindowRect(mHwnd.get(), &mNCRect);
+  auto windowRect = mGeometry->mWindowRect;
   {
-    const auto [cx, cy] = this->GetInitialWindowSize();
-    mNCRect.right = mNCRect.left + cx;
-    mNCRect.bottom = mNCRect.top + cy;
+    const auto size = this->GetInitialWindowSize();
+    windowRect.right = windowRect.left + size.cx;
+    windowRect.bottom = windowRect.top + size.cy;
   }
+
   if (mOffsetToChild) {
     const auto yogaRoot = this->GetRoot()->GetLayoutNode();
 #ifndef NDEBUG
@@ -384,13 +420,13 @@ void Win32Window::CreateNativeWindow() {
     //
     // e.g. past bug: https://github.com/fredemmott/FUI/issues/73
     FUI_ALWAYS_ASSERT(YGNodeGetChildCount(yogaRoot) == 1);
-    const auto yogaChild = this->GetRoot()->GetWidget()->GetLayoutNode();
+    const auto yogaChild = mActualRoot->GetLayoutNode();
     FUI_ALWAYS_ASSERT(YGNodeGetChild(yogaRoot, 0) == yogaChild);
     FUI_ASSERT(YGNodeGetParent(yogaChild) == yogaRoot);
 #endif
 
     YGNodeCalculateLayout(
-      yogaRoot, mNCRect.right - mNCRect.left, YGUndefined, YGDirectionLTR);
+      yogaRoot, mGeometry->mCanvasSize.mWidth, YGUndefined, YGDirectionLTR);
     const auto canvas = mOffsetToChild->GetTopLeftCanvasPoint();
     const auto native = CanvasPointToNativePoint(canvas);
     const auto nativeOrigin = CanvasPointToNativePoint({0, 0});
@@ -399,28 +435,21 @@ void Win32Window::CreateNativeWindow() {
 
     const auto dx = native.mX - nativeOrigin.mX;
     const auto dy = native.mY - nativeOrigin.mY;
-    mNCRect.left -= dx;
-    mNCRect.right -= dx;
-    mNCRect.top -= dy;
-    mNCRect.bottom -= dy;
+    windowRect.left -= dx;
+    windowRect.top -= dy;
+    windowRect.right -= dx;
+    windowRect.bottom -= dy;
   }
-  this->ApplySizeConstraints(&mNCRect);
 
+  std::ignore = this->ApplySizeConstraints(&windowRect);
   SetWindowPos(
     mHwnd.get(),
     nullptr,
-    mNCRect.left,
-    mNCRect.top,
-    (mNCRect.right - mNCRect.left),
-    (mNCRect.bottom - mNCRect.top),
-    SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOZORDER);
-  GetWindowRect(mHwnd.get(), &mNCRect);
-  RECT clientRect {};
-  GetClientRect(mHwnd.get(), &clientRect);
-  mClientSize = {
-    clientRect.right - clientRect.left,
-    clientRect.bottom - clientRect.top,
-  };
+    windowRect.left,
+    windowRect.top,
+    windowRect.right - windowRect.left,
+    windowRect.bottom - windowRect.top,
+    SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
 }
 
 Win32Window::~Win32Window() {
@@ -502,8 +531,10 @@ void Win32Window::InitializeDirectComposition() {
     DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
 
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
-    .Width = static_cast<UINT>(mClientSize.cx),
-    .Height = static_cast<UINT>(mClientSize.cy),
+    .Width = static_cast<UINT>(
+      mGeometry->mWindowRect.right - mGeometry->mWindowRect.left),
+    .Height = static_cast<UINT>(
+      mGeometry->mWindowRect.bottom - mGeometry->mWindowRect.top),
     .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
     .SampleDesc = {1, 0},
     .BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
@@ -543,8 +574,8 @@ void Win32Window::ResizeSwapchain() {
   this->CleanupFrameContexts();
   CheckHResult(mSwapChain->ResizeBuffers(
     0,
-    mClientSize.cx,
-    mClientSize.cy,
+    mGeometry->mWindowRect.right - mGeometry->mWindowRect.left,
+    mGeometry->mWindowRect.bottom - mGeometry->mWindowRect.top,
     DXGI_FORMAT_UNKNOWN,
     DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
   this->CreateRenderTargets();
@@ -556,24 +587,11 @@ void Win32Window::ResizeIfNeeded() {
     return;
   }
 
-  RECT clientRect {};
-  GetClientRect(mHwnd.get(), &clientRect);
-  SIZE clientSize = {
-    clientRect.right - clientRect.left,
-    clientRect.bottom - clientRect.top,
-  };
-  mClientSize = clientSize;
-
-  GetWindowRect(mHwnd.get(), &mNCRect);
-
   ResizeSwapchain();
 }
 
-Size Win32Window::GetClientAreaSize() const {
-  return {
-    std::floor(static_cast<float>(mClientSize.cx) / mDPIScale),
-    std::floor(static_cast<float>(mClientSize.cy) / mDPIScale),
-  };
+Size Win32Window::GetCanvasSize() const {
+  return mGeometry->mCanvasSize;
 }
 
 float Win32Window::GetDPIScale() const {
@@ -601,9 +619,9 @@ void Win32Window::OffsetPositionToDescendant(Widgets::Widget* child) {
 }
 
 void Win32Window::ApplySizeConstraints() {
-  auto rect = mNCRect;
-  this->ApplySizeConstraints(&rect);
-  if (memcmp(&rect, &mNCRect, sizeof(rect)) == 0) {
+  RECT rect {};
+  GetWindowRect(mHwnd.get(), &rect);
+  if (!this->ApplySizeConstraints(&rect)) {
     return;
   }
 
@@ -615,19 +633,14 @@ void Win32Window::ApplySizeConstraints() {
     rect.right - rect.left,
     rect.bottom - rect.top,
     SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
-  GetWindowRect(mHwnd.get(), &mNCRect);
-  GetClientRect(mHwnd.get(), &rect);
-  mClientSize = {rect.right - rect.left, rect.bottom - rect.top};
-  if (mSwapChain) {
-    this->ResizeSwapchain();
-  }
 }
 
-void Win32Window::ApplySizeConstraints(RECT* ncrect) const {
+bool Win32Window::ApplySizeConstraints(RECT* ncrect) const {
   if (mIsToolTip) {
     // Keep tool tips in place, don't keep them within a single monitor
-    return;
+    return false;
   }
+  bool modified = false;
 
   const_cast<Win32Window*>(this)->WMSizingProc(
     WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(ncrect));
@@ -636,16 +649,21 @@ void Win32Window::ApplySizeConstraints(RECT* ncrect) const {
   MONITORINFO monitorInfo {sizeof(monitorInfo)};
   GetMonitorInfoW(monitor, &monitorInfo);
   if (ncrect->right > monitorInfo.rcWork.right) {
+    modified = true;
     const auto dx = ncrect->right - monitorInfo.rcWork.right;
     ncrect->left -= dx;
     ncrect->right -= dx;
   }
   if (ncrect->bottom > monitorInfo.rcWork.bottom) {
+    modified = true;
     const auto dy = ncrect->bottom - monitorInfo.rcWork.bottom;
     ncrect->bottom -= dy;
     ncrect->top -= dy;
   }
+
+  return modified;
 }
+
 void Win32Window::OnDestroy() {
   if (!mHwnd) {
     return;
@@ -667,7 +685,8 @@ void Win32Window::OnDestroy() {
 }
 
 void Win32Window::ResizeToIdeal() {
-  auto rect = mNCRect;
+  RECT rect {};
+  GetWindowRect(mHwnd.get(), &rect);
   const auto size = GetInitialWindowSize();
   rect.right = rect.left + size.cx;
   rect.bottom = rect.top + size.cy;
@@ -680,9 +699,6 @@ void Win32Window::ResizeToIdeal() {
     (rect.right - rect.left),
     (rect.bottom - rect.top),
     SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
-  GetWindowRect(mHwnd.get(), &mNCRect);
-  GetClientRect(mHwnd.get(), &rect);
-  mClientSize = {rect.right - rect.left, rect.bottom - rect.top};
 }
 
 void Win32Window::SetParent(NativeHandle value) {
@@ -701,41 +717,21 @@ void Win32Window::SetInitialPositionInNativeCoords(const NativePoint& native) {
 NativePoint Win32Window::CanvasPointToNativePoint(const Point& canvas) const {
   FUI_ASSERT(mDPI && mHwnd);
 
-  NativePoint native {
-    static_cast<int>(std::round(canvas.mX * mDPIScale)),
-    static_cast<int>(std::round(canvas.mY * mDPIScale)),
+  const NativePoint native {
+    felly::numeric_cast<int>(std::lround(canvas.mX * mDPIScale)),
+    felly::numeric_cast<int>(std::lround(canvas.mY * mDPIScale)),
   };
-
-  // Adjust an all-zero rect to get padding
-  RECT padding {};
-  AdjustWindowRectEx(
-    &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
-  // The top and left padding will both be <= 0
-  native.mX -= padding.left;
-  native.mY -= padding.top;
-
-  RECT window {};
-  GetWindowRect(mHwnd.get(), &window);
-  native.mX += window.left;
-  native.mY += window.top;
-
-  return native;
+  return native - mGeometry->mScreenToCanvasOffset;
 }
 
 Point Win32Window::NativePointToCanvasPoint(const NativePoint& native) const {
   FUI_ASSERT(mDPI && mHwnd);
 
-  RECT padding {};
-  AdjustWindowRectEx(
-    &padding, mOptions.mWindowStyle, false, mOptions.mWindowExStyle);
+  const auto [x, y] = native + mGeometry->mScreenToCanvasOffset;
 
-  RECT windowRect {};
-  GetWindowRect(mHwnd.get(), &windowRect);
-
-  // Convert to client-relative coordinates
-  Point canvas {
-    static_cast<float>(native.mX - windowRect.left + padding.left) / mDPIScale,
-    static_cast<float>(native.mY - windowRect.top + padding.top) / mDPIScale,
+  const Point canvas {
+    static_cast<float>(x) / mDPIScale,
+    static_cast<float>(y) / mDPIScale,
   };
 
   return canvas;
@@ -768,6 +764,7 @@ LRESULT Win32Window::StaticWindowProc(
   FUI_ASSERT(self);
   return self->WindowProc(hwnd, uMsg, wParam, lParam);
 }
+
 Win32Window& Win32Window::Get(HWND const hwnd) {
   const auto p
     = reinterpret_cast<Win32Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
@@ -775,10 +772,25 @@ Win32Window& Win32Window::Get(HWND const hwnd) {
   return *p;
 }
 
-void Win32Window::SetDPI(const WORD newDPI) {
-  mDPI = newDPI;
-  mDPIScale = static_cast<float>(newDPI) / USER_DEFAULT_SCREEN_DPI;
+void Win32Window::UpdateGeometry(const DWORD dpi) {
+  mDPI = dpi ? dpi : GetDpiForWindow(mHwnd.get());
+  mDPIScale = static_cast<float>(mDPI) / USER_DEFAULT_SCREEN_DPI;
   YGConfigSetPointScaleFactor(GetYogaConfig(), mDPIScale);
+  mScreenMetrics = {mDPI};
+  Size oldSize {};
+  if (mGeometry) {
+    oldSize = mGeometry->mCanvasSize;
+  }
+  using Kind = Geometry::Kind;
+  mGeometry.emplace(
+    mTitleBar ? Kind::WithNonClient : Kind::ClientAreaOnly,
+    mHwnd.get(),
+    mDPI,
+    mDPIScale,
+    mScreenMetrics);
+  if (oldSize != mGeometry->mCanvasSize) {
+    mPendingResize = true;
+  }
 }
 
 std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
@@ -798,25 +810,17 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
   MONITORINFO monitorInfo {sizeof(monitorInfo)};
   GetMonitorInfoW(monitor, &monitorInfo);
 
-  RECT ncPadding {};
-  AdjustWindowRectExForDpi(
-    &ncPadding,
-    mOptions.mWindowStyle & ~WS_OVERLAPPED,
-    false,
-    mOptions.mWindowExStyle,
-    mDPI.value());
-  // Make all values positive
-  ncPadding.left = -ncPadding.left;
-  ncPadding.top = -ncPadding.top;
+  const auto& margins = mGeometry->mWindowMargins;
+  const auto xMargins = margins.cxLeftWidth + margins.cxRightWidth;
+  const auto yMargins = margins.cyTopHeight + margins.cyBottomHeight;
 
   const auto initialWidth = std::lround(
     std::ceil(
       std::ceil(GetMinimumWidth(this->GetRoot()->GetLayoutNode()))
       * mDPIScale));
-  const auto requestedWidth
-    = rect.right - (rect.left + ncPadding.left + ncPadding.right);
-  const auto monitorWidth = monitorInfo.rcWork.right
-    - (monitorInfo.rcWork.left + ncPadding.left + ncPadding.right);
+  const auto requestedWidth = (rect.right - rect.left) - xMargins;
+  const auto availableWidth
+    = (monitorInfo.rcWork.right - monitorInfo.rcWork.left) - xMargins;
   auto targetWidth = requestedWidth;
 
   switch (mHorizontalResizeMode) {
@@ -828,10 +832,10 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
       break;
     case ResizeMode::AllowShrink:
       targetWidth = std::min(requestedWidth, initialWidth);
-      targetWidth = std::min(targetWidth, monitorWidth);
+      targetWidth = std::min(targetWidth, availableWidth);
       break;
     case ResizeMode::Allow:
-      targetWidth = std::min(requestedWidth, monitorWidth);
+      targetWidth = std::min(requestedWidth, availableWidth);
       break;
   }
   const auto dx = requestedWidth - targetWidth;
@@ -841,10 +845,9 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
       std::ceil(GetIdealHeight(
         this->GetRoot()->GetLayoutNode(), targetWidth / mDPIScale))
       * mDPIScale));
-  const auto requestedHeight
-    = rect.bottom - (rect.top + ncPadding.top + ncPadding.bottom);
-  const auto monitorHeight = monitorInfo.rcWork.bottom
-    - (monitorInfo.rcWork.top + ncPadding.top + ncPadding.bottom);
+  const auto requestedHeight = (rect.bottom - rect.top) - yMargins;
+  const auto availableHeight
+    = (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) - yMargins;
   auto targetHeight = requestedHeight;
   switch (mVerticalResizeMode) {
     case ResizeMode::Fixed:
@@ -855,10 +858,10 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
       break;
     case ResizeMode::AllowShrink:
       targetHeight = std::min(requestedHeight, initialHeight);
-      targetHeight = std::min(targetHeight, monitorHeight);
+      targetHeight = std::min(targetHeight, availableHeight);
       break;
     case ResizeMode::Allow:
-      targetHeight = std::min(requestedHeight, monitorHeight);
+      targetHeight = std::min(requestedHeight, availableHeight);
       break;
   }
   const auto dy = requestedHeight - targetHeight;
@@ -896,6 +899,15 @@ LRESULT
 Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   if (mHwnd && hwnd != mHwnd.get()) {
     throw std::logic_error("hwnd mismatch");
+  }
+
+  if (LRESULT result {};
+      DwmDefWindowProc(hwnd, uMsg, wParam, lParam, &result)) {
+    return result;
+  }
+
+  if (const auto result = TitleBarWindowProc(hwnd, uMsg, wParam, lParam)) {
+    return *result;
   }
 
   switch (uMsg) {
@@ -998,11 +1010,12 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       if (wParam == SIZE_MINIMIZED) {
         break;
       }
-      const auto w = LOWORD(lParam);
-      const auto h = HIWORD(lParam);
-      if (w != mClientSize.cx || h != mClientSize.cy) {
-        mPendingResize = true;
+      if (mTitleBar) {
+        mTitleBar->SetIsMaximized(wParam == SIZE_MAXIMIZED);
       }
+
+      UpdateGeometry();
+
       return 0;
     }
     case WM_PAINT:
@@ -1015,9 +1028,11 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     }
     case WM_DPICHANGED: {
-      const auto newDPI = HIWORD(wParam);
       // TODO: lParam is a RECT that we *should* use
-      SetDPI(newDPI);
+      FUI_ASSERT(
+        LOWORD(wParam) == HIWORD(wParam),
+        "Horizontal DPI must equal vertical DPI");
+      UpdateGeometry(LOWORD(wParam));
       break;
     }
     case WM_MOUSEACTIVATE: {
@@ -1027,7 +1042,8 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     }
     case WM_MOVE: {
-      GetWindowRect(hwnd, &mNCRect);
+      this->UpdateGeometry();
+
       const auto x = LOWORD(lParam);
       const auto y = HIWORD(lParam);
       const auto dx = x - mPosition.mX;
@@ -1048,8 +1064,8 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     }
     case WM_MOUSEMOVE: {
-      TrackMouseEvent();
-      const auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      TrackMouseEvent(MouseTrackingArea::Client);
+      const auto e = MakeMouseEventFromClient(wParam, lParam);
       if (const auto receiver = this->DispatchEvent(e)) {
         // Handled in response to WM_SETCURSOR
         mWidgetCursorUnderMouse
@@ -1063,22 +1079,30 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       // WM_MOUSEHOVER is a special, one-shot event; we need to set the flag
       // explicitly to force TrackMouseEvent() to actually re-do the call
       mTrackingMouseEvents = false;
-      TrackMouseEvent();
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      TrackMouseEvent(MouseTrackingArea::Client);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::HoverEvent {};
       this->DispatchEvent(e);
       break;
     }
     case WM_MOUSELEAVE: {
+      mTrackingMouseEvents = false;
+      // TODO: only do this logic if we have a custom title bar
+      POINT pt {};
+      GetCursorPos(&pt);
+      if (WindowFromPoint(pt) == mHwnd.get()) {
+        // client -> non-client, we'll get WM_NCMOUSEMOVE or similar too
+        // TODO: probably want more specific behavior based on WM_NCHITTEST
+        break;
+      }
+
       MouseEvent e;
       e.mWindowPoint = {-1, -1};
       this->DispatchEvent(e);
-      mTrackingMouseEvents = false;
       break;
     }
     case WM_MOUSEWHEEL: {
-      auto e = MakeMouseEventFromScreenLPARAM(
-        mHwnd.get(), wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromScreen(wParam, lParam);
       e.mDetail = MouseEvent::VerticalWheelEvent {
         -static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
       };
@@ -1086,8 +1110,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     }
     case WM_MOUSEHWHEEL: {
-      auto e = MakeMouseEventFromScreenLPARAM(
-        mHwnd.get(), wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromScreen(wParam, lParam);
       e.mDetail = MouseEvent::HorizontalWheelEvent {
         static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA,
       };
@@ -1099,38 +1122,38 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         Get(child).RequestStop();
       }
       SetCapture(mHwnd.get());
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
       this->DispatchEvent(e);
       break;
     }
     case WM_LBUTTONUP: {
       ReleaseCapture();
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
       this->DispatchEvent(e);
       break;
     }
     case WM_MBUTTONDOWN: {
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Middle};
       this->DispatchEvent(e);
       break;
     }
     case WM_MBUTTONUP: {
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Middle};
       this->DispatchEvent(e);
       break;
     }
     case WM_RBUTTONDOWN: {
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Right};
       this->DispatchEvent(e);
       break;
     }
     case WM_RBUTTONUP: {
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Right};
       this->DispatchEvent(e);
       break;
@@ -1143,7 +1166,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
         pressed |= MouseButton::X2;
       }
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonPressEvent {pressed};
       this->DispatchEvent(e);
       break;
@@ -1156,7 +1179,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       if ((HIWORD(wParam) & XBUTTON2) == XBUTTON2) {
         released |= MouseButton::X2;
       }
-      auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);
+      auto e = MakeMouseEventFromClient(wParam, lParam);
       e.mDetail = MouseEvent::ButtonReleaseEvent {released};
       this->DispatchEvent(e);
       break;
@@ -1164,30 +1187,244 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_CLOSE:
       this->RequestStop();
       break;
+    default:
+      break;
   }
   return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
+std::optional<LRESULT> Win32Window::TitleBarWindowProc(
+  HWND hwnd,
+  UINT uMsg,
+  WPARAM wParam,
+  LPARAM lParam) {
+  if (!mTitleBar) {
+    return std::nullopt;
+  }
+
+  if (YGNodeStyleGetDisplay(mTitleBar->GetLayoutNode()) == YGDisplayNone) {
+    return std::nullopt;
+  }
+
+  // TITLEBARINFOEX indices
+  // static constexpr auto TitleBarIdx = 0;
+  // RESERVED = 1
+  static constexpr auto MinimizeIdx = 2;
+  static constexpr auto MaximizeIdx = 3;
+  static constexpr auto HelpIdx = 4;
+  static constexpr auto CloseIdx = 5;
+
+  switch (uMsg) {
+    case WM_NCMOUSEHOVER:
+      mTrackingMouseEvents = false;
+      TrackMouseEvent(MouseTrackingArea::NonClient);
+      return std::nullopt;
+    case WM_NCMOUSEMOVE: {
+      TrackMouseEvent(MouseTrackingArea::NonClient);
+      const auto e = MakeMouseEventFromScreen(wParam, lParam);
+      this->DispatchEvent(e);
+      return 0;
+    }
+    case WM_NCLBUTTONDOWN:
+      switch (wParam) {
+        case HTMINBUTTON:
+        case HTMAXBUTTON:
+        case HTCLOSE: {
+          auto e = MakeMouseEventFromScreen(wParam, lParam);
+          e.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
+          this->DispatchEvent(e);
+          return 0;
+        }
+        default:
+          return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+      }
+    case WM_NCLBUTTONUP: {
+      auto e = MakeMouseEventFromScreen(wParam, lParam);
+      e.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
+      this->DispatchEvent(e);
+
+      if (mTitleBar->ConsumeWasMinimizeActivated()) {
+        PostMessageW(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+      }
+      if (mTitleBar->ConsumeWasMaximizeActivated()) {
+        if (IsZoomed(hwnd)) {
+          PostMessageW(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+        } else {
+          PostMessageW(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+        }
+      }
+      if (mTitleBar->ConsumeWasCloseActivated()) {
+        PostMessageW(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+      }
+
+      return 0;
+    }
+    case WM_NCMOUSELEAVE: {
+      mTrackingMouseEvents = false;
+      POINT pt {};
+      GetCursorPos(&pt);
+      if (WindowFromPoint(pt) == mHwnd.get()) {
+        // We moved from non-client to client, so we'll have a regular
+        // WM_MOUSEMOVE too
+        break;
+      }
+      // Entirely left the window, so we need to act on it
+      MouseEvent e;
+      e.mWindowPoint = {-1, -1};
+      e.mDetail = MouseEvent::MoveEvent {};
+      this->DispatchEvent(e);
+      break;
+    }
+    case WM_NCHITTEST: {
+      const auto margins = mGeometry->mWindowMargins;
+      POINT pt {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+      const POINT screenPt = pt;
+      ScreenToClient(hwnd, &pt);
+      RECT rc {};
+      GetClientRect(hwnd, &rc);
+
+      // ----- Borders -----
+      const bool isTop = pt.y < margins.cyTopHeight;
+      const bool isBottom = pt.y > (rc.bottom - margins.cyBottomHeight);
+      const bool isLeft = pt.x < margins.cxLeftWidth;
+      const bool isRight = pt.x > (rc.right - margins.cxRightWidth);
+
+      if (isTop && isLeft)
+        return HTTOPLEFT;
+      if (isTop && isRight)
+        return HTTOPRIGHT;
+      if (isBottom && isLeft)
+        return HTBOTTOMLEFT;
+      if (isBottom && isRight)
+        return HTBOTTOMRIGHT;
+
+      if (isTop)
+        return HTTOP;
+      if (isBottom)
+        return HTBOTTOM;
+      if (isLeft)
+        return HTLEFT;
+      if (isRight)
+        return HTRIGHT;
+
+      // ----- Title bar-----
+      TITLEBARINFOEX titleBarInfo {sizeof(titleBarInfo)};
+      WindowProc(
+        hwnd, WM_GETTITLEBARINFOEX, 0, reinterpret_cast<LPARAM>(&titleBarInfo));
+      RECT screenRect {};
+      GetWindowRect(hwnd, &screenRect);
+      if (
+        screenPt.y >= titleBarInfo.rcTitleBar.top
+        && screenPt.y < titleBarInfo.rcTitleBar.bottom) {
+        if (screenPt.x >= titleBarInfo.rgrect[CloseIdx].left) {
+          return HTCLOSE;
+        }
+        if (screenPt.x >= titleBarInfo.rgrect[MaximizeIdx].left) {
+          return HTMAXBUTTON;
+        }
+        if (screenPt.x >= titleBarInfo.rgrect[MinimizeIdx].left) {
+          return HTMINBUTTON;
+        }
+        return HTCAPTION;
+      }
+
+      return HTCLIENT;
+    }
+    case WM_GETTITLEBARINFOEX: {
+      const auto ret = reinterpret_cast<TITLEBARINFOEX*>(lParam);
+      FUI_ASSERT(ret->cbSize >= sizeof(TITLEBARINFOEX));
+      *ret = {sizeof(*ret)};
+
+      const auto canvasRects = mTitleBar->GetRects();
+      FUI_ASSERT(canvasRects.mFullArea.mTopLeft == Point {});
+      ret->rcTitleBar = CanvasRectToScreenRect(canvasRects.mFullArea);
+
+      const auto hovered = mTitleBar->GetHoveredButton();
+
+      using enum Widgets::TitleBar::ChromeButton;
+      for (auto&& [idx, button, canvasRef]: {
+             std::tuple {
+               MinimizeIdx, Minimize, std::ref(canvasRects.mMinimizeButton)},
+             std::tuple {
+               MaximizeIdx, Maximize, std::ref(canvasRects.mMaximizeButton)},
+             std::tuple {CloseIdx, Close, std::ref(canvasRects.mCloseButton)},
+           }) {
+        auto& screenRect = ret->rgrect[idx];
+        const auto& canvasRect = canvasRef.get();
+        screenRect = CanvasRectToScreenRect(canvasRect);
+
+        if (hovered == button) {
+          ret->rgstate[idx] |= STATE_SYSTEM_HOTTRACKED;
+        }
+      }
+
+      ret->rgstate[HelpIdx] = STATE_SYSTEM_OFFSCREEN | STATE_SYSTEM_UNAVAILABLE;
+
+      return 0;
+    }
+    case WM_NCCALCSIZE: {
+      if (wParam) {
+        this->UpdateGeometry();
+        auto params = reinterpret_cast<LPNCCALCSIZE_PARAMS>(lParam);
+        //  In:
+        //
+        //  0. Window coordinates
+        //  1. Old window coordinates
+        //  2. Old client coordinates
+        //
+        //  Out:
+        //
+        //  0. New client rect
+        //  1. CopyTo
+        //  2. CopyFrom
+
+        params->rgrc[1] = params->rgrc[0];
+
+        const auto& margins = mGeometry->mWindowMargins;
+        params->rgrc[0].top += margins.cyTopHeight;
+        params->rgrc[0].bottom -= margins.cyBottomHeight;
+        params->rgrc[0].left += margins.cxLeftWidth;
+        params->rgrc[0].right -= margins.cxRightWidth;
+
+        return 0;
+      }
+      return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+    }
+    default:
+      return std::nullopt;
+  }
+  // Call DefWindowProc or return nullopt instead
+  std::unreachable();
+}
 
 SIZE Win32Window::GetInitialWindowSize() const {
-  const auto contentSizeInDIPs = GetRoot()->GetInitialSize();
+  const auto ToPixels
+    = [scale = mDPIScale](const float v) { return std::lround(v * scale); };
+  const auto canvas = GetRoot()->GetInitialSize();
 
+  const auto [l, r, t, b] = mGeometry->mWindowMargins;
   RECT rect {
     0,
     0,
-    std::lround(std::ceil(contentSizeInDIPs.mWidth * mDPIScale)),
-    std::lround(std::ceil(contentSizeInDIPs.mHeight * mDPIScale)),
+    ToPixels(canvas.mWidth) + l + r,
+    ToPixels(canvas.mHeight) + t + b,
   };
-  AdjustWindowRectExForDpi(
-    &rect,
-    mOptions.mWindowStyle & ~WS_OVERLAPPED,
-    false,
-    mOptions.mWindowExStyle,
-    mDPI.value());
-  this->ApplySizeConstraints(&rect);
+  std::ignore = this->ApplySizeConstraints(&rect);
 
   return {
     rect.right - rect.left,
     rect.bottom - rect.top,
+  };
+}
+
+RECT Win32Window::CanvasRectToScreenRect(const Rect& canvasRect) const {
+  const auto topLeft = CanvasPointToNativePoint(canvasRect.GetTopLeft());
+  const auto bottomRight
+    = CanvasPointToNativePoint(canvasRect.GetBottomRight());
+  return RECT {
+    topLeft.mX,
+    topLeft.mY,
+    bottomRight.mX,
+    bottomRight.mY,
   };
 }
 
@@ -1272,7 +1509,91 @@ void Win32Window::WaitFrameImpl(
   ResetEvent(mWaitFrameInterruptEvent.get());
 }
 
-void Win32Window::SetIsModal(bool modal) {
+Win32Window::ScreenMetrics::ScreenMetrics(const DWORD dpi) {
+  const auto gsm
+    = [dpi](const int idx) { return GetSystemMetricsForDpi(idx, dpi); };
+  mFrameX = gsm(SM_CXFRAME);
+  mFrameY = gsm(SM_CYFRAME);
+  mPaddedBorder = gsm(SM_CXPADDEDBORDER);
+}
+
+Win32Window::Geometry::Geometry(
+  const Kind kind,
+  HWND const hwnd,
+  const DWORD dpi,
+  const float dpiScale,
+  const ScreenMetrics& metrics) {
+  mDPI = dpi;
+  mDPIScale = dpiScale;
+  GetWindowRect(hwnd, &mWindowRect);
+  POINT clientOrigin {};
+  ClientToScreen(hwnd, &clientOrigin);
+  mClientToScreenOffset = {clientOrigin.x, clientOrigin.y};
+
+  if (kind == Kind::ClientAreaOnly) {
+    this->InitializeForClientCanvas(hwnd, metrics);
+  } else {
+    this->InitializeForNonClientCanvas(hwnd, metrics);
+  }
+}
+
+void Win32Window::Geometry::InitializeForClientCanvas(
+  HWND const hwnd,
+  const ScreenMetrics&) {
+  mScreenToCanvasOffset = {
+    -mClientToScreenOffset.mX,
+    -mClientToScreenOffset.mY,
+  };
+  RECT clientRect {};
+  GetClientRect(hwnd, &clientRect);
+  mCanvasSize = {
+    static_cast<float>(clientRect.right - clientRect.left) / mDPIScale,
+    static_cast<float>(clientRect.bottom - clientRect.top) / mDPIScale,
+  };
+
+  mWindowMargins.cxLeftWidth = mClientToScreenOffset.mX - mWindowRect.left;
+  mWindowMargins.cyTopHeight = mClientToScreenOffset.mY - mWindowRect.top;
+
+  const auto clientRight = mClientToScreenOffset.mX + clientRect.right;
+  mWindowMargins.cxRightWidth = mWindowRect.right - clientRight;
+  const auto clientBottom = mClientToScreenOffset.mY + clientRect.bottom;
+  mWindowMargins.cyBottomHeight = mWindowRect.bottom - clientBottom;
+}
+
+void Win32Window::Geometry::InitializeForNonClientCanvas(
+  HWND const hwnd,
+  const ScreenMetrics& metrics) {
+  const auto windowWidth = mWindowRect.right - mWindowRect.left;
+  const auto windowHeight = mWindowRect.bottom - mWindowRect.top;
+
+  if (IsZoomed(hwnd)) {
+    const auto pad = metrics.mPaddedBorder;
+    mWindowMargins = {
+      metrics.mFrameX + pad,
+      metrics.mFrameX + pad,
+      metrics.mFrameY + pad,
+      metrics.mFrameY + pad,
+    };
+  } else {
+    mWindowMargins = {metrics.mFrameX, metrics.mFrameX, 0, metrics.mFrameY};
+  }
+
+  const auto horizontalMargins
+    = mWindowMargins.cxLeftWidth + mWindowMargins.cxRightWidth;
+  const auto verticalMargins
+    = mWindowMargins.cyTopHeight + mWindowMargins.cyBottomHeight;
+
+  mScreenToCanvasOffset = {
+    -(mWindowRect.left + mWindowMargins.cxLeftWidth),
+    -(mWindowRect.top + mWindowMargins.cyTopHeight),
+  };
+  mCanvasSize = {
+    static_cast<float>(windowWidth - horizontalMargins) / mDPIScale,
+    static_cast<float>(windowHeight - verticalMargins) / mDPIScale,
+  };
+}
+
+void Win32Window::SetIsModal(const bool modal) {
   FUI_ASSERT(mParentHwnd);
   EnableWindow(mParentHwnd, !modal);
 }
@@ -1285,10 +1606,17 @@ void Win32Window::SetResizeMode(
   }
   mHorizontalResizeMode = horizontal;
   mVerticalResizeMode = vertical;
-  auto rect = mNCRect;
+
+  if (!mHwnd) {
+    return;
+  }
+  FUI_ASSERT(mGeometry);
+
+  const auto oldRect = mGeometry->mWindowRect;
+  auto rect = oldRect;
   SendMessage(
     mHwnd.get(), WM_SIZING, WMSZ_BOTTOMRIGHT, reinterpret_cast<LPARAM>(&rect));
-  if (memcmp(&rect, &mNCRect, sizeof(RECT)) == 0) {
+  if (memcmp(&rect, &oldRect, sizeof(RECT)) == 0) {
     return;
   }
   SetWindowPos(
@@ -1335,6 +1663,56 @@ void Win32Window::MutateStyles(
 
 void Win32Window::InterruptWaitFrame() {
   SetEvent(mWaitFrameInterruptEvent.get());
+}
+
+void Win32Window::SetTitle(const std::string_view text) {
+  if (text == mOptions.mTitle) {
+    return;
+  }
+
+  mOptions.mTitle = text;
+  if (mTitleBar) {
+    mTitleBar->SetTitle(text);
+  }
+  SetWindowTextW(mHwnd.get(), Utf8ToWide(text).c_str());
+}
+
+bool Win32Window::SetSubtitle(const std::string_view text) {
+  if (!mTitleBar) {
+    return false;
+  }
+  mTitleBar->SetSubtitle(text);
+  return true;
+}
+
+MouseEvent Win32Window::MakeMouseEventFromScreen(
+  const WPARAM wParam,
+  const POINT& screenPoint) {
+  const auto [dx, dy] = mGeometry->mScreenToCanvasOffset;
+  const Point canvasPoint {
+    (screenPoint.x + dx) / mDPIScale,
+    (screenPoint.y + dy) / mDPIScale,
+  };
+  if constexpr (DebugMouseMapping) {
+    const auto roundTrip = CanvasPointToNativePoint(canvasPoint);
+    FUI_ALWAYS_ASSERT(roundTrip.mX == screenPoint.x);
+    FUI_ALWAYS_ASSERT(roundTrip.mY == screenPoint.y);
+  }
+  return MakeMouseEvent(wParam, canvasPoint);
+}
+
+MouseEvent Win32Window::MakeMouseEventFromScreen(
+  const WPARAM wParam,
+  const LPARAM lParam) {
+  return MakeMouseEventFromScreen(
+    wParam, POINT {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)});
+}
+
+MouseEvent Win32Window::MakeMouseEventFromClient(WPARAM wParam, LPARAM lParam) {
+  POINT screenPoint {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+  screenPoint.x += mGeometry->mClientToScreenOffset.mX;
+  screenPoint.y += mGeometry->mClientToScreenOffset.mY;
+  return MakeMouseEventFromScreen(wParam, screenPoint);
 }
 
 }// namespace FredEmmott::GUI

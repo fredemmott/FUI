@@ -156,6 +156,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   X(AlignContent, AlignContent)
   X(AlignItems, AlignItems)
   X(AlignSelf, AlignSelf)
+  X(AspectRatio, AspectRatio)
   X(BorderBottomWidth, Border, YGEdgeBottom)
   X(BorderLeftWidth, Border, YGEdgeLeft)
   X(BorderRightWidth, Border, YGEdgeRight)

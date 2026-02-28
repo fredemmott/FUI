@@ -8,6 +8,7 @@
 #include <felly/scope_exit.hpp>
 
 #include "FredEmmott/GUI/StaticTheme.hpp"
+#include "FredEmmott/utility/almost_equal.hpp"
 
 using namespace FredEmmott::GUI::StaticTheme;
 
@@ -15,9 +16,13 @@ namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 using namespace Widgets;
 
-Root::Root() {
-  mYogaRoot.reset(YGNodeNew());
+Root::Root(Widgets::Widget* root, Widgets::Widget* immediateRoot)
+  : mActualRoot(root),
+    mImmediateRoot(immediateRoot),
+    mFocusManager(root),
+    mYogaRoot(YGNodeNew()) {
   const auto yoga = mYogaRoot.get();
+  YGNodeInsertChild(yoga, root->GetLayoutNode(), 0);
   YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
 }
@@ -25,7 +30,7 @@ Root::Root() {
 Root::~Root() {}
 
 void Root::Reset() {
-  mWidgetRoot.reset();
+  mImmediateRoot->SetChildren({});
 }
 
 void Root::BeginFrame() {
@@ -34,17 +39,14 @@ void Root::BeginFrame() {
       "BeginFrame() called, but frame already in progress");
   }
 
-  tStack.push_back({});
-  if (mWidgetRoot) {
-    tStack.front().mPending.push_back(mWidgetRoot->mWidget.get());
-    FocusManager::PushInstance(&mWidgetRoot->mFocusManager);
-  }
+  tStack.push_back({
+    .mPending = {mImmediateRoot->GetChildren()},
+  });
+  FocusManager::PushInstance(&mFocusManager);
 }
 
 void Root::EndFrame() {
-  if (mWidgetRoot) {
-    FocusManager::PopInstance(&mWidgetRoot->mFocusManager);
-  }
+  FocusManager::PopInstance(&mFocusManager);
 
   if (tStack.size() != 1) {
     throw std::logic_error("EndFrame() called, but children are open");
@@ -52,23 +54,13 @@ void Root::EndFrame() {
   const auto widgets = std::move(tStack.front().mNewSiblings);
   tStack.clear();
 
-  if (widgets.empty()) {
-    mWidgetRoot.reset();
-    return;
-  }
-
   if (widgets.size() > 1) {
     throw std::logic_error(
-      "Root must have a single child, usually a layout or card");
+      "Immediate widget root must have a single child, usually a layout or "
+      "card");
   }
-
-  const auto widget = widgets.front();
-  if ((!mWidgetRoot) || (mWidgetRoot->mWidget.get() != widget)) {
-    mWidgetRoot.emplace(
-      unique_ptr<Widgets::Widget>(widget), FocusManager {widget});
-    const auto yoga = widget->GetLayoutNode();
-    YGNodeSetChildren(mYogaRoot.get(), &yoga, 1);
-  }
+  mImmediateRoot->SetChildren(std::move(widgets));
+  mActualRoot->ComputeStyles({});
 
   if (tResizeThisFrame) {
     tWindow->ResizeToIdeal();
@@ -76,39 +68,38 @@ void Root::EndFrame() {
   tResizeThisFrame = std::exchange(tResizeNextFrame, false);
 }
 
-Widget* Root::DispatchEvent(const Event* e) {
-  if (mWidgetRoot) {
-    return mWidgetRoot->mWidget->DispatchEvent(*e);
-  }
-  return nullptr;
+Widget* Root::DispatchEvent(const Event& e) {
+  FocusManager::PushInstance(&mFocusManager);
+  const auto pop
+    = felly::scope_exit([this] { FocusManager::PopInstance(&mFocusManager); });
+  return mActualRoot->DispatchEvent(e);
 }
 
 void Root::Paint(Renderer* renderer, const Size& size) {
-  if (!mWidgetRoot) {
-    return;
-  }
-  const auto widget = mWidgetRoot->mWidget.get();
   const auto clipRegion = renderer->ScopedClipRect({size});
 
-  FocusManager::PushInstance(&mWidgetRoot->mFocusManager);
-  const auto popFocusManager = wil::scope_exit([this] {
-    FocusManager::PopInstance(&mWidgetRoot->mFocusManager);
-  });
+  FocusManager::PushInstance(&mFocusManager);
+  const auto popFocusManager
+    = felly::scope_exit([this] { FocusManager::PopInstance(&mFocusManager); });
 
   const auto frameStartTime = std::chrono::steady_clock::now();
 
-  FUI_ASSERT(YGNodeGetChild(mYogaRoot.get(), 0) == widget->GetLayoutNode());
-  FUI_ASSERT(YGNodeGetParent(widget->GetLayoutNode()) == mYogaRoot.get());
-
-  widget->ComputeStyles({});
   YGNodeCalculateLayout(
-    mYogaRoot.get(), size.mWidth, size.mHeight, YGDirectionLTR);
+    this->GetLayoutNode(), size.mWidth, size.mHeight, YGDirectionLTR);
 
-  FUI_ASSERT(
-    !YGFloatIsUndefined(YGNodeLayoutGetWidth(widget->GetLayoutNode())));
+  if constexpr (Config::Debug) {
+    const auto width = YGNodeLayoutGetWidth(this->GetLayoutNode());
+    FUI_ALWAYS_ASSERT(!std::isnan(width));
+    FUI_ALWAYS_ASSERT(width > 0);
+    FUI_ALWAYS_ASSERT(std::abs(width - size.mWidth) < 1.0f);
+    const auto height = YGNodeLayoutGetHeight(this->GetLayoutNode());
+    FUI_ALWAYS_ASSERT(!std::isnan(height));
+    FUI_ALWAYS_ASSERT(height > 0);
+    FUI_ALWAYS_ASSERT(std::abs(height - size.mHeight) < 1.0f);
+  }
 
-  widget->Tick(frameStartTime);
-  widget->Paint(renderer);
+  mActualRoot->Tick(frameStartTime);
+  mActualRoot->Paint(renderer);
 }
 
 bool Root::CanFit(const Size& size) const {
@@ -119,52 +110,38 @@ bool Root::CanFit(float width, float height) const {
   if (width <= 0 || height <= 0) {
     return false;
   }
-  const auto checkParents = ScopedYogaParentCheck(mYogaRoot.get());
-  const auto fixParents
-    = felly::scope_exit([node = mYogaRoot.get()] { FixYogaChildren(node); });
-  const unique_ptr<YGNode> testRoot {YGNodeClone(mYogaRoot.get())};
-  const auto yoga = testRoot.get();
-  YGNodeStyleSetWidth(yoga, std::ceil(width));
-  YGNodeStyleSetHeight(yoga, std::ceil(height));
-  YGNodeCalculateLayout(yoga, YGUndefined, YGUndefined, YGDirectionLTR);
-  return !YGNodeLayoutGetHadOverflow(yoga);
+  const auto yoga = this->GetLayoutNode();
+  const auto checkParents = ScopedYogaParentCheck(yoga);
+  const auto fixParents = felly::scope_exit([yoga] { FixYogaChildren(yoga); });
+  const unique_ptr<YGNode> testRoot {YGNodeClone(yoga)};
+  const auto cloned = testRoot.get();
+  YGNodeStyleSetWidth(cloned, std::ceil(width));
+  YGNodeStyleSetHeight(cloned, std::ceil(height));
+  YGNodeCalculateLayout(cloned, YGUndefined, YGUndefined, YGDirectionLTR);
+  return !YGNodeLayoutGetHadOverflow(cloned);
 }
+
 YGNodeRef Root::GetLayoutNode() const {
   return mYogaRoot.get();
 }
 
-Widgets::Widget* Root::GetWidget() const {
-  if (mWidgetRoot) {
-    return mWidgetRoot->mWidget.get();
-  }
-  return nullptr;
-}
-
 FocusManager* Root::GetFocusManager() const {
-  if (mWidgetRoot) {
-    return const_cast<FocusManager*>(&mWidgetRoot->mFocusManager);
-  }
-  return nullptr;
+  return &const_cast<Root*>(this)->mFocusManager;
 }
 
 Size Root::GetInitialSize() const {
-  if (mWidgetRoot) {
-    const auto widget = mWidgetRoot->mWidget.get();
-    widget->ComputeStyles({});
-  }
-
-  return GetMinimumWidthAndIdealHeight(mYogaRoot.get());
+  return GetMinimumWidthAndIdealHeight(this->GetLayoutNode());
 }
 
 float Root::GetHeightForWidth(float width) const {
-  return GetIdealHeight(mYogaRoot.get(), width);
+  return GetIdealHeight(this->GetLayoutNode(), width);
 }
 
 FrameRateRequirement Root::GetFrameRateRequirement() const {
-  if (std::exchange(tNeedAdditionalFrame, false) || !mWidgetRoot) {
+  if (std::exchange(tNeedAdditionalFrame, false)) {
     return FrameRateRequirement::SmoothAnimation {};
   }
-  return mWidgetRoot->mWidget->GetFrameRateRequirement();
+  return mActualRoot->GetFrameRateRequirement();
 }
 
 }// namespace FredEmmott::GUI::Immediate

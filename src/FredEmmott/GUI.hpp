@@ -27,6 +27,7 @@
 #include <FredEmmott/GUI/Immediate/SwapChainPanel.hpp>
 #include <FredEmmott/GUI/Immediate/TextBlock.hpp>
 #include <FredEmmott/GUI/Immediate/TextBox.hpp>
+#include <FredEmmott/GUI/Immediate/TitleBar.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/Immediate/ToolTip.hpp>
 #include <FredEmmott/GUI/Window.hpp>

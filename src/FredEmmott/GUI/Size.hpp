@@ -17,6 +17,8 @@ struct BasicSize {
   U as() const noexcept {
     return U {mWidth, mHeight};
   }
+
+  constexpr bool operator==(const BasicSize&) const noexcept = default;
 };
 
 using Size = BasicSize<float>;

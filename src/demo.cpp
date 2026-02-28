@@ -3,6 +3,7 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <FredEmmott/GUI/Widgets/TitleBar.hpp>
 #include <atomic>
 #include <map>
 #include <print>
@@ -24,6 +25,9 @@ constexpr auto LoremIpsum
     "mollit anim id est laborum.";
 
 static void AppTick(fui::Window& window) {
+  fuii::WindowTitle("FUI Demo");
+  std::ignore = fuii::WindowSubtitle("I like turtles");
+
   constexpr bool UseScrollView = true;
   if constexpr (UseScrollView) {
     using enum fui::Window::ResizeMode;
@@ -261,5 +265,5 @@ int WINAPI wWinMain(
     lpCmdLine,
     nCmdShow,
     [](fui::Win32Window& window) { AppTick(window); },
-    {"FUI Demo"});
+    {"Initial Window Title"});
 }

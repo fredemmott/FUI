@@ -44,6 +44,8 @@ add_library(
   FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
   FredEmmott/GUI/Immediate/TextBox.cpp
   FredEmmott/GUI/Immediate/TextBox.hpp
+  FredEmmott/GUI/Immediate/TitleBar.cpp
+  FredEmmott/GUI/Immediate/TitleBar.hpp
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
   FredEmmott/GUI/Immediate/ToolTip.cpp
   FredEmmott/GUI/Immediate/ToolTip.hpp
@@ -75,6 +77,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/TitleBar.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/TitleBar.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/ToolTip.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/ToolTip.handwritten.hpp
   FredEmmott/GUI/Style.cpp FredEmmott/GUI/Style.hpp
@@ -106,6 +110,8 @@ add_library(
   FredEmmott/GUI/Widgets/SwapChainPanel.hpp
   FredEmmott/GUI/Widgets/TextBlock.cpp FredEmmott/GUI/Widgets/TextBlock.hpp
   FredEmmott/GUI/Widgets/TextBox.cpp FredEmmott/GUI/Widgets/TextBox.hpp
+  FredEmmott/GUI/Widgets/TitleBar.cpp
+  FredEmmott/GUI/Widgets/TitleBar.hpp
   FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchKnob.cpp FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
