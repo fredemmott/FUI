@@ -18,15 +18,6 @@ constexpr bool DebugAnimations = Config::Debug && Config::LibraryDeveloper;
 constexpr unsigned int AnimationDurationMultiplier = 1;
 
 template <class T>
-auto& as_ref(T&& value) {
-  if constexpr (std::is_pointer_v<std::remove_reference_t<T>>) {
-    return *value;
-  } else if constexpr (std::is_reference_v<T>) {
-    return value;
-  }
-}
-
-template <class T>
 struct transition_default_value_t : constant_t<std::nullopt> {};
 template <>
 struct transition_default_value_t<float> : constant_t<0> {};
