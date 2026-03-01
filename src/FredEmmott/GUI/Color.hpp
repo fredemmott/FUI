@@ -64,7 +64,8 @@ class Color final {
       const auto g8 = std::clamp<uint8_t>(std::roundl(g * 0xff), 0, 0xff);
       const auto b8 = std::clamp<uint8_t>(std::roundl(b * 0xff), 0, 0xff);
       const auto a8 = std::clamp<uint8_t>(std::roundl(a * 0xff), 0, 0xff);
-      std::bit_cast<std::array<uint8_t, 4>>(ret.mBGRA32) = {b8, g8, r8, a8};
+      ret.mBGRA32
+        = std::bit_cast<uint32_t>(std::array<uint8_t, 4> {b8, g8, r8, a8});
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
       ret.mD2D = {r, g, b, a};
@@ -81,7 +82,8 @@ class Color final {
 #ifdef FUI_ENABLE_SKIA
       ret.mSkia = SkColorSetARGB(a, r, g, b);
 #else
-      std::bit_cast<std::array<uint8_t, 4>>(ret.mBGRA32) = {b, g, r, a};
+      ret.mBGRA32
+        = std::bit_cast<uint32_t>(std::array<uint8_t, 4> {b, g, r, a});
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
       ret.mD2D = {
