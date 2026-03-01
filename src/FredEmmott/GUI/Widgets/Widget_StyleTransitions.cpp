@@ -15,7 +15,7 @@ using namespace widget_detail;
 
 namespace {
 constexpr bool DebugAnimations = Config::Debug && Config::LibraryDeveloper;
-constexpr bool SlowAnimations = false;
+constexpr unsigned int AnimationDurationMultiplier = 1;
 
 template <class T>
 auto& as_ref(T&& value) {
@@ -151,7 +151,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
 
   const auto& transition = newProp.transition();
   const auto duration
-    = newProp.transition().mDuration * (SlowAnimations ? 10 : 1);
+    = newProp.transition().mDuration * AnimationDurationMultiplier;
 
   if (!mTransitions.contains(key)) {
     TransitionState<TValue> state {
