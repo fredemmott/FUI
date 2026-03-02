@@ -273,8 +273,7 @@ Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
 }
 
 Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
-  GetRoot()->Reset();
-  this->CleanupFrameContexts();
+  this->DestroyWindow();
 }
 
 IUnknown* Win32Direct3D12GaneshWindow::GetDirectCompositionTargetDevice()

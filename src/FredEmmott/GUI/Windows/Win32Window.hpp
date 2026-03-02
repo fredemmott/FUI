@@ -133,6 +133,8 @@ class Win32Window : public Window {
 
   Win32Window(HINSTANCE instance, int showCommand, const Options& options);
 
+  void DestroyWindow();
+
   void ProcessNativeEvents() override;
   void InitializeWindow() final;
   void HideWindow() final;
@@ -148,6 +150,7 @@ class Win32Window : public Window {
   virtual IUnknown* GetDirectCompositionTargetDevice() const = 0;
   virtual void CreateRenderTargets() = 0;
   virtual void CleanupFrameContexts() = 0;
+  virtual void OnDestroy();
 
   auto GetDXGIFactory() const noexcept {
     return mDXGIFactory.get();
@@ -177,8 +180,6 @@ class Win32Window : public Window {
   HINSTANCE mInstanceHandle {nullptr};
   int mShowCommand {SW_SHOW};
   Options mOptions {};
-  static thread_local std::unordered_map<HWND, Win32Window*> gInstances;
-  static thread_local Win32Window* gInstanceCreatingWindow;
 
   wil::unique_event mFrameIntervalTimer;
   wil::unique_event mWaitFrameInterruptEvent;
@@ -230,5 +231,7 @@ class Win32Window : public Window {
   WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
   static LRESULT
   StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+  static Win32Window& Get(HWND hwnd);
 };
 }// namespace FredEmmott::GUI

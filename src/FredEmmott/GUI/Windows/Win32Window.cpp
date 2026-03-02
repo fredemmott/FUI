@@ -42,6 +42,7 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 
 namespace {
+thread_local Win32Window* gInstanceCreatingWindow {nullptr};
 KeyCode KeyCodeFromVirtualKey(const UINT vk) {
   return static_cast<KeyCode>(vk);
 }
@@ -116,9 +117,6 @@ MouseEvent MakeMouseEventFromScreenLPARAM(
 
 }// namespace
 
-thread_local decltype(Win32Window::gInstances) Win32Window::gInstances {};
-thread_local Win32Window* Win32Window::gInstanceCreatingWindow {nullptr};
-
 void Win32Window::AdjustToWindowsTheme() {
   BOOL darkMode {StaticTheme::GetCurrent() == StaticTheme::Theme::Dark};
   // Support building with the Windows 10 SDK
@@ -191,6 +189,10 @@ Win32Window::Win32Window(
     mOptions.mDXGIFactory = mDXGIFactory.get();
   }
 }
+void Win32Window::DestroyWindow() {
+  mHwnd.reset();
+}
+
 void Win32Window::ProcessNativeEvents() {
   MSG msg {};
   while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -332,9 +334,9 @@ void Win32Window::CreateNativeWindow() {
     }
   }
 
-  gInstanceCreatingWindow = this;
   const std::wstring title
     = mOptions.mTitle.empty() ? L"FUI Window" : Utf8ToWide(mOptions.mTitle);
+  gInstanceCreatingWindow = this;
   mHwnd.reset(CreateWindowExW(
     mOptions.mWindowExStyle,
     className.c_str(),
@@ -347,15 +349,17 @@ void Win32Window::CreateNativeWindow() {
     mParentHwnd,
     nullptr,
     mInstanceHandle,
-    nullptr));
-  gInstanceCreatingWindow = nullptr;
+    this));
+  FUI_ASSERT(!gInstanceCreatingWindow);
   if (!mHwnd) {
     CheckHResult(HRESULT_FROM_WIN32(GetLastError()));
     return;
   }
+  FUI_ASSERT(GetWindowLongPtrW(mHwnd.get(), GWLP_USERDATA));
 
   if (mParentHwnd) {
-    gInstances.at(mParentHwnd)->mChildren.push_back(mHwnd.get());
+    FUI_ASSERT(GetWindowLongPtrW(mParentHwnd, GWLP_USERDATA));
+    Get(mParentHwnd).mChildren.push_back(mHwnd.get());
   }
   if ((mOptions.mWindowExStyle & WS_EX_LAYERED) == WS_EX_LAYERED) {
     SetLayeredWindowAttributes(mHwnd.get(), 0, 255, LWA_ALPHA);
@@ -364,8 +368,6 @@ void Win32Window::CreateNativeWindow() {
   this->TrackMouseEvent();
 
   this->SetDPI(GetDpiForWindow(mHwnd.get()));
-
-  gInstances.emplace(mHwnd.get(), this);
 
   GetWindowRect(mHwnd.get(), &mNCRect);
   {
@@ -422,17 +424,10 @@ void Win32Window::CreateNativeWindow() {
 }
 
 Win32Window::~Win32Window() {
-  this->HideWindow();
-  if (mParentHwnd && gInstances.contains(mParentHwnd)) {
-    auto& siblings = gInstances.at(mParentHwnd)->mChildren;
-    siblings.erase(std::ranges::find(siblings, mHwnd.get()));
-  }
-
-  const auto it = std::ranges::find(
-    gInstances, this, [](const auto& pair) { return pair.second; });
-  if (it != gInstances.end()) {
-    gInstances.erase(it);
-  }
+  FUI_ASSERT(
+    !mHwnd,
+    "Window must be destroyed while vtable is alive; call DestroyWindow() in "
+    "subclass destructor");
 }
 
 void Win32Window::SetSystemBackdropType(const DWM_SYSTEMBACKDROP_TYPE type) {
@@ -651,6 +646,26 @@ void Win32Window::ApplySizeConstraints(RECT* ncrect) const {
     ncrect->top -= dy;
   }
 }
+void Win32Window::OnDestroy() {
+  if (!mHwnd) {
+    return;
+  }
+
+  GetRoot()->Reset();
+  this->CleanupFrameContexts();
+
+  if (mParentHwnd) {
+    auto& parent = Get(mParentHwnd);
+    auto& siblings = parent.mChildren;
+    siblings.erase(std::ranges::find(parent.mChildren, mHwnd.get()));
+    mParentHwnd = nullptr;
+  }
+
+  for (auto&& child: mChildren) {
+    Get(child).mParentHwnd = nullptr;
+  }
+}
+
 void Win32Window::ResizeToIdeal() {
   auto rect = mNCRect;
   const auto size = GetInitialWindowSize();
@@ -731,21 +746,33 @@ LRESULT Win32Window::StaticWindowProc(
   UINT uMsg,
   WPARAM wParam,
   LPARAM lParam) {
-  auto it = gInstances.find(hwnd);
-  if (it != gInstances.end()) {
-    auto& self = *it->second;
-    if (hwnd == self.mHwnd.get()) {
-      return self.WindowProc(hwnd, uMsg, wParam, lParam);
+  auto self
+    = reinterpret_cast<Win32Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+  if (!self) {
+    if (uMsg == WM_NCCREATE) {
+      // We have actual data, so let's use it :)
+      const auto p = reinterpret_cast<CREATESTRUCT*>(lParam);
+      self = static_cast<Win32Window*>(p->lpCreateParams);
+      FUI_ASSERT(self == gInstanceCreatingWindow);
+      if (gInstanceCreatingWindow == self) {
+        gInstanceCreatingWindow = nullptr;
+      }
+
+      SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LPARAM>(self));
+    } else {
+      // e.g. WM_GETMINMAXINFO can be sent before WM_NCCREATE, and does not
+      // have the lParam
+      self = gInstanceCreatingWindow;
     }
-#ifndef NDEBUG
-    // Should *always* match above
-    __debugbreak();
-#endif
   }
-  if (gInstanceCreatingWindow) {
-    return gInstanceCreatingWindow->WindowProc(hwnd, uMsg, wParam, lParam);
-  }
-  return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+  FUI_ASSERT(self);
+  return self->WindowProc(hwnd, uMsg, wParam, lParam);
+}
+Win32Window& Win32Window::Get(HWND const hwnd) {
+  const auto p
+    = reinterpret_cast<Win32Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+  FUI_ASSERT(p);
+  return *p;
 }
 
 void Win32Window::SetDPI(const WORD newDPI) {
@@ -872,6 +899,15 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   }
 
   switch (uMsg) {
+    case WM_NCDESTROY:
+      // `wil::unique_hwnd::reset()` calls `DestroyWindow()`, but while we're
+      // re-entrant in the message handler, the unique_hwnd should still be
+      // live
+      FUI_ASSERT(mHwnd.get() == hwnd);
+      this->OnDestroy();
+      // Explicitly call this to make sure we don't accidentally have any
+      // references to hwnd (no longer valid, or we wouldn't have WM_NCDESTROY)
+      return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     case WM_GETOBJECT: {
       if (static_cast<long>(lParam) == UiaRootObjectId) {
         if (!mUIAProvider) {
@@ -1060,7 +1096,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     }
     case WM_LBUTTONDOWN: {
       for (auto&& child: mChildren) {
-        gInstances.at(child)->RequestStop();
+        Get(child).RequestStop();
       }
       SetCapture(mHwnd.get());
       auto e = MakeMouseEventFromClientLPARAM(wParam, lParam, mDPIScale);

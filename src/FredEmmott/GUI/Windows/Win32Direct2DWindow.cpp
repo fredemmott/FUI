@@ -199,8 +199,7 @@ Win32Direct2DWindow::Win32Direct2DWindow(
   : Win32Window(instance, showCommand, options) {}
 
 Win32Direct2DWindow::~Win32Direct2DWindow() {
-  GetRoot()->Reset();
-  this->CleanupFrameContexts();
+  this->DestroyWindow();
 }
 
 IUnknown* Win32Direct2DWindow::GetDirectCompositionTargetDevice() const {
