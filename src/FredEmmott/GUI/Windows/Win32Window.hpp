@@ -59,13 +59,8 @@ struct WinMainOptions {
     None,
     Uninitialize,
   };
-  enum class DPIMode {
-    Uninitialized,
-    PerMonitorV2,
-  };
   COMMode mCOMMode {COMMode::WinRTSingleThreaded};
   COMCleanupMode mCOMCleanupMode {COMCleanupMode::Uninitialize};
-  DPIMode mDPIMode {DPIMode::PerMonitorV2};
 
   Hooks mHooks {};
 };
