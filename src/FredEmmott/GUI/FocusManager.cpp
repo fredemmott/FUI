@@ -86,9 +86,9 @@ void FocusManager::FocusNextWidget() {
 
   auto child = std::exchange(mFocusedWidget, nullptr);
   if (dynamic_cast<Widgets::ISelectionItem const*>(child)) {
-    child = child->GetParent();
+    child = child->GetParentOrNull();
   }
-  while (const auto parent = child->GetParent()) {
+  while (const auto parent = child->GetParentOrNull()) {
     const auto children = parent->GetChildren();
     const auto it = std::ranges::find(children, child);
     for (auto&& sibling: std::ranges::subrange(it + 1, children.end())) {
@@ -140,9 +140,9 @@ void FocusManager::FocusPreviousWidget() {
 
   auto child = std::exchange(mFocusedWidget, nullptr);
   if (dynamic_cast<Widgets::ISelectionItem*>(child)) {
-    child = child->GetParent();
+    child = child->GetParentOrNull();
   }
-  while (const auto parent = child->GetParent()) {
+  while (const auto parent = child->GetParentOrNull()) {
     const auto children = parent->GetChildren();
     const auto it = std::ranges::find(children, child);
     for (auto&& sibling:
@@ -174,7 +174,7 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
   // 3. Try parent
   // 4. Goto 1
   auto child = widget;
-  while (const auto parent = child->GetParent()) {
+  while (const auto parent = child->GetParentOrNull()) {
     const auto children = parent->GetChildren();
     const auto it = std::ranges::find(children, child);
     for (auto&& sibling: std::ranges::subrange(children.begin(), it)) {
@@ -280,7 +280,7 @@ void FocusManager::FocusFirstSelectionItem(auto makeRange) {
     return;
   }
 
-  const auto children = mFocusedWidget->GetParent()->GetChildren();
+  const auto children = mFocusedWidget->GetParentOrNull()->GetChildren();
   for (auto&& sibling: makeRange(children)) {
     if (sibling->IsDisabled()) {
       continue;

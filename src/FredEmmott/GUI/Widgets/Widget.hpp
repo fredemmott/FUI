@@ -63,7 +63,8 @@ class Widget {
   // Can return nullptr
   [[nodiscard]]
   static Widget* FromYogaNode(YGNodeConstRef);
-  Widget* GetParent() const;
+  [[nodiscard]]
+  Widget* GetParentOrNull() const;
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
     return mYoga.get();

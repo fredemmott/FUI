@@ -187,7 +187,7 @@ Widget* Widget::FromYogaNode(YGNodeConstRef node) {
     *ctx);
 }
 
-Widget* Widget::GetParent() const {
+Widget* Widget::GetParentOrNull() const {
   const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(mYoga.get()));
   FUI_ASSERT(ctx);
   return std::visit(
@@ -585,7 +585,7 @@ Widget* Widget::DispatchKeyEvent(const KeyEvent& e) {
     return this;
   }
 
-  if (const auto parent = this->GetParent()) {
+  if (const auto parent = this->GetParentOrNull()) {
     return parent->DispatchKeyEvent(e);
   }
 
@@ -599,7 +599,7 @@ Widget* Widget::DispatchTextInputEvent(const TextInputEvent& e) {
     return this;
   }
 
-  if (const auto parent = this->GetParent()) {
+  if (const auto parent = this->GetParentOrNull()) {
     return parent->DispatchTextInputEvent(e);
   }
 
@@ -681,7 +681,7 @@ void Widget::SetIsChecked(const bool value) {
 Point Widget::GetTopLeftCanvasPoint(const Widget* const relativeTo) const {
   Point position {};
   for (auto widget = this; widget && widget != relativeTo;
-       widget = widget->GetParent()) {
+       widget = widget->GetParentOrNull()) {
     const auto yoga = widget->GetLayoutNode();
     position.mX += YGNodeLayoutGetLeft(yoga);
     position.mY += YGNodeLayoutGetTop(yoga);

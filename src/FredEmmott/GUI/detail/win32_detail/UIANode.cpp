@@ -43,7 +43,7 @@ void GetFlattenedChildren(
 
 // Flattens display: contents
 Widget* GetFlattenedParent(Widget* widget) {
-  while (((widget = widget->GetParent())) && IsDisplayContents(widget)) {
+  while (((widget = widget->GetParentOrNull())) && IsDisplayContents(widget)) {
   }
   return widget;
 }
