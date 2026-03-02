@@ -179,21 +179,25 @@ Widget* Widget::FromYogaNode(YGNodeConstRef node) {
   if (!ctx) {
     return nullptr;
   }
-  if (const auto it = std::get_if<Widget*>(ctx)) {
-    return *it;
-  }
-  if (const auto it = std::get_if<DetachedYogaTree>(ctx)) {
-    return it->mSelf;
-  }
-  return nullptr;
+  return std::visit(
+    felly::overload {
+      [](Widget* w) { return w; },
+      [](const DetachedYogaTree& d) { return d.mSelf; },
+    },
+    *ctx);
 }
 
 Widget* Widget::GetParent() const {
-  const auto parentYoga = YGNodeGetParent(mYoga.get());
-  if (!parentYoga) {
-    return nullptr;
-  }
-  return FromYogaNode(parentYoga);
+  const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(mYoga.get()));
+  FUI_ASSERT(ctx);
+  return std::visit(
+    felly::overload {
+      [](Widget* const w) {
+        return FromYogaNode(YGNodeGetParent(w->GetLayoutNode()));
+      },
+      [](const DetachedYogaTree& d) { return d.mParent; },
+    },
+    *ctx);
 }
 
 Widget::~Widget() {
