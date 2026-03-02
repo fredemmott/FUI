@@ -66,6 +66,22 @@ class Widget {
   [[nodiscard]]
   Widget* GetParentOrNull() const;
 
+  template <std::derived_from<Widget> T = Widget>
+  [[nodiscard]]
+  T* GetParent() const {
+    const auto widget = GetParentOrNull();
+    // If you're expecting a specific parent, require that *a* parent exists
+    FUI_ALWAYS_ASSERT(widget);
+
+    if constexpr (Config::Debug) {
+      const auto typed = dynamic_cast<T*>(widget);
+      FUI_ALWAYS_ASSERT(typed);
+      return typed;
+    } else {
+      return static_cast<T*>(widget);
+    }
+  }
+
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
     return mYoga.get();
   }

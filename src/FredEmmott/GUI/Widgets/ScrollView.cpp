@@ -62,11 +62,6 @@ auto& HorizontalScrollBarStyle() {
   return ret;
 }
 
-struct ScrollViewContext final : Context {
-  explicit ScrollViewContext(ScrollView* sv) : mScrollView(sv) {}
-  ScrollView* mScrollView {nullptr};
-};
-
 }// namespace
 
 ScrollView::ScrollView(id_type id, const StyleClasses& classes)
@@ -94,10 +89,8 @@ ScrollView::ScrollView(id_type id, const StyleClasses& classes)
 
   YGNodeSetDirtiedFunc(
     mContentInner->GetLayoutNode(), &ScrollView::OnInnerContentDirty);
-  mContentInner->SetContextIfUnset<ScrollViewContext>(this);
   YGNodeSetMeasureFunc(
     mContentOuter->GetLayoutNode(), &ScrollView::MeasureOuterContent);
-  mContentOuter->SetContextIfUnset<ScrollViewContext>(this);
 
   mHorizontalScrollBar->OnValueChanged(
     std::bind_front(&ScrollView::OnHorizontalScroll, this));
@@ -262,8 +255,7 @@ bool ScrollView::IsScrollBarVisible(
 }
 
 void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
-  auto& self
-    = *FromYogaNode(node)->GetContext<ScrollViewContext>()->mScrollView;
+  auto& self = *FromYogaNode(node)->GetParent<ScrollView>();
   self.mDirtyInner = true;
   YGNodeMarkDirty(self.mContentOuter->GetLayoutNode());
 }
@@ -275,7 +267,7 @@ YGSize ScrollView::MeasureOuterContent(
   float height,
   YGMeasureMode heightMode) {
   const auto outer = FromYogaNode(node);
-  auto& self = *outer->GetContext<ScrollViewContext>()->mScrollView;
+  auto& self = *outer->GetParent<ScrollView>();
 
   const bool haveDirtyInner = std::exchange(self.mDirtyInner, false);
   const bool haveWidthChange
