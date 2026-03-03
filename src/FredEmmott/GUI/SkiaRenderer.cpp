@@ -8,6 +8,7 @@
 
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
 
+#include "Bitmap.hpp"
 #include "assert.hpp"
 
 #ifdef _WIN32
@@ -261,9 +262,6 @@ void SkiaRenderer::DrawTexture(
   ImportedFence* const rawFence,
   const uint64_t fenceValue) {
   FUI_ASSERT(rawTexture);
-  FUI_ASSERT(rawFence);
-  FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
-
 #ifndef NDEBUG
 #define IMPL_CAST dynamic_cast
 #else
@@ -271,16 +269,20 @@ void SkiaRenderer::DrawTexture(
 #endif
   const auto skiaImage
     = IMPL_CAST<ImportedSkiaTexture*>(rawTexture)->mSkiaImage.get();
-  const auto fence = &IMPL_CAST<ImportedSkiaFence*>(rawFence)->mSkiaFence;
-#undef IMPL_CAST
-  FUI_ASSERT(skiaImage && fence);
+
+  FUI_ASSERT(skiaImage);
+  if (rawFence) {
+    FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
+    const auto fence = &IMPL_CAST<ImportedSkiaFence*>(rawFence)->mSkiaFence;
+    FUI_ASSERT(fence);
 
 #ifdef _WIN32
-  fence->fValue = fenceValue;
-  GrBackendSemaphore semaphore;
-  semaphore.initDirect3D(*fence);
-  mNativeDevice.mSkiaContext->wait(1, &semaphore, false);
+    fence->fValue = fenceValue;
+    GrBackendSemaphore semaphore;
+    semaphore.initDirect3D(*fence);
+    mNativeDevice.mSkiaContext->wait(1, &semaphore, false);
 #endif
+  }
 
   mCanvas->drawImageRect(
     skiaImage,
@@ -294,6 +296,29 @@ void SkiaRenderer::DrawTexture(
 std::shared_ptr<GPUCompletionFlag>
 SkiaRenderer::GetGPUCompletionFlagForCurrentFrame() const {
   return mFrameCompletionFlag;
+}
+
+std::unique_ptr<ImportedTexture> SkiaRenderer::ImportBitmap(
+  const Bitmap& in) const {
+  using PL = Bitmap::PixelLayout;
+  using AF = Bitmap::AlphaFormat;
+  FUI_ASSERT(in.mPixelLayout == PL::BGRA32);
+  FUI_ASSERT(in.mAlphaFormat == AF::Premultiplied);
+
+  const auto info = SkImageInfo::Make(
+    in.mWidth, in.mHeight, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+  const auto pitch = in.mWidth * 4;
+
+  // make a copy so that we don't have to worry about the GPU copy completing
+  // asynchronously
+  auto skiaData = SkData::MakeWithCopy(in.mData.data(), in.mData.size());
+  auto ramImage = SkImages::RasterFromData(info, std::move(skiaData), pitch);
+  auto gpuImage = SkImages::TextureFromImage(
+    mNativeDevice.mSkiaContext, std::move(ramImage));
+
+  auto ret = std::make_unique<ImportedSkiaTexture>();
+  ret->mSkiaImage = std::move(gpuImage);
+  return std::move(ret);
 }
 
 }// namespace FredEmmott::GUI

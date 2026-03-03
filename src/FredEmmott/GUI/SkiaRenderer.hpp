@@ -20,7 +20,12 @@ namespace FredEmmott::GUI {
 class SkiaRenderer final : public Renderer {
  public:
   struct NativeDevice {
+    struct DPI {
+      uint64_t mActual {};
+      uint64_t mNominal {};
+    };
 #ifdef _WIN32
+    DPI mDPI {};
     ID3D12Device* mD3DDevice {nullptr};
     ID3D12CommandQueue* mD3DCommandQueue {nullptr};
     GrDirectContext* mSkiaContext {nullptr};
@@ -105,6 +110,19 @@ class SkiaRenderer final : public Renderer {
 
   const NativeDevice& GetNativeDevice() const noexcept {
     return mNativeDevice;
+  }
+
+  [[nodiscard]] std::unique_ptr<ImportedTexture> ImportBitmap(
+    const Bitmap& bitmap) const override;
+
+  [[nodiscard]] uint64_t GetPhysicalLength(const uint64_t dipLength) override {
+    return (dipLength * mNativeDevice.mDPI.mActual)
+      / mNativeDevice.mDPI.mNominal;
+  }
+
+  [[nodiscard]] float GetPhysicalLength(const float dipLength) override {
+    return (dipLength * mNativeDevice.mDPI.mActual)
+      / mNativeDevice.mDPI.mNominal;
   }
 
  private:
