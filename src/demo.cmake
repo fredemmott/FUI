@@ -60,3 +60,5 @@ if (MSVC)
     "$<$<NOT:$<CONFIG:Debug>>:/OPT:REF>"
   )
 endif ()
+
+include(demo-icon.cmake)
