@@ -12,6 +12,8 @@
 
 namespace FredEmmott::GUI {
 
+struct Bitmap;
+
 /** VRAM imported from some other API
  *
  * Only 2D textures are supported.
@@ -66,6 +68,11 @@ class Renderer {
     return wil::scope_exit([this] { PopClipRect(); });
   }
 
+  [[nodiscard]]
+  virtual uint64_t GetPhysicalLength(uint64_t dipLength) = 0;
+  [[nodiscard]]
+  virtual float GetPhysicalLength(float dipLength) = 0;
+
   virtual void Scale(float x, float y) = 0;
 
   void Scale(float scale) {
@@ -112,6 +119,9 @@ class Renderer {
   virtual std::unique_ptr<ImportedTexture> ImportTexture(
     ImportedTexture::HandleKind,
     HANDLE) const = 0;
+  [[nodiscard]]
+  virtual std::unique_ptr<ImportedTexture> ImportBitmap(
+    const Bitmap& bitmap) const = 0;
 
   [[nodiscard]]
   virtual std::unique_ptr<ImportedFence> ImportFence(HANDLE) const = 0;

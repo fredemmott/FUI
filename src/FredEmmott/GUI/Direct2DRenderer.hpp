@@ -19,6 +19,7 @@ class Direct2DRenderer final : public Renderer {
  public:
   Direct2DRenderer() = delete;
   explicit Direct2DRenderer(
+    DWORD dpi,
     ID3D11Device5* device,
     ID2D1DeviceContext* deviceContext,
     std::shared_ptr<GPUCompletionFlag> frameCompletionFlag);
@@ -76,6 +77,9 @@ class Direct2DRenderer final : public Renderer {
   std::unique_ptr<ImportedTexture> ImportTexture(
     ImportedTexture::HandleKind,
     HANDLE) const override;
+  [[nodiscard]]
+  std::unique_ptr<ImportedTexture> ImportBitmap(
+    const Bitmap& in) const override;
 
   [[nodiscard]]
   std::unique_ptr<ImportedFence> ImportFence(HANDLE) const override;
@@ -96,11 +100,22 @@ class Direct2DRenderer final : public Renderer {
     return mD3DDevice;
   }
 
+  [[nodiscard]] uint64_t GetPhysicalLength(const uint64_t length) override {
+    return (length * mDPI) / USER_DEFAULT_SCREEN_DPI;
+  }
+
+  [[nodiscard]] float GetPhysicalLength(const float length) override {
+    return (length * mDPIScale);
+  }
+
  private:
   struct StateStackFrame {
     D2D1_MATRIX_3X2_F mTransform {};
     bool mHaveNativeLayer {false};
   };
+  DWORD mDPI {USER_DEFAULT_SCREEN_DPI};
+  float mDPIScale {1.0f};
+
   ID3D11Device5* mD3DDevice = nullptr;
   wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
   ID2D1DeviceContext* mDeviceContext = nullptr;

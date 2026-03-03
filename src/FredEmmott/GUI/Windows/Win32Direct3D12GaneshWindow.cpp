@@ -140,6 +140,11 @@ class Win32Direct3D12GaneshWindow::FramePainter final
       mFrameIndex(frameIndex),
       mRenderer(
         SkiaRenderer::NativeDevice {
+          {
+            .mActual = static_cast<uint64_t>(
+              std::lround(window->GetDPIScale() * USER_DEFAULT_SCREEN_DPI)),
+            .mNominal = USER_DEFAULT_SCREEN_DPI,
+          },
           window->mD3DDevice.get(),
           window->mD3DCommandQueue.get(),
           window->mSkContext.get()},

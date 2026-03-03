@@ -13,6 +13,7 @@
 #include <FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+#include <felly/numeric_cast.hpp>
 #include <format>
 
 namespace FredEmmott::GUI {
@@ -55,6 +56,8 @@ class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
     : mWindow(window),
       mFrameIndex(frameIndex),
       mRenderer(
+        felly::numeric_cast<uint64_t>(
+          std::lround(window->GetDPIScale() * USER_DEFAULT_SCREEN_DPI)),
         window->mD3DDevice.get(),
         window->mD2DDeviceContext.get(),
         std::make_shared<D3D11CompletionFlag>(

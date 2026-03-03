@@ -5,6 +5,7 @@
 
 #include <d3d11.h>
 
+#include <FredEmmott/GUI/Bitmap.hpp>
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/Font.hpp>
@@ -38,10 +39,13 @@ struct ImportedDirect3DFence : ImportedFence {
 }// namespace
 
 Direct2DRenderer::Direct2DRenderer(
+  const DWORD dpi,
   ID3D11Device5* device,
   ID2D1DeviceContext* deviceContext,
   std::shared_ptr<GPUCompletionFlag> frameCompletionFlag)
-  : mD3DDevice(device),
+  : mDPI(dpi),
+    mDPIScale(dpi / static_cast<FLOAT>(USER_DEFAULT_SCREEN_DPI)),
+    mD3DDevice(device),
     mDeviceContext(deviceContext),
     mFrameCompletionFlag(std::move(frameCompletionFlag)) {
   wil::com_ptr<ID3D11DeviceContext3> dc3;
@@ -264,6 +268,37 @@ std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportTexture(
   return ret;
 }
 
+std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportBitmap(
+  const Bitmap& in) const {
+  using PL = Bitmap::PixelLayout;
+  using AF = Bitmap::AlphaFormat;
+  FUI_ASSERT(in.mPixelLayout == PL::BGRA32);
+  FUI_ASSERT(in.mAlphaFormat == AF::Premultiplied);
+
+  float dpiX {};
+  float dpiY {};
+  mDeviceContext->GetDpi(&dpiX, &dpiY);
+
+  const auto props = D2D1::BitmapProperties1(
+    D2D1_BITMAP_OPTIONS_NONE,
+    D2D1::PixelFormat(
+      DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+    dpiX,
+    dpiY);
+  const auto pitch = static_cast<uint32_t>(in.mWidth) * 4;// 32 bpp = 4 bytes
+
+  wil::com_ptr<ID2D1Bitmap1> out;
+  CheckHResult(mDeviceContext->CreateBitmap(
+    D2D1_SIZE_U {in.mWidth, in.mHeight},
+    in.mData.data(),
+    pitch,
+    &props,
+    out.put()));
+  auto ret = std::make_unique<ImportedDirect2DTexture>();
+  ret->mBitmap = std::move(out);
+  return ret;
+}
+
 std::unique_ptr<ImportedFence> Direct2DRenderer::ImportFence(
   HANDLE const handle) const {
   wil::com_ptr<ID3D11Fence> fence;
@@ -285,12 +320,17 @@ void Direct2DRenderer::DrawTexture(
 #define IMPL_CAST static_cast
 #endif
   FUI_ASSERT(rawTexture);
-  FUI_ASSERT(rawFence);
-  FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
   const auto texture
     = IMPL_CAST<ImportedDirect2DTexture*>(rawTexture)->mBitmap.get();
-  const auto fence = IMPL_CAST<ImportedDirect3DFence*>(rawFence)->mFence.get();
-  CheckHResult(mD3DDeviceContext->Wait(fence, fenceValue));
+
+  FUI_ASSERT(texture);
+  if (rawFence) {
+    FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
+    const auto fence
+      = IMPL_CAST<ImportedDirect3DFence*>(rawFence)->mFence.get();
+    FUI_ASSERT(fence);
+    CheckHResult(mD3DDeviceContext->Wait(fence, fenceValue));
+  }
   mDeviceContext->DrawBitmap(
     texture,
     destRect,

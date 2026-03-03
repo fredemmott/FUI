@@ -2,32 +2,15 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <cstddef>
 #include <memory>
-#include <vector>
+
+#include "Bitmap.hpp"
 
 #ifdef _WIN32
 #include <wil/resource.h>
 #endif
 
 namespace FredEmmott::GUI {
-
-struct Bitmap {
-  enum class PixelLayout {
-    BGRA32,
-  };
-  enum class AlphaFormat {
-    Premultiplied,
-  };
-
-  std::vector<std::byte> mData;
-
-  PixelLayout mPixelLayout {};
-  AlphaFormat mAlphaFormat {};
-
-  uint16_t mWidth {};
-  uint16_t mHeight {};
-};
 
 class IconProvider {
  public:
