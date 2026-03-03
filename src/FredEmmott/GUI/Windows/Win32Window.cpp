@@ -32,6 +32,8 @@
 #include <filesystem>
 #include <print>
 
+#include "FredEmmott/GUI/IconProvider.hpp"
+
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
 #endif
@@ -43,6 +45,7 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 
 namespace {
+
 constexpr bool DebugMouseMapping = false;
 
 constexpr LiteralStyleClass ActualRootStyleClass {"Win32Window/Root"};
@@ -59,6 +62,11 @@ auto& ImmediateRootStyles() {
     ActualRootStyles() + Style().FlexShrink(1).FlexGrow(1),
   };
   return ret;
+}
+
+auto GetApplicationHICON(const uint16_t edgeLength) {
+  static ApplicationIconProvider provider;
+  return provider.GetBestHICON(edgeLength);
 }
 
 thread_local Win32Window* gInstanceCreatingWindow {nullptr};
@@ -790,6 +798,22 @@ void Win32Window::UpdateGeometry(const DWORD dpi) {
     mScreenMetrics);
   if (oldSize != mGeometry->mCanvasSize) {
     mPendingResize = true;
+  }
+
+  const auto iconSize = GetSystemMetricsForDpi(SM_CXICON, mDPI);
+  if (auto icon = GetApplicationHICON(iconSize)) {
+    SendMessageW(
+      mHwnd.get(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(icon.get()));
+    mIcon = std::move(icon);
+  }
+  const auto smallIconSize = GetSystemMetricsForDpi(SM_CXSMICON, mDPI);
+  if (auto smallIcon = GetApplicationHICON(smallIconSize)) {
+    SendMessageW(
+      mHwnd.get(),
+      WM_SETICON,
+      ICON_SMALL,
+      reinterpret_cast<LPARAM>(smallIcon.get()));
+    mSmallIcon = std::move(smallIcon);
   }
 }
 

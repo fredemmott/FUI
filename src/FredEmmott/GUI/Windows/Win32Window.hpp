@@ -308,6 +308,9 @@ class Win32Window : public Window {
   const wil::unique_hcursor mTextCursor {LoadCursorW(nullptr, IDC_IBEAM)};
   Cursor mWidgetCursorUnderMouse {};
 
+  wil::unique_hicon mIcon;
+  wil::unique_hicon mSmallIcon;
+
   Win32Window(
     std::unique_ptr<Widgets::Widget> actualRoot,
     Widgets::Widget* immediateRoot,
