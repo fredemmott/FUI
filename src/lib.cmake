@@ -12,6 +12,8 @@ add_library(
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/FontWeight.hpp
   FredEmmott/GUI/FrameRateRequirement.hpp
+  FredEmmott/GUI/IconProvider.cpp
+  FredEmmott/GUI/IconProvider.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/CheckBox.cpp FredEmmott/GUI/Immediate/CheckBox.hpp
@@ -197,7 +199,7 @@ target_link_libraries(
   yoga::yogacore
   Boost::container
 )
-set(WINDOWS_SDK_LIBRARIES Dcomp Dwmapi User32 runtimeobject Uiautomationcore)
+set(WINDOWS_SDK_LIBRARIES Comctl32 Dcomp Dwmapi User32 runtimeobject Uiautomationcore)
 target_compile_definitions(
   fredemmott-gui
   PUBLIC
