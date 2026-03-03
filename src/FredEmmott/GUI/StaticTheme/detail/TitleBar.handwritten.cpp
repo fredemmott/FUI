@@ -80,9 +80,9 @@ const ImmutableStyle& TitleBarContentContainerStyle() {
       .FlexDirection(YGFlexDirectionRow)
       .FlexGrow(1)
       .PaddingLeft(
-        // Before any contols, e.g. back button
+        // Before any contols, e.g. back button, which we don't currently have
         TitleBarLeftPaddingWidth
-        // Before the icon, which we don't currently have
+        // Before the icon
         + TitleBarLeftHeaderPaddingWidth)
       .PaddingRight(TitleBarRightPaddingWidth),
   };
@@ -112,6 +112,20 @@ const ImmutableStyle& TitleBarSubtitleStyle() {
       .MarginRight(TitleBarSubtitleMarginRight)
       .MarginBottom(TitleBarSubtitleMarginBottom)
       .MinWidth(TitleBarSubtitleMinWidth),
+  };
+  return ret;
+}
+const ImmutableStyle& TitleBarIconStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .AspectRatio(1.0f)
+      .FlexGrow(1)
+      .MarginLeft(TitleBarIconMarginLeft)
+      .MarginTop(TitleBarIconMarginTop)
+      .MarginRight(TitleBarIconMarginRight)
+      .MarginBottom(TitleBarIconMarginBottom)
+      .MaxWidth(TitleBarIconMaxWidth)
+      .MaxHeight(TitleBarIconMaxHeight),
   };
   return ret;
 }

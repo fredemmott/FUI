@@ -17,13 +17,13 @@ class IconProvider {
   virtual ~IconProvider() = default;
 
   [[nodiscard]]
-  virtual Bitmap GetBestBitmap(uint16_t edgeLength) = 0;
+  virtual Bitmap GetBestBitmap(uint16_t edgeLength) const = 0;
   [[nodiscard]]
   virtual bool IsValid() const = 0;
 
 #ifdef _WIN32
   [[nodiscard]]
-  virtual wil::unique_hicon GetBestHICON(uint16_t edgeLength) = 0;
+  virtual wil::unique_hicon GetBestHICON(uint16_t edgeLength) const = 0;
 #endif
 
   operator bool() const noexcept {
@@ -36,7 +36,7 @@ class ApplicationIconProvider final : public IconProvider {
   ApplicationIconProvider();
   ~ApplicationIconProvider() override;
 
-  [[nodiscard]] Bitmap GetBestBitmap(uint16_t idealEdgeLength) override {
+  [[nodiscard]] Bitmap GetBestBitmap(uint16_t idealEdgeLength) const override {
     return mImpl->GetBestBitmap(idealEdgeLength);
   }
 
@@ -46,7 +46,7 @@ class ApplicationIconProvider final : public IconProvider {
 
 #ifdef _WIN32
   [[nodiscard]]
-  wil::unique_hicon GetBestHICON(uint16_t edgeLength) override {
+  wil::unique_hicon GetBestHICON(uint16_t edgeLength) const override {
     return mImpl->GetBestHICON(edgeLength);
   }
 #endif

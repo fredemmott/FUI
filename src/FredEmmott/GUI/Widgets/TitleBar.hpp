@@ -13,6 +13,7 @@ class TitleBar final : public Widget {
  public:
   struct Rects {
     Rect mFullArea;
+    Rect mIconButton;
     Rect mMinimizeButton;
     Rect mMaximizeButton;
     Rect mCloseButton;
@@ -34,6 +35,8 @@ class TitleBar final : public Widget {
   std::optional<ChromeButton> GetPressedButton() const noexcept;
 
   [[nodiscard]]
+  bool ConsumeWasIconActivated();
+  [[nodiscard]]
   bool ConsumeWasMinimizeActivated();
   [[nodiscard]]
   bool ConsumeWasMaximizeActivated();
@@ -45,6 +48,9 @@ class TitleBar final : public Widget {
   Rects GetRects() const;
 
  private:
+  // On Win32, clicking this should trigger the restore/min/max dropdown
+  Button* mIconButton {};
+
   Button* mMinimizeButton {};
   Button* mMaximizeButton {};
   Button* mCloseButton {};
