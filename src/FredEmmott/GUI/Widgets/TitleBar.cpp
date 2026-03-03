@@ -4,21 +4,64 @@
 #include "TitleBar.hpp"
 
 #include "Button.hpp"
+#include "FredEmmott/GUI/IconProvider.hpp"
 #include "FredEmmott/GUI/StaticTheme/TitleBar.hpp"
 #include "FredEmmott/utility/almost_equal.hpp"
 #include "Label.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
-static constexpr LiteralStyleClass ContentContainerStyleClass {
-  "TitleBar/Content"};
-static constexpr LiteralStyleClass ChromeButtonsContainerStyleClass {
+namespace {
+constexpr LiteralStyleClass ContentContainerStyleClass {"TitleBar/Content"};
+constexpr LiteralStyleClass ChromeButtonsContainerStyleClass {
   "TitleBar/ChromeButtons"};
-static constexpr std::string_view MinimizeGlyph = "\ue921";
-static constexpr std::string_view MaximizeGlyph = "\ue922";
-static constexpr std::string_view RestoreGlyph = "\ue923";
-static constexpr std::string_view CloseGlyph = "\ue8bb";
+constexpr std::string_view MinimizeGlyph = "\ue921";
+constexpr std::string_view MaximizeGlyph = "\ue922";
+constexpr std::string_view RestoreGlyph = "\ue923";
+constexpr std::string_view CloseGlyph = "\ue8bb";
 
+class TitleBarIconButton : public Button {
+ public:
+  using Button::Button;
+
+ protected:
+  void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
+
+ private:
+  ApplicationIconProvider mProvider;
+  mutable std::unique_ptr<ImportedTexture> mTexture;
+  mutable uint64_t mPreviousPixelHeight {};
+  mutable Rect mSourceRect {};
+};
+
+void TitleBarIconButton::PaintOwnContent(
+  Renderer* renderer,
+  const Rect& destRect,
+  const Style&) const {
+  FUI_ASSERT(destRect.GetHeight() > 0);
+  const auto pixelHeight = renderer->GetPhysicalLength(destRect.GetHeight());
+  FUI_ASSERT(pixelHeight > 0);
+
+  if (pixelHeight != mPreviousPixelHeight) {
+    mTexture.reset();
+  }
+  if (!mTexture) {
+    const auto bitmap = mProvider.GetBestBitmap(pixelHeight);
+    mTexture = renderer->ImportBitmap(bitmap);
+    mPreviousPixelHeight = pixelHeight;
+    mSourceRect = {
+      Point {},
+      Size {
+        static_cast<float>(bitmap.mWidth),
+        static_cast<float>(bitmap.mHeight),
+      },
+    };
+  }
+  FUI_ASSERT(mTexture);
+  renderer->DrawTexture(mSourceRect, destRect, mTexture.get(), nullptr, 0);
+}
+
+}// namespace
 TitleBar::~TitleBar() = default;
 
 void TitleBar::SetTitle(const std::string_view text) {
@@ -58,6 +101,10 @@ std::optional<TitleBar::ChromeButton> TitleBar::GetPressedButton()
   return {};
 }
 
+bool TitleBar::ConsumeWasIconActivated() {
+  return mIconButton->ConsumeWasActivated();
+}
+
 bool TitleBar::ConsumeWasMinimizeActivated() {
   return mMinimizeButton->ConsumeWasActivated();
 }
@@ -82,6 +129,11 @@ TitleBar::Rects TitleBar::GetRects() const {
   const auto width = YGNodeLayoutGetWidth(yoga);
   const auto height = YGNodeLayoutGetHeight(yoga);
 
+  const auto iconTopLeft = mIconButton->GetTopLeftCanvasPoint(this);
+  const auto iconYoga = mIconButton->GetLayoutNode();
+  const auto iconWidth = YGNodeLayoutGetWidth(iconYoga);
+  const auto iconHeight = YGNodeLayoutGetHeight(iconYoga);
+
   const auto minTopLeft = mMinimizeButton->GetTopLeftCanvasPoint(this);
   const auto maxTopLeft = mMaximizeButton->GetTopLeftCanvasPoint(this);
   const auto closeTopLeft = mCloseButton->GetTopLeftCanvasPoint(this);
@@ -90,6 +142,7 @@ TitleBar::Rects TitleBar::GetRects() const {
 
   return Rects {
     .mFullArea = {topLeft, Size {width, height}},
+    .mIconButton = {iconTopLeft, Size {iconWidth, iconHeight}},
     .mMinimizeButton = {minTopLeft, Size {height, height}},
     .mMaximizeButton = {maxTopLeft, Size {height, height}},
     .mCloseButton = {closeTopLeft, Size {height, height}},
@@ -107,9 +160,10 @@ TitleBar::TitleBar(const id_type id)
   auto chromeButtons = new Widget(0, ChromeButtonsContainerStyleClass, {});
   this->SetChildren({content, chromeButtons});
 
+  mIconButton = new TitleBarIconButton(0, TitleBarIconStyle(), {});
   mTitleLabel = new Label(0, TitleBarTitleStyle());
   mSubtitleLabel = new Label(0, TitleBarSubtitleStyle());
-  content->SetChildren({mTitleLabel, mSubtitleLabel});
+  content->SetChildren({mIconButton, mTitleLabel, mSubtitleLabel});
 
   chromeButtons->SetChildren({
     mMinimizeButton = new Button(0, WindowMinimizeMaximizeButtonStyle(), {}),

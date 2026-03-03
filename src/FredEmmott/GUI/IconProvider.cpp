@@ -13,6 +13,7 @@
 #include <span>
 #include <variant>
 
+#include "Brush.hpp"
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
 #include "assert.hpp"
 
@@ -214,8 +215,8 @@ class DefaultIconProvider final : public IconProvider {
  public:
   DefaultIconProvider();
   ~DefaultIconProvider() override = default;
-  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) override;
-  wil::unique_hicon GetBestHICON(uint16_t edgeLength) override;
+  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) const override;
+  wil::unique_hicon GetBestHICON(uint16_t edgeLength) const override;
 
   [[nodiscard]] bool IsValid() const override {
     return mLibrary && mResourceID;
@@ -243,11 +244,11 @@ DefaultIconProvider::DefaultIconProvider() {
   mResourceID = MAKEINTRESOURCEW(std::abs(info.iIcon));
 }
 
-Bitmap DefaultIconProvider::GetBestBitmap(const uint16_t edgeLength) {
+Bitmap DefaultIconProvider::GetBestBitmap(const uint16_t edgeLength) const {
   return BitmapFromHICON(GetBestHICON(edgeLength).get());
 }
 
-wil::unique_hicon DefaultIconProvider::GetBestHICON(const uint16_t edgeLength) {
+wil::unique_hicon DefaultIconProvider::GetBestHICON(const uint16_t edgeLength) const {
   FUI_ASSERT(IsValid());
   return LoadIconWithScaleDown(mLibrary.get(), mResourceID, edgeLength);
 }
@@ -257,8 +258,8 @@ class AppResourceIconProvider final : public IconProvider {
   AppResourceIconProvider();
   ~AppResourceIconProvider() override = default;
 
-  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) override;
-  wil::unique_hicon GetBestHICON(uint16_t edgeLength) override;
+  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) const override;
+  wil::unique_hicon GetBestHICON(uint16_t edgeLength) const override;
 
   [[nodiscard]]
   bool IsValid() const override {
@@ -273,11 +274,11 @@ AppResourceIconProvider::AppResourceIconProvider() {
   mResourceID = GetFirstIconResource {}();
 }
 
-Bitmap AppResourceIconProvider::GetBestBitmap(const uint16_t edgeLength) {
+Bitmap AppResourceIconProvider::GetBestBitmap(const uint16_t edgeLength) const {
   return BitmapFromHICON(GetBestHICON(edgeLength).get());
 }
 
-wil::unique_hicon AppResourceIconProvider::GetBestHICON(uint16_t edgeLength) {
+wil::unique_hicon AppResourceIconProvider::GetBestHICON(uint16_t edgeLength) const {
   FUI_ASSERT(IsValid());
   const auto resourceID = std::visit(
     felly::overload {

@@ -14,5 +14,6 @@ const ImmutableStyle& TitleBarContentContainerStyle();
 
 const ImmutableStyle& TitleBarTitleStyle();
 const ImmutableStyle& TitleBarSubtitleStyle();
+const ImmutableStyle& TitleBarIconStyle();
 
 }// namespace FredEmmott::GUI::StaticTheme::TitleBar

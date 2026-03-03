@@ -1331,27 +1331,30 @@ std::optional<LRESULT> Win32Window::TitleBarWindowProc(
         return HTRIGHT;
 
       // ----- Title bar-----
-      TITLEBARINFOEX titleBarInfo {sizeof(titleBarInfo)};
-      WindowProc(
-        hwnd, WM_GETTITLEBARINFOEX, 0, reinterpret_cast<LPARAM>(&titleBarInfo));
-      RECT screenRect {};
-      GetWindowRect(hwnd, &screenRect);
-      if (
-        screenPt.y >= titleBarInfo.rcTitleBar.top
-        && screenPt.y < titleBarInfo.rcTitleBar.bottom) {
-        if (screenPt.x >= titleBarInfo.rgrect[CloseIdx].left) {
-          return HTCLOSE;
-        }
-        if (screenPt.x >= titleBarInfo.rgrect[MaximizeIdx].left) {
-          return HTMAXBUTTON;
-        }
-        if (screenPt.x >= titleBarInfo.rgrect[MinimizeIdx].left) {
-          return HTMINBUTTON;
-        }
-        return HTCAPTION;
+      auto rects = mTitleBar->GetRects();
+      const auto titleBar = CanvasRectToScreenRect(rects.mFullArea);
+      if (!PtInRect(&titleBar, screenPt)) {
+        return HTCLIENT;
+      }
+      const auto icon = CanvasRectToScreenRect(rects.mIconButton);
+      if (PtInRect(&icon, screenPt)) {
+        return HTSYSMENU;
       }
 
-      return HTCLIENT;
+      const auto min = CanvasRectToScreenRect(rects.mMinimizeButton);
+      if (PtInRect(&min, screenPt)) {
+        return HTMINBUTTON;
+      }
+      const auto max = CanvasRectToScreenRect(rects.mMaximizeButton);
+      if (PtInRect(&max, screenPt)) {
+        return HTMAXBUTTON;
+      }
+      const auto close = CanvasRectToScreenRect(rects.mCloseButton);
+      if (PtInRect(&close, screenPt)) {
+        return HTCLOSE;
+      }
+
+      return HTCAPTION;
     }
     case WM_GETTITLEBARINFOEX: {
       const auto ret = reinterpret_cast<TITLEBARINFOEX*>(lParam);
