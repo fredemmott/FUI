@@ -474,8 +474,18 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
   MouseEventResult result;
   const bool wasHovered
     = (mDirectStateFlags & StateFlags::Hovered) == StateFlags::Hovered;
+  // `x >= w` because `x + w` is an *exclusive* bound for our widget; the next
+  // widget may start at exactly x + w
+  //
+  // You can test this by creating two touching square widgets with hover
+  // effects (e.g. background-color), and seeing if it's possible to activate
+  // both hover effects at the same time.
+  //
+  // For example, in Win32 windows with a modern title bar, the min/max/close
+  // buttons are all touching, and with `x > w`, it's possible to activate
+  // two buttons at once
   if (
-    (x < 0 || y < 0 || x > w || y > h)
+    (x < 0 || y < 0 || x >= w || y >= h)
     && !(gMouseCapture && gMouseCapture->mWidget == this)) {
     mDirectStateFlags &= ~StateFlags::Hovered;
 
