@@ -9,7 +9,9 @@
 
 #include <array>
 #include <felly/numeric_cast.hpp>
+#include <felly/overload.hpp>
 #include <span>
+#include <variant>
 
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
 #include "assert.hpp"
@@ -19,6 +21,58 @@ namespace FredEmmott::GUI {
 using namespace win32_detail;
 
 namespace {
+
+struct GetFirstIconResource {
+  using resource_id_type
+    = std::variant<std::monostate, std::wstring, decltype(MAKEINTRESOURCEW(1))>;
+
+  auto operator()() {
+    mResource = {};
+    EnumResourceNamesW(
+      GetModuleHandle(nullptr),
+      RT_GROUP_ICON,
+      &EnumCallback,
+      reinterpret_cast<LONG_PTR>(this));
+    return std::move(mResource);
+  }
+
+ private:
+  resource_id_type mResource {};
+
+  static BOOL CALLBACK EnumCallback(
+    HMODULE,
+    [[maybe_unused]] const wchar_t* kind,
+    wchar_t* name,
+    LONG_PTR userData) {
+    auto& self = *reinterpret_cast<GetFirstIconResource*>(userData);
+
+    if (IS_INTRESOURCE(name)) {
+      self.mResource = name;
+    } else {
+      self.mResource.emplace<std::wstring>(name);
+    }
+
+    return FALSE;
+  }
+};
+
+wil::unique_hicon LoadIconWithScaleDown(
+  HMODULE const module,
+  LPCWSTR resource,
+  const uint16_t edgeLength) {
+  static const wil::unique_hmodule commctl32 {LoadLibraryW(L"Comctl32.dll")};
+  static const auto Impl = std::bit_cast<decltype(&::LoadIconWithScaleDown)>(
+    GetProcAddress(commctl32.get(), "LoadIconWithScaleDown"));
+  FUI_ASSERT(
+    Impl,
+    "LoadIconWithScaleDown() is unavailable; either add a PRI-based app icon, "
+    "or add Common-Controls 6.0 to your manifest dependencies");
+
+  wil::unique_hicon iconHandle;
+  CheckHResult(
+    Impl(module, resource, edgeLength, edgeLength, iconHandle.put()));
+  return iconHandle;
+}
 
 constexpr uint8_t Premultiply(const uint8_t value, const uint8_t alpha) {
   /* Trick from Skia
@@ -195,25 +249,59 @@ Bitmap DefaultIconProvider::GetBestBitmap(const uint16_t edgeLength) {
 
 wil::unique_hicon DefaultIconProvider::GetBestHICON(const uint16_t edgeLength) {
   FUI_ASSERT(IsValid());
-  static const wil::unique_hmodule commctl32 {LoadLibraryW(L"Comctl32.dll")};
-  static const auto LoadIconWithScaleDown
-    = std::bit_cast<decltype(&::LoadIconWithScaleDown)>(
-      GetProcAddress(commctl32.get(), "LoadIconWithScaleDown"));
-  FUI_ASSERT(
-    LoadIconWithScaleDown,
-    "LoadIconWithScaleDown() is unavailable; either add a PRI-based app icon, "
-    "or add Common-Controls 6.0 to your manifest dependencies");
+  return LoadIconWithScaleDown(mLibrary.get(), mResourceID, edgeLength);
+}
 
-  wil::unique_hicon iconHandle;
-  CheckHResult(LoadIconWithScaleDown(
-    mLibrary.get(), mResourceID, edgeLength, edgeLength, iconHandle.put()));
-  return iconHandle;
+class AppResourceIconProvider final : public IconProvider {
+ public:
+  AppResourceIconProvider();
+  ~AppResourceIconProvider() override = default;
+
+  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) override;
+  wil::unique_hicon GetBestHICON(uint16_t edgeLength) override;
+
+  [[nodiscard]]
+  bool IsValid() const override {
+    return mResourceID.index() != 0;
+  }
+
+ private:
+  GetFirstIconResource::resource_id_type mResourceID {};
+};
+
+AppResourceIconProvider::AppResourceIconProvider() {
+  mResourceID = GetFirstIconResource {}();
+}
+
+Bitmap AppResourceIconProvider::GetBestBitmap(const uint16_t edgeLength) {
+  return BitmapFromHICON(GetBestHICON(edgeLength).get());
+}
+
+wil::unique_hicon AppResourceIconProvider::GetBestHICON(uint16_t edgeLength) {
+  FUI_ASSERT(IsValid());
+  const auto resourceID = std::visit(
+    felly::overload {
+      [](std::monostate) -> const wchar_t* {
+        FUI_ALWAYS_ASSERT(
+          false, "Should not be calling GetBestHICON() on an invalid resource");
+      },
+      [](const std::wstring& name) -> const wchar_t* { return name.data(); },
+      [](const wchar_t* opaque) -> const wchar_t* { return opaque; },
+    },
+    mResourceID);
+  return LoadIconWithScaleDown(
+    GetModuleHandleW(nullptr), resourceID, edgeLength);
 }
 
 }// namespace
 
-ApplicationIconProvider::ApplicationIconProvider()
-  : mImpl(new DefaultIconProvider()) {}
+ApplicationIconProvider::ApplicationIconProvider() {
+  mImpl = std::make_unique<AppResourceIconProvider>();
+  if (mImpl->IsValid()) {
+    return;
+  }
+  mImpl = std::make_unique<DefaultIconProvider>();
+}
 
 ApplicationIconProvider::~ApplicationIconProvider() = default;
 
