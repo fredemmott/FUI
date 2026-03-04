@@ -1419,8 +1419,10 @@ std::optional<LRESULT> Win32Window::TitleBarWindowProc(
     default:
       return std::nullopt;
   }
-  // Call DefWindowProc or return nullopt instead
-  std::unreachable();
+
+  FUI_FATAL(
+    "Window message {} unhandled; call DefWindowProc or return std::nullopt",
+    uMsg);
 }
 
 SIZE Win32Window::GetInitialWindowSize() const {

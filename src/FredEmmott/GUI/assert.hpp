@@ -22,6 +22,7 @@ void assert_fail(
   if (fmt.get().empty()) {
     throw std::logic_error(prefix);
   }
+  const auto message = prefix + std::format(fmt, std::forward<Args>(args)...);
   throw std::logic_error(
     prefix + std::format(fmt, std::forward<Args>(args)...));
 }
@@ -55,3 +56,8 @@ inline void assert_fail(
     FUI_ALWAYS_ASSERT(condition __VA_OPT__(, ) __VA_ARGS__); \
   }
 #endif
+#define FUI_FATAL(...) \
+  do { \
+    ::FredEmmott::GUI::assert_fail( \
+      std::source_location::current(), "<unreachable>", __VA_ARGS__); \
+  } while (0)
