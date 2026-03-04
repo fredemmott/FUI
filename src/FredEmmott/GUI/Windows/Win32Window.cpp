@@ -1289,14 +1289,14 @@ std::optional<LRESULT> Win32Window::TitleBarWindowProc(
       if (WindowFromPoint(pt) == mHwnd.get()) {
         // We moved from non-client to client, so we'll have a regular
         // WM_MOUSEMOVE too
-        break;
+        return 0;
       }
       // Entirely left the window, so we need to act on it
       MouseEvent e;
       e.mWindowPoint = {-1, -1};
       e.mDetail = MouseEvent::MoveEvent {};
       this->DispatchEvent(e);
-      break;
+      return 0;
     }
     case WM_NCHITTEST: {
       const auto margins = mGeometry->mWindowMargins;
