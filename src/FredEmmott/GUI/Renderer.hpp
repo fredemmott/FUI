@@ -47,6 +47,27 @@ struct GPUCompletionFlag {
   virtual void Wait() const = 0;
 };
 
+enum class StrokeCap {
+  /** End exactly at the end of the stroke, no cap.
+   *
+   * - Direct2D: D2D1_CAP_STYLE_FLAT
+   * - Skia: kButt_Cap
+   */
+  None,
+  /** End at (thickness / 2) later, but square ends.
+   *
+   * - Direct2D: D2D1_CAP_STYLE_SQUARE
+   * - Skia: kSquare_Cap
+   */
+  Square,
+  /** A half-circle extending past the end, with diameter == thickness
+   *
+   * - Direct2D: D2D1_CAP_STYLE_ROUND
+   * - Skia: kRound_Cap
+   */
+  Round,
+};
+
 class Renderer {
  public:
   virtual ~Renderer() = default;
@@ -107,6 +128,22 @@ class Renderer {
     const Rect& rect,
     float radius,
     float thickness = 0) = 0;
+
+  /** Stroke an arc.
+   *
+   * `rect` is the nominal box; the actual arc will bleed outside, due to
+   * thickness.
+   *
+   * - startAngle is in degrees, and starts at 'east' (+x)
+   * - sweepAngle is in degrees, and is an offset from `startAngle`
+   */
+  virtual void StrokeArc(
+    const Brush& brush,
+    const Rect& rect,
+    float startAngle,
+    float sweepAngle,
+    float thickness = 1,
+    StrokeCap strokeCap = StrokeCap::None) = 0;
 
   virtual void DrawText(
     const Brush& brush,

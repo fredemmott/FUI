@@ -172,6 +172,42 @@ void SkiaRenderer::StrokeRoundedRect(
   mCanvas->drawRoundRect(rect, radius, radius, paint);
 }
 
+void SkiaRenderer::StrokeArc(
+  const Brush& brush,
+  const Rect& rect,
+  const float startAngle,
+  const float sweepAngle,
+  const float thickness,
+  const StrokeCap strokeCap) {
+  if (
+    strokeCap == StrokeCap::None
+    && std::abs(sweepAngle) < std::numeric_limits<float>::epsilon()) {
+    return;
+  }
+
+  if (rect.GetWidth() < thickness || rect.GetHeight() < thickness) {
+    return;
+  }
+
+  auto paint = brush.as<SkPaint>(this, rect);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(thickness);
+  paint.setAntiAlias(true);
+
+  switch (strokeCap) {
+    case StrokeCap::None:
+      paint.setStrokeCap(SkPaint::kButt_Cap);
+      break;
+    case StrokeCap::Round:
+      paint.setStrokeCap(SkPaint::kRound_Cap);
+      break;
+    case StrokeCap::Square:
+      paint.setStrokeCap(SkPaint::kSquare_Cap);
+      break;
+  }
+  mCanvas->drawArc(rect, startAngle, sweepAngle, false, paint);
+}
+
 void SkiaRenderer::DrawText(
   const Brush& brush,
   const Rect& brushRect,

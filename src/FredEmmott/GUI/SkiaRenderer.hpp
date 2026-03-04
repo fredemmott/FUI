@@ -78,6 +78,14 @@ class SkiaRenderer final : public Renderer {
     float radius,
     float thickness) override;
 
+  void StrokeArc(
+    const Brush& brush,
+    const Rect& rect,
+    float startAngle,
+    float sweepAngle,
+    float thickness,
+    StrokeCap strokeCap) override;
+
   // Text drawing
   void DrawText(
     const Brush& brush,

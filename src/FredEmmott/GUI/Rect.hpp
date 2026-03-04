@@ -46,6 +46,10 @@ struct BasicRect {
 
   constexpr bool operator==(const BasicRect&) const noexcept = default;
 
+  constexpr BasicPoint<T> GetCenter() const noexcept {
+    return mTopLeft + (mSize / 2);
+  }
+
   constexpr BasicPoint<T> GetTopLeft() const noexcept {
     return mTopLeft;
   }

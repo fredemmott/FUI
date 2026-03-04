@@ -19,6 +19,13 @@ struct BasicSize {
   }
 
   constexpr bool operator==(const BasicSize&) const noexcept = default;
+
+  constexpr BasicSize<T> operator/(const T divisor) const noexcept {
+    return {
+      mWidth / divisor,
+      mHeight / divisor,
+    };
+  }
 };
 
 using Size = BasicSize<float>;

@@ -12,6 +12,7 @@
 #include <FredEmmott/GUI/SoftwareBitmap.hpp>
 #include <felly/overload.hpp>
 #include <felly/scope_exit.hpp>
+#include <numbers>
 
 #include "assert.hpp"
 #include "detail/direct_write_detail/DirectWriteFontProvider.hpp"
@@ -24,6 +25,11 @@ using namespace FredEmmott::GUI::font_detail;
 namespace FredEmmott::GUI {
 
 namespace {
+
+template <std::floating_point T>
+constexpr T DegreesToRadians(const T degrees) {
+  return degrees * std::numbers::pi_v<float> / static_cast<T>(180);
+}
 
 struct ImportedDirect2DTexture : ImportedTexture {
   ~ImportedDirect2DTexture() override = default;
@@ -217,6 +223,82 @@ void Direct2DRenderer::StrokeRoundedRect(
     brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
     thickness == 0 ? 1 : thickness,
     nullptr);
+}
+
+void Direct2DRenderer::StrokeArc(
+  const Brush& brush,
+  const Rect& rect,
+  const float startAngle,
+  const float sweepAngle,
+  const float thickness,
+  const StrokeCap strokeCap) {
+  if (
+    strokeCap == StrokeCap::None
+    && std::abs(sweepAngle) < std::numeric_limits<float>::epsilon()) {
+    return;
+  }
+
+  const auto center = rect.GetCenter();
+  const auto radiusX = rect.GetWidth() / 2;
+  const auto radiusY = rect.GetHeight() / 2;
+  const auto endAngle = startAngle + sweepAngle;
+
+  const D2D1_POINT_2F startPoint {
+    center.mX + radiusX * std::cos(DegreesToRadians(startAngle)),
+    center.mY + radiusY * std::sin(DegreesToRadians(startAngle)),
+  };
+  const D2D1_POINT_2F endPoint {
+    center.mX + radiusX * std::cos(DegreesToRadians(endAngle)),
+    center.mY + radiusY * std::sin(DegreesToRadians(endAngle)),
+  };
+
+  // TODO: cache the factory
+  wil::com_ptr<ID2D1Factory> factory;
+  mDeviceContext->GetFactory(&factory);
+  wil::com_ptr<ID2D1PathGeometry> path;
+  CheckHResult(factory->CreatePathGeometry(&path));
+  wil::com_ptr<ID2D1GeometrySink> sink;
+  CheckHResult(path->Open(&sink));
+
+  sink->BeginFigure(startPoint, D2D1_FIGURE_BEGIN_HOLLOW);
+  const D2D1_ARC_SEGMENT arc {
+    .point = endPoint,
+    .size = {radiusX, radiusY},
+    .rotationAngle = 0.0f,
+    .sweepDirection = sweepAngle > 0 ? D2D1_SWEEP_DIRECTION_CLOCKWISE
+                                     : D2D1_SWEEP_DIRECTION_COUNTER_CLOCKWISE,
+    .arcSize
+    = std::abs(sweepAngle) > 180 ? D2D1_ARC_SIZE_LARGE : D2D1_ARC_SIZE_SMALL,
+  };
+  sink->AddArc(arc);
+  sink->EndFigure(D2D1_FIGURE_END_OPEN);
+  CheckHResult(sink->Close());
+
+  // TODO: cache the stroke style COM objects
+  D2D1_CAP_STYLE capStyle {};
+  switch (strokeCap) {
+    case StrokeCap::None:
+      capStyle = D2D1_CAP_STYLE_FLAT;
+      break;
+    case StrokeCap::Round:
+      capStyle = D2D1_CAP_STYLE_ROUND;
+      break;
+    case StrokeCap::Square:
+      capStyle = D2D1_CAP_STYLE_SQUARE;
+      break;
+  }
+  wil::com_ptr<ID2D1StrokeStyle> strokeStyle;
+  CheckHResult(factory->CreateStrokeStyle(
+    D2D1::StrokeStyleProperties(capStyle, capStyle, capStyle),
+    nullptr,
+    0,
+    strokeStyle.put()));
+
+  mDeviceContext->DrawGeometry(
+    path.get(),
+    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
+    thickness,
+    strokeStyle.get());
 }
 
 void Direct2DRenderer::DrawText(
