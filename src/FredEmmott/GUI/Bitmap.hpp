@@ -7,6 +7,10 @@
 
 namespace FredEmmott::GUI {
 struct Bitmap {
+  // Add `stride` (bytes per pixel) property or method if formats with
+  // padded rows are added in the future; e.g. if rows are required to be
+  // 32-bit-aligned but pixels are not, stride will sometimes include additional
+  // padding
   enum class PixelLayout {
     BGRA32,
   };
