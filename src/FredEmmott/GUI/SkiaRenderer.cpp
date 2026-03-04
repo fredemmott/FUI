@@ -8,7 +8,7 @@
 
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
 
-#include "Bitmap.hpp"
+#include "SoftwareBitmap.hpp"
 #include "assert.hpp"
 
 #ifdef _WIN32
@@ -298,10 +298,10 @@ SkiaRenderer::GetGPUCompletionFlagForCurrentFrame() const {
   return mFrameCompletionFlag;
 }
 
-std::unique_ptr<ImportedTexture> SkiaRenderer::ImportBitmap(
-  const Bitmap& in) const {
-  using PL = Bitmap::PixelLayout;
-  using AF = Bitmap::AlphaFormat;
+std::unique_ptr<ImportedTexture> SkiaRenderer::ImportSoftwareBitmap(
+  const SoftwareBitmap& in) const {
+  using PL = SoftwareBitmap::PixelLayout;
+  using AF = SoftwareBitmap::AlphaFormat;
   FUI_ASSERT(in.mPixelLayout == PL::BGRA32);
   FUI_ASSERT(in.mAlphaFormat == AF::Premultiplied);
 

@@ -12,7 +12,7 @@
 
 namespace FredEmmott::GUI {
 
-struct Bitmap;
+struct SoftwareBitmap;
 
 /** VRAM imported from some other API
  *
@@ -120,8 +120,8 @@ class Renderer {
     ImportedTexture::HandleKind,
     HANDLE) const = 0;
   [[nodiscard]]
-  virtual std::unique_ptr<ImportedTexture> ImportBitmap(
-    const Bitmap& bitmap) const = 0;
+  virtual std::unique_ptr<ImportedTexture> ImportSoftwareBitmap(
+    const SoftwareBitmap& bitmap) const = 0;
 
   [[nodiscard]]
   virtual std::unique_ptr<ImportedFence> ImportFence(HANDLE) const = 0;

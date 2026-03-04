@@ -5,11 +5,11 @@
 
 #include <d3d11.h>
 
-#include <FredEmmott/GUI/Bitmap.hpp>
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/Font.hpp>
 #include <FredEmmott/GUI/Rect.hpp>
+#include <FredEmmott/GUI/SoftwareBitmap.hpp>
 #include <felly/overload.hpp>
 #include <felly/scope_exit.hpp>
 
@@ -268,10 +268,10 @@ std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportTexture(
   return ret;
 }
 
-std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportBitmap(
-  const Bitmap& in) const {
-  using PL = Bitmap::PixelLayout;
-  using AF = Bitmap::AlphaFormat;
+std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportSoftwareBitmap(
+  const SoftwareBitmap& in) const {
+  using PL = SoftwareBitmap::PixelLayout;
+  using AF = SoftwareBitmap::AlphaFormat;
   FUI_ASSERT(in.mPixelLayout == PL::BGRA32);
   FUI_ASSERT(in.mAlphaFormat == AF::Premultiplied);
 

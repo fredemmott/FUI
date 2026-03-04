@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "Bitmap.hpp"
+#include "SoftwareBitmap.hpp"
 
 #ifdef _WIN32
 #include <wil/resource.h>
@@ -17,7 +17,7 @@ class IconProvider {
   virtual ~IconProvider() = default;
 
   [[nodiscard]]
-  virtual Bitmap GetBestBitmap(uint16_t edgeLength) const = 0;
+  virtual SoftwareBitmap GetBestSoftwareBitmap(uint16_t edgeLength) const = 0;
   [[nodiscard]]
   virtual bool IsValid() const = 0;
 
@@ -36,8 +36,9 @@ class ApplicationIconProvider final : public IconProvider {
   ApplicationIconProvider();
   ~ApplicationIconProvider() override;
 
-  [[nodiscard]] Bitmap GetBestBitmap(uint16_t idealEdgeLength) const override {
-    return mImpl->GetBestBitmap(idealEdgeLength);
+  [[nodiscard]] SoftwareBitmap GetBestSoftwareBitmap(
+    uint16_t idealEdgeLength) const override {
+    return mImpl->GetBestSoftwareBitmap(idealEdgeLength);
   }
 
   [[nodiscard]] bool IsValid() const override {

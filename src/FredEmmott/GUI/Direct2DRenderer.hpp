@@ -78,8 +78,8 @@ class Direct2DRenderer final : public Renderer {
     ImportedTexture::HandleKind,
     HANDLE) const override;
   [[nodiscard]]
-  std::unique_ptr<ImportedTexture> ImportBitmap(
-    const Bitmap& in) const override;
+  std::unique_ptr<ImportedTexture> ImportSoftwareBitmap(
+    const SoftwareBitmap& in) const override;
 
   [[nodiscard]]
   std::unique_ptr<ImportedFence> ImportFence(HANDLE) const override;

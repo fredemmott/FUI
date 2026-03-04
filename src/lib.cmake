@@ -4,7 +4,6 @@ add_library(
   fredemmott-gui
   STATIC
   FredEmmott/GUI.hpp
-  FredEmmott/GUI/Bitmap.hpp
   FredEmmott/GUI/Brush.cpp
   FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Color.hpp
@@ -64,6 +63,7 @@ add_library(
   FredEmmott/GUI/Rect.hpp
   FredEmmott/GUI/Renderer.hpp
   FredEmmott/GUI/Size.hpp
+  FredEmmott/GUI/SoftwareBitmap.hpp
   FredEmmott/GUI/SolidColorBrush.hpp
   FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
   FredEmmott/GUI/StaticTheme/Resource.hpp

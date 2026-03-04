@@ -46,8 +46,8 @@ void TitleBarIconButton::PaintOwnContent(
     mTexture.reset();
   }
   if (!mTexture) {
-    const auto bitmap = mProvider.GetBestBitmap(pixelHeight);
-    mTexture = renderer->ImportBitmap(bitmap);
+    const auto bitmap = mProvider.GetBestSoftwareBitmap(pixelHeight);
+    mTexture = renderer->ImportSoftwareBitmap(bitmap);
     mPreviousPixelHeight = pixelHeight;
     mSourceRect = {
       Point {},

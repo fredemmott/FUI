@@ -89,7 +89,7 @@ constexpr uint8_t Premultiply(const uint8_t value, const uint8_t alpha) {
   return (((static_cast<uint32_t>(value) * alpha) + 128) * 257) >> 16;
 }
 
-Bitmap BitmapFromHICON(HICON iconHandle) {
+SoftwareBitmap SoftwareBitmapFromHICON(HICON iconHandle) {
   FUI_ASSERT(iconHandle);
   ICONINFOEXW iconInfo {sizeof(iconInfo)};
   if (!GetIconInfoExW(iconHandle, &iconInfo)) [[unlikely]] {
@@ -106,9 +106,9 @@ Bitmap BitmapFromHICON(HICON iconHandle) {
   const auto edgeLength = felly::numeric_cast<uint16_t>(bitmapIn.bmWidth);
   const auto pixelCount = edgeLength * edgeLength;
   const auto byteCount = pixelCount * 4;
-  Bitmap ret {
-    .mPixelLayout = Bitmap::PixelLayout::BGRA32,
-    .mAlphaFormat = Bitmap::AlphaFormat::Premultiplied,
+  SoftwareBitmap ret {
+    .mPixelLayout = SoftwareBitmap::PixelLayout::BGRA32,
+    .mAlphaFormat = SoftwareBitmap::AlphaFormat::Premultiplied,
     .mWidth = edgeLength,
     .mHeight = edgeLength,
   };
@@ -215,7 +215,8 @@ class DefaultIconProvider final : public IconProvider {
  public:
   DefaultIconProvider();
   ~DefaultIconProvider() override = default;
-  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) const override;
+  [[nodiscard]] SoftwareBitmap GetBestSoftwareBitmap(
+    uint16_t edgeLength) const override;
   wil::unique_hicon GetBestHICON(uint16_t edgeLength) const override;
 
   [[nodiscard]] bool IsValid() const override {
@@ -244,11 +245,13 @@ DefaultIconProvider::DefaultIconProvider() {
   mResourceID = MAKEINTRESOURCEW(std::abs(info.iIcon));
 }
 
-Bitmap DefaultIconProvider::GetBestBitmap(const uint16_t edgeLength) const {
-  return BitmapFromHICON(GetBestHICON(edgeLength).get());
+SoftwareBitmap DefaultIconProvider::GetBestSoftwareBitmap(
+  const uint16_t edgeLength) const {
+  return SoftwareBitmapFromHICON(GetBestHICON(edgeLength).get());
 }
 
-wil::unique_hicon DefaultIconProvider::GetBestHICON(const uint16_t edgeLength) const {
+wil::unique_hicon DefaultIconProvider::GetBestHICON(
+  const uint16_t edgeLength) const {
   FUI_ASSERT(IsValid());
   return LoadIconWithScaleDown(mLibrary.get(), mResourceID, edgeLength);
 }
@@ -258,7 +261,8 @@ class AppResourceIconProvider final : public IconProvider {
   AppResourceIconProvider();
   ~AppResourceIconProvider() override = default;
 
-  [[nodiscard]] Bitmap GetBestBitmap(uint16_t edgeLength) const override;
+  [[nodiscard]] SoftwareBitmap GetBestSoftwareBitmap(
+    uint16_t edgeLength) const override;
   wil::unique_hicon GetBestHICON(uint16_t edgeLength) const override;
 
   [[nodiscard]]
@@ -274,11 +278,13 @@ AppResourceIconProvider::AppResourceIconProvider() {
   mResourceID = GetFirstIconResource {}();
 }
 
-Bitmap AppResourceIconProvider::GetBestBitmap(const uint16_t edgeLength) const {
-  return BitmapFromHICON(GetBestHICON(edgeLength).get());
+SoftwareBitmap AppResourceIconProvider::GetBestSoftwareBitmap(
+  const uint16_t edgeLength) const {
+  return SoftwareBitmapFromHICON(GetBestHICON(edgeLength).get());
 }
 
-wil::unique_hicon AppResourceIconProvider::GetBestHICON(uint16_t edgeLength) const {
+wil::unique_hicon AppResourceIconProvider::GetBestHICON(
+  uint16_t edgeLength) const {
   FUI_ASSERT(IsValid());
   const auto resourceID = std::visit(
     felly::overload {

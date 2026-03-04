@@ -112,8 +112,8 @@ class SkiaRenderer final : public Renderer {
     return mNativeDevice;
   }
 
-  [[nodiscard]] std::unique_ptr<ImportedTexture> ImportBitmap(
-    const Bitmap& bitmap) const override;
+  [[nodiscard]] std::unique_ptr<ImportedTexture> ImportSoftwareBitmap(
+    const SoftwareBitmap& bitmap) const override;
 
   [[nodiscard]] uint64_t GetPhysicalLength(const uint64_t dipLength) override {
     return (dipLength * mNativeDevice.mDPI.mActual)
