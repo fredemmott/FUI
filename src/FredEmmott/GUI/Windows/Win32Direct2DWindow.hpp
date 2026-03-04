@@ -8,6 +8,7 @@
 #include <dwrite.h>
 #include <wil/com.h>
 
+#include "FredEmmott/GUI/Direct2DRenderer.hpp"
 #include "Win32Window.hpp"
 
 namespace FredEmmott::GUI {
@@ -32,21 +33,26 @@ class Win32Direct2DWindow final : public Win32Window {
     const Options& options) const override;
 
  private:
-  struct SharedResources;
-  std::shared_ptr<SharedResources> mSharedResources;
-  static std::weak_ptr<SharedResources> gSharedResources;
-
-  wil::com_ptr<ID3D11Device5> mD3DDevice;
-  wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
-  wil::com_ptr<ID2D1Factory3> mD2DFactory;
-  wil::com_ptr<ID2D1Device2> mD2DDevice;
-  wil::com_ptr<ID2D1DeviceContext2> mD2DDeviceContext;
-  wil::com_ptr<IDWriteFactory> mDWriteFactory;
-
+  struct DeviceResources {
+    wil::com_ptr<ID3D11Device5> mD3DDevice;
+    wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
+    wil::com_ptr<ID2D1Factory3> mD2DFactory;
+    wil::com_ptr<ID2D1Device2> mD2DDevice;
+    wil::com_ptr<ID2D1DeviceContext2> mD2DDeviceContext;
+    wil::com_ptr<ID2D1StrokeStyle> mD2DStrokeStyleRoundCap;
+    wil::com_ptr<ID2D1StrokeStyle> mD2DStrokeStyleSquareCap;
+    wil::com_ptr<IDWriteFactory> mDWriteFactory;
+  };
   struct FrameContext {
     wil::com_ptr<ID2D1Bitmap1> mD2DTargetBitmap;
     uint64_t mFenceValue {};
   };
+
+  static std::shared_ptr<DeviceResources> GetSharedResources(IDXGIFactory4*);
+  std::shared_ptr<DeviceResources> mSharedResources;
+  DeviceResources mDeviceResources {};
+
+  Direct2DRenderer::DeviceResources mRendererDeviceResources {};
 
   // We're ultimately backed by D3D11, which exposes a single magical buffer
   // which automatically rotates to the front of the swapchain

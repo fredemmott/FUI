@@ -17,11 +17,18 @@ namespace FredEmmott::GUI {
 
 class Direct2DRenderer final : public Renderer {
  public:
+  struct DeviceResources {
+    ID3D11Device5* mD3DDevice {};
+    ID3D11DeviceContext4* mD3DDeviceContext {};
+    ID2D1Factory* mD2DFactory {};
+    ID2D1DeviceContext* mD2DDeviceContext {};
+    ID2D1StrokeStyle* mD2DStrokeStyleRoundCap {};
+    ID2D1StrokeStyle* mD2DStrokeStyleSquareCap {};
+  };
   Direct2DRenderer() = delete;
   explicit Direct2DRenderer(
     DWORD dpi,
-    ID3D11Device5* device,
-    ID2D1DeviceContext* deviceContext,
+    const DeviceResources& deviceResources,
     std::shared_ptr<GPUCompletionFlag> frameCompletionFlag);
   ~Direct2DRenderer() override;
 
@@ -105,7 +112,7 @@ class Direct2DRenderer final : public Renderer {
   // Not calling this 'GetNativeDevice' because there's both the D2D and D3D
   // ones
   auto GetD3DDevice() const {
-    return mD3DDevice;
+    return mDeviceResources.mD3DDevice;
   }
 
   [[nodiscard]] uint64_t GetPhysicalLength(const uint64_t length) override {
@@ -124,17 +131,16 @@ class Direct2DRenderer final : public Renderer {
   DWORD mDPI {USER_DEFAULT_SCREEN_DPI};
   float mDPIScale {1.0f};
 
-  ID3D11Device5* mD3DDevice = nullptr;
-  wil::com_ptr<ID3D11DeviceContext4> mD3DDeviceContext;
-  ID2D1DeviceContext* mDeviceContext = nullptr;
+  DeviceResources mDeviceResources {};
   std::shared_ptr<GPUCompletionFlag> mFrameCompletionFlag;
-
   std::stack<StateStackFrame> mStateStack;
 
   void PostTransform(const D2D1_MATRIX_3X2_F&);
 
   friend ID2D1DeviceContext* direct2d_device_context_cast(
     Renderer* renderer) noexcept;
+
+  ID2D1StrokeStyle* GetStrokeStyle(StrokeCap) const;
 };
 
 inline Direct2DRenderer* direct2d_renderer_cast(Renderer* renderer) noexcept {
@@ -150,9 +156,11 @@ inline ID2D1DeviceContext* direct2d_device_context_cast(
   Renderer* renderer) noexcept {
   const auto direct2dRenderer = direct2d_renderer_cast(renderer);
   if constexpr (Config::HaveSingleBackend) {
-    return direct2dRenderer->mDeviceContext;
+    return direct2dRenderer->mDeviceResources.mD2DDeviceContext;
   } else {
-    return direct2dRenderer ? direct2dRenderer->mDeviceContext : nullptr;
+    return direct2dRenderer
+      ? direct2dRenderer->mDeviceResources.mD2DDeviceContext
+      : nullptr;
   }
 }
 

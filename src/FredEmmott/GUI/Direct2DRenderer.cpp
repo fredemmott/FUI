@@ -46,19 +46,12 @@ struct ImportedDirect3DFence : ImportedFence {
 
 Direct2DRenderer::Direct2DRenderer(
   const DWORD dpi,
-  ID3D11Device5* device,
-  ID2D1DeviceContext* deviceContext,
+  const DeviceResources& resources,
   std::shared_ptr<GPUCompletionFlag> frameCompletionFlag)
   : mDPI(dpi),
     mDPIScale(dpi / static_cast<FLOAT>(USER_DEFAULT_SCREEN_DPI)),
-    mD3DDevice(device),
-    mDeviceContext(deviceContext),
-    mFrameCompletionFlag(std::move(frameCompletionFlag)) {
-  wil::com_ptr<ID3D11DeviceContext3> dc3;
-  mD3DDevice->GetImmediateContext3(dc3.put());
-  // ID3D11DeviceContext4 for Wait(fence, value)
-  dc3.query_to(mD3DDeviceContext.put());
-}
+    mDeviceResources(resources),
+    mFrameCompletionFlag(std::move(frameCompletionFlag)) {}
 
 Direct2DRenderer::~Direct2DRenderer() {
   FUI_ASSERT(mStateStack.empty());
@@ -67,7 +60,8 @@ Direct2DRenderer::~Direct2DRenderer() {
 void Direct2DRenderer::PushLayer(const float alpha) {
   mStateStack.emplace();
   auto& state = mStateStack.top();
-  mDeviceContext->GetTransform(&state.mTransform);
+  const auto ctx = mDeviceResources.mD2DDeviceContext;
+  ctx->GetTransform(&state.mTransform);
 
   // 99.9% opaque is close enough to fully opaque
   const bool isFullyOpaque = std::abs(alpha - 1.0f) < 0.001;
@@ -81,26 +75,29 @@ void Direct2DRenderer::PushLayer(const float alpha) {
     .opacity = alpha,
   };
 
-  mDeviceContext->PushLayer(&params, nullptr);
+  ctx->PushLayer(&params, nullptr);
   state.mHaveNativeLayer = true;
 }
 
 void Direct2DRenderer::PopLayer() {
   const auto pop = felly::scope_exit([this] { mStateStack.pop(); });
 
+  const auto ctx = mDeviceResources.mD2DDeviceContext;
+
   auto& state = mStateStack.top();
   if (state.mHaveNativeLayer) {
-    mDeviceContext->PopLayer();
+    ctx->PopLayer();
   }
-  mDeviceContext->SetTransform(state.mTransform);
+  ctx->SetTransform(state.mTransform);
 }
 
 void Direct2DRenderer::PushClipRect(const Rect& rect) {
-  mDeviceContext->PushAxisAlignedClip(rect, D2D1_ANTIALIAS_MODE_ALIASED);
+  mDeviceResources.mD2DDeviceContext->PushAxisAlignedClip(
+    rect, D2D1_ANTIALIAS_MODE_ALIASED);
 }
 
 void Direct2DRenderer::PopClipRect() {
-  mDeviceContext->PopAxisAlignedClip();
+  mDeviceResources.mD2DDeviceContext->PopAxisAlignedClip();
 }
 
 void Direct2DRenderer::Scale(float x, float y) {
@@ -122,7 +119,7 @@ void Direct2DRenderer::Translate(const Point& point) {
 }
 
 void Direct2DRenderer::FillRect(const Brush& brush, const Rect& rect) {
-  mDeviceContext->FillRectangle(
+  mDeviceResources.mD2DDeviceContext->FillRectangle(
     rect, brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get());
 }
 
@@ -130,7 +127,7 @@ void Direct2DRenderer::StrokeRect(
   const Brush& brush,
   const Rect& rect,
   const float thickness) {
-  mDeviceContext->DrawRectangle(
+  mDeviceResources.mD2DDeviceContext->DrawRectangle(
     rect,
     brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
     thickness == 0 ? 1 : thickness,
@@ -141,7 +138,7 @@ void Direct2DRenderer::DrawLine(
   const Point& start,
   const Point& end,
   const float thickness) {
-  mDeviceContext->DrawLine(
+  mDeviceResources.mD2DDeviceContext->DrawLine(
     start.as<D2D1_POINT_2F>(),
     end.as<D2D1_POINT_2F>(),
     brush.as<wil::com_ptr<ID2D1Brush>>(this, {start, end}).get(),
@@ -153,7 +150,7 @@ void Direct2DRenderer::FillRoundedRect(
   const Brush& brush,
   const Rect& rect,
   float radius) {
-  mDeviceContext->FillRoundedRectangle(
+  mDeviceResources.mD2DDeviceContext->FillRoundedRectangle(
     {rect, radius, radius},
     brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get());
 }
@@ -166,7 +163,7 @@ void Direct2DRenderer::FillRoundedRect(
   [[maybe_unused]] float bottomLeftRadius) {
   wil::com_ptr<ID2D1PathGeometry> path;
   wil::com_ptr<ID2D1Factory> factory;
-  mDeviceContext->GetFactory(&factory);
+  mDeviceResources.mD2DDeviceContext->GetFactory(&factory);
   CheckHResult(factory->CreatePathGeometry(&path));
   wil::com_ptr<ID2D1GeometrySink> sink;
   CheckHResult(path->Open(&sink));
@@ -209,7 +206,7 @@ void Direct2DRenderer::FillRoundedRect(
   });
   sink->EndFigure(D2D1_FIGURE_END_CLOSED);
   CheckHResult(sink->Close());
-  mDeviceContext->FillGeometry(
+  mDeviceResources.mD2DDeviceContext->FillGeometry(
     path.get(), brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(), nullptr);
 }
 
@@ -218,7 +215,7 @@ void Direct2DRenderer::StrokeRoundedRect(
   const Rect& rect,
   float radius,
   float thickness) {
-  mDeviceContext->DrawRoundedRectangle(
+  mDeviceResources.mD2DDeviceContext->DrawRoundedRectangle(
     {rect, radius, radius},
     brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
     thickness == 0 ? 1 : thickness,
@@ -252,11 +249,8 @@ void Direct2DRenderer::StrokeArc(
     center.mY + radiusY * std::sin(DegreesToRadians(endAngle)),
   };
 
-  // TODO: cache the factory
-  wil::com_ptr<ID2D1Factory> factory;
-  mDeviceContext->GetFactory(&factory);
   wil::com_ptr<ID2D1PathGeometry> path;
-  CheckHResult(factory->CreatePathGeometry(&path));
+  CheckHResult(mDeviceResources.mD2DFactory->CreatePathGeometry(&path));
   wil::com_ptr<ID2D1GeometrySink> sink;
   CheckHResult(path->Open(&sink));
 
@@ -274,31 +268,11 @@ void Direct2DRenderer::StrokeArc(
   sink->EndFigure(D2D1_FIGURE_END_OPEN);
   CheckHResult(sink->Close());
 
-  // TODO: cache the stroke style COM objects
-  D2D1_CAP_STYLE capStyle {};
-  switch (strokeCap) {
-    case StrokeCap::None:
-      capStyle = D2D1_CAP_STYLE_FLAT;
-      break;
-    case StrokeCap::Round:
-      capStyle = D2D1_CAP_STYLE_ROUND;
-      break;
-    case StrokeCap::Square:
-      capStyle = D2D1_CAP_STYLE_SQUARE;
-      break;
-  }
-  wil::com_ptr<ID2D1StrokeStyle> strokeStyle;
-  CheckHResult(factory->CreateStrokeStyle(
-    D2D1::StrokeStyleProperties(capStyle, capStyle, capStyle),
-    nullptr,
-    0,
-    strokeStyle.put()));
-
-  mDeviceContext->DrawGeometry(
+  mDeviceResources.mD2DDeviceContext->DrawGeometry(
     path.get(),
     brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
     thickness,
-    strokeStyle.get());
+    GetStrokeStyle(strokeCap));
 }
 
 void Direct2DRenderer::DrawText(
@@ -313,7 +287,7 @@ void Direct2DRenderer::DrawText(
   const auto wideText = Utf8ToWide(text);
   const auto props = font.as<DirectWriteFont>();
   const auto tf = props.mTextFormat.get();
-  mDeviceContext->DrawText(
+  mDeviceResources.mD2DDeviceContext->DrawText(
     wideText.data(),
     wideText.size(),
     tf,
@@ -331,19 +305,20 @@ std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportTexture(
   using enum ImportedTexture::HandleKind;
 
   wil::com_ptr<ID3D11Texture2D> texture;
+  const auto d3d = mDeviceResources.mD3DDevice;
   switch (kind) {
     case LegacySharedHandle:
       CheckHResult(
-        mD3DDevice->OpenSharedResource(handle, IID_PPV_ARGS(texture.put())));
+        d3d->OpenSharedResource(handle, IID_PPV_ARGS(texture.put())));
       break;
     case NTHandle:
       CheckHResult(
-        mD3DDevice->OpenSharedResource1(handle, IID_PPV_ARGS(texture.put())));
+        d3d->OpenSharedResource1(handle, IID_PPV_ARGS(texture.put())));
       break;
   }
   const auto surface = texture.query<IDXGISurface>();
   wil::com_ptr<ID2D1Bitmap1> bitmap;
-  CheckHResult(mDeviceContext->CreateBitmapFromDxgiSurface(
+  CheckHResult(mDeviceResources.mD2DDeviceContext->CreateBitmapFromDxgiSurface(
     surface.get(), nullptr, bitmap.put()));
   auto ret = std::make_unique<ImportedDirect2DTexture>();
   ret->mBitmap = std::move(bitmap);
@@ -359,7 +334,7 @@ std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportSoftwareBitmap(
 
   float dpiX {};
   float dpiY {};
-  mDeviceContext->GetDpi(&dpiX, &dpiY);
+  mDeviceResources.mD2DDeviceContext->GetDpi(&dpiX, &dpiY);
 
   const auto props = D2D1::BitmapProperties1(
     D2D1_BITMAP_OPTIONS_NONE,
@@ -370,7 +345,7 @@ std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportSoftwareBitmap(
   const auto pitch = static_cast<uint32_t>(in.mWidth) * 4;// 32 bpp = 4 bytes
 
   wil::com_ptr<ID2D1Bitmap1> out;
-  CheckHResult(mDeviceContext->CreateBitmap(
+  CheckHResult(mDeviceResources.mD2DDeviceContext->CreateBitmap(
     D2D1_SIZE_U {in.mWidth, in.mHeight},
     in.mData.data(),
     pitch,
@@ -384,7 +359,8 @@ std::unique_ptr<ImportedTexture> Direct2DRenderer::ImportSoftwareBitmap(
 std::unique_ptr<ImportedFence> Direct2DRenderer::ImportFence(
   HANDLE const handle) const {
   wil::com_ptr<ID3D11Fence> fence;
-  CheckHResult(mD3DDevice->OpenSharedFence(handle, IID_PPV_ARGS(fence.put())));
+  CheckHResult(mDeviceResources.mD3DDevice->OpenSharedFence(
+    handle, IID_PPV_ARGS(fence.put())));
   auto ret = std::make_unique<ImportedDirect3DFence>();
   ret->mFence = std::move(fence);
   return ret;
@@ -411,9 +387,9 @@ void Direct2DRenderer::DrawTexture(
     const auto fence
       = IMPL_CAST<ImportedDirect3DFence*>(rawFence)->mFence.get();
     FUI_ASSERT(fence);
-    CheckHResult(mD3DDeviceContext->Wait(fence, fenceValue));
+    CheckHResult(mDeviceResources.mD3DDeviceContext->Wait(fence, fenceValue));
   }
-  mDeviceContext->DrawBitmap(
+  mDeviceResources.mD2DDeviceContext->DrawBitmap(
     texture,
     destRect,
     1.0,
@@ -428,14 +404,26 @@ Direct2DRenderer::GetGPUCompletionFlagForCurrentFrame() const {
 }
 
 void Direct2DRenderer::PostTransform(const D2D1_MATRIX_3X2_F& transform) {
+  const auto ctx = mDeviceResources.mD2DDeviceContext;
   D2D1_MATRIX_3X2_F combined {};
-  mDeviceContext->GetTransform(&combined);
+  ctx->GetTransform(&combined);
   combined = transform * combined;
-  mDeviceContext->SetTransform(combined);
+  ctx->SetTransform(combined);
+}
+ID2D1StrokeStyle* Direct2DRenderer::GetStrokeStyle(const StrokeCap cap) const {
+  switch (cap) {
+    case StrokeCap::None:
+      return nullptr;
+    case StrokeCap::Round:
+      return mDeviceResources.mD2DStrokeStyleRoundCap;
+    case StrokeCap::Square:
+      return mDeviceResources.mD2DStrokeStyleSquareCap;
+  }
+  FUI_FATAL("Invalid cap style: {}", std::to_underlying(cap));
 }
 
 void Direct2DRenderer::Clear(const Color& color) {
-  mDeviceContext->Clear(color.as<D2D1_COLOR_F>());
+  mDeviceResources.mD2DDeviceContext->Clear(color.as<D2D1_COLOR_F>());
 }
 
 }// namespace FredEmmott::GUI
