@@ -36,7 +36,6 @@ class Win32Direct3D12GaneshWindow final : public Win32Window {
  private:
   struct SharedResources;
   std::shared_ptr<SharedResources> mSharedResources;
-  static std::weak_ptr<SharedResources> gSharedResources;
 
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;

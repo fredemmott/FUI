@@ -176,12 +176,11 @@ struct Win32Direct3D12GaneshWindow::SharedResources {
 
   static std::shared_ptr<SharedResources> Get(IDXGIFactory4* dxgiFactory);
 };
-std::weak_ptr<Win32Direct3D12GaneshWindow::SharedResources>
-  Win32Direct3D12GaneshWindow::gSharedResources;
 
 std::shared_ptr<Win32Direct3D12GaneshWindow::SharedResources>
 Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
-  if (auto ret = gSharedResources.lock()) {
+  static std::weak_ptr<Win32Direct3D12GaneshWindow::SharedResources> sShared;
+  if (const auto ret = sShared.lock()) {
     return ret;
   }
 
@@ -205,7 +204,16 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
     IID_PPV_ARGS(ret->mD3DDevice.put())));
   ConfigureD3DDebugLayer(ret->mD3DDevice);
 
-  gSharedResources = ret;
+  {
+    D3D12_COMMAND_QUEUE_DESC desc {
+      .Type = D3D12_COMMAND_LIST_TYPE_DIRECT,
+      .Flags = D3D12_COMMAND_QUEUE_FLAG_NONE,
+    };
+    CheckHResult(ret->mD3DDevice->CreateCommandQueue(
+      &desc, IID_PPV_ARGS(ret->mD3DCommandQueue.put())));
+  }
+
+  sShared = ret;
   return ret;
 }
 
@@ -222,15 +230,6 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
 
   CheckHResult(mD3DDevice->CreateFence(
     0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(mD3DFence.put())));
-
-  {
-    D3D12_COMMAND_QUEUE_DESC desc {
-      .Type = D3D12_COMMAND_LIST_TYPE_DIRECT,
-      .Flags = D3D12_COMMAND_QUEUE_FLAG_NONE,
-    };
-    CheckHResult(mD3DDevice->CreateCommandQueue(
-      &desc, IID_PPV_ARGS(mD3DCommandQueue.put())));
-  }
 
   {
     D3D12_DESCRIPTOR_HEAP_DESC desc {
