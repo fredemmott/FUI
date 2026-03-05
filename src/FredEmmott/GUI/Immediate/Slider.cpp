@@ -51,7 +51,7 @@ SliderResult SliderImpl(
     throw std::logic_error("Slider requires a non-null value pointer");
   }
   FUI_ASSERT(*pValue >= minimum);
-  FUI_ASSERT(*pValue < maximum);
+  FUI_ASSERT(*pValue <= maximum);
 
   const auto w = ChildlessWidget<Widgets::Slider>(id, orientation);
 
