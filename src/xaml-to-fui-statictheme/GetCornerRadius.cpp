@@ -21,13 +21,15 @@ void GetCornerRadius(
     case 1:
       break;
     case 4: {
-      auto b = parts[1];
-      auto c = parts[2];
-      auto d = parts[3];
+      const auto b = parts[1];
+      const auto c = parts[2];
+      const auto d = parts[3];
       if (value != b || value != c || value != d) {
         throw std::runtime_error(
           std::format(
-            "<CornerRadius> value `{}` has differing components", text));
+            "<CornerRadius> value `{}` does not have the same value for each "
+            "corner",
+            text));
       }
       break;
     }
