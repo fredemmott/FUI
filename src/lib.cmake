@@ -33,6 +33,7 @@ add_library(
   FredEmmott/GUI/Immediate/NumberBox.cpp
   FredEmmott/GUI/Immediate/NumberBox.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
+  FredEmmott/GUI/Immediate/ProgressRing.hpp
   FredEmmott/GUI/Immediate/PushID.cpp FredEmmott/GUI/Immediate/PushID.hpp
   FredEmmott/GUI/Immediate/RadioButton.cpp FredEmmott/GUI/Immediate/RadioButton.hpp
   FredEmmott/GUI/Immediate/RadioButtons.cpp FredEmmott/GUI/Immediate/RadioButtons.hpp
@@ -103,6 +104,8 @@ add_library(
   FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp
+  FredEmmott/GUI/Widgets/ProgressRing.cpp
+  FredEmmott/GUI/Widgets/ProgressRing.hpp
   FredEmmott/GUI/Widgets/RadioButton.cpp FredEmmott/GUI/Widgets/RadioButton.hpp
   FredEmmott/GUI/Widgets/ScrollBar.cpp FredEmmott/GUI/Widgets/ScrollBar.hpp
   FredEmmott/GUI/Widgets/ScrollBarButton.cpp FredEmmott/GUI/Widgets/ScrollBarButton.hpp

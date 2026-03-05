@@ -3,8 +3,6 @@
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
-#include <FredEmmott/GUI/Widgets/TitleBar.hpp>
-#include <atomic>
 #include <map>
 #include <print>
 
@@ -243,6 +241,20 @@ static void AppTick(fui::Window& window) {
 #ifdef _WIN32
   demo_win32();
 #endif
+
+  {
+    fuii::TextBlock("Indeterminate progress ring").BodyStrong();
+    static bool active = true;
+    fuii::ToggleSwitch(&active).Caption("Active");
+    fuii::ProgressRing().Active(active);
+  }
+
+  {
+    fuii::TextBlock("Determinate progress ring").BodyStrong();
+    static float value = 0.0f;
+    fuii::HSlider(&value).Range(0.0f, 100.0f);
+    fuii::ProgressRing(value);
+  }
 
   fuii::EndDisabled();
 
