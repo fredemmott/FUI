@@ -57,19 +57,14 @@ class Direct2DRenderer final : public Renderer {
     float thickness) override;
 
   // Rounded rectangle drawing
-  void FillRoundedRect(const Brush& brush, const Rect& rect, float radius)
-    override;
   void FillRoundedRect(
     const Brush& brush,
     const Rect& rect,
-    float topLeftRadius,
-    float topRightRadius,
-    float bottomRightRadius,
-    float bottomLeftRadius) override;
+    const CornerRadius&) override;
   void StrokeRoundedRect(
     const Brush& brush,
     const Rect& rect,
-    float radius,
+    const CornerRadius&,
     float thickness) override;
 
   void StrokeArc(
@@ -142,7 +137,13 @@ class Direct2DRenderer final : public Renderer {
   friend ID2D1DeviceContext* direct2d_device_context_cast(
     Renderer* renderer) noexcept;
 
+  [[nodiscard]]
   ID2D1StrokeStyle* GetStrokeStyle(StrokeCap) const;
+
+  [[nodiscard]]
+  wil::com_ptr<ID2D1PathGeometry> MakeRoundedRectPathGeometry(
+    const Rect& rect,
+    const CornerRadius& radii) const;
 };
 
 inline Direct2DRenderer* direct2d_renderer_cast(Renderer* renderer) noexcept {

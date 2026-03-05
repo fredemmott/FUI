@@ -290,8 +290,7 @@ BeginContentDialogButtons() {
   static const auto OuterStyle
     = Style()
         .BackgroundColor(ContentDialogBackground)
-        .BorderBottomLeftRadius(OverlayCornerRadius)
-        .BorderBottomRightRadius(OverlayCornerRadius)
+        .BorderRadius({0, 0, OverlayCornerRadius, OverlayCornerRadius})
         .Gap(0)
         .PaddingBottom(ContentDialogPaddingBottom)
         .PaddingLeft(ContentDialogPaddingLeft)

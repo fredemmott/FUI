@@ -11,6 +11,7 @@
 #include "Rect.hpp"
 
 namespace FredEmmott::GUI {
+struct CornerRadius;
 
 struct SoftwareBitmap;
 
@@ -114,20 +115,15 @@ class Renderer {
     const Point& end,
     float thickness = 0) = 0;
 
-  virtual void
-  FillRoundedRect(const Brush& brush, const Rect& rect, float radius) = 0;
   virtual void FillRoundedRect(
     const Brush& brush,
     const Rect& rect,
-    float topLeftRadius,
-    float topRightRadius,
-    float bottomRightRadius,
-    float bottomLeftRadius) = 0;
+    const CornerRadius&) = 0;
   virtual void StrokeRoundedRect(
     const Brush& brush,
     const Rect& rect,
-    float radius,
-    float thickness = 0) = 0;
+    const CornerRadius&,
+    float thickness = 1) = 0;
 
   /** Stroke an arc.
    *

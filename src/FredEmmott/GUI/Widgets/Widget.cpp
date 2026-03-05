@@ -33,28 +33,13 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
 
   auto brush = *style.BackgroundColor();
 
-  const auto baseRadius = style.BorderRadius().value_or(0);
-  const auto tlRadius = style.BorderTopLeftRadius().value_or(baseRadius);
-  const auto trRadius = style.BorderTopRightRadius().value_or(baseRadius);
-  const auto brRadius = style.BorderBottomRightRadius().value_or(baseRadius);
-  const auto blRadius = style.BorderBottomLeftRadius().value_or(baseRadius);
-
-  constexpr auto Eps = std::numeric_limits<float>::epsilon();
-
-  if (tlRadius < Eps && trRadius < Eps && brRadius < Eps && blRadius < Eps) {
+  const auto radii = style.BorderRadius();
+  if ((!radii) || radii->IsEmpty()) {
     renderer->FillRect(brush, rect);
     return;
   }
-  const auto allSameRadii = (tlRadius == trRadius) && (trRadius == brRadius)
-    && (brRadius == blRadius);
 
-  if (allSameRadii) {
-    renderer->FillRoundedRect(brush, rect, baseRadius);
-    return;
-  }
-
-  renderer->FillRoundedRect(
-    brush, rect, tlRadius, trRadius, brRadius, blRadius);
+  renderer->FillRoundedRect(brush, rect, *radii);
 }
 
 void PaintOutline(
@@ -75,19 +60,25 @@ void PaintOutline(
   const auto bottom = style.OutlineBottomOffset().value_or(0) + thickness / 2;
 
   const auto rect = contentRect.WithOutset(left, top, right, bottom);
-  const auto radius = style.OutlineRadius().value_or(0);
+  const auto radii = style.OutlineRadius();
 
-  if (radius < std::numeric_limits<float>::epsilon()) {
+  if ((!radii) || radii->IsEmpty()) {
     renderer->StrokeRect(style.OutlineColor().value(), rect, thickness);
     return;
   }
 
   // Like WinUI3's FocusRectManager, aim to keep the length of the straight part
   // the same, i.e. extend by the offset
+  const auto pad = std::ranges::max({left, top, bottom, right});
   renderer->StrokeRoundedRect(
     style.OutlineColor().value(),
     rect,
-    radius + std::ranges::max({left, top, bottom, right}),
+    CornerRadius {
+      radii->GetTopLeft() + pad,
+      radii->GetTopRight() + pad,
+      radii->GetBottomRight() + pad,
+      radii->GetBottomLeft() + pad,
+    },
     thickness);
 }
 
@@ -105,7 +96,7 @@ void PaintBorder(
   const auto bottom = YGNodeLayoutGetBorder(yoga, YGEdgeBottom);
   const auto right = YGNodeLayoutGetBorder(yoga, YGEdgeRight);
 
-  constexpr auto Eps = std::numeric_limits<float>::epsilon();
+  static constexpr auto Eps = std::numeric_limits<float>::epsilon();
   if (top < Eps && left < Eps && right < Eps && bottom < Eps) {
     return;
   }
@@ -116,42 +107,35 @@ void PaintBorder(
 
   const auto brush = *style.BorderColor();
 
-  if (
-    style.BorderRadius().value_or(0) < std::numeric_limits<float>::epsilon()) {
-    if (allSame) {
-      renderer->StrokeRect(brush, borderRect);
-      return;
-    }
-    if (top > Eps) {
-      renderer->DrawLine(
-        brush, contentRect.GetTopLeft(), contentRect.GetTopRight(), top);
-    }
-    if (right > Eps) {
-      renderer->DrawLine(
-        brush, contentRect.GetTopRight(), contentRect.GetBottomRight(), right);
-    }
-    if (bottom > Eps) {
-      renderer->DrawLine(
-        brush,
-        contentRect.GetBottomRight(),
-        contentRect.GetBottomLeft(),
-        bottom);
-    }
-    if (left > Eps) {
-      renderer->DrawLine(
-        brush, contentRect.GetBottomLeft(), contentRect.GetTopLeft(), left);
-    }
+  if (const auto radii = style.BorderRadius(); radii && !radii->IsEmpty()) {
+    FUI_ASSERT(
+      allSame,
+      "If border radius is set, only equal-thickness borders are supported");
+
+    renderer->StrokeRoundedRect(brush, borderRect, *radii, top);
     return;
   }
 
-  if (!allSame) {
-    throw std::logic_error(
-      "Only equal-thickness borders are currently supported if mBorderRadius "
-      "is set");
+  if (allSame) {
+    renderer->StrokeRect(brush, borderRect);
+    return;
   }
-
-  const auto radius = style.BorderRadius().value();
-  renderer->StrokeRoundedRect(brush, borderRect, radius);
+  if (top > Eps) {
+    renderer->DrawLine(
+      brush, contentRect.GetTopLeft(), contentRect.GetTopRight(), top);
+  }
+  if (right > Eps) {
+    renderer->DrawLine(
+      brush, contentRect.GetTopRight(), contentRect.GetBottomRight(), right);
+  }
+  if (bottom > Eps) {
+    renderer->DrawLine(
+      brush, contentRect.GetBottomRight(), contentRect.GetBottomLeft(), bottom);
+  }
+  if (left > Eps) {
+    renderer->DrawLine(
+      brush, contentRect.GetBottomLeft(), contentRect.GetTopLeft(), left);
+  }
 }
 }// namespace
 

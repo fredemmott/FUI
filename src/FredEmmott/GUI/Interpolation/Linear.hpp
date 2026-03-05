@@ -3,6 +3,7 @@
 #pragma once
 
 #include <FredEmmott/GUI/Brush.hpp>
+#include <FredEmmott/GUI/CornerRadius.hpp>
 
 namespace FredEmmott::GUI {
 class Font;
@@ -47,6 +48,9 @@ Brush Linear(const Brush& startRef, const Brush& endRef, float ratio);
 
 // Linear interpolation between two `Font`s
 Font Linear(const Font& startRef, const Font& endRef, float ratio);
+
+CornerRadius
+Linear(const CornerRadius& startRef, const CornerRadius& endRef, float ratio);
 
 /// A type where we are able to linearly interpolate between two values.
 template <class T>

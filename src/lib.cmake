@@ -7,6 +7,7 @@ add_library(
   FredEmmott/GUI/Brush.cpp
   FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Color.hpp
+  FredEmmott/GUI/CornerRadius.hpp
   FredEmmott/GUI/EasingFunctions.hpp
   FredEmmott/GUI/ExitException.hpp
   FredEmmott/GUI/FocusManager.cpp FredEmmott/GUI/FocusManager.hpp

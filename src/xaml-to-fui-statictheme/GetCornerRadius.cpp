@@ -16,29 +16,38 @@ void GetCornerRadius(
       })
     | std::ranges::to<std::vector>();
 
+  const auto Push = [&back](
+                      const std::string_view key,
+                      const std::string_view value,
+                      const std::string_view type = "UniformCornerRadius") {
+    back = {
+      .mName = std::string {key},
+      .mValue = std::string {value},
+      .mType = std::string {type},
+      .mKind = Resource::Kind::Literal,
+    };
+  };
+  const std::string_view key = it.Attribute("x:Key");
+
   const auto value = parts[0];
   switch (parts.size()) {
     case 1:
-      break;
+      Push(key, value);
+      return;
     case 4: {
       const auto b = parts[1];
       const auto c = parts[2];
       const auto d = parts[3];
-      if (value != b || value != c || value != d) {
-        throw std::runtime_error(
-          std::format(
-            "<CornerRadius> value `{}` does not have the same value for each "
-            "corner",
-            text));
+      if (value == b && value == c && value == d) {
+        Push(key, value);
+        return;
       }
+      Push(key, text, "CornerRadius");
       break;
     }
+    default:
+      throw std::runtime_error(
+        std::format(
+          "<CornerRadius> value `{}` has unhandled number of values", text));
   }
-
-  back = {
-    .mName = it.Attribute("x:Key"),
-    .mValue = std::string {value},
-    .mType = "double",
-    .mKind = Resource::Kind::Literal,
-  };
 }

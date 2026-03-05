@@ -120,6 +120,7 @@ std::string GetDetailHpp(const HppData& data) {
 
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
+#include <FredEmmott/GUI/CornerRadius.hpp>
 #include <FredEmmott/GUI/StaticTheme/Resource.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/ResourceSupertype.hpp>
 

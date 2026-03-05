@@ -6,6 +6,7 @@
 
 #include <type_traits>
 
+#include "FredEmmott/GUI/CornerRadius.hpp"
 #include "FredEmmott/GUI/StylePropertyTypes.hpp"
 
 namespace FredEmmott::GUI {
@@ -15,6 +16,7 @@ class StyleProperty;
 
 #define FUI_ENUM_STYLE_PROPERTY_TYPES(X) \
   X(Brush, Brush) \
+  X(GUI::CornerRadius, CornerRadius) \
   X(GUI::Cursor, Cursor) \
   X(GUI::Font, Font) \
   X(float, Float) \
@@ -35,15 +37,11 @@ class StyleProperty;
   X(AlignSelf, YGAlign, Self) \
   X(AspectRatio, float, Self) \
   X(BackgroundColor, Brush, Self) \
-  X(BorderBottomLeftRadius, float, Self) \
-  X(BorderBottomRightRadius, float, Self) \
   X(BorderBottomWidth, float, Self) \
   X(BorderColor, Brush, Self) \
   X(BorderLeftWidth, float, Self) \
-  X(BorderRadius, float, Self) \
+  X(BorderRadius, CornerRadius, Self) \
   X(BorderRightWidth, float, Self) \
-  X(BorderTopLeftRadius, float, Self) \
-  X(BorderTopRightRadius, float, Self) \
   X(BorderTopWidth, float, Self) \
   X(BorderWidth, float, Self) \
   X(BoxSizing, YGBoxSizing, Self) \
@@ -71,7 +69,7 @@ class StyleProperty;
   X(MinWidth, float, Self) \
   X(Opacity, float, Self) \
   X(OutlineColor, Brush, Self) \
-  X(OutlineRadius, float, Self) \
+  X(OutlineRadius, CornerRadius, Self) \
   X(OutlineOffset, float, Self) \
   X(OutlineBottomOffset, float, Self) \
   X(OutlineLeftOffset, float, Self) \

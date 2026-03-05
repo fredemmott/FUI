@@ -24,5 +24,20 @@ Font Linear(const Font& startRef, const Font& endRef, float ratio) {
   }
   return endRef.WithSize(Linear(start, end, ratio));
 }
+CornerRadius Linear(
+  const CornerRadius& startRef,
+  const CornerRadius& endRef,
+  const float ratio) {
+  if (startRef.IsUniform() && endRef.IsUniform()) {
+    return {
+      Linear(startRef.GetUniformValue(), endRef.GetUniformValue(), ratio)};
+  }
+  return {
+    Linear(startRef.GetTopLeft(), endRef.GetTopLeft(), ratio),
+    Linear(startRef.GetTopRight(), endRef.GetTopRight(), ratio),
+    Linear(startRef.GetBottomRight(), endRef.GetBottomRight(), ratio),
+    Linear(startRef.GetBottomLeft(), endRef.GetBottomLeft(), ratio),
+  };
+}
 
 }// namespace FredEmmott::GUI::Interpolation

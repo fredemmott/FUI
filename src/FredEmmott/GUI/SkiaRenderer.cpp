@@ -132,44 +132,62 @@ void SkiaRenderer::StrokeRect(
 void SkiaRenderer::FillRoundedRect(
   const Brush& brush,
   const Rect& rect,
-  float radius) {
+  const CornerRadius& radii) {
   auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::Style::kFill_Style);
   paint.setAntiAlias(true);
-  mCanvas->drawRoundRect(rect, radius, radius, paint);
-}
 
-void SkiaRenderer::FillRoundedRect(
-  const Brush& brush,
-  const Rect& rect,
-  float topLeftRadius,
-  float topRightRadius,
-  float bottomRightRadius,
-  float bottomLeftRadius) {
-  auto paint = brush.as<SkPaint>(this, rect);
-  paint.setStyle(SkPaint::Style::kFill_Style);
-  paint.setAntiAlias(true);
-  SkVector radii[4] {
-    {topLeftRadius, topLeftRadius},
-    {topRightRadius, topRightRadius},
-    {bottomRightRadius, bottomRightRadius},
-    {bottomLeftRadius, bottomLeftRadius},
+  if (radii.IsUniform()) {
+    const auto radius = radii.GetUniformValue();
+    mCanvas->drawRoundRect(rect, radius, radius, paint);
+    return;
+  }
+
+  const auto tl = radii.GetTopLeft();
+  const auto tr = radii.GetTopRight();
+  const auto br = radii.GetBottomRight();
+  const auto bl = radii.GetBottomLeft();
+
+  const SkVector skRadii[4] {
+    {tl, tl},
+    {tr, tr},
+    {br, br},
+    {bl, bl},
   };
   SkRRect roundedRect;
-  roundedRect.setRectRadii(rect, radii);
+  roundedRect.setRectRadii(rect, skRadii);
   mCanvas->drawRRect(roundedRect, paint);
 }
 
 void SkiaRenderer::StrokeRoundedRect(
   const Brush& brush,
   const Rect& rect,
-  float radius,
-  float thickness) {
+  const CornerRadius& radii,
+  const float thickness) {
   auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(thickness);
   paint.setAntiAlias(true);
-  mCanvas->drawRoundRect(rect, radius, radius, paint);
+  if (radii.IsUniform()) {
+    const auto radius = radii.GetUniformValue();
+    mCanvas->drawRoundRect(rect, radius, radius, paint);
+    return;
+  }
+
+  const auto tl = radii.GetTopLeft();
+  const auto tr = radii.GetTopRight();
+  const auto br = radii.GetBottomRight();
+  const auto bl = radii.GetBottomLeft();
+
+  const SkVector skRadii[4] {
+    {tl, tl},
+    {tr, tr},
+    {br, br},
+    {bl, bl},
+  };
+  SkRRect roundedRect;
+  roundedRect.setRectRadii(rect, skRadii);
+  mCanvas->drawRRect(roundedRect, paint);
 }
 
 void SkiaRenderer::StrokeArc(

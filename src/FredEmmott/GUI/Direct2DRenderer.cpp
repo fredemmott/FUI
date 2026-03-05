@@ -14,6 +14,7 @@
 #include <felly/scope_exit.hpp>
 #include <numbers>
 
+#include "CornerRadius.hpp"
 #include "assert.hpp"
 #include "detail/direct_write_detail/DirectWriteFontProvider.hpp"
 #include "detail/win32_detail.hpp"
@@ -149,62 +150,15 @@ void Direct2DRenderer::DrawLine(
 void Direct2DRenderer::FillRoundedRect(
   const Brush& brush,
   const Rect& rect,
-  float radius) {
-  mDeviceResources.mD2DDeviceContext->FillRoundedRectangle(
-    {rect, radius, radius}, brush.as<ID2D1Brush*>(this, rect));
-}
-void Direct2DRenderer::FillRoundedRect(
-  const Brush& brush,
-  const Rect& rect,
-  float topLeftRadius,
-  float topRightRadius,
-  [[maybe_unused]] float bottomRightRadius,
-  [[maybe_unused]] float bottomLeftRadius) {
-  wil::com_ptr<ID2D1PathGeometry> path;
-  wil::com_ptr<ID2D1Factory> factory;
-  mDeviceResources.mD2DDeviceContext->GetFactory(&factory);
-  CheckHResult(factory->CreatePathGeometry(&path));
-  wil::com_ptr<ID2D1GeometrySink> sink;
-  CheckHResult(path->Open(&sink));
-  sink->BeginFigure(
-    (rect.GetTopLeft() - Point {0, -topLeftRadius}).as<D2D1_POINT_2F>(),
-    D2D1_FIGURE_BEGIN_FILLED);
-  sink->AddArc({
-    (rect.GetTopLeft() + Point {topLeftRadius, 0}).as<D2D1_POINT_2F>(),
-    {topLeftRadius, topLeftRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->AddLine(
-    (rect.GetTopRight() - Point {topRightRadius, 0}).as<D2D1_POINT_2F>());
-  sink->AddArc({
-    (rect.GetTopRight() + Point {0, topRightRadius}).as<D2D1_POINT_2F>(),
-    {topRightRadius, topRightRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->AddLine(
-    (rect.GetBottomRight() - Point {0, bottomRightRadius}).as<D2D1_POINT_2F>());
-  sink->AddArc({
-    (rect.GetBottomRight() - Point {bottomRightRadius, 0}).as<D2D1_POINT_2F>(),
-    {bottomRightRadius, bottomRightRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->AddLine(
-    (rect.GetBottomLeft() + Point {bottomLeftRadius, 0}).as<D2D1_POINT_2F>());
-  sink->AddArc({
-    (rect.GetBottomLeft() - Point {0, bottomLeftRadius}).as<D2D1_POINT_2F>(),
-    {bottomLeftRadius, bottomLeftRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->EndFigure(D2D1_FIGURE_END_CLOSED);
-  CheckHResult(sink->Close());
+  const CornerRadius& radii) {
+  if (radii.IsUniform()) {
+    const auto radius = radii.GetUniformValue();
+    mDeviceResources.mD2DDeviceContext->FillRoundedRectangle(
+      {rect, radius, radius}, brush.as<ID2D1Brush*>(this, rect));
+    return;
+  }
+
+  const auto path = MakeRoundedRectPathGeometry(rect, radii);
   mDeviceResources.mD2DDeviceContext->FillGeometry(
     path.get(), brush.as<ID2D1Brush*>(this, rect), nullptr);
 }
@@ -212,13 +166,21 @@ void Direct2DRenderer::FillRoundedRect(
 void Direct2DRenderer::StrokeRoundedRect(
   const Brush& brush,
   const Rect& rect,
-  float radius,
-  float thickness) {
-  mDeviceResources.mD2DDeviceContext->DrawRoundedRectangle(
-    {rect, radius, radius},
-    brush.as<ID2D1Brush*>(this, rect),
-    thickness == 0 ? 1 : thickness,
-    nullptr);
+  const CornerRadius& radii,
+  const float thickness) {
+  if (radii.IsUniform()) {
+    const auto radius = radii.GetUniformValue();
+    mDeviceResources.mD2DDeviceContext->DrawRoundedRectangle(
+      {rect, radius, radius},
+      brush.as<ID2D1Brush*>(this, rect),
+      thickness,
+      nullptr);
+    return;
+  }
+
+  const auto path = MakeRoundedRectPathGeometry(rect, radii);
+  mDeviceResources.mD2DDeviceContext->DrawGeometry(
+    path.get(), brush.as<ID2D1Brush*>(this, rect), thickness);
 }
 
 void Direct2DRenderer::StrokeArc(
@@ -439,6 +401,63 @@ ID2D1StrokeStyle* Direct2DRenderer::GetStrokeStyle(const StrokeCap cap) const {
       return mDeviceResources.mD2DStrokeStyleSquareCap;
   }
   FUI_FATAL("Invalid cap style: {}", std::to_underlying(cap));
+}
+wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
+  const Rect& rect,
+  const CornerRadius& radii) const {
+  FUI_ASSERT(
+    !radii.IsUniform(),
+    "Should use more efficient painting approaches for uniform corner radii");
+
+  const auto topLeftRadius = radii.GetTopLeft();
+  const auto topRightRadius = radii.GetTopRight();
+  const auto bottomRightRadius = radii.GetBottomRight();
+  const auto bottomLeftRadius = radii.GetBottomLeft();
+
+  wil::com_ptr<ID2D1PathGeometry> path;
+  CheckHResult(mDeviceResources.mD2DFactory->CreatePathGeometry(&path));
+  wil::com_ptr<ID2D1GeometrySink> sink;
+  CheckHResult(path->Open(&sink));
+  sink->BeginFigure(
+    (rect.GetTopLeft() - Point {0, -topLeftRadius}).as<D2D1_POINT_2F>(),
+    D2D1_FIGURE_BEGIN_FILLED);
+  sink->AddArc({
+    (rect.GetTopLeft() + Point {topLeftRadius, 0}).as<D2D1_POINT_2F>(),
+    {topLeftRadius, topLeftRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->AddLine(
+    (rect.GetTopRight() - Point {topRightRadius, 0}).as<D2D1_POINT_2F>());
+  sink->AddArc({
+    (rect.GetTopRight() + Point {0, topRightRadius}).as<D2D1_POINT_2F>(),
+    {topRightRadius, topRightRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->AddLine(
+    (rect.GetBottomRight() - Point {0, bottomRightRadius}).as<D2D1_POINT_2F>());
+  sink->AddArc({
+    (rect.GetBottomRight() - Point {bottomRightRadius, 0}).as<D2D1_POINT_2F>(),
+    {bottomRightRadius, bottomRightRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->AddLine(
+    (rect.GetBottomLeft() + Point {bottomLeftRadius, 0}).as<D2D1_POINT_2F>());
+  sink->AddArc({
+    (rect.GetBottomLeft() - Point {0, bottomLeftRadius}).as<D2D1_POINT_2F>(),
+    {bottomLeftRadius, bottomLeftRadius},
+    90,
+    D2D1_SWEEP_DIRECTION_CLOCKWISE,
+    D2D1_ARC_SIZE_SMALL,
+  });
+  sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+  CheckHResult(sink->Close());
+  return path;
 }
 
 void Direct2DRenderer::Clear(const Color& color) {
