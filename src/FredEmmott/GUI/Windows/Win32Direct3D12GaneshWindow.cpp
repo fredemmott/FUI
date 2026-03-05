@@ -218,6 +218,9 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
 }
 
 void Win32Direct3D12GaneshWindow::InitializeGraphicsAPI() {
+  if (mSharedResources) {
+    return;
+  }
   this->InitializeD3D();
   this->InitializeSkia();
 }
