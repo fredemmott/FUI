@@ -180,7 +180,8 @@ struct Win32Direct3D12GaneshWindow::SharedResources {
 
 std::shared_ptr<Win32Direct3D12GaneshWindow::SharedResources>
 Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
-  static std::weak_ptr<Win32Direct3D12GaneshWindow::SharedResources> sShared;
+  thread_local std::weak_ptr<Win32Direct3D12GaneshWindow::SharedResources>
+    sShared;
   if (const auto ret = sShared.lock()) {
     return ret;
   }

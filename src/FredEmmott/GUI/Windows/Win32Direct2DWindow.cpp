@@ -81,7 +81,7 @@ class Win32Direct2DWindow::FramePainter final : public BasicFramePainter {
 
 std::shared_ptr<Win32Direct2DWindow::DeviceResources>
 Win32Direct2DWindow::GetSharedResources(IDXGIFactory4* dxgiFactory) {
-  static std::weak_ptr<DeviceResources> sSharedResources;
+  thread_local std::weak_ptr<DeviceResources> sSharedResources;
   if (const auto ret = sSharedResources.lock()) {
     return ret;
   }
