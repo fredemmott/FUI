@@ -41,11 +41,17 @@ struct SliderImmediateContext : Widgets::Context {
 };
 
 [[nodiscard]]
-SliderResult
-SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
+SliderResult SliderImpl(
+  float* const pValue,
+  const float minimum,
+  const float maximum,
+  const Orientation orientation,
+  const ID id) {
   if (!pValue) [[unlikely]] {
     throw std::logic_error("Slider requires a non-null value pointer");
   }
+  FUI_ASSERT(*pValue >= minimum);
+  FUI_ASSERT(*pValue < maximum);
 
   const auto w = ChildlessWidget<Widgets::Slider>(id, orientation);
 
@@ -56,6 +62,8 @@ SliderImpl(float* const pValue, const Orientation orientation, const ID id) {
     w->SetValue(*pValue);
     std::ignore = w->ConsumeWasChanged();
   }
+
+  w->SetRange(minimum, maximum);
 
   const auto ctx = w->GetOrCreateContext<SliderImmediateContext>();
   if (w->ConsumeWasThumbHovered()) {
@@ -175,12 +183,16 @@ void SliderResultMixin::SetValueFormatter(
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
 
 namespace FredEmmott::GUI::Immediate {
-SliderResult HSlider(float* pValue, const ID id) {
-  return immediate_detail::SliderImpl(pValue, Orientation::Horizontal, id);
+SliderResult
+HSlider(float* pValue, const float minimum, const float maximum, const ID id) {
+  return immediate_detail::SliderImpl(
+    pValue, minimum, maximum, Orientation::Horizontal, id);
 }
 
-SliderResult VSlider(float* pValue, const ID id) {
-  return immediate_detail::SliderImpl(pValue, Orientation::Vertical, id);
+SliderResult
+VSlider(float* pValue, const float minimum, const float maximum, const ID id) {
+  return immediate_detail::SliderImpl(
+    pValue, minimum, maximum, Orientation::Vertical, id);
 }
 
 }// namespace FredEmmott::GUI::Immediate

@@ -15,12 +15,6 @@ namespace immediate_detail {
 struct SliderResultMixin {
   using value_formatter_t = std::string (*)(float);
   template <class Self>
-  decltype(auto) Range(this Self&& self, float min, float max) {
-    widget_from_result<Widgets::Slider>(self)->SetRange(min, max);
-    return std::forward<Self>(self);
-  }
-
-  template <class Self>
   decltype(auto) StepFrequency(this Self&& self, float frequency) {
     widget_from_result<Widgets::Slider>(self)->SetStepFrequency(frequency);
     return std::forward<Self>(self);
@@ -66,6 +60,8 @@ using SliderResult = Result<
  */
 SliderResult HSlider(
   float* pValue,
+  float minimum = 0.0f,
+  float maximum = 100.0f,
   ID id = ID {std::source_location::current()});
 
 /** Create a vertical slider.
@@ -75,6 +71,8 @@ SliderResult HSlider(
  */
 SliderResult VSlider(
   float* pValue,
+  float minimum = 0.0f,
+  float maximum = 100.0f,
   ID id = ID {std::source_location::current()});
 
 }// namespace FredEmmott::GUI::Immediate

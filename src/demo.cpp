@@ -252,7 +252,7 @@ static void AppTick(fui::Window& window) {
   {
     fuii::TextBlock("Determinate progress ring").BodyStrong();
     static float value = 0.0f;
-    fuii::HSlider(&value).Range(0.0f, 100.0f);
+    fuii::HSlider(&value);
     fuii::ProgressRing(value);
   }
 

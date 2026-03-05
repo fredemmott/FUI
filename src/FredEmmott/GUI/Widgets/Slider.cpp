@@ -178,7 +178,7 @@ Slider::Slider(const id_type id, const Orientation orientation)
 }
 
 void Slider::SetValue(const float value) {
-  const auto clamped = std::clamp(value, mMin, mMax);
+  const auto clamped = std::clamp(value, mMinimum, mMaximum);
   if (utility::almost_equal(clamped, mValue)) {
     return;
   }
@@ -203,15 +203,15 @@ void Slider::SetStepFrequency(const float frequency) {
 }
 
 void Slider::SetRange(const float min, const float max) {
-  mMin = min;
-  mMax = max;
-  mValue = std::clamp(mValue, mMin, mMax);
+  mMinimum = min;
+  mMaximum = max;
+  mValue = std::clamp(mValue, mMinimum, mMaximum);
   this->UpdateThumbPosition();
 }
 
 void Slider::UpdateThumbPosition() {
   const auto renderValue = mDraggingValue.value_or(mValue);
-  const auto ratio = (renderValue - mMin) / (mMax - mMin);
+  const auto ratio = (renderValue - mMinimum) / (mMaximum - mMinimum);
 
   Point fillStart {0, 0};
   Point fillEnd {1, 0};
@@ -302,10 +302,10 @@ float Slider::GetSnappedValue(float value) const noexcept {
   const auto snapFrequency
     = (mSnapTo == SnapTo::Steps) ? mStepFrequency : mTickFrequency;
   if (snapFrequency >= std::numeric_limits<float>::epsilon()) {
-    const auto offset = value - mMin;
-    value = mMin + (std::round(offset / snapFrequency) * snapFrequency);
+    const auto offset = value - mMinimum;
+    value = mMinimum + (std::round(offset / snapFrequency) * snapFrequency);
   }
-  return std::clamp(value, mMin, mMax);
+  return std::clamp(value, mMinimum, mMaximum);
 }
 
 Widget::EventHandlerResult Slider::OnMouseButtonPress(const MouseEvent& event) {
@@ -393,8 +393,8 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
     std::unreachable();
   }();
 
-  const auto valueOffset = ratio * (mMax - mMin);
-  mDraggingValue = std::clamp(mMin + valueOffset, mMin, mMax);
+  const auto valueOffset = ratio * (mMaximum - mMinimum);
+  mDraggingValue = std::clamp(mMinimum + valueOffset, mMinimum, mMaximum);
   this->SetValue(this->GetSnappedValue(*mDraggingValue));
   this->UpdateThumbPosition();
   return EventHandlerResult::StopPropagation;
@@ -415,7 +415,7 @@ Widget::EventHandlerResult Slider::OnKeyPress(const KeyPressEvent& e) {
 
   const auto step = (mStepFrequency > std::numeric_limits<float>::epsilon())
     ? mStepFrequency
-    : (mMax - mMin) / 10;
+    : (mMaximum - mMinimum) / 10;
 
   using enum KeyCode;
   switch (e.mKeyCode) {
@@ -431,11 +431,11 @@ Widget::EventHandlerResult Slider::OnKeyPress(const KeyPressEvent& e) {
       return EventHandlerResult::StopPropagation;
     case Key_Home:
       mDidReceiveKeyboardInput = true;
-      SetValue(mMin);
+      SetValue(mMinimum);
       return EventHandlerResult::StopPropagation;
     case Key_End:
       mDidReceiveKeyboardInput = true;
-      SetValue(mMax);
+      SetValue(mMaximum);
       return EventHandlerResult::StopPropagation;
     default:
       return Widget::OnKeyPress(e);
@@ -470,7 +470,7 @@ void Slider::PaintOwnContent(
       = [](const float i, const float value) { return Point {value, i}; };
   }
 
-  const auto valueRange = (mMax - mMin);
+  const auto valueRange = (mMaximum - mMinimum);
   const auto tickSpacing = ((end - begin) / valueRange) * mTickFrequency;
 
   const auto v1 = valueMid - halfThumb;

@@ -42,7 +42,7 @@ class Slider final : public Widget, public IFocusable {
   void SetRange(float min, float max);
   [[nodiscard]]
   auto GetRange() const noexcept {
-    return std::tuple(mMin, mMax);
+    return std::tuple(mMinimum, mMaximum);
   }
 
   [[nodiscard]]
@@ -95,8 +95,8 @@ class Slider final : public Widget, public IFocusable {
   Orientation mOrientation {Orientation::Horizontal};
   SnapTo mSnapTo {SnapTo::Steps};
   float mValue {0.0f};
-  float mMin {0.0f};
-  float mMax {100.0f};
+  float mMinimum {0.0f};
+  float mMaximum {100.0f};
   float mStepFrequency {1.0f};
   float mTickFrequency {};
   std::optional<float> mDraggingValue;
