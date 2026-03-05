@@ -395,6 +395,7 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
 
   const auto valueOffset = ratio * (mMax - mMin);
   mDraggingValue = std::clamp(mMin + valueOffset, mMin, mMax);
+  this->SetValue(this->GetSnappedValue(*mDraggingValue));
   this->UpdateThumbPosition();
   return EventHandlerResult::StopPropagation;
 }
