@@ -62,7 +62,7 @@ void SkiaRenderer::PushLayer(const float alpha) {
   if (std::abs(1.0f - alpha) < std::numeric_limits<float>::epsilon()) {
     mCanvas->save();
   } else {
-    mCanvas->saveLayerAlpha(nullptr, alpha);
+    mCanvas->saveLayerAlphaf(nullptr, alpha);
   }
 #ifndef NDEBUG
   ++mStackDepth;
