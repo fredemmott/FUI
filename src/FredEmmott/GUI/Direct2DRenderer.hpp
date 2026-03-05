@@ -79,6 +79,8 @@ class Direct2DRenderer final : public Renderer {
     float sweepAngle,
     float thickness,
     StrokeCap strokeCap) override;
+  void StrokeEllipse(const Brush& brush, const Rect& rect, float thickness)
+    override;
 
   // Text drawing
   void DrawText(

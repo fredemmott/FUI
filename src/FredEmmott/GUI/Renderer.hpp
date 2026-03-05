@@ -144,6 +144,8 @@ class Renderer {
     float sweepAngle,
     float thickness = 1,
     StrokeCap strokeCap = StrokeCap::None) = 0;
+  virtual void
+  StrokeEllipse(const Brush& brush, const Rect& rect, float thickness = 1) = 0;
 
   virtual void DrawText(
     const Brush& brush,

@@ -208,6 +208,24 @@ void SkiaRenderer::StrokeArc(
   mCanvas->drawArc(rect, startAngle, sweepAngle, false, paint);
 }
 
+void SkiaRenderer::StrokeEllipse(
+  const Brush& brush,
+  const Rect& rect,
+  const float thickness) {
+  constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
+  if (
+    rect.GetWidth() < Epsilon || rect.GetHeight() < Epsilon
+    || thickness < Epsilon) {
+    return;
+  }
+
+  auto paint = brush.as<SkPaint>(this, rect);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(thickness);
+  paint.setAntiAlias(true);
+  mCanvas->drawOval(rect, paint);
+}
+
 void SkiaRenderer::DrawText(
   const Brush& brush,
   const Rect& brushRect,

@@ -275,6 +275,29 @@ void Direct2DRenderer::StrokeArc(
     GetStrokeStyle(strokeCap));
 }
 
+void Direct2DRenderer::StrokeEllipse(
+  const Brush& brush,
+  const Rect& rect,
+  const float thickness) {
+  constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
+  if (
+    rect.GetWidth() < Epsilon || rect.GetHeight() < Epsilon
+    || thickness < Epsilon) {
+    return;
+  }
+
+  const D2D1_ELLIPSE ellipse {
+    rect.GetCenter().as<D2D1_POINT_2F>(),
+    rect.GetWidth() / 2,
+    rect.GetHeight() / 2,
+  };
+  mDeviceResources.mD2DDeviceContext->DrawEllipse(
+    ellipse,
+    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
+    thickness,
+    nullptr);
+}
+
 void Direct2DRenderer::DrawText(
   const Brush& brush,
   const Rect& brushRect,
