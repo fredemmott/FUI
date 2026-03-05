@@ -173,6 +173,7 @@ struct Win32Direct3D12GaneshWindow::SharedResources {
   wil::com_ptr<IDXGIAdapter1> mDXGIAdapter;
   wil::com_ptr<ID3D12Device> mD3DDevice;
   wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
+  sk_sp<GrDirectContext> mSkContext;
 
   static std::shared_ptr<SharedResources> Get(IDXGIFactory4* dxgiFactory);
 };
@@ -212,6 +213,12 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
     CheckHResult(ret->mD3DDevice->CreateCommandQueue(
       &desc, IID_PPV_ARGS(ret->mD3DCommandQueue.put())));
   }
+
+  GrD3DBackendContext skiaD3DContext {};
+  skiaD3DContext.fAdapter.retain(ret->mDXGIAdapter.get());
+  skiaD3DContext.fDevice.retain(ret->mD3DDevice.get());
+  skiaD3DContext.fQueue.retain(ret->mD3DCommandQueue.get());
+  ret->mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
 
   sShared = ret;
   return ret;
@@ -256,12 +263,8 @@ void Win32Direct3D12GaneshWindow::InitializeD3D() {
 }
 
 void Win32Direct3D12GaneshWindow::InitializeSkia() {
-  GrD3DBackendContext skiaD3DContext {};
-  skiaD3DContext.fAdapter.retain(mDXGIAdapter.get());
-  skiaD3DContext.fDevice.retain(mD3DDevice.get());
-  skiaD3DContext.fQueue.retain(mD3DCommandQueue.get());
-  // skiaD3DContext.fMemoryAllocator can be left as nullptr
-  mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+  mSkContext = mSharedResources->mSkContext;
+  FUI_ASSERT(mSkContext);
 }
 
 Win32Direct3D12GaneshWindow::Win32Direct3D12GaneshWindow(
