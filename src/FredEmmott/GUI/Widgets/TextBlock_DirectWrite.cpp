@@ -63,7 +63,7 @@ void TextBlock::PaintOwnContent(
   rt->DrawTextLayout(
     {rect.GetLeft(), rect.GetTop()},
     mDirectWriteTextLayout.get(),
-    style.Color()->as<wil::com_ptr<ID2D1Brush>>(renderer, rect).get(),
+    style.Color()->as<ID2D1Brush*>(renderer, rect),
     D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
 }
 

@@ -120,7 +120,7 @@ void Direct2DRenderer::Translate(const Point& point) {
 
 void Direct2DRenderer::FillRect(const Brush& brush, const Rect& rect) {
   mDeviceResources.mD2DDeviceContext->FillRectangle(
-    rect, brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get());
+    rect, brush.as<ID2D1Brush*>(this, rect));
 }
 
 void Direct2DRenderer::StrokeRect(
@@ -129,7 +129,7 @@ void Direct2DRenderer::StrokeRect(
   const float thickness) {
   mDeviceResources.mD2DDeviceContext->DrawRectangle(
     rect,
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
+    brush.as<ID2D1Brush*>(this, rect),
     thickness == 0 ? 1 : thickness,
     nullptr);
 }
@@ -141,7 +141,7 @@ void Direct2DRenderer::DrawLine(
   mDeviceResources.mD2DDeviceContext->DrawLine(
     start.as<D2D1_POINT_2F>(),
     end.as<D2D1_POINT_2F>(),
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, {start, end}).get(),
+    brush.as<ID2D1Brush*>(this, {start, end}),
     thickness == 0 ? 1 : thickness,
     nullptr);
 }
@@ -151,8 +151,7 @@ void Direct2DRenderer::FillRoundedRect(
   const Rect& rect,
   float radius) {
   mDeviceResources.mD2DDeviceContext->FillRoundedRectangle(
-    {rect, radius, radius},
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get());
+    {rect, radius, radius}, brush.as<ID2D1Brush*>(this, rect));
 }
 void Direct2DRenderer::FillRoundedRect(
   const Brush& brush,
@@ -207,7 +206,7 @@ void Direct2DRenderer::FillRoundedRect(
   sink->EndFigure(D2D1_FIGURE_END_CLOSED);
   CheckHResult(sink->Close());
   mDeviceResources.mD2DDeviceContext->FillGeometry(
-    path.get(), brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(), nullptr);
+    path.get(), brush.as<ID2D1Brush*>(this, rect), nullptr);
 }
 
 void Direct2DRenderer::StrokeRoundedRect(
@@ -217,7 +216,7 @@ void Direct2DRenderer::StrokeRoundedRect(
   float thickness) {
   mDeviceResources.mD2DDeviceContext->DrawRoundedRectangle(
     {rect, radius, radius},
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
+    brush.as<ID2D1Brush*>(this, rect),
     thickness == 0 ? 1 : thickness,
     nullptr);
 }
@@ -270,7 +269,7 @@ void Direct2DRenderer::StrokeArc(
 
   mDeviceResources.mD2DDeviceContext->DrawGeometry(
     path.get(),
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
+    brush.as<ID2D1Brush*>(this, rect),
     thickness,
     GetStrokeStyle(strokeCap));
 }
@@ -292,10 +291,7 @@ void Direct2DRenderer::StrokeEllipse(
     rect.GetHeight() / 2,
   };
   mDeviceResources.mD2DDeviceContext->DrawEllipse(
-    ellipse,
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, rect).get(),
-    thickness,
-    nullptr);
+    ellipse, brush.as<ID2D1Brush*>(this, rect), thickness, nullptr);
 }
 
 void Direct2DRenderer::DrawText(
@@ -317,7 +313,7 @@ void Direct2DRenderer::DrawText(
     Rect {
       baseline,
       Size {std::numeric_limits<float>::infinity(), font.GetMetrics().mAscent}},
-    brush.as<wil::com_ptr<ID2D1Brush>>(this, brushRect).get(),
+    brush.as<ID2D1Brush*>(this, brushRect),
     D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
     DWRITE_MEASURING_MODE_NATURAL);
 }

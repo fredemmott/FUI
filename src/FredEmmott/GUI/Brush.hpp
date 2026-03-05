@@ -34,7 +34,7 @@ struct is_native_brush_t<SkPaint> : std::true_type {};
 
 #ifdef FUI_ENABLE_DIRECT2D
 template <>
-struct is_native_brush_t<wil::com_ptr<ID2D1Brush>> : std::true_type {};
+struct is_native_brush_t<ID2D1Brush*> : std::true_type {};
 #endif
 }// namespace detail
 
@@ -77,7 +77,7 @@ class Brush final {
   // TODO: make SolidColorBrush a class and put this there
   // This is optional to allow constexpr construction
   // https://github.com/microsoft/wil/issues/535
-  mutable std::optional<wil::com_ptr<ID2D1SolidColorBrush>> mD2DSolidColorBrush;
+  mutable std::optional<wil::com_ptr<ID2D1Brush>> mD2DBrush;
 #endif
 };
 }// namespace FredEmmott::GUI
