@@ -1,4 +1,5 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
 #include "HyperlinkButton.handwritten.hpp"

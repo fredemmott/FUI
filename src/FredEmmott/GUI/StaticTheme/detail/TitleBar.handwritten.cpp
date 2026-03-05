@@ -1,4 +1,5 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
 #include "TitleBar.handwritten.hpp"
