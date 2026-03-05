@@ -44,6 +44,7 @@ class TitleBar final : public Widget {
   bool ConsumeWasCloseActivated();
 
   void SetIsMaximized(bool);
+  void SetIsActiveWindow(bool);
 
   Rects GetRects() const;
 
@@ -59,6 +60,7 @@ class TitleBar final : public Widget {
 
   Label* mTitleLabel {};
   Label* mSubtitleLabel {};
+  bool mWindowIsActive {true};
 };
 
 }// namespace FredEmmott::GUI::Widgets

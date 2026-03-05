@@ -10,8 +10,10 @@ const ImmutableStyle& DefaultTitleBarStyle() {
     Style()
       .FlexDirection(YGFlexDirectionRow)
       .JustifyContent(YGJustifyFlexEnd)
-      .Height(TitleBarCompactHeight),
-  };
+      .Height(TitleBarCompactHeight)
+      .And(
+        TitleBarInactiveWindowStyleClass,
+        Style().Opacity(TitleBarDeactivatedOpacity))};
   return ret;
 }
 const ImmutableStyle& WindowMinimizeMaximizeButtonStyle() {
@@ -90,20 +92,22 @@ const ImmutableStyle& TitleBarContentContainerStyle() {
   return ret;
 }
 const ImmutableStyle& TitleBarTitleStyle() {
-  // TODO: deactivated brushes
   static const ImmutableStyle ret {
     Style()
+      .Color(TitleBarForegroundBrush)
       .Font(SystemFont::Caption)
       .MarginLeft(TitleBarTitleMarginLeft)
       .MarginTop(TitleBarTitleMarginTop)
       .MarginRight(TitleBarTitleMarginRight)
       .MarginBottom(TitleBarTitleMarginBottom)
-      .MinWidth(TitleBarTitleMinWidth),
+      .MinWidth(TitleBarTitleMinWidth)
+      .And(
+        TitleBarInactiveWindowStyleClass,
+        Style().Color(TitleBarDeactivatedForegroundBrush)),
   };
   return ret;
 }
 const ImmutableStyle& TitleBarSubtitleStyle() {
-  // TODO: deactivated brushes
   static const ImmutableStyle ret {
     Style()
       .Color(TitleBarSubtitleForegroundBrush)
@@ -112,7 +116,10 @@ const ImmutableStyle& TitleBarSubtitleStyle() {
       .MarginTop(TitleBarSubtitleMarginTop)
       .MarginRight(TitleBarSubtitleMarginRight)
       .MarginBottom(TitleBarSubtitleMarginBottom)
-      .MinWidth(TitleBarSubtitleMinWidth),
+      .MinWidth(TitleBarSubtitleMinWidth)
+      .And(
+        TitleBarInactiveWindowStyleClass,
+        Style().Color(TitleBarSubtitleDeactivatedForegroundBrush)),
   };
   return ret;
 }

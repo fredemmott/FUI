@@ -123,6 +123,12 @@ void TitleBar::SetIsMaximized(const bool isMaximized) {
     mMaximizeLabel->SetText(MaximizeGlyph);
   }
 }
+
+void TitleBar::SetIsActiveWindow(const bool isActive) {
+  this->ToggleStyleClass(
+    StaticTheme::TitleBar::TitleBarInactiveWindowStyleClass, !isActive);
+}
+
 TitleBar::Rects TitleBar::GetRects() const {
   const auto yoga = this->GetLayoutNode();
   const auto topLeft = this->GetTopLeftCanvasPoint(this);

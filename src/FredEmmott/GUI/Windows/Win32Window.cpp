@@ -959,6 +959,11 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_ENABLE:
       mIsDisabled = !wParam;
       break;
+    case WM_ACTIVATE:
+      if (mTitleBar) {
+        mTitleBar->SetIsActiveWindow(LOWORD(wParam) != WA_INACTIVE);
+      }
+      break;
     case WM_KEYDOWN: {
       const auto key = KeyCodeFromVirtualKey(wParam);
       KeyPressEvent e {key, GetModifierKeys()};

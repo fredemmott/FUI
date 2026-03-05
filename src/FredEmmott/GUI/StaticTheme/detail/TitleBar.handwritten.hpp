@@ -16,4 +16,7 @@ const ImmutableStyle& TitleBarTitleStyle();
 const ImmutableStyle& TitleBarSubtitleStyle();
 const ImmutableStyle& TitleBarIconStyle();
 
+inline constexpr LiteralStyleClass TitleBarInactiveWindowStyleClass {
+  "TitleBar/InactiveWindow"};
+
 }// namespace FredEmmott::GUI::StaticTheme::TitleBar
