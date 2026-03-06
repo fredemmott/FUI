@@ -169,14 +169,6 @@ Widget* Widget::FromYogaNode(YGNodeConstRef const node) {
   return static_cast<Widget*>(YGNodeGetContext(node));
 }
 
-Widget* Widget::GetStructuralParentOrNull() const {
-  return mStructuralParent;
-}
-
-Widget* Widget::GetLogicalParentOrNull() const {
-  return mLogicalParent;
-}
-
 Widget::~Widget() {
   if (const auto fm = FocusManager::Get()) {
     fm->BeforeDestroy(this);

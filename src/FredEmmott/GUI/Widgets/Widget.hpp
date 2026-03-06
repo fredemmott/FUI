@@ -64,9 +64,13 @@ class Widget {
   [[nodiscard]]
   static Widget* FromYogaNode(YGNodeConstRef);
   [[nodiscard]]
-  Widget* GetLogicalParentOrNull() const;
+  Widget* GetLogicalParentOrNull() const {
+    return mLogicalParent;
+  }
   [[nodiscard]]
-  Widget* GetStructuralParentOrNull() const;
+  Widget* GetStructuralParentOrNull() const {
+    return mStructuralParent;
+  }
 
   template <std::derived_from<Widget> T = Widget>
   [[nodiscard]]
