@@ -151,64 +151,30 @@ Widget::Widget(
     mClassList(classes),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   AddStyleClass(primaryClass);
-  YGNodeSetContext(mYoga.get(), new YogaContext {this});
+  YGNodeSetContext(mYoga.get(), this);
   mStyleTransitions.reset(new StyleTransitions());
 }
 
-Widget* Widget::FromYogaNode(YGNodeConstRef node) {
+Widget* Widget::FromYogaNode(YGNodeConstRef const node) {
   if (!node) {
     return nullptr;
   }
-  const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
-  if (!ctx) {
-    return nullptr;
-  }
-  return std::visit(
-    felly::overload {
-      [](Widget* w) { return w; },
-      [](const DetachedYogaTree& d) { return d.mSelf; },
-    },
-    *ctx);
+  // While we have yoga nodes that aren't widgets, they do not have
+  // a yoga context. `nullptr` is `nullptr`, whether it's a `void*` or a
+  // `Widget*`, so this is correct either way.
+  //
+  // If we end up needing to store context for non-Widgets, we should decide on
+  // a shared storage model (e.g. variant), 'magic' header bytes, or similar
+  // safety measure, but for now, we just have widgets-or-nullptr.
+  return static_cast<Widget*>(YGNodeGetContext(node));
 }
 
 Widget* Widget::GetStructuralParentOrNull() const {
-  const auto yoga = this->GetLayoutNode();
-  const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
-  FUI_ASSERT(ctx);
-
-  const auto parent = std::visit(
-    felly::overload {
-      [](Widget* const w) { return YGNodeGetParent(w->GetLayoutNode()); },
-      [](const DetachedYogaTree& d) { return d.mParent->GetLayoutNode(); },
-    },
-    *ctx);
-  return FromYogaNode(parent);
+  return mStructuralParent;
 }
 
 Widget* Widget::GetLogicalParentOrNull() const {
-  const auto structuralParent = this->GetStructuralParentOrNull();
-  if (!structuralParent) {
-    return nullptr;
-  }
-
-  auto node = structuralParent->GetLayoutNode();
-  while (node) {
-    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
-    if (!ctx) {
-      // At the very root, we can have a free-standing Yoga node without a
-      // Widget; this 'orphan' node exists to work around caching issues when we
-      // re-calculate the layout at different sizes to find the minimum width
-      FUI_ASSERT(!YGNodeGetParent(node));
-      return nullptr;
-    }
-
-    if (holds_alternative<Widget*>(*ctx)) {
-      return get<Widget*>(*ctx);
-    }
-    FUI_ASSERT(holds_alternative<DetachedYogaTree>(*ctx));
-    node = get<DetachedYogaTree>(*ctx).mParent->GetLayoutNode();
-  }
-  return nullptr;
+  return mLogicalParent;
 }
 
 Widget::~Widget() {
@@ -218,11 +184,9 @@ Widget::~Widget() {
 
   this->EndMouseCapture();
 
-  const auto yogaContext
-    = static_cast<YogaContext*>(YGNodeGetContext(mYoga.get()));
   YGNodeSetContext(mYoga.get(), nullptr);
-  delete yogaContext;
 }
+
 void Widget::AddStyleClass(const StyleClass klass) {
   if (mClassList.contains(klass)) {
     return;
@@ -296,15 +260,24 @@ void Widget::AddMutableStyles(const Style& styles) {
   mMutableStyles += styles;
 }
 
-Widget* Widget::SetStructuralChildren(const std::vector<Widget*>& children) {
+void Widget::SetStructuralChildren(
+  const std::vector<Widget*>& children,
+  Widget* const logicalParent) {
+  FUI_ASSERT(logicalParent);
+
   if (children == mRawStructuralChildren) {
-    return this;
+    return;
   }
+
   std::vector<unique_ptr<Widget>> newChildren;
   for (auto child: children) {
     auto it
       = std::ranges::find(mStructuralChildren, child, &unique_ptr<Widget>::get);
     if (it == mStructuralChildren.end()) {
+      FUI_ASSERT(!child->mStructuralParent);
+      FUI_ASSERT(!child->mLogicalParent);
+      child->mStructuralParent = this;
+      child->mLogicalParent = logicalParent;
       newChildren.emplace_back(child);
     } else {
       newChildren.emplace_back(std::move(*it));
@@ -320,17 +293,8 @@ Widget* Widget::SetStructuralChildren(const std::vector<Widget*>& children) {
       layoutChildren.push_back(child->GetLayoutNode());
       continue;
     }
-    auto& ctx
-      = *static_cast<YogaContext*>(YGNodeGetContext(child->GetLayoutNode()));
-    if (holds_alternative<Widget*>(ctx)) {
-      ctx = DetachedYogaTree {
-        .mSelf = child,
-        .mParent = this,
-      };
-    }
   }
   YGNodeSetChildren(mYoga.get(), layoutChildren.data(), layoutChildren.size());
-  return this;
 }
 
 void Widget::Paint(Renderer* renderer) const {

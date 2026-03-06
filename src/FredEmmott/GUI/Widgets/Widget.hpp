@@ -71,17 +71,13 @@ class Widget {
   template <std::derived_from<Widget> T = Widget>
   [[nodiscard]]
   T* GetLogicalParent() const {
-    const auto widget = GetLogicalParentOrNull();
-    // If you're expecting a specific parent, require that *a* parent exists
-    FUI_ALWAYS_ASSERT(widget);
+    return NonNullCastToSubtype<T>(GetLogicalParentOrNull());
+  }
 
-    if constexpr (Config::Debug) {
-      const auto typed = dynamic_cast<T*>(widget);
-      FUI_ALWAYS_ASSERT(typed);
-      return typed;
-    } else {
-      return static_cast<T*>(widget);
-    }
+  template <std::derived_from<Widget> T = Widget>
+  [[nodiscard]]
+  T* GetStructuralParent() const {
+    return NonNullCastToSubtype<T>(GetStructuralParentOrNull());
   }
 
   [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
@@ -185,7 +181,10 @@ class Widget {
   }
 
   /// Returns this
-  Widget* SetStructuralChildren(const std::vector<Widget*>& children);
+  Widget* SetStructuralChildren(const std::vector<Widget*>& children) {
+    this->SetStructuralChildren(children, this);
+    return this;
+  }
 
   [[nodiscard]]
   auto GetLogicalChildren() const noexcept {
@@ -196,7 +195,7 @@ class Widget {
   /// Returns `this`
   Widget* SetLogicalChildren(const std::vector<Widget*>& children) {
     this->GetStructuralParentForLogicalChildren()->SetStructuralChildren(
-      children);
+      children, this);
     return this;
   }
 
@@ -314,6 +313,8 @@ class Widget {
   };
   struct StyleTransitions;
   Window* mOwnerWindow {};
+  Widget* mLogicalParent {};
+  Widget* mStructuralParent {};
   StyleClass mPrimaryClass;
 
   unique_ptr<StyleTransitions> mStyleTransitions;
@@ -350,6 +351,23 @@ class Widget {
   bool MatchesStyleClass(const StyleClass&) const;
   [[nodiscard]]
   bool MatchesStyleSelector(Style::Selector) const;
+
+  void SetStructuralChildren(
+    const std::vector<Widget*>& children,
+    Widget* logicalParent);
+
+  template <class T>
+  [[nodiscard]]
+  static T* NonNullCastToSubtype(auto* p) {
+    FUI_ASSERT(p);
+    if constexpr (Config::Debug) {
+      const auto typed = dynamic_cast<T*>(p);
+      FUI_ALWAYS_ASSERT(typed);
+      return typed;
+    } else {
+      return static_cast<T*>(p);
+    }
+  }
 };
 
 consteval bool is_bitflag_enum(std::type_identity<Widget::StateFlags>) {

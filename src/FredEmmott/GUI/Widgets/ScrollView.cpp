@@ -80,12 +80,6 @@ ScrollView::ScrollView(id_type id, const StyleClasses& classes)
   });
   mContentYoga.reset(YGNodeNew());
   YGNodeInsertChild(mContentYoga.get(), mContentInner->GetLayoutNode(), 0);
-  YGNodeSetContext(
-    mContentYoga.get(),
-    new YogaContext {DetachedYogaTree {
-      .mSelf = nullptr,
-      .mParent = mContentInner,
-    }});
 
   YGNodeSetDirtiedFunc(
     mContentInner->GetLayoutNode(), &ScrollView::OnInnerContentDirty);
@@ -98,12 +92,7 @@ ScrollView::ScrollView(id_type id, const StyleClasses& classes)
     std::bind_front(&ScrollView::OnVerticalScroll, this));
 }
 
-ScrollView::~ScrollView() {
-  const auto ctx
-    = static_cast<YogaContext*>(YGNodeGetContext(mContentYoga.get()));
-  YGNodeSetContext(mContentYoga.get(), nullptr);
-  delete ctx;
-}
+ScrollView::~ScrollView() = default;
 
 ScrollView::ScrollBarVisibility ScrollView::GetHorizontalScrollBarVisibility()
   const noexcept {
@@ -255,7 +244,7 @@ bool ScrollView::IsScrollBarVisible(
 }
 
 void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
-  auto& self = *FromYogaNode(node)->GetLogicalParent<ScrollView>();
+  auto& self = *FromYogaNode(node)->GetStructuralParent<ScrollView>();
   self.mDirtyInner = true;
   YGNodeMarkDirty(self.mContentOuter->GetLayoutNode());
 }

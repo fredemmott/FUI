@@ -35,11 +35,6 @@ struct constant_t {
   static constexpr auto value = GetValue();
 };
 
-struct DetachedYogaTree {
-  Widget* mSelf {nullptr};
-  Widget* mParent {nullptr};
-};
-
 class PopupAnchorContext final : public Context {
  public:
   PopupAnchorContext() = delete;
@@ -49,7 +44,5 @@ class PopupAnchorContext final : public Context {
   Widget* const mAnchor {nullptr};
 };
 static_assert(context<PopupAnchorContext>);
-
-using YogaContext = std::variant<Widget*, DetachedYogaTree>;
 
 }// namespace FredEmmott::GUI::Widgets::widget_detail
