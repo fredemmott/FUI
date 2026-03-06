@@ -81,6 +81,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/NavigationView.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/NavigationView.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/TitleBar.handwritten.cpp
@@ -104,6 +106,8 @@ add_library(
   FredEmmott/GUI/Widgets/GPUTexture.hpp
   FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
   FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
+  FredEmmott/GUI/Widgets/NavigationView.cpp
+  FredEmmott/GUI/Widgets/NavigationView.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp
   FredEmmott/GUI/Widgets/ProgressRing.cpp
   FredEmmott/GUI/Widgets/ProgressRing.hpp
