@@ -69,18 +69,18 @@ bool FocusManager::IsWidgetFocused(Widgets::Widget const* widget) {
   return get<0>(*focus) == widget;
 }
 
-void FocusManager::GivePointerFocus(Widgets::Widget* widget) {
+void FocusManager::GiveImplicitFocus(Widgets::Widget* widget) {
   mFocusedWidget = widget;
-  mFocusKind = FocusKind::Pointer;
+  mFocusKind = FocusKind::Implicit;
 }
 
-void FocusManager::GiveKeyboardFocus(Widgets::Widget* w) {
+void FocusManager::GiveVisibleFocus(Widgets::Widget* w) {
   mFocusedWidget = w;
-  mFocusKind = FocusKind::Keyboard;
+  mFocusKind = FocusKind::Visible;
 }
 
 void FocusManager::FocusNextWidget() {
-  mFocusKind = FocusKind::Keyboard;
+  mFocusKind = FocusKind::Visible;
   if (!mFocusedWidget) {
     this->FocusFirstWidget();
     return;
@@ -135,7 +135,7 @@ void FocusManager::FocusFirstSelectedItem() {
 }
 
 void FocusManager::FocusPreviousWidget() {
-  mFocusKind = FocusKind::Keyboard;
+  mFocusKind = FocusKind::Visible;
   if (!mFocusedWidget) {
     this->FocusFirstWidget();
     return;
@@ -294,7 +294,7 @@ void FocusManager::FocusFirstSelectionItem(auto makeRange) {
     }
     if (dynamic_cast<Widgets::ISelectionItem const*>(sibling)) {
       mFocusedWidget = sibling;
-      mFocusKind = FocusKind::Keyboard;
+      mFocusKind = FocusKind::Visible;
       return;
     }
   }

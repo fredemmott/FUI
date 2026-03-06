@@ -403,7 +403,7 @@ Widget* Widget::DispatchEvent(const Event& e) {
     if (const auto fm = FocusManager::Get();
         const auto target = fm->GetFocusedWidget()) {
       const auto widget = get<0>(*target);
-      fm->GiveKeyboardFocus(widget);
+      fm->GiveVisibleFocus(widget);
       return widget->DispatchKeyEvent(*it);
     }
     return nullptr;
@@ -413,7 +413,7 @@ Widget* Widget::DispatchEvent(const Event& e) {
     if (const auto fm = FocusManager::Get();
         const auto target = fm->GetFocusedWidget()) {
       const auto widget = get<0>(*target);
-      fm->GiveKeyboardFocus(widget);
+      fm->GiveVisibleFocus(widget);
       return widget->DispatchTextInputEvent(*it);
     }
     return nullptr;
@@ -666,7 +666,7 @@ Widget::EventHandlerResult Widget::OnMouseButtonRelease(
   const auto result = this->OnClick(event);
   if (result == EventHandlerResult::StopPropagation) {
     if (const auto fm = FocusManager::Get()) {
-      fm->GivePointerFocus(this);
+      fm->GiveImplicitFocus(this);
     }
   }
   return result;

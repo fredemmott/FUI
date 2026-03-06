@@ -240,7 +240,7 @@ NumberBoxResult NumberBox(float* const value, const ID id) {
 
     *value = ctx->mValue;
     if (const auto fm = FocusManager::Get()) {
-      fm->GivePointerFocus(w);
+      fm->GiveImplicitFocus(w);
     }
   });
 

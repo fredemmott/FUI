@@ -333,7 +333,7 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
   }
   std::ignore = Widget::OnMouseButtonRelease(e);
   if (const auto fm = FocusManager::Get()) {
-    fm->GivePointerFocus(this);
+    fm->GiveImplicitFocus(this);
   }
   return EventHandlerResult::StopPropagation;
 }

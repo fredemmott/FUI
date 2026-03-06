@@ -33,7 +33,7 @@ TextBoxResult TextBox(std::string* text, const ID id) {
     if (clearButton->ConsumeWasActivated()) {
       *text = {};
       if (const auto fm = FocusManager::Get()) {
-        fm->GivePointerFocus(w);
+        fm->GiveImplicitFocus(w);
       }
     }
   }

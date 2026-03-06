@@ -29,7 +29,7 @@ void Widget::ComputeStyles(const Style& inherited) {
     if (const auto target = fm->GetFocusedWidget()) {
       if (const auto [widget, reason] = *target; widget == this) {
         mDirectStateFlags |= StateFlags::HaveFocus;
-        if (reason == FocusKind::Keyboard) {
+        if (reason == FocusKind::Visible) {
           mDirectStateFlags |= StateFlags::HaveVisibleFocus;
         }
       }

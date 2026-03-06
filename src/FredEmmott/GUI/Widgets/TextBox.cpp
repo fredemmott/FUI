@@ -430,7 +430,7 @@ Widget::EventHandlerResult TextBox::OnMouseButtonPress(const MouseEvent& e) {
 
   // Give focus to this widget so caret is visible and keyboard works
   if (const auto fm = FocusManager::Get()) {
-    fm->GivePointerFocus(this);
+    fm->GiveImplicitFocus(this);
   }
 
   return StopPropagation;
