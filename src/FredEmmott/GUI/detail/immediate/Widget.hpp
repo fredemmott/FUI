@@ -35,7 +35,8 @@ T* BeginWidget(const ID id, Args&&... args) {
 
   const auto it = GetCurrentNode<T>();
 
-  tStack.emplace_back(it->GetChildren() | std::ranges::to<std::vector>());
+  tStack.emplace_back(
+    it->GetLogicalChildren() | std::ranges::to<std::vector>());
   tStack.back().mNewSiblings.reserve(tStack.back().mPending.size());
   return it;
 }
@@ -50,7 +51,7 @@ void EndWidget() {
   const auto back = std::move(tStack.back());
   tStack.pop_back();
 
-  GetCurrentNode()->SetChildren(back.mNewSiblings);
+  GetCurrentNode()->SetLogicalChildren(back.mNewSiblings);
   ++tStack.back().mNextIndex;
 }
 

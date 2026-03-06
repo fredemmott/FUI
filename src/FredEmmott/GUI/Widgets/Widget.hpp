@@ -179,11 +179,22 @@ class Widget {
 
   [[nodiscard]]
   auto GetChildren() const noexcept {
-    const auto foster = this->GetFosterParent();
-    return (foster ? foster : this)->mRawDirectChildren;
+    return mRawDirectChildren;
   }
   /// Returns `this`
   Widget* SetChildren(const std::vector<Widget*>& children);
+  [[nodiscard]]
+  auto GetLogicalChildren() const noexcept {
+    const auto foster = this->GetFosterParent();
+    return (foster ? foster : this)->GetChildren();
+  }
+
+  /// Returns `this`
+  Widget* SetLogicalChildren(const std::vector<Widget*>& children) {
+    const auto foster = this->GetFosterParent();
+    (foster ? foster : this)->SetChildren(children);
+    return this;
+  }
 
   /// Returns the Widget that ultimately handled the event, or nullptr
   [[nodiscard]]
@@ -270,7 +281,8 @@ class Widget {
     return mMutableStyles;
   }
 
-  /** Parent node for `GetChildren()` and `SetChildren()` (public APIs).
+  /** Parent node for `GetLogicalChildren()` and `SetLogicalChildren()` (public
+   * APIs).
    *
    * Use `SetDirectChildren()` for internal sub-widgets
    */

@@ -376,13 +376,11 @@ void Widget::OnMouseEnter(const MouseEvent&) {}
 void Widget::OnMouseLeave(const MouseEvent&) {}
 
 Widget* Widget::SetChildren(const std::vector<Widget*>& children) {
-  const auto foster = this->GetFosterParent();
-  const auto parent = foster ? foster : this;
-  if (children == parent->mRawDirectChildren) {
+  if (children == mRawDirectChildren) {
     return this;
   }
 
-  parent->SetDirectChildren(children);
+  this->SetDirectChildren(children);
   return this;
 }
 
