@@ -96,6 +96,7 @@ void FocusManager::FocusNextWidget() {
   while (const auto parent = child->GetParentOrNull()) {
     const auto children = parent->GetChildren();
     const auto it = std::ranges::find(children, child);
+    FUI_ASSERT(it != children.end());
     for (auto&& sibling: std::ranges::subrange(it + 1, children.end())) {
       if (const auto target = FirstFocusableWidget(sibling)) {
         mFocusedWidget = target;

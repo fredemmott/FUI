@@ -172,16 +172,33 @@ Widget* Widget::FromYogaNode(YGNodeConstRef node) {
 }
 
 Widget* Widget::GetParentOrNull() const {
-  const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(mYoga.get()));
-  FUI_ASSERT(ctx);
-  return std::visit(
-    felly::overload {
-      [](Widget* const w) {
-        return FromYogaNode(YGNodeGetParent(w->GetLayoutNode()));
+  auto node = [yoga = this->GetLayoutNode()] {
+    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
+    FUI_ASSERT(ctx);
+    return std::visit(
+      felly::overload {
+        [](Widget* const w) { return YGNodeGetParent(w->GetLayoutNode()); },
+        [](const DetachedYogaTree& d) { return d.mParent->GetLayoutNode(); },
       },
-      [](const DetachedYogaTree& d) { return d.mParent; },
-    },
-    *ctx);
+      *ctx);
+  }();
+  while (node) {
+    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
+    if (!ctx) {
+      // At the very root, we can have a free-standing Yoga node without a
+      // Widget; this 'orphan' node exists to work around caching issues when we
+      // re-calculate the layout at different sizes to find the minimum width
+      FUI_ASSERT(!YGNodeGetParent(node));
+      return nullptr;
+    }
+
+    if (holds_alternative<Widget*>(*ctx)) {
+      return get<Widget*>(*ctx);
+    }
+    FUI_ASSERT(holds_alternative<DetachedYogaTree>(*ctx));
+    node = get<DetachedYogaTree>(*ctx).mParent->GetLayoutNode();
+  }
+  return nullptr;
 }
 
 Widget::~Widget() {
@@ -683,15 +700,42 @@ void Widget::SetIsChecked(const bool value) {
 
 Point Widget::GetTopLeftCanvasPoint(const Widget* const relativeTo) const {
   Point position {};
-  for (auto widget = this; widget && widget != relativeTo;
-       widget = widget->GetParentOrNull()) {
-    const auto yoga = widget->GetLayoutNode();
+  for (auto yoga = this->GetLayoutNode(); yoga;) {
+    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
+    if (!ctx) {
+      FUI_ASSERT(!YGNodeGetParent(yoga));
+      return position;
+    }
     position.mX += YGNodeLayoutGetLeft(yoga);
     position.mY += YGNodeLayoutGetTop(yoga);
 
+    /* We don't use `GetParentOrNull()` because that follows the 'foster parent'
+     * links; we need the 'true' parents to adjust the geometry correctly.
+     */
+    const auto [widget, next] = std::visit(
+      felly::overload {
+        [](Widget* const w) {
+          return std::tuple {
+            w,
+            YGNodeGetParent(w->GetLayoutNode()),
+          };
+        },
+        [](const DetachedYogaTree& d) {
+          return std::tuple {
+            d.mSelf,
+            d.mParent->GetLayoutNode(),
+          };
+        },
+      },
+      *ctx);
+    FUI_ASSERT(widget);
     const auto& style = widget->GetComputedStyle();
     position.mX += style.TranslateX().value_or(0);
     position.mY += style.TranslateY().value_or(0);
+    if (widget == relativeTo) {
+      return position;
+    }
+    yoga = next;
   }
   return position;
 }
