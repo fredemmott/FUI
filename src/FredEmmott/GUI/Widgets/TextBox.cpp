@@ -73,7 +73,7 @@ TextBox::TextBox(const id_type id)
   mTextContainer
     = new Widget({}, TextContainerStyleClass, TextContainerStyles());
   mButtons = new Widget({}, ButtonsStyleClass, ButtonContainerStyles());
-  this->SetDirectChildren({mTextContainer, mButtons});
+  this->SetStructuralChildren({mTextContainer, mButtons});
 
   YGNodeSetMeasureFunc(mTextContainer->GetLayoutNode(), &TextBox::Measure);
 }
@@ -204,7 +204,7 @@ TextBox::BoundingBox TextBox::GetTextBoundingBoxW(
   return GetTextBoundingBox(utf8Begin, utf8End);
 }
 
-Widget* TextBox::GetFosterParent() const noexcept {
+Widget* TextBox::GetStructuralParentForLogicalChildren() noexcept {
   return mButtons;
 }
 

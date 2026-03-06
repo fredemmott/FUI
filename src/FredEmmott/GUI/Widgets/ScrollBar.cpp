@@ -208,7 +208,7 @@ ScrollBar::ScrollBar(
     0,
     ScrollBarTrackStyleClass,
     (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle());
-  mTrack->SetChildren({mLargeDecrement, mThumb, mLargeIncrement});
+  mTrack->SetStructuralChildren({mLargeDecrement, mThumb, mLargeIncrement});
   mSmallIncrement = new ScrollBarButton(
     0,
     SmallChangeStyles,
@@ -219,7 +219,7 @@ ScrollBar::ScrollBar(
   mSmallDecrement->AddStyleClass(ScrollBarSmallChangeButtonStyleClass);
   mSmallIncrement->AddStyleClass(ScrollBarSmallChangeButtonStyleClass);
 
-  this->SetChildren({mSmallDecrement, mTrack, mSmallIncrement});
+  this->SetStructuralChildren({mSmallDecrement, mTrack, mSmallIncrement});
 
   switch (orientation) {
     case Orientation::Vertical:

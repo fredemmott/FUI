@@ -171,17 +171,27 @@ Widget* Widget::FromYogaNode(YGNodeConstRef node) {
     *ctx);
 }
 
-Widget* Widget::GetParentOrNull() const {
-  auto node = [yoga = this->GetLayoutNode()] {
-    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
-    FUI_ASSERT(ctx);
-    return std::visit(
-      felly::overload {
-        [](Widget* const w) { return YGNodeGetParent(w->GetLayoutNode()); },
-        [](const DetachedYogaTree& d) { return d.mParent->GetLayoutNode(); },
-      },
-      *ctx);
-  }();
+Widget* Widget::GetStructuralParentOrNull() const {
+  const auto yoga = this->GetLayoutNode();
+  const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
+  FUI_ASSERT(ctx);
+
+  const auto parent = std::visit(
+    felly::overload {
+      [](Widget* const w) { return YGNodeGetParent(w->GetLayoutNode()); },
+      [](const DetachedYogaTree& d) { return d.mParent->GetLayoutNode(); },
+    },
+    *ctx);
+  return FromYogaNode(parent);
+}
+
+Widget* Widget::GetLogicalParentOrNull() const {
+  const auto structuralParent = this->GetStructuralParentOrNull();
+  if (!structuralParent) {
+    return nullptr;
+  }
+
+  auto node = structuralParent->GetLayoutNode();
   while (node) {
     const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(node));
     if (!ctx) {
@@ -250,7 +260,7 @@ FrameRateRequirement Widget::GetFrameRateRequirement() const noexcept {
   }
 
   return std::views::transform(
-    this->mRawDirectChildren, &Widget::GetFrameRateRequirement);
+    this->mRawStructuralChildren, &Widget::GetFrameRateRequirement);
 }
 
 bool Widget::IsDirectlyDisabled() const {
@@ -286,19 +296,22 @@ void Widget::AddMutableStyles(const Style& styles) {
   mMutableStyles += styles;
 }
 
-void Widget::SetDirectChildren(const std::vector<Widget*>& children) {
+Widget* Widget::SetStructuralChildren(const std::vector<Widget*>& children) {
+  if (children == mRawStructuralChildren) {
+    return this;
+  }
   std::vector<unique_ptr<Widget>> newChildren;
   for (auto child: children) {
     auto it
-      = std::ranges::find(mDirectChildren, child, &unique_ptr<Widget>::get);
-    if (it == mDirectChildren.end()) {
+      = std::ranges::find(mStructuralChildren, child, &unique_ptr<Widget>::get);
+    if (it == mStructuralChildren.end()) {
       newChildren.emplace_back(child);
     } else {
       newChildren.emplace_back(std::move(*it));
     }
   }
-  mDirectChildren = std::move(newChildren);
-  mRawDirectChildren = children;
+  mStructuralChildren = std::move(newChildren);
+  mRawStructuralChildren = children;
 
   std::vector<YGNodeRef> layoutChildren;
   layoutChildren.reserve(children.end() - children.begin());
@@ -317,6 +330,7 @@ void Widget::SetDirectChildren(const std::vector<Widget*>& children) {
     }
   }
   YGNodeSetChildren(mYoga.get(), layoutChildren.data(), layoutChildren.size());
+  return this;
 }
 
 void Widget::Paint(Renderer* renderer) const {
@@ -366,7 +380,7 @@ void Widget::Paint(Renderer* renderer) const {
 }
 
 void Widget::PaintChildren(Renderer* renderer) const {
-  for (auto&& child: mRawDirectChildren) {
+  for (auto&& child: mRawStructuralChildren) {
     child->Paint(renderer);
   }
 }
@@ -374,15 +388,6 @@ void Widget::PaintChildren(Renderer* renderer) const {
 void Widget::OnMouseEnter(const MouseEvent&) {}
 
 void Widget::OnMouseLeave(const MouseEvent&) {}
-
-Widget* Widget::SetChildren(const std::vector<Widget*>& children) {
-  if (children == mRawDirectChildren) {
-    return this;
-  }
-
-  this->SetDirectChildren(children);
-  return this;
-}
 
 Widget* Widget::DispatchEvent(const Event& e) {
   if (const auto it = dynamic_cast<MouseEvent const*>(&e)) {
@@ -425,7 +430,7 @@ Widget* Widget::DispatchEvent(const Event& e) {
       });
     }
 
-    for (auto&& child: mRawDirectChildren) {
+    for (auto&& child: mRawStructuralChildren) {
       if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
         continue;
       }
@@ -444,7 +449,7 @@ Widget* Widget::DispatchEvent(const Event& e) {
 }
 
 void Widget::Tick(const std::chrono::steady_clock::time_point& now) {
-  for (auto&& child: mRawDirectChildren) {
+  for (auto&& child: mRawStructuralChildren) {
     child->Tick(now);
   }
 }
@@ -532,7 +537,7 @@ Widget::MouseEventResult Widget::DispatchMouseEvent(
   }
 
   // Always propagate unconditionally to allow correct internal states
-  for (auto&& child: mRawDirectChildren) {
+  for (auto&& child: mRawStructuralChildren) {
     if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
       continue;
     }
@@ -603,7 +608,7 @@ Widget* Widget::DispatchKeyEvent(const KeyEvent& e) {
     return this;
   }
 
-  if (const auto parent = this->GetParentOrNull()) {
+  if (const auto parent = this->GetStructuralParentOrNull()) {
     return parent->DispatchKeyEvent(e);
   }
 
@@ -617,7 +622,7 @@ Widget* Widget::DispatchTextInputEvent(const TextInputEvent& e) {
     return this;
   }
 
-  if (const auto parent = this->GetParentOrNull()) {
+  if (const auto parent = this->GetStructuralParentOrNull()) {
     return parent->DispatchTextInputEvent(e);
   }
 
@@ -698,42 +703,15 @@ void Widget::SetIsChecked(const bool value) {
 
 Point Widget::GetTopLeftCanvasPoint(const Widget* const relativeTo) const {
   Point position {};
-  for (auto yoga = this->GetLayoutNode(); yoga;) {
-    const auto ctx = static_cast<YogaContext*>(YGNodeGetContext(yoga));
-    if (!ctx) {
-      FUI_ASSERT(!YGNodeGetParent(yoga));
-      return position;
-    }
+  for (auto widget = this; widget && widget != relativeTo;
+       widget = widget->GetStructuralParentOrNull()) {
+    const auto yoga = widget->GetLayoutNode();
     position.mX += YGNodeLayoutGetLeft(yoga);
     position.mY += YGNodeLayoutGetTop(yoga);
 
-    /* We don't use `GetParentOrNull()` because that follows the 'foster parent'
-     * links; we need the 'true' parents to adjust the geometry correctly.
-     */
-    const auto [widget, next] = std::visit(
-      felly::overload {
-        [](Widget* const w) {
-          return std::tuple {
-            w,
-            YGNodeGetParent(w->GetLayoutNode()),
-          };
-        },
-        [](const DetachedYogaTree& d) {
-          return std::tuple {
-            d.mSelf,
-            d.mParent->GetLayoutNode(),
-          };
-        },
-      },
-      *ctx);
-    FUI_ASSERT(widget);
     const auto& style = widget->GetComputedStyle();
     position.mX += style.TranslateX().value_or(0);
     position.mY += style.TranslateY().value_or(0);
-    if (widget == relativeTo) {
-      return position;
-    }
-    yoga = next;
   }
   return position;
 }

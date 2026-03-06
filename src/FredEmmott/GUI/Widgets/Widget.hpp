@@ -64,12 +64,14 @@ class Widget {
   [[nodiscard]]
   static Widget* FromYogaNode(YGNodeConstRef);
   [[nodiscard]]
-  Widget* GetParentOrNull() const;
+  Widget* GetLogicalParentOrNull() const;
+  [[nodiscard]]
+  Widget* GetStructuralParentOrNull() const;
 
   template <std::derived_from<Widget> T = Widget>
   [[nodiscard]]
-  T* GetParent() const {
-    const auto widget = GetParentOrNull();
+  T* GetLogicalParent() const {
+    const auto widget = GetLogicalParentOrNull();
     // If you're expecting a specific parent, require that *a* parent exists
     FUI_ALWAYS_ASSERT(widget);
 
@@ -178,21 +180,23 @@ class Widget {
   void Paint(Renderer* renderer) const;
 
   [[nodiscard]]
-  auto GetChildren() const noexcept {
-    return mRawDirectChildren;
+  auto GetStructuralChildren() const noexcept {
+    return mRawStructuralChildren;
   }
-  /// Returns `this`
-  Widget* SetChildren(const std::vector<Widget*>& children);
+
+  /// Returns this
+  Widget* SetStructuralChildren(const std::vector<Widget*>& children);
+
   [[nodiscard]]
   auto GetLogicalChildren() const noexcept {
-    const auto foster = this->GetFosterParent();
-    return (foster ? foster : this)->GetChildren();
+    return this->GetStructuralParentForLogicalChildren()
+      ->GetStructuralChildren();
   }
 
   /// Returns `this`
   Widget* SetLogicalChildren(const std::vector<Widget*>& children) {
-    const auto foster = this->GetFosterParent();
-    (foster ? foster : this)->SetChildren(children);
+    this->GetStructuralParentForLogicalChildren()->SetStructuralChildren(
+      children);
     return this;
   }
 
@@ -284,11 +288,16 @@ class Widget {
   /** Parent node for `GetLogicalChildren()` and `SetLogicalChildren()` (public
    * APIs).
    *
-   * Use `SetDirectChildren()` for internal sub-widgets
+   * Use `SetStructuralChildren()` for internal sub-widgets
    */
   [[nodiscard]]
-  virtual Widget* GetFosterParent() const noexcept {
-    return nullptr;
+  virtual Widget* GetStructuralParentForLogicalChildren() noexcept {
+    return this;
+  }
+
+  [[nodiscard]]
+  const Widget* GetStructuralParentForLogicalChildren() const noexcept {
+    return const_cast<Widget*>(this)->GetStructuralParentForLogicalChildren();
   }
 
   void StartMouseCapture();
@@ -297,8 +306,6 @@ class Widget {
   [[nodiscard]]
   bool IsChecked() const noexcept;
   void SetIsChecked(bool);
-
-  void SetDirectChildren(const std::vector<Widget*>& children);
 
  private:
   struct MouseEventResult {
@@ -324,8 +331,8 @@ class Widget {
   Style mInheritedStyles;
   Style mComputedStyle;
 
-  std::vector<unique_ptr<Widget>> mDirectChildren;
-  std::vector<Widget*> mRawDirectChildren;
+  std::vector<unique_ptr<Widget>> mStructuralChildren;
+  std::vector<Widget*> mRawStructuralChildren;
 
   std::unordered_map<std::type_index, std::unique_ptr<Context>> mContexts;
 

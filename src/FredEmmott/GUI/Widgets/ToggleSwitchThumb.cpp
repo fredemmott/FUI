@@ -118,7 +118,7 @@ const ImmutableStyle& Inner() {
 
 ToggleSwitchThumb::ToggleSwitchThumb(const id_type id)
   : Widget(id, ToggleSwitchThumbStyleClass, Styles::Outer()) {
-  this->SetChildren(
+  this->SetStructuralChildren(
     {mInner = new Widget(
        0, LiteralStyleClass {"ToggleSwitch/Thumb/Inner"}, Styles::Inner())});
 }

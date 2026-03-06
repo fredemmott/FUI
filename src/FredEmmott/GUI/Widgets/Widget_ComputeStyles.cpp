@@ -63,7 +63,7 @@ void Widget::ComputeStyles(const Style& inherited) {
 
   style = FlattenStyles(style);
 
-  for (auto&& child: mRawDirectChildren) {
+  for (auto&& child: mRawStructuralChildren) {
     child->mInheritedStateFlags = {};
   }
 
@@ -103,7 +103,7 @@ void Widget::ComputeStyles(const Style& inherited) {
     }
 
     if (propagateFlags != StateFlags::Default) {
-      for (auto&& child: mRawDirectChildren) {
+      for (auto&& child: mRawStructuralChildren) {
         child->mInheritedStateFlags = propagateFlags;
       }
     }
@@ -121,7 +121,7 @@ void Widget::ComputeStyles(const Style& inherited) {
   mComputedStyle = style;
 
   const auto childStyles = style.InheritableValues();
-  for (auto&& child: mRawDirectChildren) {
+  for (auto&& child: mRawStructuralChildren) {
     child->ComputeStyles(childStyles);
   }
 

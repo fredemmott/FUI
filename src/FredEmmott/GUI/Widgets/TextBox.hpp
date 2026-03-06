@@ -65,7 +65,7 @@ class TextBox : public Widget, public IFocusable {
     const noexcept;
 
  protected:
-  Widget* GetFosterParent() const noexcept override;
+  Widget* GetStructuralParentForLogicalChildren() noexcept override;
   void Tick(const std::chrono::steady_clock::time_point& now) override;
   EventHandlerResult OnTextInput(const TextInputEvent&) override;
   EventHandlerResult OnKeyPress(const KeyPressEvent&) override;

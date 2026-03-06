@@ -82,7 +82,7 @@ using namespace widget_detail;
 
 ToggleSwitchKnob::ToggleSwitchKnob(const id_type id)
   : Widget(id, ToggleSwitchKnobStyleClass, Styles()) {
-  this->SetChildren({new ToggleSwitchThumb({})});
+  this->SetStructuralChildren({new ToggleSwitchThumb({})});
 }
 
 }// namespace FredEmmott::GUI::Widgets

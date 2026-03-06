@@ -50,7 +50,7 @@ using namespace widget_detail;
 
 ToggleSwitch::ToggleSwitch(const id_type id)
   : Widget(id, ToggleSwitchStyleClass, ToggleSwitchStyle()) {
-  this->SetDirectChildren({
+  this->SetStructuralChildren({
     new ToggleSwitchKnob({}),
     mFosterParent
     = new Widget({}, ToggleSwitchContentStyleClass, FosterParentStyle()),

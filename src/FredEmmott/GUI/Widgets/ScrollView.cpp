@@ -66,7 +66,7 @@ auto& HorizontalScrollBarStyle() {
 
 ScrollView::ScrollView(id_type id, const StyleClasses& classes)
   : Widget(id, ScrollViewStyleClass, ScrollViewStyle(), classes) {
-  this->SetDirectChildren({
+  this->SetStructuralChildren({
     mHorizontalScrollBar
     = new ScrollBar({}, HorizontalScrollBarStyle(), Orientation::Horizontal),
     mVerticalScrollBar
@@ -127,7 +127,7 @@ ScrollView& ScrollView::SetVerticalScrollBarVisibility(
   return *this;
 }
 
-Widget* ScrollView::GetFosterParent() const noexcept {
+Widget* ScrollView::GetStructuralParentForLogicalChildren() noexcept {
   return mContentInner;
 }
 
@@ -255,7 +255,7 @@ bool ScrollView::IsScrollBarVisible(
 }
 
 void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
-  auto& self = *FromYogaNode(node)->GetParent<ScrollView>();
+  auto& self = *FromYogaNode(node)->GetLogicalParent<ScrollView>();
   self.mDirtyInner = true;
   YGNodeMarkDirty(self.mContentOuter->GetLayoutNode());
 }
@@ -267,7 +267,7 @@ YGSize ScrollView::MeasureOuterContent(
   float height,
   YGMeasureMode heightMode) {
   const auto outer = FromYogaNode(node);
-  auto& self = *outer->GetParent<ScrollView>();
+  auto& self = *outer->GetLogicalParent<ScrollView>();
 
   const bool haveDirtyInner = std::exchange(self.mDirtyInner, false);
   const bool haveWidthChange

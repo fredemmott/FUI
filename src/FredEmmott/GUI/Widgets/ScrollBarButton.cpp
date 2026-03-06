@@ -33,7 +33,7 @@ void ScrollBarButton::SetText(std::string_view text) {
 
   auto label = new Label(0, FontIconStyle);
   label->SetText(text);
-  this->SetChildren({label});
+  this->SetStructuralChildren({label});
 }
 
 FrameRateRequirement ScrollBarButton::GetFrameRateRequirement() const noexcept {

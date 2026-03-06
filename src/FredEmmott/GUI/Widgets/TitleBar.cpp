@@ -164,25 +164,25 @@ TitleBar::TitleBar(const id_type id)
   auto content = new Widget(
     0, ContentContainerStyleClass, TitleBarContentContainerStyle());
   auto chromeButtons = new Widget(0, ChromeButtonsContainerStyleClass, {});
-  this->SetChildren({content, chromeButtons});
+  this->SetStructuralChildren({content, chromeButtons});
 
   mIconButton = new TitleBarIconButton(0, TitleBarIconStyle(), {});
   mTitleLabel = new Label(0, TitleBarTitleStyle());
   mSubtitleLabel = new Label(0, TitleBarSubtitleStyle());
-  content->SetChildren({mIconButton, mTitleLabel, mSubtitleLabel});
+  content->SetStructuralChildren({mIconButton, mTitleLabel, mSubtitleLabel});
 
-  chromeButtons->SetChildren({
+  chromeButtons->SetStructuralChildren({
     mMinimizeButton = new Button(0, WindowMinimizeMaximizeButtonStyle(), {}),
     mMaximizeButton = new Button(1, WindowMinimizeMaximizeButtonStyle(), {}),
     mCloseButton = new Button(2, WindowCloseButtonStyle(), {}),
   });
-  mMinimizeButton->SetChildren({
+  mMinimizeButton->SetStructuralChildren({
     (new Label(0, ImmutableStyle {}))->SetText(MinimizeGlyph),
   });
-  mMaximizeButton->SetChildren({
+  mMaximizeButton->SetStructuralChildren({
     mMaximizeLabel = new Label(0, ImmutableStyle {}),
   });
-  mCloseButton->SetChildren(
+  mCloseButton->SetStructuralChildren(
     {(new Label(0, ImmutableStyle {}))->SetText(CloseGlyph)});
   mMaximizeLabel->SetText(MaximizeGlyph);
 }

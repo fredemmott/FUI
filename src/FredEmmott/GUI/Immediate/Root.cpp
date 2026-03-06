@@ -30,7 +30,7 @@ Root::Root(Widgets::Widget* root, Widgets::Widget* immediateRoot)
 Root::~Root() {}
 
 void Root::Reset() {
-  mImmediateRoot->SetChildren({});
+  mImmediateRoot->SetStructuralChildren({});
 }
 
 void Root::BeginFrame() {
@@ -40,7 +40,7 @@ void Root::BeginFrame() {
   }
 
   tStack.push_back({
-    .mPending = {mImmediateRoot->GetChildren()},
+    .mPending = {mImmediateRoot->GetStructuralChildren()},
   });
   FocusManager::PushInstance(&mFocusManager);
 }
@@ -60,7 +60,7 @@ void Root::EndFrame() {
       "Immediate widget root must have a single child, usually a layout or "
       "card");
   }
-  mImmediateRoot->SetChildren(std::move(widgets));
+  mImmediateRoot->SetStructuralChildren(std::move(widgets));
   mActualRoot->ComputeStyles({});
 
   if (tResizeThisFrame) {

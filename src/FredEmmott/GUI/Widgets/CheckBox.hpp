@@ -22,7 +22,7 @@ class CheckBox final : public Widget, public IToggleable {
 
  protected:
   EventHandlerResult OnClick(const MouseEvent& event) override;
-  Widget* GetFosterParent() const noexcept override;
+  Widget* GetStructuralParentForLogicalChildren() noexcept override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
 

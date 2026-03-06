@@ -198,12 +198,12 @@ CheckBox::CheckBox(id_type id)
       LiteralStyleClass {"CheckBox"},
       CheckBoxStyles(),
       {*CheckBoxStyleClass}) {
-  this->SetDirectChildren({
+  this->SetStructuralChildren({
     (new Widget(
        0,
        LiteralStyleClass {"CheckBox/GlyphContainer"},
        GlyphBackgroundStyles()))
-      ->SetChildren({
+      ->SetStructuralChildren({
         (new Label(0, GlyphStyles(), {*CheckGlyphStyleClass}))
           ->SetText(StaticTheme::CheckBox::CheckBoxCheckedGlyph),
       }),
@@ -221,7 +221,7 @@ Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
   return EventHandlerResult::StopPropagation;
 }
 
-Widget* CheckBox::GetFosterParent() const noexcept {
+Widget* CheckBox::GetStructuralParentForLogicalChildren() noexcept {
   return mFosterParent;
 }
 

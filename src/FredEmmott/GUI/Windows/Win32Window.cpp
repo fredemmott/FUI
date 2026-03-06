@@ -144,11 +144,11 @@ void Win32Window::InitializeWidgetTree() {
   if (
     ((mOptions.mWindowStyle & WS_POPUP) == WS_POPUP)
     || !mOptions.mAllowModernTitleBar) {
-    mActualRoot->SetChildren({mImmediateRoot});
+    mActualRoot->SetStructuralChildren({mImmediateRoot});
   } else {
     mTitleBar = new Widgets::TitleBar(0);
     mTitleBar->SetTitle(mOptions.mTitle);
-    mActualRoot->SetChildren({mTitleBar, mImmediateRoot});
+    mActualRoot->SetStructuralChildren({mTitleBar, mImmediateRoot});
   }
 }
 

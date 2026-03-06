@@ -27,7 +27,7 @@ class ScrollView final : public Widget {
   ScrollView& SetVerticalScrollBarVisibility(ScrollBarVisibility) noexcept;
 
  protected:
-  Widget* GetFosterParent() const noexcept override;
+  Widget* GetStructuralParentForLogicalChildren() noexcept override;
   void PaintChildren(Renderer* renderer) const override;
   EventHandlerResult OnMouseVerticalWheel(const MouseEvent&) override;
 

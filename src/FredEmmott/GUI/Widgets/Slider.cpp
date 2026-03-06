@@ -163,18 +163,18 @@ Slider::Slider(const id_type id, const Orientation orientation)
     isHorizontal ? HorizontalOuterThumbStyle() : VerticalOuterThumbStyle());
   mInnerThumb = new Widget(
     {}, LiteralStyleClass("Slider/Thumb/Inner"), InnerThumbStyle());
-  mOuterThumb->SetChildren({mInnerThumb});
+  mOuterThumb->SetStructuralChildren({mInnerThumb});
 
   mBeforeThumb = new Widget({}, LiteralStyleClass("Slider/Thumb/Spacer"), {});
   mAfterThumb = new Widget({}, LiteralStyleClass("Slider/Thumb/Spacer"), {});
 
-  mTrack->SetChildren({
+  mTrack->SetStructuralChildren({
     mBeforeThumb,
     mOuterThumb,
     mAfterThumb,
   });
 
-  this->SetChildren({mTrack});
+  this->SetStructuralChildren({mTrack});
   this->UpdateThumbPosition();
 }
 

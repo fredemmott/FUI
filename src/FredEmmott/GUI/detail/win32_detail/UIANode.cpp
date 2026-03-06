@@ -30,9 +30,9 @@ bool IsDisplayContents(Widget* widget) {
 void GetFlattenedChildren(
   const Widget* widget,
   std::vector<Widgets::Widget*>& out) {
-  out.reserve(out.size() + widget->GetChildren().size());
+  out.reserve(out.size() + widget->GetStructuralChildren().size());
 
-  for (auto&& child: widget->GetChildren()) {
+  for (auto&& child: widget->GetStructuralChildren()) {
     if (!IsDisplayContents(child)) {
       out.emplace_back(child);
       continue;
@@ -43,7 +43,8 @@ void GetFlattenedChildren(
 
 // Flattens display: contents
 Widget* GetFlattenedParent(Widget* widget) {
-  while (((widget = widget->GetParentOrNull())) && IsDisplayContents(widget)) {
+  while (((widget = widget->GetLogicalParentOrNull()))
+         && IsDisplayContents(widget)) {
   }
   return widget;
 }
