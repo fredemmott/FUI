@@ -1304,58 +1304,60 @@ std::optional<LRESULT> Win32Window::TitleBarWindowProc(
       return 0;
     }
     case WM_NCHITTEST: {
-      const auto margins = mGeometry->mWindowMargins;
-      POINT pt {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-      const POINT screenPt = pt;
-      ScreenToClient(hwnd, &pt);
-      RECT rc {};
-      GetClientRect(hwnd, &rc);
+      const POINT pt {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+      if (!IsZoomed(hwnd)) {
+        const auto& window = mGeometry->mWindowRect;
+        const auto frameX
+          = mScreenMetrics.mFrameX + mScreenMetrics.mPaddedBorder;
+        const auto frameTop = mScreenMetrics.mFrameY;
+        const auto frameBottom = frameTop + mScreenMetrics.mPaddedBorder;
 
-      // ----- Borders -----
-      const bool isTop = pt.y < margins.cyTopHeight;
-      const bool isBottom = pt.y > (rc.bottom - margins.cyBottomHeight);
-      const bool isLeft = pt.x < margins.cxLeftWidth;
-      const bool isRight = pt.x > (rc.right - margins.cxRightWidth);
+        // ----- Borders -----
+        const bool isTop = pt.y <= window.top + frameTop;
+        const bool isBottom = pt.y >= window.bottom - frameBottom;
+        const bool isLeft = pt.x <= window.left + frameX;
+        const bool isRight = pt.x >= window.right - frameX;
 
-      if (isTop && isLeft)
-        return HTTOPLEFT;
-      if (isTop && isRight)
-        return HTTOPRIGHT;
-      if (isBottom && isLeft)
-        return HTBOTTOMLEFT;
-      if (isBottom && isRight)
-        return HTBOTTOMRIGHT;
+        if (isTop && isLeft)
+          return HTTOPLEFT;
+        if (isTop && isRight)
+          return HTTOPRIGHT;
+        if (isBottom && isLeft)
+          return HTBOTTOMLEFT;
+        if (isBottom && isRight)
+          return HTBOTTOMRIGHT;
 
-      if (isTop)
-        return HTTOP;
-      if (isBottom)
-        return HTBOTTOM;
-      if (isLeft)
-        return HTLEFT;
-      if (isRight)
-        return HTRIGHT;
+        if (isTop)
+          return HTTOP;
+        if (isBottom)
+          return HTBOTTOM;
+        if (isLeft)
+          return HTLEFT;
+        if (isRight)
+          return HTRIGHT;
+      }
 
       // ----- Title bar-----
-      auto rects = mTitleBar->GetRects();
+      const auto rects = mTitleBar->GetRects();
       const auto titleBar = CanvasRectToScreenRect(rects.mFullArea);
-      if (!PtInRect(&titleBar, screenPt)) {
+      if (!PtInRect(&titleBar, pt)) {
         return HTCLIENT;
       }
       const auto icon = CanvasRectToScreenRect(rects.mIconButton);
-      if (PtInRect(&icon, screenPt)) {
+      if (PtInRect(&icon, pt)) {
         return HTSYSMENU;
       }
 
       const auto min = CanvasRectToScreenRect(rects.mMinimizeButton);
-      if (PtInRect(&min, screenPt)) {
+      if (PtInRect(&min, pt)) {
         return HTMINBUTTON;
       }
       const auto max = CanvasRectToScreenRect(rects.mMaximizeButton);
-      if (PtInRect(&max, screenPt)) {
+      if (PtInRect(&max, pt)) {
         return HTMAXBUTTON;
       }
       const auto close = CanvasRectToScreenRect(rects.mCloseButton);
-      if (PtInRect(&close, screenPt)) {
+      if (PtInRect(&close, pt)) {
         return HTCLOSE;
       }
 
