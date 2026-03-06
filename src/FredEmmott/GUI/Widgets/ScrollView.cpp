@@ -135,6 +135,9 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   const bool showVScroll
     = IsScrollBarVisible(mVerticalScrollBarVisibility, ch, h);
 
+  const auto oldHValue = mHorizontalScrollBar->GetValue();
+  const auto oldVValue = mVerticalScrollBar->GetValue();
+
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
     mHorizontalScrollBar->SetRange(0, cw - w);
@@ -157,6 +160,21 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
     mVerticalScrollBar->SetRange(0, 0);
     mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
   }
+
+  const auto newHValue = mHorizontalScrollBar->GetValue();
+  const auto newVValue = mVerticalScrollBar->GetValue();
+
+  if (
+    utility::almost_equal(oldHValue, newHValue)
+    && utility::almost_equal(oldVValue, newVValue)) {
+    return;
+  }
+
+  mContentInner->SetMutableStyles(
+    Style()
+      .TranslateX(-mHorizontalScrollBar->GetValue(), InstantStyleTransition)
+      .TranslateY(-mVerticalScrollBar->GetValue(), InstantStyleTransition));
+  mContentInner->ComputeStyles(GetComputedStyle().InheritableValues());
 }
 
 void ScrollView::PaintChildren(Renderer* renderer) const {
