@@ -30,6 +30,11 @@ struct MouseEvent final : Event {
     return ret;
   }
 
+  template <class T>
+  const auto& Get() const {
+    return std::get<T>(mDetail);
+  }
+
   struct MoveEvent {};
   // The mouse is staying relatively still, within an OS-defined bounding box
   // for an OS-defined amount of time

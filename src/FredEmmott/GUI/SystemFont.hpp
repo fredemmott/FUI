@@ -29,6 +29,7 @@ using enum Usage;
 
 Font Resolve(Usage);
 Font ResolveGlyphFont(Usage);
+Font ResolveGlyphFont(float dipSize);
 
 #ifdef FUI_ENABLE_SKIA
 sk_sp<SkFontMgr> GetFontManager() noexcept;

@@ -1,0 +1,97 @@
+// Copyright 2026 Fred Emmott <fred@fredemmott.com>
+// SPDX-License-Identifier: MIT
+#include "NavigationView.hpp"
+
+#include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
+#include "Label.hpp"
+#include "NavigationViewTogglePaneButton.hpp"
+
+namespace FredEmmott::GUI::Widgets {
+namespace {
+using namespace StaticTheme::NavigationView;
+constexpr LiteralStyleClass NavigationViewStyleClass {"NavigationView"};
+constexpr LiteralStyleClass NavigationViewPaneStyleClass {
+  "NavigationView/Pane"};
+constexpr LiteralStyleClass NavigationViewPaneHeaderStyleClass {
+  "NavigationView/Pane/Header"};
+constexpr LiteralStyleClass NavigationViewItemsRootStyleClass {
+  "NavigationView/Pane/Items"};
+constexpr LiteralStyleClass NavigationViewFooterItemsRootStyleClass {
+  "NavigationView/Pane/FooterItems"};
+constexpr LiteralStyleClass NavigationViewContentHeaderStyleClass {
+  "NavigationView/ContentHeader"};
+constexpr LiteralStyleClass NavigationViewContentOuterStyleClass {
+  "NavigationView/ContentOuter"};
+constexpr LiteralStyleClass NavigationViewContentInnerStyleClass {
+  "NavigationView/ContentInner"};
+}// namespace
+
+NavigationView::NavigationView(const id_type id)
+  : Widget(id, NavigationViewStyleClass, NavigationViewStyle()),
+    ISelectionContainer(this),
+    mPane(
+      new Widget(0, NavigationViewPaneStyleClass, NavigationViewPaneStyle())),
+    mPaneHeader(new Widget(
+      0,
+      NavigationViewPaneHeaderStyleClass,
+      NavigationViewPaneHeaderStyle())),
+    mItemsRoot(new Widget(
+      0,
+      NavigationViewItemsRootStyleClass,
+      NavigationViewItemsRootStyle())),
+    mFooterItemsRoot(new Widget(
+      0,
+      NavigationViewFooterItemsRootStyleClass,
+      NavigationViewFooterItemsRootStyle())),
+    mContentOuter(new Widget(
+      0,
+      NavigationViewContentOuterStyleClass,
+      NavigationViewContentOuterStyle())),
+    mContentHeader(new Label(
+      0,
+      NavigationViewContentHeaderStyle(),
+      {NavigationViewContentHeaderStyleClass})),
+    mContentInner(new Widget(
+      0,
+      NavigationViewContentInnerStyleClass,
+      NavigationViewContentInnerStyle())) {
+  mPane->SetStructuralChildren({mPaneHeader, mItemsRoot, mFooterItemsRoot});
+  mContentOuter->SetStructuralChildren({mContentHeader, mContentInner});
+  this->SetStructuralChildren({mPane, mContentOuter});
+  mPane->AddStyleClass(NavigationViewPaneExpandedStyleClass);
+
+  mTogglePaneButton = new NavigationViewTogglePaneButton(0, this);
+  mPaneHeader->SetLogicalChildren({mTogglePaneButton});
+}
+
+NavigationView::~NavigationView() = default;
+
+void NavigationView::SetHeaderText(const std::string_view text) {
+  if (text.empty()) {
+    mContentHeader->SetMutableStyles(Style().Display(YGDisplayNone));
+    return;
+  }
+  mContentHeader->SetMutableStyles(Style().Display(YGDisplayFlex));
+  mContentHeader->SetText(text);
+}
+
+std::vector<ISelectionItem*> NavigationView::GetSelectionItems()
+  const noexcept {
+  // TODO (C++23): use std::views::concat when it's available in MSVC
+  return std::array {
+           std::views::all(mItemsRoot->GetStructuralChildren()),
+           std::views::all(mFooterItemsRoot->GetStructuralChildren()),
+         }
+  | std::views::join | std::views::transform([](Widget* p) {
+           return dynamic_cast<ISelectionItem*>(p);
+         })
+    | std::views::filter([](ISelectionItem* const p) { return p != nullptr; })
+    | std::ranges::to<std::vector>();
+}
+void NavigationView::TogglePaneIsExpanded() {
+  mPaneIsExpanded = !mPaneIsExpanded;
+  mPane->ToggleStyleClass(
+    NavigationViewPaneExpandedStyleClass, mPaneIsExpanded);
+}
+
+}// namespace FredEmmott::GUI::Widgets

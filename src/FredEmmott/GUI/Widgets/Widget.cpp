@@ -300,23 +300,24 @@ void Widget::SetStructuralChildren(
     return;
   }
 
-  std::vector<unique_ptr<Widget>> newChildren;
+  std::vector<unique_ptr<Widget>> ownedChildren;
+  ownedChildren.reserve(children.size());
   for (auto child: children) {
     auto it
       = std::ranges::find(mStructuralChildren, child, &unique_ptr<Widget>::get);
-    if (it == mStructuralChildren.end()) {
-      FUI_ASSERT(
-        (!child->mStructuralParent) || child->mStructuralParent == this);
-      FUI_ASSERT(
-        (!child->mLogicalParent) || child->mLogicalParent == logicalParent);
-      child->mStructuralParent = this;
-      child->mLogicalParent = logicalParent;
-      newChildren.emplace_back(child);
-    } else {
-      newChildren.emplace_back(std::move(*it));
+    if (it != mStructuralChildren.end()) {
+      ownedChildren.emplace_back(std::move(*it));
+      continue;
     }
+
+    FUI_ASSERT((!child->mStructuralParent) || child->mStructuralParent == this);
+    FUI_ASSERT(
+      (!child->mLogicalParent) || child->mLogicalParent == logicalParent);
+    child->mStructuralParent = this;
+    child->mLogicalParent = logicalParent;
+    ownedChildren.emplace_back(child);
   }
-  mStructuralChildren = std::move(newChildren);
+  mStructuralChildren = std::move(ownedChildren);
   mRawStructuralChildren = children;
 
   std::vector<YGNodeRef> layoutChildren;

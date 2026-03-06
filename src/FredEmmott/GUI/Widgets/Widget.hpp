@@ -319,7 +319,7 @@ class Widget {
 
   [[nodiscard]]
   bool IsChecked() const noexcept;
-  void SetIsChecked(bool);
+  void SetIsChecked(bool checked = true);
 
  private:
   struct MouseEventResult {
