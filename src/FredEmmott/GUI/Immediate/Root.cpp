@@ -46,7 +46,8 @@ void Root::BeginFrame() {
 }
 
 void Root::EndFrame() {
-  FocusManager::PopInstance(&mFocusManager);
+  const auto pop = felly::scope_exit(
+    std::bind_front(&FocusManager::PopInstance, &mFocusManager));
 
   if (tStack.size() != 1) {
     throw std::logic_error("EndFrame() called, but children are open");
