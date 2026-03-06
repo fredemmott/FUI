@@ -8,6 +8,7 @@
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <algorithm>
 
+#include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/utility/almost_equal.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -331,6 +332,9 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
     this->SetValue(this->GetSnappedValue(*mDraggingValue));
   }
   std::ignore = Widget::OnMouseButtonRelease(e);
+  if (const auto fm = FocusManager::Get()) {
+    fm->GivePointerFocus(this);
+  }
   return EventHandlerResult::StopPropagation;
 }
 
