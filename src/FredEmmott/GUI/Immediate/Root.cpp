@@ -19,7 +19,7 @@ using namespace Widgets;
 Root::Root(Widgets::Widget* root, Widgets::Widget* immediateRoot)
   : mActualRoot(root),
     mImmediateRoot(immediateRoot),
-    mFocusManager(root),
+    mFocusManager(immediateRoot),
     mYogaRoot(YGNodeNew()) {
   const auto yoga = mYogaRoot.get();
   YGNodeInsertChild(yoga, root->GetLayoutNode(), 0);
