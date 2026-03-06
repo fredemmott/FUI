@@ -28,6 +28,7 @@ class FocusManager final {
   static bool IsWidgetFocused(Widgets::Widget const*);
 
   void GivePointerFocus(Widgets::Widget*);
+  void GiveKeyboardFocus(Widgets::Widget*);
   void FocusNextWidget();
   void FocusPreviousWidget();
 

@@ -74,6 +74,11 @@ void FocusManager::GivePointerFocus(Widgets::Widget* widget) {
   mFocusKind = FocusKind::Pointer;
 }
 
+void FocusManager::GiveKeyboardFocus(Widgets::Widget* w) {
+  mFocusedWidget = w;
+  mFocusKind = FocusKind::Keyboard;
+}
+
 void FocusManager::FocusNextWidget() {
   mFocusKind = FocusKind::Keyboard;
   if (!mFocusedWidget) {

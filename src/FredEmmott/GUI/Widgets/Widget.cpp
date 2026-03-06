@@ -382,7 +382,9 @@ Widget* Widget::DispatchEvent(const Event& e) {
   if (const auto it = dynamic_cast<KeyEvent const*>(&e)) {
     if (const auto fm = FocusManager::Get();
         const auto target = fm->GetFocusedWidget()) {
-      return get<0>(*target)->DispatchKeyEvent(*it);
+      const auto widget = get<0>(*target);
+      fm->GiveKeyboardFocus(widget);
+      return widget->DispatchKeyEvent(*it);
     }
     return nullptr;
   }
@@ -390,7 +392,9 @@ Widget* Widget::DispatchEvent(const Event& e) {
   if (const auto it = dynamic_cast<TextInputEvent const*>(&e)) {
     if (const auto fm = FocusManager::Get();
         const auto target = fm->GetFocusedWidget()) {
-      return get<0>(*target)->DispatchTextInputEvent(*it);
+      const auto widget = get<0>(*target);
+      fm->GiveKeyboardFocus(widget);
+      return widget->DispatchTextInputEvent(*it);
     }
     return nullptr;
   }
