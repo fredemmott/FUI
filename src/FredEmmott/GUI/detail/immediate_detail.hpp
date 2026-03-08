@@ -14,6 +14,7 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 using Widget = Widgets::Widget;
 using namespace Widgets::widget_detail;
 
+// The current container is `mNewSiblings.back()` on the top-except-one entry
 struct StackEntry final {
   std::vector<Widget*> mPending;
   std::vector<Widget*> mNewSiblings;
@@ -35,7 +36,7 @@ T* GetCurrentNode() {
 
 template <std::derived_from<Widget> T = Widget>
 T* GetCurrentParentNode() {
-  if (tStack.empty()) {
+  if (tStack.size() < 2) {
     return nullptr;
   }
   const auto& frame = tStack.at(tStack.size() - 2);
