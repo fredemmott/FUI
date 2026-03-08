@@ -65,6 +65,7 @@ class Direct2DRenderer final : public Renderer {
     const Brush& brush,
     const Rect& rect,
     const CornerRadius&,
+    Edges edges,
     float thickness) override;
 
   void StrokeArc(
@@ -143,7 +144,8 @@ class Direct2DRenderer final : public Renderer {
   [[nodiscard]]
   wil::com_ptr<ID2D1PathGeometry> MakeRoundedRectPathGeometry(
     const Rect& rect,
-    const CornerRadius& radii) const;
+    const CornerRadius& radii,
+    Edges edges) const;
 };
 
 inline Direct2DRenderer* direct2d_renderer_cast(Renderer* renderer) noexcept {
