@@ -146,9 +146,8 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   const bool isSelected = initiallySelected || (clicked && *clicked);
   item->SetIsChecked(isSelected);
 
-  BeginWidget<Widget>(
+  ChildlessWidget<Widget>(
     ID {"pill"}, LiteralStyleClass {"ComboBox/pill"}, ComboBoxItemPillStyles());
-  EndWidget<Widget>();
   static const ImmutableStyle ContentStyles {
     Style().MinHeight(
       StaticTheme::ComboBox::ComboBoxItemPillHeight

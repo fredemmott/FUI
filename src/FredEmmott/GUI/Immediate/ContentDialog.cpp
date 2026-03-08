@@ -314,18 +314,15 @@ BeginContentDialogButtons() {
     };
     it.mButton = BeginWidget<Widgets::Button>(
       id, ButtonStyles, StyleClasses {ContentDialogButtonClass});
-    it.mLabel = BeginWidget<Widgets::Label>(ID {0}, LabelStyles);
-    EndWidget<Widgets::Label>();
+    it.mLabel = ChildlessWidget<Widgets::Label>(ID {0}, LabelStyles);
     EndWidget<Widgets::Button>();
   };
   const auto spacer = [](const ID& id = ID {std::source_location::current()}) {
     static const ImmutableStyle SpacerStyle {
       Style().Width(ContentDialogButtonSpacing),
     };
-    const auto w = BeginWidget<Widgets::Widget>(
+    return ChildlessWidget<Widgets::Widget>(
       id, LiteralStyleClass {"ContentDialog/spacer"}, SpacerStyle);
-    EndWidget<Widgets::Widget>();
-    return w;
   };
 
   button(ctx->mFirstColumn);

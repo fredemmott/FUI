@@ -14,9 +14,8 @@ TextBlockResult TextBlock(const std::string_view text, const ID id) {
   using Widgets::TextBlock;
   using namespace immediate_detail;
 
-  const auto widget = BeginWidget<TextBlock>(id);
-  GetCurrentParentNode<TextBlock>()->SetText(text);
-  EndWidget<TextBlock>();
+  const auto widget = ChildlessWidget<TextBlock>(id);
+  widget->SetText(text);
 
   return {widget};
 }

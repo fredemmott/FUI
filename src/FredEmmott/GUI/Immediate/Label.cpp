@@ -14,9 +14,8 @@ LabelResult Label(const std::string_view text, const ID id) {
   using Widgets::Label;
   using namespace immediate_detail;
 
-  const auto label = BeginWidget<Label>(id);
+  const auto label = ChildlessWidget<Label>(id);
   label->SetText(text);
-  EndWidget<Label>();
   return {label};
 }
 }// namespace FredEmmott::GUI::Immediate

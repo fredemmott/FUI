@@ -67,10 +67,9 @@ StyleClass GetStyleClass(const FontIconSize size) {
 
 Result<>
 FontIcon(const std::string_view glyph, const FontIconSize size, const ID id) {
-  const auto label = immediate_detail::BeginWidget<Widgets::Label>(
+  const auto label = immediate_detail::ChildlessWidget<Widgets::Label>(
     id, FontIconStyle(), StyleClasses {GetStyleClass(size)});
   label->SetText(glyph);
-  immediate_detail::EndWidget<Widgets::Label>();
   return {label};
 }
 
