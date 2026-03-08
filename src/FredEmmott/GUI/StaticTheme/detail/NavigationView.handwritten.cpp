@@ -21,7 +21,8 @@ const ImmutableStyle& NavigationViewStyle() {
 const ImmutableStyle& NavigationViewPaneStyle() {
   static const ImmutableStyle ret {
     Style()
-      .BackgroundColor(NavigationViewDefaultPaneBackground)
+      // TODO: set this when *not* bleeding into title bar
+      // .BackgroundColor(NavigationViewDefaultPaneBackground)
       .AlignItems(YGAlignCenter)
       .FlexDirection(YGFlexDirectionColumn)
       .Width(NavigationViewCompactPaneLength)
