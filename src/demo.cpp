@@ -6,8 +6,6 @@
 #include <map>
 #include <print>
 
-#include "FredEmmott/GUI/Widgets/NavigationView.hpp"
-
 #ifdef _WIN32
 #include "demo_win32.hpp"
 #endif
@@ -29,16 +27,18 @@ static void AppTick(fui::Window& window) {
   std::ignore = fuii::WindowSubtitle("I like turtles");
 
   if constexpr (true) {
-    const auto nav
-      = fuii::immediate_detail::ChildlessWidget<fui::Widgets::NavigationView>(
-        fuii::ID {std::source_location::current()});
-    nav->SetHeaderText("Test Header");
-    fuii::immediate_detail::PushParentOverride(nav->GetItemsRoot());
-    fuii::Label("Test item");
-    fuii::immediate_detail::PopParentOverride(nav->GetItemsRoot());
-    fuii::immediate_detail::PushParentOverride(nav->GetContentRoot());
-    fuii::Label("Test content");
-    fuii::immediate_detail::PopParentOverride(nav->GetContentRoot());
+    const auto nav = fuii::BeginNavigationView().Scoped();
+
+    if (
+      const auto scope
+      = fuii::BeginNavigationViewItem("\ue80f", "Home").Scoped()) {
+      fuii::Label("Home content");
+    }
+    if (
+      const auto scope
+      = fuii::BeginNavigationViewItem("\ue712", "More").Scoped()) {
+      fuii::Label("More content");
+    }
     return;
   }
 

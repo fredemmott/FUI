@@ -35,6 +35,16 @@ const ImmutableStyle& NavigationViewPaneStyle() {
         )};
   return ret;
 }
+const ImmutableStyle& NavigationViewItemsRootStyle() {
+  static const ImmutableStyle ret {
+    Style()
+      .FlexDirection(YGFlexDirectionColumn)
+      .FlexGrow(1)
+      .AlignItems(YGAlignFlexStart),
+  };
+  return ret;
+}
+
 const ImmutableStyle& NavigationViewContentOuterStyle() {
   static const ImmutableStyle ret {
     Style()

@@ -5,6 +5,7 @@
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
+class NavigationViewItem;
 
 class Label;
 
@@ -12,11 +13,13 @@ class NavigationView final : public Widget {
  public:
   explicit NavigationView(id_type id);
   ~NavigationView() override;
- [[nodiscard]]
+
+  [[nodiscard]]
   Widget* GetItemsRoot() const noexcept {
     return mItemsRoot;
   }
 
+  [[nodiscard]]
   Widget* GetFooterItemsRoot() const noexcept {
     return mFooterItemsRoot;
   }
@@ -27,6 +30,12 @@ class NavigationView final : public Widget {
   }
 
   void SetHeaderText(std::string_view);
+
+  Widget* GetStructuralParentForLogicalChildren() noexcept override {
+    FUI_FATAL(
+      "Children should not be directly manipulated on a NavigationView; use "
+      "Get*Root instead");
+  }
 
  private:
   // Contains menu/NavigationViewItems

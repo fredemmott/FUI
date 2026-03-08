@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "Label.hpp"
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -24,14 +25,24 @@ class NavigationViewItem final : public Widget {
   }
 
   using Widget::IsChecked;
+  using Widget::SetIsChecked;
 
-  void Uncheck() {
-    Widget::SetIsChecked(false);
+  auto* SetIcon(const std::string_view text) {
+    mIcon->SetText(text);
+    return this;
+  }
+
+  auto* SetText(const std::string_view text) {
+    mText->SetText(text);
+    return this;
   }
 
  protected:
   EventHandlerResult OnClick(const MouseEvent&) override;
   bool mWasActivated = false;
+
+  Label* mIcon {};
+  Label* mText {};
 };
 
 }// namespace FredEmmott::GUI::Widgets

@@ -15,6 +15,7 @@
 #include <FredEmmott/GUI/Immediate/GPUTexture.hpp>
 #include <FredEmmott/GUI/Immediate/HyperlinkButton.hpp>
 #include <FredEmmott/GUI/Immediate/Label.hpp>
+#include <FredEmmott/GUI/Immediate/NavigationView.hpp>
 #include <FredEmmott/GUI/Immediate/NumberBox.hpp>
 #include <FredEmmott/GUI/Immediate/PopupWindow.hpp>
 #include <FredEmmott/GUI/Immediate/ProgressRing.hpp>

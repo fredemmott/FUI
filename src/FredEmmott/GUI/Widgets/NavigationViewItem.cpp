@@ -2,13 +2,23 @@
 // SPDX-License-Identifier: MIT
 #include "NavigationViewItem.hpp"
 
+#include "FredEmmott/GUI/StaticTheme/detail/NavigationView.handwritten.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 
-static constexpr LiteralStyleClass NavigationViewItemStyleClass {
+namespace {
+using namespace StaticTheme::NavigationView;
+
+constexpr LiteralStyleClass NavigationViewItemStyleClass {
   "NavigationView/Item"};
+}// namespace
 
 NavigationViewItem::NavigationViewItem(const id_type id)
-  : Widget(id, NavigationViewItemStyleClass, {}) {}
+  : Widget(id, NavigationViewItemStyleClass, NavigationViewItemStyle()),
+    mIcon(new Label(0)),
+    mText(new Label(0)) {
+  this->SetStructuralChildren({mIcon, mText});
+}
 
 NavigationViewItem::~NavigationViewItem() = default;
 

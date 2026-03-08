@@ -30,7 +30,10 @@ NavigationView::NavigationView(const id_type id)
     mPane(
       new Widget(0, NavigationViewPaneStyleClass, NavigationViewPaneStyle())),
     mPaneHeader(new Widget(0, NavigationViewPaneHeaderStyleClass, {})),
-    mItemsRoot(new Widget(0, NavigationViewItemsRootStyleClass, {})),
+    mItemsRoot(new Widget(
+      0,
+      NavigationViewItemsRootStyleClass,
+      NavigationViewItemsRootStyle())),
     mFooterItemsRoot(
       new Widget(0, NavigationViewFooterItemsRootStyleClass, {})),
     mContentOuter(new Widget(
