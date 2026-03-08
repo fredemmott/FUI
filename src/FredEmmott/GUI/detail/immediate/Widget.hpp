@@ -43,11 +43,11 @@ T* BeginWidget(const ID id, Args&&... args) {
 
 template <class T = Widgets::Widget>
 void EndWidget() {
-#ifndef NDEBUG
-  if (!GetCurrentParentNode<T>()) [[unlikely]] {
-    throw std::logic_error("EndWidget type does not match BeginWidget");
+  if constexpr (Config::Debug) {
+    if (!GetCurrentParentNode<T>()) [[unlikely]] {
+      throw std::logic_error("EndWidget type does not match BeginWidget");
+    }
   }
-#endif
   const auto back = std::move(tStack.back());
   tStack.pop_back();
 
