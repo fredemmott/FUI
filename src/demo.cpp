@@ -290,5 +290,9 @@ int WINAPI wWinMain(
     lpCmdLine,
     nCmdShow,
     [](fui::Win32Window& window) { AppTick(window); },
-    {"Initial Window Title"});
+    {
+      "Initial Window Title",
+      fui::Window::ResizeMode::AllowGrow,
+      fui::Window::ResizeMode::AllowGrow,
+    });
 }
