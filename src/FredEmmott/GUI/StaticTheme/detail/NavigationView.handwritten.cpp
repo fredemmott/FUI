@@ -59,6 +59,14 @@ const ImmutableStyle& NavigationViewContentHeaderStyle() {
   using namespace StaticTheme::Common;
   static const ImmutableStyle ret {
     Style()
+      /* You might notice this doesn't match the header padding/margin in the
+       * WinUI3 gallery app's main window; this is because it does its' own
+       * header inside the content area, instead of using the NavigationView's
+       * 'header'.
+       *
+       * For a comparable example, see the 'window' example under the Title Bar
+       * control samples instead.
+       */
       .MarginLeft(NavigationViewHeaderMarginLeft)
       .MarginTop(NavigationViewHeaderMarginTop)
       .MarginRight(NavigationViewHeaderMarginRight)
