@@ -6,6 +6,8 @@
 #include <map>
 #include <print>
 
+#include "FredEmmott/GUI/Widgets/NavigationView.hpp"
+
 #ifdef _WIN32
 #include "demo_win32.hpp"
 #endif
@@ -25,6 +27,17 @@ constexpr auto LoremIpsum
 static void AppTick(fui::Window& window) {
   fuii::WindowTitle("FUI Demo");
   std::ignore = fuii::WindowSubtitle("I like turtles");
+
+  const auto nav
+    = fuii::immediate_detail::ChildlessWidget<fui::Widgets::NavigationView>(
+      fuii::ID {std::source_location::current()});
+  fuii::immediate_detail::PushParentOverride(nav->GetItemsRoot());
+  fuii::Label("Test item");
+  fuii::immediate_detail::PopParentOverride(nav->GetItemsRoot());
+  fuii::immediate_detail::PushParentOverride(nav->GetContentRoot());
+  fuii::Label("Test content");
+  fuii::immediate_detail::PopParentOverride(nav->GetContentRoot());
+  return;// FIXME
 
   constexpr bool UseScrollView = true;
   if constexpr (UseScrollView) {
