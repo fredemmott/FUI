@@ -133,7 +133,9 @@ const ImmutableStyle& TitleBarIconStyle() {
       .MarginRight(TitleBarIconMarginRight)
       .MarginBottom(TitleBarIconMarginBottom)
       .MaxWidth(TitleBarIconMaxWidth)
-      .MaxHeight(TitleBarIconMaxHeight),
+      .MaxHeight(TitleBarIconMaxHeight)
+      .Height(TitleBarIconMaxHeight)
+      .Width(TitleBarIconMaxWidth),
   };
   return ret;
 }
