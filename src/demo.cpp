@@ -32,6 +32,7 @@ static void AppTick(fui::Window& window) {
     const auto nav
       = fuii::immediate_detail::ChildlessWidget<fui::Widgets::NavigationView>(
         fuii::ID {std::source_location::current()});
+    nav->SetHeaderText("Test Header");
     fuii::immediate_detail::PushParentOverride(nav->GetItemsRoot());
     fuii::Label("Test item");
     fuii::immediate_detail::PopParentOverride(nav->GetItemsRoot());
