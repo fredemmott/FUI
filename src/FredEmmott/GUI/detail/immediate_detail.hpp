@@ -17,7 +17,6 @@ using namespace Widgets::widget_detail;
 struct StackEntry final {
   std::vector<Widget*> mPending;
   std::vector<Widget*> mNewSiblings;
-  uint64_t mNextIndex {};
 };
 
 extern thread_local std::vector<StackEntry> tStack;
