@@ -20,14 +20,18 @@ NavigationViewItem::NavigationViewItem(const id_type id)
       0,
       NavigationViewItemLabelStyle(),
       {NavigationViewItemLabelStyleClass})) {
-  this->SetStructuralChildren({mIcon, mText});
+  this->SetLogicalChildren({mIcon, mText});
 }
 
 NavigationViewItem::~NavigationViewItem() = default;
 
-Widget::EventHandlerResult NavigationViewItem::OnClick(const MouseEvent&) {
+void NavigationViewItem::Invoke() {
   mWasActivated = true;
   this->SetIsChecked(true);
+}
+
+Widget::EventHandlerResult NavigationViewItem::OnClick(const MouseEvent&) {
+  this->Invoke();
   return EventHandlerResult::StopPropagation;
 }
 

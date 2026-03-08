@@ -31,12 +31,6 @@ class NavigationView final : public Widget {
 
   void SetHeaderText(std::string_view);
 
-  Widget* GetStructuralParentForLogicalChildren() noexcept override {
-    FUI_FATAL(
-      "Children should not be directly manipulated on a NavigationView; use "
-      "Get*Root instead");
-  }
-
  private:
   // Contains menu/NavigationViewItems
   Widget* mPane {};

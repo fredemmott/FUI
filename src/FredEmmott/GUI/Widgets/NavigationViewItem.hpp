@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include "Focusable.hpp"
 #include "Label.hpp"
 #include "Widget.hpp"
 
@@ -14,7 +15,7 @@ namespace FredEmmott::GUI::Widgets {
  *
  * This means they function roughly the same as radio buttons.
  */
-class NavigationViewItem final : public Widget {
+class NavigationViewItem final : public Widget, public IInvocable {
  public:
   explicit NavigationViewItem(id_type id);
   ~NavigationViewItem() override;
@@ -36,6 +37,9 @@ class NavigationViewItem final : public Widget {
     mText->SetText(text);
     return this;
   }
+
+  // IInvocable
+  void Invoke() override;
 
  protected:
   EventHandlerResult OnClick(const MouseEvent&) override;
