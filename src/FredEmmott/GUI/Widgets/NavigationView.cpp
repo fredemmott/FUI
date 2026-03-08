@@ -51,6 +51,7 @@ NavigationView::NavigationView(const id_type id)
   mPane->SetStructuralChildren({mPaneHeader, mItemsRoot, mFooterItemsRoot});
   mContentOuter->SetStructuralChildren({mContentHeader, mContentInner});
   this->SetStructuralChildren({mPane, mContentOuter});
+  mPane->AddStyleClass(NavigationViewPaneExpandedStyleClass);
 }
 
 NavigationView::~NavigationView() = default;

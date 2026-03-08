@@ -42,5 +42,8 @@ Font ResolveGlyphFont(const Usage usage) {
       throw std::logic_error("An unknown render API is selected");
   }
 }
+Font ResolveGlyphFont(const float dipSize) {
+  return ResolveGlyphFont(Usage::Body).WithSize(dipSize);
+}
 
 }// namespace FredEmmott::GUI::SystemFont

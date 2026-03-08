@@ -32,12 +32,16 @@ const ImmutableStyle& NavigationViewPaneStyle() {
           .AlignItems(YGAlignFlexStart)
           .BackgroundColor(NavigationViewExpandedPaneBackground)
           .Width(320)// Literal in C++, not in xaml or named constant
-        )};
+        )
+      .Descendants(
+        NavigationViewItemLabelStyleClass, Style().Display(YGDisplayFlex))};
   return ret;
 }
+
 const ImmutableStyle& NavigationViewItemsRootStyle() {
   static const ImmutableStyle ret {
     Style()
+      .AlignSelf(YGAlignStretch)
       .FlexDirection(YGFlexDirectionColumn)
       .FlexGrow(1)
       .AlignItems(YGAlignFlexStart),
@@ -109,18 +113,74 @@ const ImmutableStyle& NavigationViewItemStyle() {
   using namespace StaticTheme::NavigationView;
   static const ImmutableStyle ret {
     Style()
-      .Height(NavigationViewItemOnLeftMinHeight)//
+      .Height(NavigationViewItemOnLeftMinHeight)
       .FlexDirection(YGFlexDirectionRow)
       .AlignItems(YGAlignCenter)
-      .MarginLeft(NavigationViewItemMarginLeft)
-      .MarginRight(NavigationViewItemMarginRight)
-      .BorderRadius(ControlCornerRadius)//
+      .AlignSelf(YGAlignStretch)
+      .MarginLeft(NavigationViewItemButtonMarginLeft)
+      .MarginTop(NavigationViewItemButtonMarginTop)
+      .MarginRight(NavigationViewItemButtonMarginRight)
+      .MarginBottom(NavigationViewItemButtonMarginBottom)
+      .PaddingLeft(NavigationViewItemInnerHeaderMarginLeft)
+      .PaddingTop(NavigationViewItemInnerHeaderMarginTop)
+      .PaddingRight(NavigationViewItemInnerHeaderMarginRight)
+      .PaddingBottom(NavigationViewItemInnerHeaderMarginBottom)
+      .BorderRadius(ControlCornerRadius)
+      .BorderColor(NavigationViewItemBorderBrush)
+      .BorderWidth(NavigationViewItemBorderThickness)
+      .BackgroundColor(NavigationViewItemBackground)
+      .Color(NavigationViewItemForeground)
+      .Font(SystemFont::Body)
       .And(
-        Hover, Style().BackgroundColor(NavigationViewItemBackgroundPointerOver))
-      .And(Active, Style().BackgroundColor(NavigationViewItemBackgroundPressed))
+        Hover,
+        Style()
+          .BackgroundColor(NavigationViewItemBackgroundPointerOver)
+          .BorderColor(NavigationViewItemBorderBrushPointerOver)
+          .Color(NavigationViewItemForegroundPointerOver))
+      .And(
+        Active,
+        Style()
+          .BackgroundColor(NavigationViewItemBackgroundPressed)
+          .BorderColor(NavigationViewItemBorderBrushPressed)
+          .Color(NavigationViewItemForegroundPressed))
       .And(
         Checked,
-        Style().BackgroundColor(NavigationViewItemBackgroundSelected))};
+        Style()
+          .BackgroundColor(NavigationViewItemBackgroundSelected)
+          .BorderColor(NavigationViewItemBorderBrushSelected)
+          .Color(NavigationViewItemForegroundSelected)
+          // Used if we ever supported top nav
+          // .Font(SystemFont::BodyStrong)
+          .And(
+            Hover,
+            Style()
+              .BackgroundColor(NavigationViewItemBackgroundSelectedPointerOver)
+              .BorderColor(NavigationViewItemBorderBrushSelectedPointerOver)
+              .Color(NavigationViewItemForegroundSelectedPointerOver))
+          .And(
+            Active,
+            Style()
+              .BackgroundColor(NavigationViewItemBackgroundSelectedPressed)
+              .BorderColor(NavigationViewItemBorderBrushSelectedPressed)
+              .Color(NavigationViewItemForegroundSelectedPressed)))};
+  return ret;
+}
+
+const ImmutableStyle& NavigationViewItemIconStyle() {
+  static const ImmutableStyle ret {
+    Style().Font(SystemFont::ResolveGlyphFont(16))};
+  return ret;
+}
+const ImmutableStyle& NavigationViewItemLabelStyle() {
+  static const ImmutableStyle ret {
+    // Overridden by Pane when expanded
+    Style()
+      .Display(YGDisplayNone)
+      .MarginLeft(NavigationViewItemInnerHeaderMarginLeft)
+      .MarginTop(NavigationViewItemInnerHeaderMarginTop)
+      .MarginRight(NavigationViewItemInnerHeaderMarginRight)
+      .MarginBottom(NavigationViewItemInnerHeaderMarginBottom),
+  };
   return ret;
 }
 

@@ -15,8 +15,11 @@ constexpr LiteralStyleClass NavigationViewItemStyleClass {
 
 NavigationViewItem::NavigationViewItem(const id_type id)
   : Widget(id, NavigationViewItemStyleClass, NavigationViewItemStyle()),
-    mIcon(new Label(0)),
-    mText(new Label(0)) {
+    mIcon(new Label(0, NavigationViewItemIconStyle())),
+    mText(new Label(
+      0,
+      NavigationViewItemLabelStyle(),
+      {NavigationViewItemLabelStyleClass})) {
   this->SetStructuralChildren({mIcon, mText});
 }
 
