@@ -163,31 +163,142 @@ void SkiaRenderer::StrokeRoundedRect(
   const Brush& brush,
   const Rect& rect,
   const CornerRadius& radii,
+  const Edges edges,
   const float thickness) {
+  static constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
+
   auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(thickness);
   paint.setAntiAlias(true);
-  if (radii.IsUniform()) {
-    const auto radius = radii.GetUniformValue();
-    mCanvas->drawRoundRect(rect, radius, radius, paint);
-    return;
-  }
-
   const auto tl = radii.GetTopLeft();
   const auto tr = radii.GetTopRight();
   const auto br = radii.GetBottomRight();
   const auto bl = radii.GetBottomLeft();
 
-  const SkVector skRadii[4] {
-    {tl, tl},
-    {tr, tr},
-    {br, br},
-    {bl, bl},
+  if (edges == Edges::All) {
+    const SkVector skRadii[4] {
+      {tl, tl},
+      {tr, tr},
+      {br, br},
+      {bl, bl},
+    };
+    SkRRect roundedRect;
+    roundedRect.setRectRadii(rect, skRadii);
+    mCanvas->drawRRect(roundedRect, paint);
+    return;
+  }
+
+  SkPath path;
+  bool attached = false;
+  const auto MoveOrLineTo = [&](const Point& point) {
+    if (std::exchange(attached, true)) {
+      path.lineTo(point.mX, point.mY);
+    } else {
+      path.moveTo(point.mX, point.mY);
+    }
   };
-  SkRRect roundedRect;
-  roundedRect.setRectRadii(rect, skRadii);
-  mCanvas->drawRRect(roundedRect, paint);
+  const auto LineTo
+    = [&path](const Point& point) { path.lineTo(point.mX, point.mY); };
+
+  if ((edges & Edges::Top) == Edges::Top) {
+    MoveOrLineTo(rect.GetTopLeft() + Point {tl, 0});
+    LineTo(rect.GetTopRight() - Point {tr, 0});
+  } else {
+    FUI_ASSERT(tl < Epsilon);
+    FUI_ASSERT(tr < Epsilon);
+    attached = false;
+  }
+
+  if (tr > Epsilon) {
+    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
+    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
+    FUI_ASSERT(attached);
+    // Rect represents the full circle, not the arc
+    path.arcTo(
+      SkRect::MakeLTRB(
+        rect.GetRight() - (2 * tr),
+        rect.GetTop(),
+        rect.GetRight(),
+        rect.GetTop() + (2 * tr)),
+      270,// 0 degrees is 3'o clock, start at 12
+      90,// Sweep 90 degrees,
+      false);
+  }
+
+  if ((edges & Edges::Right) == Edges::Right) {
+    MoveOrLineTo(rect.GetTopRight() + Point {0, tr});
+    LineTo(rect.GetBottomRight() - Point {0, br});
+  } else {
+    FUI_ASSERT(tr < Epsilon);
+    FUI_ASSERT(br < Epsilon);
+    attached = false;
+  }
+
+  if (br > Epsilon) {
+    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
+    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
+    FUI_ASSERT(attached);
+    path.arcTo(
+      SkRect::MakeLTRB(
+        rect.GetRight() - (2 * br),
+        rect.GetBottom() - (2 * br),
+        rect.GetRight(),
+        rect.GetBottom()),
+      0,
+      90,
+      false);
+  }
+
+  if ((edges & Edges::Bottom) == Edges::Bottom) {
+    MoveOrLineTo(rect.GetBottomRight() - Point {br, 0});
+    LineTo(rect.GetBottomLeft() + Point {bl, 0});
+  } else {
+    FUI_ASSERT(br < Epsilon);
+    FUI_ASSERT(bl < Epsilon);
+    attached = false;
+  }
+
+  if (bl > Epsilon) {
+    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
+    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
+    FUI_ASSERT(attached);
+    path.arcTo(
+      SkRect::MakeLTRB(
+        rect.GetLeft(),
+        rect.GetBottom() - (2 * bl),
+        rect.GetLeft() + (2 * bl),
+        rect.GetBottom()),
+      90,// 90 degrees from 3 o'clock -> 6 o'clock
+      90,
+      false);
+  }
+
+  if ((edges & Edges::Left) == Edges::Left) {
+    MoveOrLineTo(rect.GetBottomLeft() - Point {0, bl});
+    LineTo(rect.GetTopLeft() + Point {0, tl});
+  } else {
+    FUI_ASSERT(bl < Epsilon);
+    FUI_ASSERT(tl < Epsilon);
+    attached = false;
+  }
+
+  if (tl > Epsilon) {
+    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
+    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
+    FUI_ASSERT(attached);
+    path.arcTo(
+      SkRect::MakeLTRB(
+        rect.GetLeft(),
+        rect.GetTop(),
+        rect.GetLeft() + (2 * tl),
+        rect.GetTop() + (2 * tl)),
+      180,
+      90,
+      false);
+  }
+
+  mCanvas->drawPath(path, paint);
 }
 
 void SkiaRenderer::StrokeArc(

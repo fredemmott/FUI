@@ -4,6 +4,8 @@
 
 #include <wil/com.h>
 
+#include <FredEmmott/utility/bitflag_enums.hpp>
+
 #include "Brush.hpp"
 #include "Color.hpp"
 #include "Font.hpp"
@@ -69,6 +71,18 @@ enum class StrokeCap {
   Round,
 };
 
+enum class Edges : uint8_t {
+  None,
+  Top = 1,
+  Bottom = 2,
+  Left = 4,
+  Right = 8,
+  All = Top | Bottom | Left | Right,
+};
+consteval bool is_bitflag_enum(std::type_identity<Edges>) {
+  return true;
+};
+
 class Renderer {
  public:
   virtual ~Renderer() = default;
@@ -123,6 +137,7 @@ class Renderer {
     const Brush& brush,
     const Rect& rect,
     const CornerRadius&,
+    Edges edges = Edges::All,
     float thickness = 1) = 0;
 
   /** Stroke an arc.

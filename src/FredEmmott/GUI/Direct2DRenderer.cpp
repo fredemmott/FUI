@@ -158,7 +158,7 @@ void Direct2DRenderer::FillRoundedRect(
     return;
   }
 
-  const auto path = MakeRoundedRectPathGeometry(rect, radii);
+  const auto path = MakeRoundedRectPathGeometry(rect, radii, Edges::All);
   mDeviceResources.mD2DDeviceContext->FillGeometry(
     path.get(), brush.as<ID2D1Brush*>(this, rect), nullptr);
 }
@@ -167,8 +167,12 @@ void Direct2DRenderer::StrokeRoundedRect(
   const Brush& brush,
   const Rect& rect,
   const CornerRadius& radii,
+  const Edges edges,
   const float thickness) {
-  if (radii.IsUniform()) {
+  FUI_ASSERT(
+    edges != Edges::None,
+    "Should never call StrokeRoundedRect if there's nothing to do");
+  if (radii.IsUniform() && edges == Edges::All) {
     const auto radius = radii.GetUniformValue();
     mDeviceResources.mD2DDeviceContext->DrawRoundedRectangle(
       {rect, radius, radius},
@@ -178,7 +182,7 @@ void Direct2DRenderer::StrokeRoundedRect(
     return;
   }
 
-  const auto path = MakeRoundedRectPathGeometry(rect, radii);
+  const auto path = MakeRoundedRectPathGeometry(rect, radii, edges);
   mDeviceResources.mD2DDeviceContext->DrawGeometry(
     path.get(), brush.as<ID2D1Brush*>(this, rect), thickness);
 }
@@ -404,7 +408,10 @@ ID2D1StrokeStyle* Direct2DRenderer::GetStrokeStyle(const StrokeCap cap) const {
 }
 wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   const Rect& rect,
-  const CornerRadius& radii) const {
+  const CornerRadius& radii,
+  const Edges edges) const {
+  static constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
+
   FUI_ASSERT(
     !radii.IsUniform(),
     "Should use more efficient painting approaches for uniform corner radii");
@@ -418,44 +425,120 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   CheckHResult(mDeviceResources.mD2DFactory->CreatePathGeometry(&path));
   wil::com_ptr<ID2D1GeometrySink> sink;
   CheckHResult(path->Open(&sink));
-  sink->BeginFigure(
-    (rect.GetTopLeft() - Point {0, -topLeftRadius}).as<D2D1_POINT_2F>(),
-    D2D1_FIGURE_BEGIN_FILLED);
-  sink->AddArc({
-    (rect.GetTopLeft() + Point {topLeftRadius, 0}).as<D2D1_POINT_2F>(),
-    {topLeftRadius, topLeftRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->AddLine(
-    (rect.GetTopRight() - Point {topRightRadius, 0}).as<D2D1_POINT_2F>());
-  sink->AddArc({
-    (rect.GetTopRight() + Point {0, topRightRadius}).as<D2D1_POINT_2F>(),
-    {topRightRadius, topRightRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->AddLine(
-    (rect.GetBottomRight() - Point {0, bottomRightRadius}).as<D2D1_POINT_2F>());
-  sink->AddArc({
-    (rect.GetBottomRight() - Point {bottomRightRadius, 0}).as<D2D1_POINT_2F>(),
-    {bottomRightRadius, bottomRightRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->AddLine(
-    (rect.GetBottomLeft() + Point {bottomLeftRadius, 0}).as<D2D1_POINT_2F>());
-  sink->AddArc({
-    (rect.GetBottomLeft() - Point {0, bottomLeftRadius}).as<D2D1_POINT_2F>(),
-    {bottomLeftRadius, bottomLeftRadius},
-    90,
-    D2D1_SWEEP_DIRECTION_CLOCKWISE,
-    D2D1_ARC_SIZE_SMALL,
-  });
-  sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+
+  bool isFigureOpen = false;
+  const auto MaybeStartFigure = [&](const Point& pt) {
+    if (isFigureOpen)
+      return;
+    sink->BeginFigure(pt.as<D2D1_POINT_2F>(), D2D1_FIGURE_BEGIN_FILLED);
+    isFigureOpen = true;
+  };
+
+  const auto MaybeEndFigure = [&]() {
+    if (!isFigureOpen)
+      return;
+    sink->EndFigure(D2D1_FIGURE_END_OPEN);
+    isFigureOpen = false;
+  };
+
+  if ((edges & Edges::Top) == Edges::Top) {
+    MaybeStartFigure(rect.GetTopLeft() + Point {topLeftRadius, 0});
+    sink->AddLine(
+      (rect.GetTopRight() - Point {topRightRadius, 0}).as<D2D1_POINT_2F>());
+  } else {
+    FUI_ASSERT(topLeftRadius < Epsilon);
+    FUI_ASSERT(topRightRadius < Epsilon);
+    // No MaybeEndFigure as the top edge is first
+  }
+
+  if (topRightRadius > Epsilon) {
+    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
+    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
+    FUI_ASSERT(isFigureOpen);
+    sink->AddArc({
+      (rect.GetTopRight() + Point {0, topRightRadius}).as<D2D1_POINT_2F>(),
+      {topRightRadius, topRightRadius},
+      0,
+      D2D1_SWEEP_DIRECTION_CLOCKWISE,
+      D2D1_ARC_SIZE_SMALL,
+    });
+  }
+
+  if ((edges & Edges::Right) == Edges::Right) {
+    MaybeStartFigure(rect.GetTopRight() + Point {0, topRightRadius});
+    sink->AddLine((rect.GetBottomRight() - Point {0, bottomRightRadius})
+                    .as<D2D1_POINT_2F>());
+  } else {
+    FUI_ASSERT(topRightRadius < Epsilon);
+    FUI_ASSERT(bottomRightRadius < Epsilon);
+    MaybeEndFigure();
+  }
+
+  if (bottomRightRadius > Epsilon) {
+    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
+    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
+    FUI_ASSERT(isFigureOpen);
+    sink->AddArc({
+      (rect.GetBottomRight() - Point {bottomRightRadius, 0})
+        .as<D2D1_POINT_2F>(),
+      {bottomRightRadius, bottomRightRadius},
+      0,
+      D2D1_SWEEP_DIRECTION_CLOCKWISE,
+      D2D1_ARC_SIZE_SMALL,
+    });
+  }
+
+  if ((edges & Edges::Bottom) == Edges::Bottom) {
+    MaybeStartFigure(rect.GetBottomRight() - Point {bottomRightRadius, 0});
+    sink->AddLine(
+      (rect.GetBottomLeft() + Point {bottomLeftRadius, 0}).as<D2D1_POINT_2F>());
+  } else {
+    FUI_ASSERT(bottomRightRadius < Epsilon);
+    FUI_ASSERT(bottomLeftRadius < Epsilon);
+    MaybeEndFigure();
+  }
+
+  if (bottomLeftRadius > Epsilon) {
+    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
+    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
+    FUI_ASSERT(isFigureOpen);
+    sink->AddArc({
+      (rect.GetBottomLeft() - Point {0, bottomLeftRadius}).as<D2D1_POINT_2F>(),
+      {bottomLeftRadius, bottomLeftRadius},
+      0,
+      D2D1_SWEEP_DIRECTION_CLOCKWISE,
+      D2D1_ARC_SIZE_SMALL,
+    });
+  }
+
+  if ((edges & Edges::Left) == Edges::Left) {
+    MaybeStartFigure(rect.GetBottomLeft() - Point {0, bottomLeftRadius});
+    sink->AddLine(
+      (rect.GetTopLeft() + Point {0, topLeftRadius}).as<D2D1_POINT_2F>());
+  } else {
+    FUI_ASSERT(bottomRightRadius < Epsilon);
+    FUI_ASSERT(bottomLeftRadius < Epsilon);
+    MaybeEndFigure();
+  }
+
+  if (topLeftRadius > Epsilon) {
+    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
+    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
+    FUI_ASSERT(isFigureOpen);
+    sink->AddArc({
+      (rect.GetTopLeft() + Point {topLeftRadius, 0}).as<D2D1_POINT_2F>(),
+      {topLeftRadius, topLeftRadius},
+      0,
+      D2D1_SWEEP_DIRECTION_CLOCKWISE,
+      D2D1_ARC_SIZE_SMALL,
+    });
+  }
+
+  if (edges == Edges::All) {
+    sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+  } else {
+    MaybeEndFigure();
+  }
   CheckHResult(sink->Close());
   return path;
 }
