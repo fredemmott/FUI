@@ -144,6 +144,7 @@ add_library(
   FredEmmott/GUI/detail/immediate/TextBlockStylesResultMixin.hpp
   FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp
   FredEmmott/GUI/detail/immediate/ValueResultMixin.hpp
+  FredEmmott/GUI/detail/immediate/Widget.cpp
   FredEmmott/GUI/detail/immediate/Widget.hpp
   FredEmmott/GUI/detail/immediate/WidgetlessResultMixin.hpp
   FredEmmott/GUI/detail/immediate/widget_from_result.hpp
