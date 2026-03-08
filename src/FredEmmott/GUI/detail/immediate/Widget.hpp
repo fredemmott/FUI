@@ -12,7 +12,7 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 static_assert(std::same_as<ID::value_type, Widgets::Widget::id_type>);
 
 template <std::derived_from<Widgets::Widget> T, class... Args>
-T* BeginWidget(const ID id, Args&&... args) {
+T* ChildlessWidget(const ID id, Args&&... args) {
   auto& frame = tStack.back();
 
   if constexpr (Config::Debug) {
@@ -33,7 +33,13 @@ T* BeginWidget(const ID id, Args&&... args) {
     frame.mPending.erase(pending);
   }
 
-  const auto it = GetCurrentNode<T>();
+  return static_cast<T*>(frame.mNewSiblings.back());
+}
+
+template <std::derived_from<Widgets::Widget> T, class... Args>
+T* BeginWidget(const ID id, Args&&... args) {
+  const auto it = ChildlessWidget<T>(id, std::forward<Args>(args)...);
+  FUI_ASSERT(it == GetCurrentNode<T>());
 
   tStack.emplace_back(
     it->GetLogicalChildren() | std::ranges::to<std::vector>());
@@ -43,22 +49,13 @@ T* BeginWidget(const ID id, Args&&... args) {
 
 template <class T = Widgets::Widget>
 void EndWidget() {
-  if constexpr (Config::Debug) {
-    if (!GetCurrentParentNode<T>()) [[unlikely]] {
-      throw std::logic_error("EndWidget type does not match BeginWidget");
-    }
-  }
-  const auto back = std::move(tStack.back());
-  tStack.pop_back();
+  const auto parent = GetCurrentParentNode<T>();
+  FUI_ASSERT(
+    parent,
+    "in EndWidget without a parent, or with a parent of a differing type");
 
-  GetCurrentNode()->SetLogicalChildren(back.mNewSiblings);
-}
-
-template <std::derived_from<Widgets::Widget> T, class... Args>
-T* ChildlessWidget(const ID id, Args&&... args) {
-  auto ret = BeginWidget<T>(id, std::forward<Args>(args)...);
+  parent->SetLogicalChildren(tStack.back().mNewSiblings);
   tStack.pop_back();
-  return ret;
 }
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
