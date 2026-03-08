@@ -59,4 +59,7 @@ void EndWidget() {
   tStack.pop_back();
 }
 
+void PushParentOverride(Widgets::Widget*);
+void PopParentOverride(Widgets::Widget*);
+
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
