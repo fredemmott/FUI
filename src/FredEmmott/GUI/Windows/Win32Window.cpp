@@ -823,8 +823,8 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
   }
 
   if (
-    mHorizontalResizeMode == ResizeMode::Allow
-    && mVerticalResizeMode == ResizeMode::Allow) {
+    mOptions.mHorizontalResizeMode == ResizeMode::Allow
+    && mOptions.mVerticalResizeMode == ResizeMode::Allow) {
     return {};
   }
 
@@ -847,7 +847,7 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
     = (monitorInfo.rcWork.right - monitorInfo.rcWork.left) - xMargins;
   auto targetWidth = requestedWidth;
 
-  switch (mHorizontalResizeMode) {
+  switch (mOptions.mHorizontalResizeMode) {
     case ResizeMode::Fixed:
       targetWidth = initialWidth;
       break;
@@ -873,7 +873,7 @@ std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
   const auto availableHeight
     = (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) - yMargins;
   auto targetHeight = requestedHeight;
-  switch (mVerticalResizeMode) {
+  switch (mOptions.mVerticalResizeMode) {
     case ResizeMode::Fixed:
       targetHeight = initialHeight;
       break;
@@ -1637,11 +1637,13 @@ void Win32Window::SetIsModal(const bool modal) {
 void Win32Window::SetResizeMode(
   const ResizeMode horizontal,
   const ResizeMode vertical) {
-  if (horizontal == mHorizontalResizeMode && vertical == mVerticalResizeMode) {
+  if (
+    horizontal == mOptions.mHorizontalResizeMode
+    && vertical == mOptions.mVerticalResizeMode) {
     return;
   }
-  mHorizontalResizeMode = horizontal;
-  mVerticalResizeMode = vertical;
+  mOptions.mHorizontalResizeMode = horizontal;
+  mOptions.mVerticalResizeMode = vertical;
 
   if (!mHwnd) {
     return;

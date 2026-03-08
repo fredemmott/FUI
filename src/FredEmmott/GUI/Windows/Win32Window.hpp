@@ -21,8 +21,12 @@ class TitleBar;
 }// namespace FredEmmott::GUI::Widgets
 
 namespace FredEmmott::GUI {
+
 struct WindowOptions {
   std::string mTitle;
+
+  Window::ResizeMode mHorizontalResizeMode = Window::ResizeMode::AllowGrow;
+  Window::ResizeMode mVerticalResizeMode = Window::ResizeMode::Fixed;
 
   NativePoint mInitialPosition {CW_USEDEFAULT, CW_USEDEFAULT};
 
@@ -291,8 +295,6 @@ class Win32Window : public Window {
   bool mTrackingMouseEvents {false};
   std::optional<uint16_t> mHighSurrogate;
   NativePoint mPosition {};
-  ResizeMode mHorizontalResizeMode = ResizeMode::AllowGrow;
-  ResizeMode mVerticalResizeMode = ResizeMode::Fixed;
 
   wil::com_ptr<IDXGIFactory4> mDXGIFactory;
   wil::com_ptr<IDXGISwapChain1> mSwapChain;
