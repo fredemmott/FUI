@@ -192,8 +192,8 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
     for (auto&& sibling: std::ranges::subrange(it + 1, children.end())) {
       if (const auto target = FirstFocusableWidget(sibling)) {
         mFocusedWidget = target;
+        return;
       }
-      return;
     }
     if (IsFocusable(parent)) {
       mFocusedWidget = parent;
