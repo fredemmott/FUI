@@ -6,7 +6,12 @@
 #include <type_traits>
 
 namespace FredEmmott::GUI::Immediate {
-/** An identifier for the selected item in a set of radio buttons.
+/** An identifier for the selected item in a group.
+ *
+ * This includes widgets like:
+ *
+ * - radio buttons
+ * - navigation items
  *
  * This is primarily intended to allow ints, `std::size_t`, and
  * enums, but given all we need to allow is equality, it's fairly
@@ -16,6 +21,9 @@ namespace FredEmmott::GUI::Immediate {
  *   take a pointer
  * - floats are disallowed as while they support ==, using == is
  *   usually a bad idea
+ *
+ *  You could, for example, use a variant to distinguish between user-generated
+ *  navigation items and 'special' navigation items like settings.
  */
 template <class T>
 concept selectable_key = std::equality_comparable<T>
