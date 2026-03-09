@@ -3,6 +3,7 @@
 #include "ComboBoxItem.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/ComboBox.hpp>
+#include <FredEmmott/GUI/Widgets/ComboBoxItemButton.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 
 #include "Button.hpp"
@@ -12,93 +13,7 @@
 namespace FredEmmott::GUI::Immediate {
 
 namespace {
-
-class ComboBoxItemButton : public Widgets::Button,
-                           public Widgets::ISelectionItem {
- public:
-  using Button::Button;
-
-  using Widget::IsChecked;
-  using Widget::SetIsChecked;
-
-  bool IsSelected() const noexcept override {
-    return IsChecked();
-  }
-
-  void Select() override {
-    this->Invoke();
-  }
-};
-
-Style MakeComboBoxItemStyles() {
-  using namespace PseudoClasses;
-  using namespace StaticTheme::Common;
-  using namespace StaticTheme::ComboBox;
-
-  const auto BaseStyles
-    = Style()
-        .BackgroundColor(ComboBoxItemBackground)
-        .BorderColor(ComboBoxItemBorderBrush)
-        .BorderRadius(ComboBoxItemCornerRadius)
-        .Color(ComboBoxItemForeground)
-        .FlexDirection(YGFlexDirectionRow)
-        .Gap(0)
-        .MarginBottom(2)
-        .MarginLeft(5)
-        .MarginRight(5)
-        .MarginTop(2)
-        .PaddingBottom(ComboBoxItemThemePaddingBottom)
-        .PaddingRight(ComboBoxItemThemePaddingRight)
-        .PaddingTop(ComboBoxItemThemePaddingTop)
-        .And(
-          Disabled,
-          Style()
-            .BackgroundColor(ComboBoxItemBackgroundDisabled)
-            .BorderColor(ComboBoxItemBorderBrushDisabled)
-            .Color(ComboBoxItemForegroundDisabled))
-        .And(
-          Hover,
-          Style()
-            .BackgroundColor(ComboBoxItemBackgroundPointerOver)
-            .BorderColor(ComboBoxItemBorderBrushPointerOver)
-            .Color(ComboBoxItemForegroundPointerOver))
-        .And(
-          Active,
-          Style()
-            .BackgroundColor(ComboBoxItemBackgroundPressed)
-            .BorderColor(ComboBoxItemBorderBrushPressed)
-            .Color(ComboBoxItemForegroundPressed));
-  const auto SelectedStyles
-    = Style()
-        .BackgroundColor(ComboBoxItemBackgroundSelected)
-        .BorderColor(ComboBoxItemBorderBrushSelected)
-        .Color(ComboBoxItemForegroundSelected)
-        .And(
-          Disabled,
-          Style()
-            .BackgroundColor(ComboBoxItemBackgroundSelectedDisabled)
-            .BorderColor(ComboBoxItemBorderBrushSelectedDisabled)
-            .Color(ComboBoxItemForegroundSelectedDisabled))
-        .And(
-          Hover,
-          Style()
-            .BackgroundColor(ComboBoxItemBackgroundSelectedPointerOver)
-            .BorderColor(ComboBoxItemBorderBrushSelectedPointerOver)
-            .Color(ComboBoxItemForegroundSelectedPointerOver))
-        .And(
-          Active,
-          Style()
-            .BackgroundColor(ComboBoxItemBackgroundSelectedPressed)
-            .BorderColor(ComboBoxItemBorderBrushSelectedPressed)
-            .Color(ComboBoxItemForegroundSelectedPressed));
-
-  return BaseStyles + Style().And(Checked, SelectedStyles);
-}
-
-auto& ComboBoxItemStyles() {
-  static const ImmutableStyle ret {MakeComboBoxItemStyles()};
-  return ret;
-}
+using Widgets::ComboBoxItemButton;
 
 auto& ComboBoxItemPillStyles() {
   using namespace PseudoClasses;
@@ -137,8 +52,7 @@ auto& ComboBoxItemPillStyles() {
 ComboBoxItemResult<&EndComboBoxItem, void>
 BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   using namespace immediate_detail;
-  const auto item = BeginWidget<ComboBoxItemButton>(
-    id, ComboBoxItemStyles(), StyleClasses {});
+  const auto item = BeginWidget<ComboBoxItemButton>(id);
   if (clicked) {
     *clicked = item->ConsumeWasActivated();
   }

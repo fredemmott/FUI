@@ -5,6 +5,7 @@
 #include <FredEmmott/GUI/StaticTheme/RadioButtons.hpp>
 #include <FredEmmott/GUI/Widgets/Focusable.hpp>
 
+#include "FredEmmott/GUI/Widgets/RadioButton.hpp"
 #include "Label.hpp"
 #include "StackPanel.hpp"
 
@@ -28,6 +29,15 @@ class RadioButtonsInner : public Widgets::Widget,
  public:
   explicit RadioButtonsInner(std::size_t id)
     : Widget(id, InnerStyleClass, InnerStyle()) {}
+
+  std::vector<Widgets::ISelectionItem*> GetSelectionItems()
+    const noexcept override {
+    return GetLogicalChildren()
+      | std::views::transform(&CastToSelectionItem<Widgets::RadioButton>)
+      | std::ranges::to<std::vector>();
+  }
+
+ private:
 };
 }// namespace
 

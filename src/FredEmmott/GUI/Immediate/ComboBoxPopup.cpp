@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 #include "ComboBoxPopup.hpp"
 
-#include <ComboBox.hpp>
-
+#include "ComboBox.hpp"
+#include "FredEmmott/GUI/StaticTheme/ComboBox.hpp"
+#include "FredEmmott/GUI/StaticTheme/Common.hpp"
+#include "FredEmmott/GUI/Widgets/ComboBoxItemButton.hpp"
 #include "FredEmmott/GUI/Widgets/Focusable.hpp"
 #include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
@@ -12,6 +14,7 @@
 
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
+using Widgets::ComboBoxItemButton;
 
 namespace {
 auto& OuterStyles() {
@@ -56,6 +59,13 @@ class ComboBoxList final : public Widgets::Widget,
  public:
   explicit ComboBoxList(const std::size_t id)
     : Widget(id, LiteralStyleClass {"ComboBox/List"}, InnerStyles(), {}) {}
+
+  std::vector<Widgets::ISelectionItem*> GetSelectionItems()
+    const noexcept override {
+    return GetLogicalChildren()
+      | std::views::transform(&CastToSelectionItem<ComboBoxItemButton>)
+      | std::ranges::to<std::vector>();
+  }
 };
 }// namespace
 

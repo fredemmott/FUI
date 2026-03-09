@@ -26,14 +26,30 @@ class IToggleable : public IFocusable {
 
 class ISelectionItem;
 
-class ISelectionContainer : public IFocusable {};
+class ISelectionContainer : public IFocusable {
+ public:
+  [[nodiscard]]
+  virtual std::vector<ISelectionItem*> GetSelectionItems() const noexcept = 0;
+
+ protected:
+  template <std::derived_from<Widget> TChildWidget>
+    requires std::derived_from<TChildWidget, ISelectionItem>
+  static ISelectionItem* CastToSelectionItem(Widget* child) {
+    if constexpr (Config::Debug) {
+      const auto refined = dynamic_cast<TChildWidget*>(child);
+      FUI_ASSERT(refined, "Got unexpected child type in ISelectionContainer");
+      return refined;
+    } else {
+      return static_cast<TChildWidget*>(child);
+    }
+  }
+};
 
 /// A single item that can be selected from a list, e.g. a single radio button
 class ISelectionItem : public IFocusable {
  public:
   [[nodiscard]]
-  virtual bool IsSelected() const noexcept
-    = 0;
+  virtual bool IsSelected() const noexcept = 0;
   virtual void Select() = 0;
 };
 
