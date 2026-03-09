@@ -90,8 +90,8 @@ void FocusManager::FocusNextWidget() {
     = wil::scope_exit([this] { this->FocusFirstSelectedItem(); });
 
   auto child = std::exchange(mFocusedWidget, nullptr);
-  if (dynamic_cast<Widgets::ISelectionItem const*>(child)) {
-    child = child->GetLogicalParentOrNull();
+  if (const auto item = dynamic_cast<Widgets::ISelectionItem const*>(child)) {
+    child = item->GetSelectionContainer()->GetWidget();
   }
   while (const auto parent = child->GetLogicalParentOrNull()) {
     const auto children = parent->GetLogicalChildren();
@@ -116,17 +116,20 @@ void FocusManager::FocusNextWidget() {
 }
 
 void FocusManager::FocusFirstSelectedItem() {
-  if (!dynamic_cast<Widgets::ISelectionContainer const*>(mFocusedWidget)) {
+  const auto container
+    = dynamic_cast<Widgets::ISelectionContainer const*>(mFocusedWidget);
+  if (!container) {
     return;
   }
 
-  for (auto&& child: mFocusedWidget->GetLogicalChildren()) {
-    if (child->IsDisabled()) {
+  for (auto&& item: container->GetSelectionItems()) {
+    const auto widget = item->GetWidget();
+    if (widget->IsDisabled()) {
       continue;
     }
-    const auto it = dynamic_cast<Widgets::ISelectionItem const*>(child);
-    if (it && it->IsSelected()) {
-      mFocusedWidget = child;
+
+    if (item->IsSelected()) {
+      mFocusedWidget = widget;
       return;
     }
   }
@@ -145,8 +148,8 @@ void FocusManager::FocusPreviousWidget() {
     = wil::scope_exit([this] { this->FocusFirstSelectedItem(); });
 
   auto child = std::exchange(mFocusedWidget, nullptr);
-  if (dynamic_cast<Widgets::ISelectionItem*>(child)) {
-    child = child->GetLogicalParentOrNull();
+  if (const auto item = dynamic_cast<Widgets::ISelectionItem*>(child)) {
+    child = item->GetSelectionContainer()->GetWidget();
   }
   while (const auto parent = child->GetLogicalParentOrNull()) {
     const auto children = parent->GetLogicalChildren();
@@ -282,34 +285,37 @@ void FocusManager::FocusFirstSelectionItem(auto makeRange) {
     }
   }
 
-  if (!dynamic_cast<Widgets::ISelectionItem const*>(mFocusedWidget)) {
+  const auto item
+    = dynamic_cast<Widgets::ISelectionItem const*>(mFocusedWidget);
+  if (!item) {
     return;
   }
 
-  const auto children
-    = mFocusedWidget->GetLogicalParentOrNull()->GetLogicalChildren();
+  const auto children = item->GetSelectionContainer()->GetSelectionItems();
   for (auto&& sibling: makeRange(children)) {
-    if (sibling->IsDisabled()) {
+    const auto widget = sibling->GetWidget();
+    if (widget->IsDisabled()) {
       continue;
     }
-    if (dynamic_cast<Widgets::ISelectionItem const*>(sibling)) {
-      mFocusedWidget = sibling;
-      mFocusKind = FocusKind::Visible;
-      return;
-    }
+
+    mFocusedWidget = widget;
+    mFocusKind = FocusKind::Visible;
+    return;
   }
 }
 
 void FocusManager::FocusNextSelectionItem() {
   FocusFirstSelectionItem([this](const auto& children) {
-    const auto it = std::ranges::find(children, mFocusedWidget);
+    const auto it = std::ranges::find(
+      children, mFocusedWidget, &Widgets::IFocusable::GetWidget);
     return std::ranges::subrange(it + 1, children.end());
   });
 }
 
 void FocusManager::FocusPreviousSelectionItem() {
   FocusFirstSelectionItem([this](const auto& children) {
-    const auto it = std::ranges::find(children, mFocusedWidget);
+    const auto it = std::ranges::find(
+      children, mFocusedWidget, &Widgets::IFocusable::GetWidget);
     return std::ranges::subrange(children.begin(), it) | std::views::reverse;
   });
 }
