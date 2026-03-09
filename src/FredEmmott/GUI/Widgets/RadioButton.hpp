@@ -19,6 +19,15 @@ class RadioButton final : public Widget, public ISelectionItem {
   bool IsSelected() const noexcept override;
   void Select() override;
 
+  ISelectionContainer* GetSelectionContainer() const noexcept override {
+    if (!mSelectionContainer) {
+      mSelectionContainer
+        = dynamic_cast<ISelectionContainer*>(this->GetLogicalParent());
+      FUI_ASSERT(mSelectionContainer);
+    }
+    return mSelectionContainer;
+  }
+
   [[nodiscard]]
   bool ConsumeWasChanged() noexcept {
     return std::exchange(mWasChanged, false);
@@ -31,6 +40,7 @@ class RadioButton final : public Widget, public ISelectionItem {
   [[nodiscard]] EventHandlerResult OnClick(const MouseEvent&) override;
 
  private:
+  mutable ISelectionContainer* mSelectionContainer {};
   Widget* mFosterParent {};
   bool mWasChanged {false};
 };

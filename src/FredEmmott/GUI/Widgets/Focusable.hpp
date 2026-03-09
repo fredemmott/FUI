@@ -32,15 +32,15 @@ class ISelectionContainer : public IFocusable {
   virtual std::vector<ISelectionItem*> GetSelectionItems() const noexcept = 0;
 
  protected:
-  template <std::derived_from<Widget> TChildWidget>
-    requires std::derived_from<TChildWidget, ISelectionItem>
-  static ISelectionItem* CastToSelectionItem(Widget* child) {
+  template <std::derived_from<Widget> TItemWidget>
+    requires std::derived_from<TItemWidget, ISelectionItem>
+  static ISelectionItem* CastToSelectionItem(Widget* item) {
     if constexpr (Config::Debug) {
-      const auto refined = dynamic_cast<TChildWidget*>(child);
-      FUI_ASSERT(refined, "Got unexpected child type in ISelectionContainer");
+      const auto refined = dynamic_cast<TItemWidget*>(item);
+      FUI_ASSERT(refined, "Got unexpected item type in ISelectionContainer");
       return refined;
     } else {
-      return static_cast<TChildWidget*>(child);
+      return static_cast<TItemWidget*>(item);
     }
   }
 };
@@ -51,6 +51,22 @@ class ISelectionItem : public IFocusable {
   [[nodiscard]]
   virtual bool IsSelected() const noexcept = 0;
   virtual void Select() = 0;
+
+  [[nodiscard]]
+  virtual ISelectionContainer* GetSelectionContainer() const noexcept = 0;
+
+ protected:
+  template <std::derived_from<Widget> TContainerWidget>
+    requires std::derived_from<TContainerWidget, ISelectionContainer>
+  static ISelectionContainer* CastToSelectionContainer(Widget* container) {
+    if constexpr (Config::Debug) {
+      const auto refined = dynamic_cast<TContainerWidget*>(container);
+      FUI_ASSERT(refined, "Got unexpected container type in ISelectionItem");
+      return refined;
+    } else {
+      return static_cast<TContainerWidget*>(container);
+    }
+  }
 };
 
 }// namespace FredEmmott::GUI::Widgets

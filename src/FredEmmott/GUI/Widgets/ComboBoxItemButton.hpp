@@ -22,6 +22,18 @@ class ComboBoxItemButton : public Button, public ISelectionItem {
   void Select() override {
     this->Invoke();
   }
+
+  ISelectionContainer* GetSelectionContainer() const noexcept override {
+    if (!mSelectionContainer) {
+      mSelectionContainer
+        = dynamic_cast<ISelectionContainer*>(this->GetLogicalParent());
+      FUI_ASSERT(mSelectionContainer);
+    }
+    return mSelectionContainer;
+  }
+
+ private:
+  mutable ISelectionContainer* mSelectionContainer {};
 };
 
 }// namespace FredEmmott::GUI::Widgets
