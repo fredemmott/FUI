@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ComboBoxItemButton : public Button, public ISelectionItem {
  public:
-  ComboBoxItemButton(id_type id);
+  explicit ComboBoxItemButton(id_type id);
   ~ComboBoxItemButton() override;
 
   using Widget::IsChecked;
@@ -30,6 +30,10 @@ class ComboBoxItemButton : public Button, public ISelectionItem {
       FUI_ASSERT(mSelectionContainer);
     }
     return mSelectionContainer;
+  }
+
+  bool ConsumeWasSelected() noexcept override {
+    return ConsumeWasActivated();
   }
 
  private:

@@ -70,6 +70,8 @@ class ISelectionItem : public IFocusable {
   [[nodiscard]]
   virtual bool IsSelected() const noexcept = 0;
   virtual void Select() = 0;
+  [[nodiscard]]
+  virtual bool ConsumeWasSelected() noexcept = 0;
 
   [[nodiscard]]
   virtual ISelectionContainer* GetSelectionContainer() const noexcept = 0;

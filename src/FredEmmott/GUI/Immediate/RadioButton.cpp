@@ -18,10 +18,10 @@ RadioButtonResult<&EndRadioButton, bool> BeginRadioButton(
   const bool isInitiallyChecked,
   const ID id) {
   const auto widget = BeginWidget<Widgets::RadioButton>(id);
-  const auto changed = widget->ConsumeWasChanged();
+  const auto changed = widget->ConsumeWasSelected();
   if (!changed) {
     widget->SetIsChecked(isInitiallyChecked);
-    std::ignore = widget->ConsumeWasChanged();
+    std::ignore = widget->ConsumeWasSelected();
   }
   return {
     widget,

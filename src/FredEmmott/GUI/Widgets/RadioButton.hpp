@@ -29,8 +29,8 @@ class RadioButton final : public Widget, public ISelectionItem {
   }
 
   [[nodiscard]]
-  bool ConsumeWasChanged() noexcept {
-    return std::exchange(mWasChanged, false);
+  bool ConsumeWasSelected() noexcept override {
+    return std::exchange(mWasSelected, false);
   }
 
  protected:
@@ -42,7 +42,7 @@ class RadioButton final : public Widget, public ISelectionItem {
  private:
   mutable ISelectionContainer* mSelectionContainer {};
   Widget* mFosterParent {};
-  bool mWasChanged {false};
+  bool mWasSelected {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets
