@@ -197,7 +197,8 @@ CheckBox::CheckBox(id_type id)
       id,
       LiteralStyleClass {"CheckBox"},
       CheckBoxStyles(),
-      {*CheckBoxStyleClass}) {
+      {*CheckBoxStyleClass}),
+    IToggleable(this) {
   this->SetStructuralChildren({
     (new Widget(
        0,

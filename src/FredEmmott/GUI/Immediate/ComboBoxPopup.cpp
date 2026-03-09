@@ -58,7 +58,8 @@ class ComboBoxList final : public Widgets::Widget,
                            public Widgets::ISelectionContainer {
  public:
   explicit ComboBoxList(const std::size_t id)
-    : Widget(id, LiteralStyleClass {"ComboBox/List"}, InnerStyles(), {}) {}
+    : Widget(id, LiteralStyleClass {"ComboBox/List"}, InnerStyles(), {}),
+      ISelectionContainer(this) {}
 
   std::vector<Widgets::ISelectionItem*> GetSelectionItems()
     const noexcept override {

@@ -27,8 +27,9 @@ constexpr LiteralStyleClass InnerStyleClass {"RadioButtons/Inner"};
 class RadioButtonsInner : public Widgets::Widget,
                           public Widgets::ISelectionContainer {
  public:
-  explicit RadioButtonsInner(std::size_t id)
-    : Widget(id, InnerStyleClass, InnerStyle()) {}
+  explicit RadioButtonsInner(const std::size_t id)
+    : Widget(id, InnerStyleClass, InnerStyle()),
+      ISelectionContainer(this) {}
 
   std::vector<Widgets::ISelectionItem*> GetSelectionItems()
     const noexcept override {

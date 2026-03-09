@@ -69,6 +69,7 @@ TextBox::TextBox(const id_type id)
       TextBoxStyleClass,
       StaticTheme::TextBox::DefaultTextBoxStyle(),
       {}),
+    IFocusable(this),
     mAutomation(std::make_unique<Automation>()) {
   mTextContainer
     = new Widget({}, TextContainerStyleClass, TextContainerStyles());

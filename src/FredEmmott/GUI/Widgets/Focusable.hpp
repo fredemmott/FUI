@@ -9,18 +9,33 @@ namespace FredEmmott::GUI::Widgets {
 /// Any widget that can receive focus
 class IFocusable {
  public:
+  IFocusable() = delete;
+  explicit constexpr IFocusable(Widget* widget) : mWidget(widget) {
+    FUI_ASSERT(widget);
+  }
+
   virtual ~IFocusable() = default;
+
+  constexpr Widget* GetWidget() const noexcept {
+    return mWidget;
+  }
+
+ private:
+  Widget* mWidget {};
 };
 
 /// Widgets with a single unambiguous action, e.g. buttons
 class IInvocable : public IFocusable {
  public:
+  using IFocusable::IFocusable;
   virtual void Invoke() = 0;
 };
 
 /// Widgets with multiple states that can be rotated through, e.g. checkboxes
 class IToggleable : public IFocusable {
  public:
+  using IFocusable::IFocusable;
+
   virtual void Toggle() = 0;
 };
 
@@ -28,6 +43,8 @@ class ISelectionItem;
 
 class ISelectionContainer : public IFocusable {
  public:
+  using IFocusable::IFocusable;
+
   [[nodiscard]]
   virtual std::vector<ISelectionItem*> GetSelectionItems() const noexcept = 0;
 
@@ -48,6 +65,8 @@ class ISelectionContainer : public IFocusable {
 /// A single item that can be selected from a list, e.g. a single radio button
 class ISelectionItem : public IFocusable {
  public:
+  using IFocusable::IFocusable;
+
   [[nodiscard]]
   virtual bool IsSelected() const noexcept = 0;
   virtual void Select() = 0;

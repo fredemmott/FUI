@@ -151,6 +151,7 @@ Slider::Slider(const id_type id, const Orientation orientation)
       LiteralStyleClass("Slider"),
       ((orientation == Orientation::Horizontal) ? HorizontalSliderStyle()
                                                 : VerticalSliderStyle())),
+    IFocusable(this),
     mOrientation(orientation) {
   const auto isHorizontal = orientation == Orientation::Horizontal;
   mTrack = new Widget(

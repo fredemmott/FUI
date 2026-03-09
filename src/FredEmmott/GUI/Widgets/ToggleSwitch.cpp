@@ -49,7 +49,8 @@ using namespace StaticTheme;
 using namespace widget_detail;
 
 ToggleSwitch::ToggleSwitch(const id_type id)
-  : Widget(id, ToggleSwitchStyleClass, ToggleSwitchStyle()) {
+  : Widget(id, ToggleSwitchStyleClass, ToggleSwitchStyle()),
+    IToggleable(this) {
   this->SetStructuralChildren({
     new ToggleSwitchKnob({}),
     mFosterParent

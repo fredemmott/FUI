@@ -25,7 +25,8 @@ Button::Button(
   const id_type id,
   const ImmutableStyle& style,
   const StyleClasses& classes)
-  : Widget(id, ButtonStyleClass, style, classes) {}
+  : Widget(id, ButtonStyleClass, style, classes),
+    IInvocable(this) {}
 
 Button::~Button() = default;
 

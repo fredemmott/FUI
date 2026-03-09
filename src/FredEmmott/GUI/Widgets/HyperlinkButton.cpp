@@ -11,7 +11,8 @@ HyperlinkButton::HyperlinkButton(id_type id, const StyleClasses& classes)
       id,
       LiteralStyleClass {"HyperlinkButton"},
       StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle(),
-      classes) {}
+      classes),
+    IInvocable(this) {}
 
 HyperlinkButton::~HyperlinkButton() = default;
 

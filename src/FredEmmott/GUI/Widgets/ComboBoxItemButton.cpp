@@ -84,7 +84,9 @@ auto& ComboBoxItemStyles() {
 }// namespace
 
 ComboBoxItemButton::ComboBoxItemButton(const id_type id)
-  : Button(id, ComboBoxItemStyles(), {ComboBoxItemButtonStyleClass}) {}
+  : Button(id, ComboBoxItemStyles(), {ComboBoxItemButtonStyleClass}),
+    ISelectionItem(this) {}
+
 ComboBoxItemButton::~ComboBoxItemButton() {}
 
 }// namespace FredEmmott::GUI::Widgets
