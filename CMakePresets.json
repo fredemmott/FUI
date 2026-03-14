@@ -65,6 +65,15 @@
       }
     },
     {
+      "name": "Direct2D - ASAN",
+      "inherits": "Direct2D - Release",
+      "cacheVariables": {
+        "ENABLE_HYBRID_CRT": "OFF",
+        "CMAKE_CXX_FLAGS": "/fsanitize=address",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-asan-static"
+      }
+    },
+    {
       "name": "Skia - Debug - clang-cl",
       "inherits": "clang-cl",
       "cacheVariables": {
