@@ -88,6 +88,18 @@ class ISelectionItem : public IFocusable {
       return static_cast<TContainerWidget*>(container);
     }
   }
+
+  template <std::derived_from<Widget> TSiblingWidget>
+    requires std::derived_from<TSiblingWidget, ISelectionItem>
+  TSiblingWidget* CastSelectionSibling(ISelectionItem* item) {
+    if constexpr (Config::Debug) {
+      const auto refined = dynamic_cast<TSiblingWidget*>(item);
+      FUI_ALWAYS_ASSERT(refined, "Sibling item has unexpected concrete type");
+      return refined;
+    } else {
+      return static_cast<TSiblingWidget*>(item);
+    }
+  }
 };
 
 }// namespace FredEmmott::GUI::Widgets

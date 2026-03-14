@@ -193,6 +193,12 @@ void RadioButton::Select() {
   }
   this->SetIsChecked(true);
   mWasSelected = true;
+
+  for (auto&& sibling: GetSelectionContainer()->GetSelectionItems()) {
+    if (sibling != this) {
+      CastSelectionSibling<RadioButton>(sibling)->SetIsChecked(false);
+    }
+  }
 }
 
 Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {

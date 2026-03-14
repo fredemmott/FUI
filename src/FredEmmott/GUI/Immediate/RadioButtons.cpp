@@ -6,11 +6,11 @@
 #include <FredEmmott/GUI/Widgets/Focusable.hpp>
 
 #include "FredEmmott/GUI/Widgets/RadioButton.hpp"
+#include "FredEmmott/GUI/detail/immediate/SelectionManager.hpp"
 #include "Label.hpp"
 #include "StackPanel.hpp"
 
 namespace FredEmmott::GUI::Immediate {
-
 namespace {
 
 auto& InnerStyle() {
@@ -41,8 +41,8 @@ class RadioButtonsInner : public Widgets::Widget,
  private:
 };
 }// namespace
-
-Result<&EndRadioButtons> BeginRadioButtons(
+namespace immediate_detail {
+RadioButtonsWidgets BeginRadioButtons(
   const std::string_view title,
   const ID id) {
   using namespace StaticTheme::RadioButtons;
@@ -52,20 +52,23 @@ Result<&EndRadioButtons> BeginRadioButtons(
     Style().FlexDirection(YGFlexDirectionColumn).Gap(0));
 
   if (!title.empty()) {
-    static const auto TitleStyle
-      = Style()
-          .Color(RadioButtonsHeaderForeground)
-          .MarginBottom(RadioButtonsTopHeaderMarginBottom)
-          .MarginLeft(RadioButtonsTopHeaderMarginLeft)
-          .MarginRight(RadioButtonsTopHeaderMarginRight)
-          .MarginTop(RadioButtonsTopHeaderMarginTop)
-          .And(Disabled, Style().Color(RadioButtonsHeaderForegroundDisabled));
+    static const ImmutableStyle TitleStyle {
+      Style()
+        .Color(RadioButtonsHeaderForeground)
+        .MarginBottom(RadioButtonsTopHeaderMarginBottom)
+        .MarginLeft(RadioButtonsTopHeaderMarginLeft)
+        .MarginRight(RadioButtonsTopHeaderMarginRight)
+        .MarginTop(RadioButtonsTopHeaderMarginTop)
+        .And(Disabled, Style().Color(RadioButtonsHeaderForegroundDisabled))};
     Label(title, ID {"RadioButtons/Title"}).Styled(TitleStyle);
   }
 
-  immediate_detail::BeginWidget<RadioButtonsInner>(ID {"RadioButtons/Inner"});
-  return outer;
+  const auto inner = immediate_detail::BeginWidget<RadioButtonsInner>(
+    ID {"RadioButtons/Inner"});
+
+  return {widget_from_result(outer), inner};
 }
+}// namespace immediate_detail
 
 void EndRadioButtons() {
   immediate_detail::EndWidget<RadioButtonsInner>();

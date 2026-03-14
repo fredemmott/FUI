@@ -55,6 +55,17 @@ class Widget {
     const StyleClasses& = {});
   virtual ~Widget();
 
+  // TODO: make this part of the Widget constructor
+  void ForceLogicalParent(Widget* const logicalParent) {
+    FUI_ASSERT(!mStructuralParent);
+    FUI_ASSERT(!mLogicalParent);
+    if (!logicalParent) {
+      return;
+    }
+    mLogicalParent = logicalParent;
+    mStructuralParent = logicalParent->GetStructuralParentForLogicalChildren();
+  }
+
   std::optional<MouseEvent> mWasStationaryHovered;
 
   void AddStyleClass(StyleClass);

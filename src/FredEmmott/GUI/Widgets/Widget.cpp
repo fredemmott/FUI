@@ -266,8 +266,10 @@ void Widget::SetStructuralChildren(
     auto it
       = std::ranges::find(mStructuralChildren, child, &unique_ptr<Widget>::get);
     if (it == mStructuralChildren.end()) {
-      FUI_ASSERT(!child->mStructuralParent);
-      FUI_ASSERT(!child->mLogicalParent);
+      FUI_ASSERT(
+        (!child->mStructuralParent) || child->mStructuralParent == this);
+      FUI_ASSERT(
+        (!child->mLogicalParent) || child->mLogicalParent == logicalParent);
       child->mStructuralParent = this;
       child->mLogicalParent = logicalParent;
       newChildren.emplace_back(child);

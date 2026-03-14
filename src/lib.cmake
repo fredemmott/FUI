@@ -36,7 +36,7 @@ add_library(
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/ProgressRing.hpp
   FredEmmott/GUI/Immediate/PushID.cpp FredEmmott/GUI/Immediate/PushID.hpp
-  FredEmmott/GUI/Immediate/RadioButton.cpp FredEmmott/GUI/Immediate/RadioButton.hpp
+  FredEmmott/GUI/Immediate/RadioButton.hpp
   FredEmmott/GUI/Immediate/RadioButtons.cpp FredEmmott/GUI/Immediate/RadioButtons.hpp
   FredEmmott/GUI/Immediate/ResizeToFit.cpp FredEmmott/GUI/Immediate/ResizeToFit.hpp
   FredEmmott/GUI/Immediate/Result.hpp
@@ -139,6 +139,7 @@ add_library(
   FredEmmott/GUI/detail/immediate/CaptionResultMixin.cpp
   FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp
   FredEmmott/GUI/detail/immediate/ScopeableResultMixin.hpp
+  FredEmmott/GUI/detail/immediate/SelectionManager.hpp
   FredEmmott/GUI/detail/immediate/StyledResultMixin.hpp
   FredEmmott/GUI/detail/immediate/TextBlockStylesResultMixin.hpp
   FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp
