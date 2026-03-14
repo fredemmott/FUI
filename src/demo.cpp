@@ -27,16 +27,28 @@ static void AppTick(fui::Window& window) {
   std::ignore = fuii::WindowSubtitle("I like turtles");
 
   if constexpr (true) {
-    const auto nav = fuii::BeginNavigationView().Scoped();
+    // You could also use `dynamic_page_t { index }` etc - no need to stick to
+    // basic types
+    struct home_page_t {
+      constexpr bool operator==(const home_page_t&) const noexcept = default;
+    };
+    struct more_page_t {
+      constexpr bool operator==(const more_page_t&) const noexcept = default;
+    };
+    using page_t = std::variant<home_page_t, more_page_t>;
+    static page_t selectedPage;
+    const auto nav = fuii::BeginNavigationView(&selectedPage).Scoped();
 
+    static constexpr auto HomePage = page_t {home_page_t {}};
+    static constexpr auto MorePage = page_t {more_page_t {}};
     if (
       const auto scope
-      = fuii::BeginNavigationViewItem("\ue80f", "Home").Scoped()) {
+      = fuii::BeginNavigationViewItem(HomePage, "\ue80f", "Home").Scoped()) {
       fuii::Label("Home content");
     }
     if (
       const auto scope
-      = fuii::BeginNavigationViewItem("\ue712", "More").Scoped()) {
+      = fuii::BeginNavigationViewItem(MorePage, "\ue712", "More").Scoped()) {
       fuii::Label("More content");
     }
     return;

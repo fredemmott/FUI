@@ -31,7 +31,6 @@ add_library(
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
-  FredEmmott/GUI/Immediate/NavigationView.cpp
   FredEmmott/GUI/Immediate/NavigationView.hpp
   FredEmmott/GUI/Immediate/NumberBox.cpp
   FredEmmott/GUI/Immediate/NumberBox.hpp

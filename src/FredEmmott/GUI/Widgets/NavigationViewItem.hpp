@@ -15,18 +15,10 @@ namespace FredEmmott::GUI::Widgets {
  *
  * This means they function roughly the same as radio buttons.
  */
-class NavigationViewItem final : public Widget, public IInvocable {
+class NavigationViewItem final : public Widget, public ISelectionItem {
  public:
   explicit NavigationViewItem(id_type id);
   ~NavigationViewItem() override;
-
-  [[nodiscard]]
-  bool ConsumeWasActivated() noexcept {
-    return std::exchange(mWasActivated, false);
-  }
-
-  using Widget::IsChecked;
-  using Widget::SetIsChecked;
 
   auto* SetIcon(const std::string_view text) {
     mIcon->SetText(text);
@@ -38,12 +30,21 @@ class NavigationViewItem final : public Widget, public IInvocable {
     return this;
   }
 
-  // IInvocable
-  void Invoke() override;
+  ///// ISelectionItem /////
+  void Select() override;
+  bool IsSelected() const noexcept override {
+    return IsChecked();
+  }
+  ISelectionContainer* GetSelectionContainer() const noexcept override;
+
+  [[nodiscard]]
+  bool ConsumeWasSelected() noexcept override {
+    return std::exchange(mWasSelected, false);
+  }
 
  protected:
   EventHandlerResult OnClick(const MouseEvent&) override;
-  bool mWasActivated = false;
+  bool mWasSelected = false;
 
   Label* mIcon {};
   Label* mText {};

@@ -47,10 +47,10 @@ void PushParentOverride(Widgets::Widget* parent) {
   tStack.push_back({.mPending = parent->GetLogicalChildren()});
 }
 
-void PopParentOverride(Widgets::Widget* parent) {
+void PopParentOverride() {
+  FUI_ASSERT(tStack.size() >= 2);
+  const auto parent = tStack.at(tStack.size() - 2).mNewSiblings.back();
   tExplicitParents.Pop(parent);
-  FUI_ASSERT(!tStack.empty());
-
   parent->SetLogicalChildren(tStack.back().mNewSiblings);
   tStack.pop_back();
   FUI_ASSERT(!tStack.empty());

@@ -3,6 +3,7 @@
 #include "NavigationViewItem.hpp"
 
 #include "FredEmmott/GUI/StaticTheme/detail/NavigationView.handwritten.hpp"
+#include "NavigationView.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -15,7 +16,7 @@ constexpr LiteralStyleClass NavigationViewItemStyleClass {
 
 NavigationViewItem::NavigationViewItem(const id_type id)
   : Widget(id, NavigationViewItemStyleClass, NavigationViewItemStyle()),
-    IInvocable(this),
+    ISelectionItem(this),
     mIcon(new Label(0, NavigationViewItemIconStyle())),
     mText(new Label(
       0,
@@ -26,13 +27,26 @@ NavigationViewItem::NavigationViewItem(const id_type id)
 
 NavigationViewItem::~NavigationViewItem() = default;
 
-void NavigationViewItem::Invoke() {
-  mWasActivated = true;
+void NavigationViewItem::Select() {
+  mWasSelected = true;
   this->SetIsChecked(true);
+  for (const auto item: this->GetSelectionContainer()->GetSelectionItems()) {
+    if (item != this) {
+      CastSelectionSibling<NavigationViewItem>(item)->SetIsChecked(false);
+    }
+  }
+}
+
+ISelectionContainer* NavigationViewItem::GetSelectionContainer()
+  const noexcept {
+  return this
+    ->GetStructuralParent()// Items or FooterItems
+    ->GetStructuralParent()// Pane
+    ->GetStructuralParent<NavigationView>();
 }
 
 Widget::EventHandlerResult NavigationViewItem::OnClick(const MouseEvent&) {
-  this->Invoke();
+  this->Select();
   return EventHandlerResult::StopPropagation;
 }
 

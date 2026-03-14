@@ -27,6 +27,7 @@ constexpr LiteralStyleClass NavigationViewContentInnerStyleClass {
 
 NavigationView::NavigationView(const id_type id)
   : Widget(id, NavigationViewStyleClass, NavigationViewStyle()),
+    ISelectionContainer(this),
     mPane(
       new Widget(0, NavigationViewPaneStyleClass, NavigationViewPaneStyle())),
     mPaneHeader(new Widget(0, NavigationViewPaneHeaderStyleClass, {})),
@@ -63,6 +64,20 @@ void NavigationView::SetHeaderText(const std::string_view text) {
   }
   mContentHeader->SetMutableStyles(Style().Display(YGDisplayFlex));
   mContentHeader->SetText(text);
+}
+
+std::vector<ISelectionItem*> NavigationView::GetSelectionItems()
+  const noexcept {
+  // TODO (C++23): use std::views::concat when it's available in MSVC
+  return std::array {
+           std::views::all(mItemsRoot->GetStructuralChildren()),
+           std::views::all(mFooterItemsRoot->GetStructuralChildren()),
+         }
+  | std::views::join | std::views::transform([](Widget* p) {
+           return dynamic_cast<ISelectionItem*>(p);
+         })
+    | std::views::filter([](ISelectionItem* const p) { return p != nullptr; })
+    | std::ranges::to<std::vector>();
 }
 
 }// namespace FredEmmott::GUI::Widgets

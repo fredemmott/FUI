@@ -60,6 +60,6 @@ void EndWidget() {
 }
 
 void PushParentOverride(Widgets::Widget*);
-void PopParentOverride(Widgets::Widget*);
+void PopParentOverride();
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
