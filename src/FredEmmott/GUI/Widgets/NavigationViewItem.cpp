@@ -15,6 +15,7 @@ constexpr LiteralStyleClass NavigationViewItemStyleClass {
 
 NavigationViewItem::NavigationViewItem(const id_type id)
   : Widget(id, NavigationViewItemStyleClass, NavigationViewItemStyle()),
+    IInvocable(this),
     mIcon(new Label(0, NavigationViewItemIconStyle())),
     mText(new Label(
       0,
