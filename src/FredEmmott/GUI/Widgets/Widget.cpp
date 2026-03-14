@@ -13,6 +13,7 @@
 #include <felly/overload.hpp>
 #include <ranges>
 
+#include "FredEmmott/utility/almost_equal.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -79,6 +80,7 @@ void PaintOutline(
       radii->GetBottomRight() + pad,
       radii->GetBottomLeft() + pad,
     },
+    Edges::All,
     thickness);
 }
 
@@ -96,7 +98,7 @@ void PaintBorder(
   const auto bottom = YGNodeLayoutGetBorder(yoga, YGEdgeBottom);
   const auto right = YGNodeLayoutGetBorder(yoga, YGEdgeRight);
 
-  static constexpr auto Eps = std::numeric_limits<float>::epsilon();
+  static constexpr auto Eps = 0.1f;
   if (top < Eps && left < Eps && right < Eps && bottom < Eps) {
     return;
   }
@@ -108,11 +110,48 @@ void PaintBorder(
   const auto brush = *style.BorderColor();
 
   if (const auto radii = style.BorderRadius(); radii && !radii->IsEmpty()) {
-    FUI_ASSERT(
-      allSame,
-      "If border radius is set, only equal-thickness borders are supported");
+    auto edges = Edges::All;
+    if (!allSame) {
+      edges = Edges::None;
 
-    renderer->StrokeRoundedRect(brush, borderRect, *radii, top);
+      struct NoOpValidator final {
+        void Check(const float) {};
+      };
+      struct DebugValidator final {
+        void Check(const float value) {
+          if (mValue < Eps) {
+            mValue = value;
+          } else {
+            FUI_ALWAYS_ASSERT(
+              utility::almost_equal(mValue, value),
+              "With border radius set, all borders must be the same or zero");
+          }
+        }
+
+       private:
+        float mValue {};
+      };
+      std::conditional_t<Config::Debug, DebugValidator, NoOpValidator>
+        validator;
+
+      if (left >= Eps) {
+        validator.Check(left);
+        edges |= Edges::Left;
+      }
+      if (top >= Eps) {
+        validator.Check(top);
+        edges |= Edges::Top;
+      }
+      if (right >= Eps) {
+        validator.Check(right);
+        edges |= Edges::Right;
+      }
+      if (bottom >= Eps) {
+        validator.Check(bottom);
+        edges |= Edges::Bottom;
+      }
+    }
+    renderer->StrokeRoundedRect(brush, borderRect, *radii, edges, top);
     return;
   }
 
@@ -261,23 +300,24 @@ void Widget::SetStructuralChildren(
     return;
   }
 
-  std::vector<unique_ptr<Widget>> newChildren;
+  std::vector<unique_ptr<Widget>> ownedChildren;
+  ownedChildren.reserve(children.size());
   for (auto child: children) {
     auto it
       = std::ranges::find(mStructuralChildren, child, &unique_ptr<Widget>::get);
-    if (it == mStructuralChildren.end()) {
-      FUI_ASSERT(
-        (!child->mStructuralParent) || child->mStructuralParent == this);
-      FUI_ASSERT(
-        (!child->mLogicalParent) || child->mLogicalParent == logicalParent);
-      child->mStructuralParent = this;
-      child->mLogicalParent = logicalParent;
-      newChildren.emplace_back(child);
-    } else {
-      newChildren.emplace_back(std::move(*it));
+    if (it != mStructuralChildren.end()) {
+      ownedChildren.emplace_back(std::move(*it));
+      continue;
     }
+
+    FUI_ASSERT((!child->mStructuralParent) || child->mStructuralParent == this);
+    FUI_ASSERT(
+      (!child->mLogicalParent) || child->mLogicalParent == logicalParent);
+    child->mStructuralParent = this;
+    child->mLogicalParent = logicalParent;
+    ownedChildren.emplace_back(child);
   }
-  mStructuralChildren = std::move(newChildren);
+  mStructuralChildren = std::move(ownedChildren);
   mRawStructuralChildren = children;
 
   std::vector<YGNodeRef> layoutChildren;
