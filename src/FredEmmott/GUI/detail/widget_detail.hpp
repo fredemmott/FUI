@@ -8,9 +8,25 @@ class Widget;
 
 namespace FredEmmott::GUI::Widgets::widget_detail {
 
+/** Cast a widget to a *known* subtype.
+ *
+ * If passed nullptr, returns nullptr.
+ *
+ * In debug builds, a non-null cast will be checked with RTTI.
+ * In release builds, a non-null cast will be trusted.
+ */
 template <std::derived_from<Widget> T>
 T* widget_cast(Widget* const p) {
-  return dynamic_cast<T*>(p);
+  if constexpr (Config::Debug) {
+    if (!p) {
+      return nullptr;
+    }
+    const auto refined = dynamic_cast<T*>(p);
+    FUI_ALWAYS_ASSERT(refined);
+    return refined;
+  } else {
+    return static_cast<T*>(p);
+  }
 }
 
 /** A compile-time constant.
