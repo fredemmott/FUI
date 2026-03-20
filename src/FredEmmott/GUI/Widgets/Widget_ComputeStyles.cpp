@@ -201,19 +201,6 @@ Style Widget::FlattenStyles(const Style& inputStyle) {
     }
   }
 
-  const auto flattenEdges = [](const auto& allEdges, auto&... edge) {
-    ((edge = allEdges + edge), ...);
-  };
-#define FLATTEN_EDGES(X, Y) \
-  flattenEdges( \
-    style.X##Y(), \
-    style.X##Left##Y(), \
-    style.X##Top##Y(), \
-    style.X##Right##Y(), \
-    style.X##Bottom##Y());
-  FUI_STYLE_EDGE_PROPERTIES(FLATTEN_EDGES)
-#undef FLATTEN_EDGES
-
   return style;
 }
 

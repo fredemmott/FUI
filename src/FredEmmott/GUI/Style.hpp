@@ -91,6 +91,19 @@ struct Style {
 #undef FUI_DECLARE_PROPERTY_GETTER
 #undef FUI_DECLARE_PROPERTY_SETTER
 #undef FUI_DECLARE_PROPERTY_SETTERS
+#define FUI_IMPL_DECLARE_EDGE_SETTER(_UNUSED, PREFIX, SUFFIX) \
+  [[nodiscard]] \
+  decltype(auto) PREFIX##SUFFIX(this auto&& self, const float value) \
+    requires std::is_rvalue_reference_v<decltype(self)> \
+  { \
+    return std::move(self) \
+      .PREFIX##Left##SUFFIX(value) \
+      .PREFIX##Top##SUFFIX(value) \
+      .PREFIX##Right##SUFFIX(value) \
+      .PREFIX##Bottom##SUFFIX(value); \
+  }
+  FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_DECLARE_EDGE_SETTER, UNUSED)
+#undef FUI_IMPL_DECLARE_EDGE_SETTER
 
   using Selector = std::variant<
     std::monostate,

@@ -35,13 +35,12 @@ Style& Style::operator+=(const Style& other) {
    *  ```
    */
 
-  // other.m##X##Edge##Y will be added in MERGE_PROPERTY below
-#define MERGE_EDGES(X, Y) \
-  this->X##Left##Y() = X##Y() + X##Left##Y() + other.X##Y(); \
-  this->X##Top##Y() = X##Y() + X##Top##Y() + other.X##Y(); \
-  this->X##Right##Y() = X##Y() + X##Right##Y() + other.X##Y(); \
-  this->X##Bottom##Y() = X##Y() + X##Bottom##Y() + other.X##Y();
-  FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES)
+#define MERGE_EDGES(_UNUSED, X, Y) \
+  this->X##Left##Y() += other.X##Left##Y(); \
+  this->X##Top##Y() += other.X##Top##Y(); \
+  this->X##Right##Y() += other.X##Right##Y(); \
+  this->X##Bottom##Y() += other.X##Bottom##Y();
+  FUI_STYLE_EDGE_PROPERTIES(MERGE_EDGES, UNUSED)
 #undef MERGE_EDGES
 
   if (mStorage.empty()) {
@@ -59,11 +58,6 @@ Style& Style::operator+=(const Style& other) {
         value);
     }
   }
-#undef COPY_STORAGE_VALUES
-#define UNSET_ALL_EDGES(X, Y) \
-  mStorage.erase(StylePropertyKey::X##Y); \
-  FUI_STYLE_EDGE_PROPERTIES(UNSET_ALL_EDGES)
-#undef UNSET_ALL_EDGES
 
   if (mAnd.empty()) {
     mAnd = other.mAnd;

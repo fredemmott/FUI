@@ -31,19 +31,33 @@ class StyleProperty;
   X(GUI::PointerEvents, PointerEvents) \
   X(GUI::TextAlign, TextAlign)
 
+/** Properties of the form `mPrefixSuffix`, `mPrefixEdgeSuffix`
+ *
+ * `X` is called as `X(Y, Prefix, Suffix)`
+ * `X` and `Y` are arbitrary user-supplied values/expressions/macros/...
+ *
+ * e.g. `mMarginLeft`, `mBorderLeftWidth`
+ */
+#define FUI_STYLE_EDGE_PROPERTIES(X, Y) \
+  X(Y, Margin, ) \
+  X(Y, Padding, ) \
+  X(Y, Border, Width) \
+  X(Y, Outline, Offset)
+
+#define FUI_IMPL_EXPAND_EDGES(X, PREFIX, SUFFIX) \
+  X(PREFIX##Left##SUFFIX, float, Self) \
+  X(PREFIX##Top##SUFFIX, float, Self) \
+  X(PREFIX##Right##SUFFIX, float, Self) \
+  X(PREFIX##Bottom##SUFFIX, float, Self)
+
 #define FUI_ENUM_STYLE_PROPERTIES(X) \
   X(AlignContent, YGAlign, Self) \
   X(AlignItems, YGAlign, Self) \
   X(AlignSelf, YGAlign, Self) \
   X(AspectRatio, float, Self) \
   X(BackgroundColor, Brush, Self) \
-  X(BorderBottomWidth, float, Self) \
   X(BorderColor, Brush, Self) \
-  X(BorderLeftWidth, float, Self) \
   X(BorderRadius, CornerRadius, Self) \
-  X(BorderRightWidth, float, Self) \
-  X(BorderTopWidth, float, Self) \
-  X(BorderWidth, float, Self) \
   X(BoxSizing, YGBoxSizing, Self) \
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
@@ -58,11 +72,6 @@ class StyleProperty;
   X(Height, float, Self) \
   X(JustifyContent, YGJustify, Self) \
   X(Left, float, Self) \
-  X(Margin, float, Self) \
-  X(MarginBottom, float, Self) \
-  X(MarginLeft, float, Self) \
-  X(MarginRight, float, Self) \
-  X(MarginTop, float, Self) \
   X(MaxHeight, float, Self) \
   X(MaxWidth, float, Self) \
   X(MinHeight, float, Self) \
@@ -70,18 +79,8 @@ class StyleProperty;
   X(Opacity, float, Self) \
   X(OutlineColor, Brush, Self) \
   X(OutlineRadius, CornerRadius, Self) \
-  X(OutlineOffset, float, Self) \
-  X(OutlineBottomOffset, float, Self) \
-  X(OutlineLeftOffset, float, Self) \
-  X(OutlineRightOffset, float, Self) \
-  X(OutlineTopOffset, float, Self) \
   X(OutlineWidth, float, Self) \
   X(Overflow, YGOverflow, Self) \
-  X(Padding, float, Self) \
-  X(PaddingBottom, float, Self) \
-  X(PaddingLeft, float, Self) \
-  X(PaddingRight, float, Self) \
-  X(PaddingTop, float, Self) \
   X(PointerEvents, GUI::PointerEvents, Self) \
   X(Position, YGPositionType, Self) \
   X(Right, float, Self) \
@@ -93,17 +92,8 @@ class StyleProperty;
   X(TransformOriginY, float, Self) \
   X(TranslateX, float, Self) \
   X(TranslateY, float, Self) \
-  X(Width, float, Self)
-
-/** Properties of the form `mPrefixSuffix`, `mPrefixEdgeSuffix`
- *
- * e.g. `mMarginLeft`, `mBorderLeftWidth`
- */
-#define FUI_STYLE_EDGE_PROPERTIES(X) \
-  X(Margin, ) \
-  X(Padding, ) \
-  X(Border, Width) \
-  X(Outline, Offset)
+  X(Width, float, Self) \
+  FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_EXPAND_EDGES, X)
 
 namespace FredEmmott::GUI::style_detail {
 
