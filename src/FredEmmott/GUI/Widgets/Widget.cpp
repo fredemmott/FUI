@@ -342,16 +342,25 @@ void Widget::Paint(Renderer* renderer) const {
   if (opacity <= std::numeric_limits<float>::epsilon()) {
     return;
   }
-
   const auto layer = renderer->ScopedLayer(opacity);
   const auto yoga = this->GetLayoutNode();
+
   renderer->Translate(
     YGNodeLayoutGetLeft(yoga) + style.TranslateX().value_or(0),
     YGNodeLayoutGetTop(yoga) + style.TranslateY().value_or(0));
-  Rect rect {Size {
+  const Rect rect {Size {
     YGNodeLayoutGetWidth(yoga),
     YGNodeLayoutGetHeight(yoga),
   }};
+  if (
+    style.HasRotate() && !utility::almost_equal(style.Rotate().value(), 0.f)) {
+    renderer->Rotate(
+      style.Rotate().value(),
+      Point {
+        style.TransformOriginX().value_or(0.f) * rect.GetWidth(),
+        style.TransformOriginY().value_or(0.f) * rect.GetHeight(),
+      });
+  }
 
   const auto scaleX = style.ScaleX().value_or(1.f);
   const auto scaleY = style.ScaleY().value_or(1.f);

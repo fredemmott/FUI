@@ -207,7 +207,10 @@ const ImmutableStyle& NavigationViewItemIconHolderStyle() {
 
 const ImmutableStyle& NavigationViewItemIconStyle() {
   static const ImmutableStyle ret {
-    Style().Font(SystemFont::ResolveGlyphFont(16)),
+    Style()
+      .Font(SystemFont::ResolveGlyphFont(16))
+      .TransformOriginX(0.5)
+      .TransformOriginY(0.5),
   };
   return ret;
 }

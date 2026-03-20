@@ -44,6 +44,7 @@ class Direct2DRenderer final : public Renderer {
   // Transformations
   void Scale(float x, float y) override;
   void Translate(const Point& point) override;
+  void Rotate(float degrees, const Point& center) override;
 
   // Rectangle drawing
   void FillRect(const Brush& brush, const Rect& rect) override;

@@ -15,7 +15,7 @@ namespace FredEmmott::GUI::Widgets {
  *
  * This means they function roughly the same as radio buttons.
  */
-class NavigationViewItem final : public Widget, public ISelectionItem {
+class NavigationViewItem : public Widget, public ISelectionItem {
  public:
   explicit NavigationViewItem(id_type id);
   ~NavigationViewItem() override;
@@ -44,6 +44,11 @@ class NavigationViewItem final : public Widget, public ISelectionItem {
 
  protected:
   EventHandlerResult OnClick(const MouseEvent&) override;
+  void SetIconRotation(const float degrees) noexcept {
+    mIcon->SetMutableStyles(Style().Rotate(degrees));
+  }
+
+ private:
   bool mWasSelected = false;
 
   Widget* mIconHolder {};

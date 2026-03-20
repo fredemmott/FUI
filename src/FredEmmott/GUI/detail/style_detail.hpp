@@ -84,6 +84,7 @@ class StyleProperty;
   X(PointerEvents, GUI::PointerEvents, Self) \
   X(Position, YGPositionType, Self) \
   X(Right, float, Self) \
+  X(Rotate, float, Self) \
   X(ScaleX, float, Self) \
   X(ScaleY, float, Self) \
   X(TextAlign, GUI::TextAlign, SelfAndDescendants) \

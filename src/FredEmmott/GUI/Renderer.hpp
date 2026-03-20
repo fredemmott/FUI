@@ -120,6 +120,8 @@ class Renderer {
     this->Translate({x, y});
   }
 
+  virtual void Rotate(float degrees, const Point& center) = 0;
+
   virtual void FillRect(const Brush& brush, const Rect& rect) = 0;
   virtual void
   StrokeRect(const Brush& brush, const Rect& rect, float thickness = 0) = 0;

@@ -7,6 +7,7 @@
 #include <FredEmmott/GUI/detail/immediate/SelectionManager.hpp>
 #include <FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp>
 
+#include "FredEmmott/GUI/Widgets/NavigationViewSettingsItem.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 #include "Result.hpp"
 #include "selectable_key.hpp"
@@ -68,6 +69,41 @@ NavigationViewItemResult BeginNavigationViewItem(
   PushParentOverride(nav->GetContentRoot());
 
   return {w, true};
+}
+
+/** A NavigationViewItem with the fancy spinning gear on click/release
+ *
+ * The *only* difference to a normal NavigationViewItem is the spinning
+ * animation.
+ */
+template <selectable_key T>
+NavigationViewItemResult BeginNavigationViewSettingsItem(
+  const T key,
+  const std::string_view label = "Settings",
+  const std::string_view headerText = "Settings",
+  const ID id = ID {std::source_location::current()}) {
+  using namespace immediate_detail;
+  const auto w
+    = immediate_detail::ChildlessWidget<Widgets::NavigationViewSettingsItem>(id)
+        ->SetText(label);
+
+  const auto selectedThisFrame = SelectionManager<T>::BeginItem(key, w);
+  if (!w->IsSelected()) {
+    return {w, false};
+  }
+  const auto nav
+    = static_cast<Widgets::NavigationView*>(w->GetSelectionContainer());
+  if (selectedThisFrame) {
+    nav->SetHeaderText(headerText);
+  }
+
+  PushParentOverride(nav->GetContentRoot());
+
+  return {w, true};
+}
+
+inline void EndNavigationViewSettingsItem() {
+  EndNavigationViewItem();
 }
 
 template <selectable_key T>

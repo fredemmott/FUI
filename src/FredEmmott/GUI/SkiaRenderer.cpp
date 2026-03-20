@@ -113,6 +113,10 @@ void SkiaRenderer::Translate(const Point& point) {
   mCanvas->translate(point.mX, point.mY);
 }
 
+void SkiaRenderer::Rotate(const float degrees, const Point& center) {
+  mCanvas->rotate(degrees, center.mX, center.mY);
+}
+
 void SkiaRenderer::FillRect(const Brush& brush, const Rect& rect) {
   auto paint = brush.as<SkPaint>(this, rect);
   paint.setStyle(SkPaint::Style::kFill_Style);

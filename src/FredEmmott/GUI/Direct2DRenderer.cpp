@@ -119,6 +119,11 @@ void Direct2DRenderer::Translate(const Point& point) {
   this->PostTransform(D2D1::Matrix3x2F::Translation(point.mX, point.mY));
 }
 
+void Direct2DRenderer::Rotate(const float degrees, const Point& center) {
+  this->PostTransform(
+    D2D1::Matrix3x2F::Rotation(degrees, center.as<D2D1_POINT_2F>()));
+}
+
 void Direct2DRenderer::FillRect(const Brush& brush, const Rect& rect) {
   mDeviceResources.mD2DDeviceContext->FillRectangle(
     rect, brush.as<ID2D1Brush*>(this, rect));
