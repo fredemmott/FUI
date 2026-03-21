@@ -72,7 +72,7 @@ ComboBoxResult<bool> ComboBox(
   }
 
   EndWidget<ComboBoxWidget>();
-  return {widget_from_result(button), changed};
+  return {widget, changed};
 }
 
 }// namespace FredEmmott::GUI::Immediate
