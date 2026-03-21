@@ -22,8 +22,6 @@ constexpr LiteralStyleClass NavigationViewPaneExpandedStyleClass {
   "NavigationView/Pane/Expanded"};
 constexpr LiteralStyleClass NavigationViewItemLabelStyleClass {
   "NavigationView/Item/Label"};
-constexpr LiteralStyleClass NavigationViewTitleBarButtonStyleClass {
-  "NavigationView/TitleBarButton"};
 constexpr LiteralStyleClass NavigationViewItemStyleClass {
   "NavigationView/Item"};
 

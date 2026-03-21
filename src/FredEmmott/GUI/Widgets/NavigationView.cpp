@@ -3,9 +3,11 @@
 #include "NavigationView.hpp"
 
 #include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
+#include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #include "Label.hpp"
 #include "NavigationViewBackButton.hpp"
 #include "NavigationViewTogglePaneButton.hpp"
+#include "TitleBar.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 namespace {
@@ -95,6 +97,32 @@ void NavigationView::TogglePaneIsExpanded() {
   mPaneIsExpanded = !mPaneIsExpanded;
   mPane->ToggleStyleClass(
     NavigationViewPaneExpandedStyleClass, mPaneIsExpanded);
+}
+void NavigationView::IntegrateWithTitleBar() {
+  if (std::exchange(mIsTitleBarAttached, true)) {
+    return;
+  }
+
+  const auto titleBar
+    = static_cast<Win32Window*>(GetOwnerWindow())->GetTitleBar();
+  FUI_ASSERT(titleBar);
+
+  const auto backDisabled = mBackButton->IsDisabled();
+
+  auto paneChildren = mPane->GetStructuralChildren();
+  std::erase(paneChildren, std::exchange(mBackButton, nullptr));
+  mPane->SetStructuralChildren(paneChildren);
+
+  auto headerChildren = mPaneHeader->GetStructuralChildren();
+  std::erase(headerChildren, std::exchange(mTogglePaneButton, nullptr));
+  mPaneHeader->SetStructuralChildren(headerChildren);
+
+  mBackButton = new NavigationViewBackButton(0);
+  mBackButton->SetIsDirectlyDisabled(backDisabled);
+  mTogglePaneButton = new NavigationViewTogglePaneButton(0, this);
+
+  titleBar->SetLeftWidgets({mBackButton, mTogglePaneButton});
+  mPaneHeader->SetMutableStyles(Style().Display(YGDisplayNone));
 }
 
 }// namespace FredEmmott::GUI::Widgets

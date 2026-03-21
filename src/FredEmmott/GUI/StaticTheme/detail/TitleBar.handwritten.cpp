@@ -10,7 +10,8 @@ const ImmutableStyle& DefaultTitleBarStyle() {
     Style()
       .FlexDirection(YGFlexDirectionRow)
       .JustifyContent(YGJustifyFlexEnd)
-      .Height(TitleBarCompactHeight)
+      .MinHeight(TitleBarCompactHeight)
+      .MaxHeight(TitleBarExpandedHeight)
       .And(
         TitleBarInactiveWindowStyleClass,
         Style().Opacity(TitleBarDeactivatedOpacity))};
@@ -82,11 +83,7 @@ const ImmutableStyle& TitleBarContentContainerStyle() {
       .AlignItems(YGAlignCenter)
       .FlexDirection(YGFlexDirectionRow)
       .FlexGrow(1)
-      .PaddingLeft(
-        // Before any contols, e.g. back button, which we don't currently have
-        TitleBarLeftPaddingWidth
-        // Before the icon
-        + TitleBarLeftHeaderPaddingWidth)
+      .PaddingLeft(TitleBarLeftPaddingWidth)
       .PaddingRight(TitleBarRightPaddingWidth),
   };
   return ret;
@@ -128,7 +125,7 @@ const ImmutableStyle& TitleBarIconStyle() {
     Style()
       .AspectRatio(1.0f)
       .FlexGrow(1)
-      .MarginLeft(TitleBarIconMarginLeft)
+      .MarginLeft(TitleBarIconMarginLeft + TitleBarLeftHeaderPaddingWidth)
       .MarginTop(TitleBarIconMarginTop)
       .MarginRight(TitleBarIconMarginRight)
       .MarginBottom(TitleBarIconMarginBottom)

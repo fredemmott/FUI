@@ -46,9 +46,14 @@ class TitleBar final : public Widget {
   void SetIsMaximized(bool);
   void SetIsActiveWindow(bool);
 
+  [[nodiscard]]
   Rects GetRects() const;
 
+  void SetLeftWidgets(const std::vector<Widget*>&);
+
  private:
+  Widget* mContent {};
+
   // On Win32, clicking this should trigger the restore/min/max dropdown
   Button* mIconButton {};
 

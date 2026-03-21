@@ -18,6 +18,14 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace immediate_detail {
 
+struct NavigationViewResultMixin {
+  template <class Self>
+  decltype(auto) IntegrateWithTitleBar(this Self&& self) {
+    widget_from_result<Widgets::NavigationView>(self)->IntegrateWithTitleBar();
+    return std::forward<Self>(self);
+  }
+};
+
 template <selectable_key TKey>
 struct NavigationViewContext : Widgets::Context {
   struct BackStack : std::stack<TKey> {
@@ -46,7 +54,10 @@ inline void EndNavigationView() {
   // 'ChildlessWidget'
 }
 
-using NavigationViewResult = Result<&EndNavigationView, void>;
+using NavigationViewResult = Result<
+  &EndNavigationView,
+  void,
+  immediate_detail::NavigationViewResultMixin>;
 
 template <selectable_key T>
 NavigationViewResult BeginNavigationView(

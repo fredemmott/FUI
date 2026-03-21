@@ -4,6 +4,7 @@
 #include "NavigationViewButton.hpp"
 
 #include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
+#include "FredEmmott/GUI/StaticTheme/TitleBar.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -24,18 +25,16 @@ const auto& NavigationViewButtonStyle() {
 
   static const ImmutableStyle ret {
     NavigationViewItemStyle()
-      + Style()
-          .Height(StaticTheme::Generic::PaneToggleButtonHeight)
-          .Width(StaticTheme::Generic::PaneToggleButtonWidth)
-          .Font(
-            SystemFont::ResolveGlyphFont(
-              StaticTheme::Generic::ControlContentThemeFontSize))
-          .And(
-            NavigationViewTitleBarButtonStyleClass,
-            Style()
-              .Height(NavigationViewPaneHeaderRowMinHeight)
-              .Width(NavigationViewPaneHeaderRowMinHeight)),
-  };
+    + Style()
+        .Height(StaticTheme::Generic::PaneToggleButtonHeight)
+        .Width(StaticTheme::Generic::PaneToggleButtonWidth)
+        .Font(
+          SystemFont::ResolveGlyphFont(
+            StaticTheme::Generic::ControlContentThemeFontSize))
+        .And(
+          StaticTheme::TitleBar::TitleBarLeftButtonStyleClass,
+          Style().Margin(2).MarginLeft(0).Height(44).Width(
+            StaticTheme::TitleBar::TitleBarBackButtonWidth))};
   return ret;
 }
 

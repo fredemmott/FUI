@@ -43,6 +43,8 @@ class NavigationView final : public Widget, public ISelectionContainer {
     return mBackButton;
   }
 
+  void IntegrateWithTitleBar();
+
  private:
   // Contains menu/NavigationViewItems
   Widget* mPane {};
@@ -60,6 +62,7 @@ class NavigationView final : public Widget, public ISelectionContainer {
   Widget* mContentInner {};
 
   bool mPaneIsExpanded {true};
+  bool mIsTitleBarAttached {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

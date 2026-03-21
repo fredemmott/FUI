@@ -33,6 +33,7 @@
 #include <print>
 
 #include "FredEmmott/GUI/IconProvider.hpp"
+#include "FredEmmott/GUI/events/HitTestEvent.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
@@ -1359,6 +1360,13 @@ std::optional<LRESULT> Win32Window::TitleBarWindowProc(
       const auto close = CanvasRectToScreenRect(rects.mCloseButton);
       if (PtInRect(&close, pt)) {
         return HTCLOSE;
+      }
+
+      HitTestEvent hte {};
+      hte.mPoint = NativePointToCanvasPoint(NativePoint {pt.x, pt.y});
+      const auto w = GetRoot()->DispatchEvent(hte);
+      if (dynamic_cast<Widgets::IFocusable*>(w)) {
+        return HTCLIENT;
       }
 
       return HTCAPTION;

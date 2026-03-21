@@ -3,6 +3,8 @@
 
 #include "TitleBar.hpp"
 
+#include <felly/numeric_cast.hpp>
+
 #include "Button.hpp"
 #include "FredEmmott/GUI/IconProvider.hpp"
 #include "FredEmmott/GUI/StaticTheme/TitleBar.hpp"
@@ -39,7 +41,8 @@ void TitleBarIconButton::PaintOwnContent(
   const Rect& destRect,
   const Style&) const {
   FUI_ASSERT(destRect.GetHeight() > 0);
-  const auto pixelHeight = renderer->GetPhysicalLength(destRect.GetHeight());
+  const auto pixelHeight = felly::numeric_cast<uint64_t>(
+    renderer->GetPhysicalLength(destRect.GetHeight()));
   FUI_ASSERT(pixelHeight > 0);
 
   if (pixelHeight != mPreviousPixelHeight) {
@@ -155,21 +158,31 @@ TitleBar::Rects TitleBar::GetRects() const {
   };
 }
 
+void TitleBar::SetLeftWidgets(const std::vector<Widget*>& prepend) {
+  for (auto&& it: prepend) {
+    it->AddStyleClass(StaticTheme::TitleBar::TitleBarLeftButtonStyleClass);
+  }
+  auto widgets = prepend;
+  widgets.append_range(
+    std::array<Widget*, 3> {mIconButton, mTitleLabel, mSubtitleLabel});
+  mContent->SetStructuralChildren(widgets);
+}
+
 TitleBar::TitleBar(const id_type id)
   : Widget(
       id,
       LiteralStyleClass("TitleBar"),
       StaticTheme::TitleBar::DefaultTitleBarStyle()) {
   using namespace StaticTheme::TitleBar;
-  auto content = new Widget(
+  mContent = new Widget(
     0, ContentContainerStyleClass, TitleBarContentContainerStyle());
   auto chromeButtons = new Widget(0, ChromeButtonsContainerStyleClass, {});
-  this->SetStructuralChildren({content, chromeButtons});
+  this->SetStructuralChildren({mContent, chromeButtons});
 
   mIconButton = new TitleBarIconButton(0, TitleBarIconStyle(), {});
   mTitleLabel = new Label(0, TitleBarTitleStyle());
   mSubtitleLabel = new Label(0, TitleBarSubtitleStyle());
-  content->SetStructuralChildren({mIconButton, mTitleLabel, mSubtitleLabel});
+  this->SetLeftWidgets({});
 
   chromeButtons->SetStructuralChildren({
     mMinimizeButton = new Button(0, WindowMinimizeMaximizeButtonStyle(), {}),

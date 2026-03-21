@@ -137,6 +137,11 @@ class Win32Window : public Window {
   void SetTitle(std::string_view) override;
   [[nodiscard]] bool SetSubtitle(std::string_view) override;
 
+  [[nodiscard]]
+  Widgets::TitleBar* GetTitleBar() const noexcept {
+    return mTitleBar;
+  }
+
  protected:
   static constexpr UINT SwapChainLength = 3;
 
