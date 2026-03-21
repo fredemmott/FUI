@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Focusable.hpp"
+#include "FredEmmott/GUI/detail/SelectionPill.hpp"
 #include "Label.hpp"
 #include "Widget.hpp"
 
@@ -43,10 +44,14 @@ class NavigationViewItem : public Widget, public ISelectionItem {
   }
 
  protected:
-  EventHandlerResult OnClick(const MouseEvent&) override;
   void SetIconRotation(const float degrees) noexcept {
     mIcon->SetMutableStyles(Style().Rotate(degrees));
   }
+
+  void Tick(const std::chrono::steady_clock::time_point& now) override;
+  EventHandlerResult OnClick(const MouseEvent&) override;
+  FrameRateRequirement GetFrameRateRequirement() const noexcept override;
+  void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
  private:
   bool mWasSelected = false;
@@ -54,6 +59,8 @@ class NavigationViewItem : public Widget, public ISelectionItem {
   Widget* mIconHolder {};
   Label* mIcon {};
   Label* mText {};
+  detail::SelectionPill mSelectionPill {
+    detail::SelectionPill::State::NotSelected};
 };
 
 }// namespace FredEmmott::GUI::Widgets

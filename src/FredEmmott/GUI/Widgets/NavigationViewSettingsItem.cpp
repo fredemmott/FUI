@@ -14,6 +14,8 @@ NavigationViewSettingsItem::~NavigationViewSettingsItem() {}
 
 void NavigationViewSettingsItem::Tick(
   const std::chrono::steady_clock::time_point& now) {
+  NavigationViewItem::Tick(now);
+
   using enum AnimationState;
   if (mAnimationState == Resting) {
     FUI_ASSERT(mNextAnimationState == Resting);

@@ -147,6 +147,8 @@ add_library(
   FredEmmott/GUI/Window.cpp FredEmmott/GUI/Window.hpp
   FredEmmott/GUI/assert.hpp
   FredEmmott/GUI/detail/AutomationActivityFlag.hpp
+  FredEmmott/GUI/detail/SelectionPill.cpp
+  FredEmmott/GUI/detail/SelectionPill.hpp
   FredEmmott/GUI/detail/font_detail.hpp
   FredEmmott/GUI/detail/icu.hpp
   FredEmmott/GUI/detail/immediate/CaptionResultMixin.cpp
