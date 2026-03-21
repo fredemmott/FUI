@@ -289,7 +289,12 @@ NumberBoxResult NumberBox(float* const value, const ID id) {
     ctx->mValue = ctx->FilterValue(ctx->mValue - ctx->mSmallStep);
   }
 
-  return {w, (ctx->mValue != *value)};
+  if (std::isnan(ctx->mValue) && std::isnan(*value)) {
+    // We use NaN as 'no value', so both NaN means 'unchanged'
+    return {w, false};
+  }
+
+  return {w, !utility::almost_equal(ctx->mValue, *value)};
 }
 
 }// namespace FredEmmott::GUI::Immediate
