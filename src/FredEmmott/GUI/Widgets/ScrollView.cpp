@@ -28,7 +28,7 @@ constexpr auto SmoothScrollingAnimation = CubicBezierStyleTransition(
 
 auto& ScrollViewStyle() {
   static const ImmutableStyle ret {
-    Style().MinHeight(128).MinWidth(128),
+    Style().MinHeight(128).MinWidth(128).FlexGrow(1).AlignSelf(YGAlignStretch),
   };
   return ret;
 }

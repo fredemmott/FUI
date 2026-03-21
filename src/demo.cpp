@@ -22,247 +22,418 @@ constexpr auto LoremIpsum
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.";
 
-static void AppTick(fui::Window& window) {
+static auto BeginPage() {
+  return fuii::BeginVStackPanel().Styled(
+    fui::Style().FlexGrow(1).Gap(12).Margin(12).Padding(8));
+}
+
+static auto BeginCard(
+  const fuii::ID id = fuii::ID {std::source_location::current()}) {
+  return fuii::BeginCard(id).Styled(
+    fui::Style()
+      .FlexDirection(YGFlexDirectionColumn)
+      .Gap(12)
+      .Margin(12)
+      .Margin(8));
+}
+
+static void demo_display() {
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginPage().Scoped();
+
+  {
+    fuii::Label("TextBlock").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    fuii::Label("Label()");
+    fuii::Label("Label().Caption()").Caption();
+    fuii::Label("Label().Body()").Body();
+    fuii::Label("Label().BodyStrong()").BodyStrong();
+    fuii::Label("Label().Subtitle()").Subtitle();
+    fuii::Label("Label().Title()").Title();
+    fuii::Label("Label().TitleLarge()").TitleLarge();
+    fuii::Label("Label().Display()").Display();
+  }
+
+  {
+    fuii::Label("FontIcon").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    // Glyphs are Unicode private usage code points from
+    // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
+    fuii::FontIcon("\ueb51").Caption("FontIcon(Heart)");
+    fuii::FontIcon("\ueb52").Caption("FontIcon(HeartFill)");
+    fuii::FontIcon({
+                     {"\ueb52", fui::Style().Color(fui::Colors::Red)},
+                     {"\ueb51"},
+                   })
+      .Caption("FontIcon({HeartFill, Heart})");
+  }
+
+  {
+    fuii::Label("TextBlock").Subtitle();
+    const auto card = BeginCard().Scoped();
+    fuii::TextBlock(LoremIpsum);
+  }
+
+  {
+    fuii::Label("ProgressRing").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static bool isActive = false;
+    std::ignore = fuii::ToggleSwitch(&isActive).Caption("ProgressRing()");
+    fuii::ProgressRing().Active(isActive);
+
+    static float value = 0.0f;
+    fuii::HSlider(&value).Caption("ProgressRing(value)");
+    fuii::ProgressRing(value);
+  }
+}
+
+void demo_buttons() {
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginPage().Scoped();
+  const auto card = BeginCard().Scoped();
+
+  if (fuii::Button("Button()")) {
+    std::println(stderr, "Button clicked");
+  }
+
+  if (fuii::Button("Button().Accent()").Accent()) {
+    std::println(stderr, "Accent button clicked");
+  }
+}
+
+static void demo_booleans() {
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginPage().Scoped();
+
+  {
+    const auto card = BeginCard().Scoped();
+
+    static bool checked {false};
+    if (fuii::CheckBox(&checked, "CheckBox()").Caption("CheckBox()")) {
+      std::println(stderr, "Checked to {}", checked);
+    }
+
+    static bool toggled {false};
+    if (fuii::ToggleSwitch(&toggled).Caption("ToggleSwitch()")) {
+      std::println(stderr, "Toggled to {}", toggled);
+    }
+  }
+
+  {
+    fuii::Label("Discouraged").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    fuii::Label(
+      "Microsoft style guidelines discourage custom on/off text; use "
+      ".Caption(...) instead");
+
+    static bool toggledWithCustomText {false};
+    if (fuii::ToggleSwitch(&toggledWithCustomText)
+          .OffText("Disabled")
+          .OnText("Enabled")
+          .Caption(
+            "ToggleSwitch().OffText(\"Disabled\").OnText(\"Enabled\")")) {
+      std::println(stderr, "Toggled to {}", toggledWithCustomText);
+    }
+  }
+}
+
+static void demo_selection() {
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginPage().Scoped();
+
+  {
+    fuii::Label("Radio Buttons").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static std::size_t selected = 1;
+    const auto buttons
+      = fuii::BeginRadioButtons(&selected, "Group Header").Scoped();
+    for (std::size_t i = 0; i < 3; ++i) {
+      if (fuii::RadioButton(i, "Option {}", i)) {
+        std::println(stderr, "Radio changed to {}", i);
+      }
+    }
+  }
+
+  {
+    fuii::Label("Combo Boxes").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    {
+      static int selectedIndex = 1;
+      constexpr auto comboItems = std::array {
+        "foo",
+        "bar",
+        "baz",
+      };
+      if (fuii::ComboBox(&selectedIndex, comboItems)
+            .Caption("Array of strings")) {
+        std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
+      }
+    }
+
+    {
+      struct Item {
+        std::string_view mLabel;
+      };
+      static int selectedIndex = 1;
+      constexpr auto comboItems = std::array {
+        Item {"a"},
+        Item {"b"},
+        Item {"c"},
+      };
+      if (fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel)
+            .Caption("Array of structs")) {
+        std::println(
+          stderr, "Combo changed to {}", comboItems[selectedIndex].mLabel);
+      }
+    }
+    {
+      struct Item {
+        int mKey;
+        std::string_view mLabel;
+      };
+      static int selectedIndex = 1;
+      constexpr auto comboItems = std::array {
+        Item {123, "a"},
+        Item {456, "b"},
+        Item {789, "c"},
+      };
+      if (fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel, &Item::mKey)
+            .Caption("Key-value structs")) {
+        std::println(stderr, "value is {}", selectedIndex);
+      }
+    }
+    {
+      static int selectedIndex = 1;
+      const auto comboItems = std::map<int, std::string_view> {
+        {123, "Foo"},
+        {456, "Bar"},
+        {789, "echo echo echo"},
+      };
+      if (fuii::ComboBox(&selectedIndex, comboItems).Caption("std::map")) {
+        std::println(stderr, "value is {}", selectedIndex);
+      }
+    }
+  }
+}
+
+static void demo_input() {
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginPage().Scoped();
+
+  {
+    fuii::Label("Text Box").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static std::string textBoxValue {"Hello, 💩 world!"};
+    if (fuii::TextBox(&textBoxValue).Caption("TextBox()")) {
+      std::println(stderr, "TextBox value is {}", textBoxValue);
+    }
+  }
+
+  {
+    fuii::Label("Number Box").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static std::optional<int> numberBoxValue;
+    if (fuii::NumberBox(&numberBoxValue).Caption("NumberBox()")) {
+      if (numberBoxValue) {
+        std::println(stderr, "NumberBox value is {}", numberBoxValue.value());
+      } else {
+        std::println(stderr, "NumberBox has no value");
+      }
+    }
+  }
+
+  {
+    fuii::Label("Sliders").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static float hslider {};
+    if (fuii::HSlider(&hslider).TickFrequency(25).Caption(
+          "HSlider().TickFrequency(25)")) {
+      std::println(stderr, "Slider value is {}", hslider);
+    }
+
+    static float vslider {};
+    if (fuii::VSlider(&vslider)
+          .TickFrequency(25)
+          .SnapToTicks()
+          .Styled(fui::Style().Height(120))
+          .Caption("VSlider().TickFrequency(25).SnapToTicks()")) {
+      std::println(stderr, "Slider value is {}", vslider);
+    }
+  }
+}
+
+static void demo_popups() {
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginPage().Scoped();
+
+  {
+    fuii::Label("Basic Popup").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static bool visible = false;
+    if (fuii::Button("Click Me!")) {
+      visible = true;
+      std::println(stderr, "Clicked!");
+    }
+    if (const auto popup = fuii::BeginPopup(&visible).Scoped()) {
+      const auto popupCard = BeginCard().Scoped();
+
+      fuii::Label("This is a popup");
+      if (fuii::Button("Close")) {
+        fuii::ClosePopupWindow();
+      }
+    }
+  }
+
+  {
+    fuii::Label("Content Dialog").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    static bool visible = false;
+    if (fuii::Button("Click Me!")) {
+      visible = true;
+      std::println(stderr, "Clicked!");
+    }
+
+    if (const auto dialog = fuii::BeginContentDialog(&visible).Scoped()) {
+      fuii::ContentDialogTitle("Demo dialog title");
+      fuii::Label("This is a ContentDialog.");
+
+      const auto footer = fuii::BeginContentDialogButtons().Scoped();
+      if (fuii::ContentDialogPrimaryButton("Test").Accent()) {
+        std::println(stderr, "ContentDialog primary button clicked");
+      }
+      fuii::BeginDisabled();
+      fuii::ContentDialogSecondaryButton("Test Disabled");
+      fuii::EndDisabled();
+      if (fuii::ContentDialogCloseButton()) {
+        std::println(stderr, "ContentDialog close button clicked");
+      }
+    }
+  }
+
+  {
+    fuii::Label("Tooltips").Subtitle();
+    const auto card = BeginCard().Scoped();
+
+    std::ignore = fuii::Button("Hover here")
+                    .ToolTip("Tooltip")
+                    .Caption("Button().Tooltip()");
+
+    std::ignore = fuii::Button("Hover here")
+                    .Caption("Button(); BeginTooltipForPreviousWidget();");
+    if (auto tt = fuii::BeginToolTipForPreviousWidget().Scoped()) {
+      fuii::Label("This is a tooltip");
+    }
+  }
+}
+
+static void demo_about() {
+  const auto page = BeginPage().Scoped();
+  const auto card = BeginCard().Scoped();
+
+  fuii::Label(
+    "Backend: {} ({} ICU)",
+    fui::GetBackendDescription(),
+#ifdef FUI_ENABLE_ICU
+    "bundled"
+#else
+    "Windows"
+#endif
+  );
+  fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
+  fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
+}
+
+static void AppTick(fui::Window&) {
   fuii::WindowTitle("FUI Demo");
   std::ignore = fuii::WindowSubtitle("I like turtles");
 
-  constexpr bool UseScrollView = true;
-  if constexpr (UseScrollView) {
-    using enum fui::Window::ResizeMode;
-    window.SetResizeMode(AllowGrow, AllowShrink);
-    fuii::BeginVScrollView().Styled(
-      fui::Style()
-        .BackgroundColor(
-          fui::StaticTheme::Common::LayerOnAcrylicFillColorDefaultBrush)
-        .FlexGrow(1));
-  }
-
-  fuii::BeginVStackPanel().Styled(
-    fui::Style().FlexGrow(1).Gap(12).Margin(12).Padding(8));
-
-  fuii::Label("FUI Details").Subtitle();
-  {
-    // Could call EndCard() and EndVStackPanel() instead of .Scoped();
-    const auto card = fuii::BeginCard().Scoped();
-    const auto layout = fuii::BeginVStackPanel().Scoped();
-    fuii::Label(
-      "Backend: {} ({} ICU)",
-      fui::GetBackendDescription(),
-#ifdef FUI_ENABLE_ICU
-      "bundled"
-#else
-      "Windows"
+  enum class Page {
+    Display,
+    Buttons,
+    Booleans,
+    Selections,
+    Input,
+    Popups,
+#ifdef _WIN32
+    Win32,
 #endif
-    );
-    fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
-    fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
-  }
+    About,
+  };
+  static Page sCurrentPage {Page::Display};
 
-  fuii::Label("Controls").Subtitle();
-  fuii::BeginCard();
-  fuii::BeginVStackPanel().Styled(fui::Style().FlexGrow(1));
+  const auto nav
+    = fuii::BeginNavigationView(&sCurrentPage).IntegrateWithTitleBar().Scoped();
 
-  static bool sDisableAll = false;
-  // (void) cast to ignore [[nodiscard]] is-changed return value
-  fuii::ToggleSwitch(&sDisableAll).Caption("Disable all controls");
-  fuii::BeginDisabled(sDisableAll);
-
-  static bool sIsChecked {false};
-  if (fuii::CheckBox(&sIsChecked, "I'm a checkbox!")
-        .ToolTip("CheckBox ToolTip")) {
-    std::println(
-      stderr, "Checkbox changed to {}", sIsChecked ? "checked" : "unchecked");
-  }
-
-  fuii::Label("Hello, world; this text doesn't make the button wider aeg");
-
-  static bool popupVisible = false;
-  if (fuii::Button("Click Me!")
-        .Caption("Button")
-        .Styled(fui::Style().MinWidth(200.f))) {
-    popupVisible = true;
-    std::println(stderr, "Clicked!");
-  }
-  if (auto tt = fuii::BeginToolTipForPreviousWidget().Scoped()) {
-    fuii::Label("This is a tooltip");
-  }
-
-  if (const auto popup = fuii::BeginPopup(&popupVisible).Scoped()) {
-    const auto card = fuii::BeginCard().Scoped();
-    const auto layout = fuii::BeginVStackPanel().Scoped();
-    fuii::Label("This is a popup");
-    if (fuii::Button("Close")) {
-      popupVisible = false;
-    }
-  }
-
-  static bool sShowAccentPopup = false;
-  if (fuii::Button("Accent style")
-        .Caption("Accent button")
-        .Accent()
-        .ToolTip("Fluent ToolTip")) {
-    std::println(stderr, "Accent clicked");
-    sShowAccentPopup = true;
-  }
   if (
-    const auto dialog = fuii::BeginContentDialog(&sShowAccentPopup).Scoped()) {
-    fuii::ContentDialogTitle("Demo dialog title");
-    fuii::Label("This is a ContentDialog.");
-    fuii::TextBlock(LoremIpsum).Styled(fui::Style().MinWidth(400));
-
-    const auto footer = fuii::BeginContentDialogButtons().Scoped();
-    if (fuii::ContentDialogPrimaryButton("Test").Accent()) {
-      std::println(stderr, "ContentDialog primary button clicked");
-    }
-    fuii::BeginDisabled();
-    fuii::ContentDialogSecondaryButton("Test Disabled");
-    fuii::EndDisabled();
-    if (fuii::ContentDialogCloseButton()) {
-      std::println(stderr, "ContentDialog close button clicked");
-    }
+    const auto page
+    = fuii::BeginNavigationViewItem(Page::Display, "\ue7f4", "Display")
+        .Scoped()) {
+    demo_display();
   }
 
-  static bool isOn = true;
-  if (fuii::ToggleSwitch(&isOn).Caption("ToggleSwitch")) {
-    std::println(stderr, "Toggled to {}", isOn);
-  }
-  (void)(fuii::ToggleSwitch(&isOn)
-           .Caption("ToggleSwitch with custom on/off text (discouraged)")
-           .OnText("Foo (on)")
-           .OffText("Bar (off)"));
-
-  {
-    static int selectedIndex = 1;
-    constexpr auto comboItems = std::array {
-      "foo",
-      "bar",
-      "baz",
-    };
-    if (fuii::ComboBox(&selectedIndex, comboItems)
-          .Caption("Array of strings")
-          .ToolTip("CB ToolTip")) {
-      std::println(stderr, "Combo changed to {}", comboItems[selectedIndex]);
-    }
-  }
-  {
-    struct Item {
-      std::string_view mLabel;
-    };
-    static int selectedIndex = 1;
-    constexpr auto comboItems = std::array {
-      Item {"a"},
-      Item {"b"},
-      Item {"c"},
-    };
-    (void)fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel)
-      .Caption("Array of structs");
-  }
-  {
-    struct Item {
-      int mKey;
-      std::string_view mLabel;
-    };
-    static int selectedIndex = 1;
-    constexpr auto comboItems = std::array {
-      Item {123, "a"},
-      Item {456, "b"},
-      Item {789, "c"},
-    };
-    if (fuii::ComboBox(&selectedIndex, comboItems, &Item::mLabel, &Item::mKey)
-          .Caption("Key-value structs")) {
-      std::println(stderr, "value is {}", selectedIndex);
-    }
-  }
-  {
-    static int selectedIndex = 1;
-    const auto comboItems = std::map<int, std::string_view> {
-      {123, "Foo"},
-      {456, "Bar"},
-      {789, "echo echo echo"},
-    };
-    if (fuii::ComboBox(&selectedIndex, comboItems).Caption("std::map")) {
-      std::println(stderr, "value is {}", selectedIndex);
-    }
+  if (
+    const auto page
+    = fuii::BeginNavigationViewItem(Page::Buttons, "\uf8af", "Buttons")
+        .Scoped()) {
+    demo_buttons();
   }
 
-  static std::size_t selectedOption = 1;
-  fuii::BeginRadioButtons(&selectedOption, "Radio Buttons Header");
-  for (std::size_t i = 0; i < 3; ++i) {
-    if (fuii::RadioButton(i, "Option {}", i)) {
-      std::println(stderr, "Radio changed to {}", i);
-    }
-  }
-  fuii::EndRadioButtons();
-
-  fuii::BeginHStackPanel();
-  // Glyphs areIUnicode private usage code points from
-  // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
-  fuii::FontIcon("\ueb51");// Heart
-  fuii::FontIcon("\ueb52");// HeartFill
-  fuii::FontIcon({
-    {"\ueb52", fui::Style().Color(fui::Colors::Red)},
-    {"\ueb51"},
-  });
-  fuii::Label("After stack");
-  fuii::EndStackPanel();
-
-  fuii::TextBlock(LoremIpsum);
-
-  for (int i = 0; i < 3; ++i) {
-    // IDs are automatically generated for formats
-    fuii::Label("Formatted label {}", i);
-  }
-  for (int i = 0; i < 3; ++i) {
-    // ... but not if we're passing in a variable like below,
-    // so we need to explicitly manage state
-    const auto scopedID = fuii::PushID(i).Scoped();
-    fuii::Label(std::format("String label {}", i));
+  if (
+    const auto page
+    = fuii::BeginNavigationViewItem(Page::Booleans, "\ue762", "Booleans")
+        .Scoped()) {
+    demo_booleans();
   }
 
-  if (fuii::HyperlinkButton("I'm a HyperlinkButton!")) {
-    std::println(stderr, "Hyperlink clicked");
+  if (
+    const auto page
+    = fuii::BeginNavigationViewItem(Page::Selections, "\ueccb", "Selections")
+        .Scoped()) {
+    demo_selection();
   }
 
-  static std::string text {"Hello 💩 world"};
-  if (fuii::TextBox(&text).Caption("I'm a TextBox!")) {
-    std::println(stderr, "TextBox changed to {}", text);
+  if (
+    const auto page
+    = fuii::BeginNavigationViewItem(Page::Input, "\ue961", "Input").Scoped()) {
+    demo_input();
   }
 
-  static float sliderValue {0};
-  fuii::HSlider(&sliderValue).TickFrequency(25);
-  fuii::VSlider(&sliderValue)
-    .TickFrequency(25)
-    .SnapToTicks()
-    .Styled(fui::Style().Height(120));
-
-  static std::optional<int> numberBoxValue;
-  fuii::NumberBox(&numberBoxValue);
+  if (
+    const auto page
+    = fuii::BeginNavigationViewItem(Page::Popups, "\ueb91", "Popups")
+        .Scoped()) {
+    demo_popups();
+  }
 
 #ifdef _WIN32
-  demo_win32();
+  // Glyph is "OEM"
+  if (
+    const auto navItem
+    = fuii::BeginNavigationViewItem(Page::Win32, "\ue74c", "Win32").Scoped()) {
+    const auto scroll = fuii::BeginVScrollView().Scoped();
+    const auto page = BeginPage().Scoped();
+    const auto card = BeginCard().Scoped();
+    demo_win32();
+  }
 #endif
 
-  {
-    fuii::TextBlock("Indeterminate progress ring").BodyStrong();
-    static bool active = true;
-    fuii::ToggleSwitch(&active).Caption("Active");
-    fuii::ProgressRing().Active(active);
-  }
-
-  {
-    fuii::TextBlock("Determinate progress ring").BodyStrong();
-    static float value = 0.0f;
-    fuii::HSlider(&value);
-    fuii::ProgressRing(value);
-  }
-
-  fuii::EndDisabled();
-
-  fuii::EndStackPanel();
-  fuii::EndCard();
-  fuii::EndStackPanel();
-  if constexpr (UseScrollView) {
-    fuii::EndVScrollView();
+  const auto navFooter = fuii::BeginNavigationViewFooterItems().Scoped();
+  if (
+    const auto page
+    = fuii::BeginNavigationViewSettingsItem(Page::About, "About", "About")
+        .Scoped()) {
+    demo_about();
   }
 }
 
@@ -277,5 +448,9 @@ int WINAPI wWinMain(
     lpCmdLine,
     nCmdShow,
     [](fui::Win32Window& window) { AppTick(window); },
-    {"Initial Window Title"});
+    {
+      "Initial Window Title",
+      fui::Window::ResizeMode::AllowGrow,
+      fui::Window::ResizeMode::AllowGrow,
+    });
 }
