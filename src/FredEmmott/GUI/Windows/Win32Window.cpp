@@ -816,6 +816,11 @@ void Win32Window::UpdateGeometry(const DWORD dpi) {
       reinterpret_cast<LPARAM>(smallIcon.get()));
     mSmallIcon = std::move(smallIcon);
   }
+
+  if (mTitleBar) {
+    // Keep min/max/close visible, even if the content overflows horizontally
+    mTitleBar->SetMutableStyles(Style().Width(mGeometry->mCanvasSize.mWidth));
+  }
 }
 
 std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
