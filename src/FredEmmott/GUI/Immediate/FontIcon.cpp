@@ -65,7 +65,7 @@ StyleClass GetStyleClass(const FontIconSize size) {
 }
 }// namespace
 
-Result<>
+FontIconResult
 FontIcon(const std::string_view glyph, const FontIconSize size, const ID id) {
   const auto label = immediate_detail::ChildlessWidget<Widgets::Label>(
     id, FontIconStyle(), StyleClasses {GetStyleClass(size)});
@@ -73,7 +73,7 @@ FontIcon(const std::string_view glyph, const FontIconSize size, const ID id) {
   return {label};
 }
 
-Result<> FontIcon(
+FontIconResult FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyphs,
   FontIconSize size,
   const ID id) {
