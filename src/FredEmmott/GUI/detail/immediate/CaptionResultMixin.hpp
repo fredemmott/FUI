@@ -1,10 +1,9 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <FredEmmott/GUI/Immediate/ID.hpp>
+#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <utility>
-
-#include "FredEmmott/GUI/Immediate/Label.hpp"
-#include "FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.hpp"
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 

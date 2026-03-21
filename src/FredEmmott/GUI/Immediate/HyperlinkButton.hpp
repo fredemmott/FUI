@@ -12,7 +12,6 @@ template <class TValue>
 using HyperlinkButtonResult = Result<
   nullptr,
   TValue,
-  immediate_detail::CaptionResultMixin,
   immediate_detail::TextBlockStylesResultMixin,
   immediate_detail::ToolTipResultMixin>;
 

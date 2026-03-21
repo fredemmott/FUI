@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 #include "CaptionResultMixin.hpp"
 
+#include "FredEmmott/GUI/Immediate/Label.hpp"
 #include "FredEmmott/GUI/assert.hpp"
+
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
 void CaptionResultMixin::AttachCaption(const std::string_view label) {

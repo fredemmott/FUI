@@ -5,9 +5,13 @@
 #include <FredEmmott/GUI/Immediate/Result.hpp>
 #include <FredEmmott/GUI/StaticTheme/Generic.hpp>
 
+#include "CaptionResultMixin.hpp"
+
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-struct TextBlockStylesResultMixin {
+struct TextBlockStylesResultMixin : CaptionResultMixin {
+  using CaptionResultMixin::Caption;
+
   template <class Self>
   decltype(auto) Caption(this Self&& self) {
     widget_from_result(self)->AddStyleClass(
