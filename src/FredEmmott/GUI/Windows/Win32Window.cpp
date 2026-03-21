@@ -598,21 +598,37 @@ void Win32Window::ResizeIfNeeded() {
       return;
     }
     YGNodeSetHasNewLayout(yoga, false);
-    const auto hadOverflow = YGNodeLayoutGetHadOverflow(yoga);
-    if (!hadOverflow) {
+    if (IsZoomed(mHwnd.get())) {
       return;
     }
+    if (!YGNodeLayoutGetHadOverflow(yoga)) {
+      return;
+    }
+
     const auto neededWidth = GetMinimumWidth(yoga, YGNodeLayoutGetWidth(yoga));
     const Rect canvasRect {
-      Point {},
+      {0, 0},
       Size {std::ceilf(neededWidth), mGeometry->mCanvasSize.mHeight},
     };
-    auto screenRect = CanvasRectToScreenRect(canvasRect);
-    std::ignore = ApplySizeConstraints(&screenRect);
-    WINDOWPLACEMENT placement {sizeof(placement)};
-    GetWindowPlacement(mHwnd.get(), &placement);
-    placement.rcNormalPosition = screenRect;
-    SetWindowPlacement(mHwnd.get(), &placement);
+    const auto initialRect = CanvasRectToScreenRect(canvasRect);
+    RECT finalRect {};
+    GetWindowRect(mHwnd.get(), &finalRect);
+
+    const auto right = finalRect.left + (initialRect.right - initialRect.left);
+    if (finalRect.right == right) {
+      return;
+    }
+    finalRect.right = right;
+    std::ignore = ApplySizeConstraints(&finalRect);
+
+    SetWindowPos(
+      mHwnd.get(),
+      nullptr,
+      finalRect.left,
+      finalRect.top,
+      (finalRect.right - finalRect.left),
+      (finalRect.bottom - finalRect.top),
+      SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
   }
 
   ResizeSwapchain();
