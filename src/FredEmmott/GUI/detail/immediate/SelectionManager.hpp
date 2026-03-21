@@ -10,16 +10,33 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 template <selectable_key T>
 class SelectionManager : public Widgets::Context {
  public:
-  const auto& GetAllKeys() {
-    FUI_ASSERT(
-      mNextIndex > mSelectedIndex || (mNextIndex == 0 && mSelectedIndex == 0),
-      "GetAllKeys() should be called before BeginContainer()");
-    mAllKeys.resize(mNextIndex);
+  [[nodiscard]]
+  bool HaveChangedKeys() const {
+    FUI_ASSERT(mHaveFinalizedKeys);
+    return mHaveChangedKeys;
+  }
+
+  [[nodiscard]]
+  const auto& GetAllKeys() const {
+    FUI_ASSERT(mHaveFinalizedKeys);
     return mAllKeys;
+  }
+
+  void FinalizeKeys() {
+    FUI_ASSERT(
+      mNextIndex > mSelectedIndex || (mNextIndex == 0 && mSelectedIndex == 0));
+    if (mNextIndex < mAllKeys.size()) {
+      mHaveChangedKeys = true;
+      mAllKeys.resize(mNextIndex);
+    }
+    FUI_ASSERT(mNextIndex == mAllKeys.size());
+    mHaveFinalizedKeys = true;
   }
 
   void BeginContainer(T* state) {
     mNextIndex = 0;
+    mHaveChangedKeys = false;
+    mHaveFinalizedKeys = false;
 
     struct Item {
       std::size_t mIndex {};
@@ -117,9 +134,14 @@ class SelectionManager : public Widgets::Context {
     const auto idx = self.mNextIndex++;
 
     if (idx < self.mAllKeys.size()) {
-      self.mAllKeys[idx] = key;
+      auto& keyAtIndex = self.mAllKeys[idx];
+      if (keyAtIndex != key) {
+        self.mHaveChangedKeys = true;
+        keyAtIndex = key;
+      }
     } else {
       FUI_ASSERT(idx == self.mAllKeys.size());
+      self.mHaveChangedKeys = true;
       self.mAllKeys.push_back(key);
     }
 
@@ -151,6 +173,8 @@ class SelectionManager : public Widgets::Context {
   std::size_t mSelectedIndex {};
   std::optional<T> mSelectedKey;
   std::vector<T> mAllKeys;
+  bool mHaveChangedKeys {false};
+  bool mHaveFinalizedKeys {false};
 };
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

@@ -58,7 +58,8 @@ NavigationViewResult BeginNavigationView(
   auto& manager = SelectionManager<T>::Get(w);
   auto ctx = w->GetContext<NavigationViewContext<T>>();
 
-  if (ctx && !ctx->mBackStack.empty()) {
+  manager.FinalizeKeys();
+  if (ctx && !ctx->mBackStack.empty() && manager.HaveChangedKeys()) {
     static constexpr bool Sortable
       = std::movable<T> && totally_ordered_msvc_workaround_t<T>::value;
 
