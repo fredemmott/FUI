@@ -27,7 +27,7 @@ Style MakeFontIconStyle(const FontIconSize size) {
 const ImmutableStyle& FontIconStyle() {
   static ImmutableStyle ret {
     Style()
-      .AlignSelf(YGAlignCenter)
+      .AlignSelf(YGAlignFlexStart)
       .Position(YGPositionTypeRelative)
       .And(CaptionTextBlockClass, MakeFontIconStyle(FontIconSize::Caption))
       .And(BodyTextBlockClass, MakeFontIconStyle(FontIconSize::Body))
