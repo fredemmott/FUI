@@ -8,6 +8,7 @@
 #include <felly/scope_exit.hpp>
 
 #include "FredEmmott/GUI/StaticTheme.hpp"
+#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 #include "FredEmmott/utility/almost_equal.hpp"
 
 using namespace FredEmmott::GUI::StaticTheme;
@@ -39,9 +40,7 @@ void Root::BeginFrame() {
       "BeginFrame() called, but frame already in progress");
   }
 
-  tStack.push_back({
-    .mPending = {mImmediateRoot->GetStructuralChildren()},
-  });
+  PushParentOverride(mImmediateRoot);
   FocusManager::PushInstance(&mFocusManager);
 }
 
@@ -49,18 +48,16 @@ void Root::EndFrame() {
   const auto pop = felly::scope_exit(
     std::bind_front(&FocusManager::PopInstance, &mFocusManager));
 
-  if (tStack.size() != 1) {
+  if (tStack.size() != 2) {
     throw std::logic_error("EndFrame() called, but children are open");
   }
-  const auto widgets = std::move(tStack.front().mNewSiblings);
-  tStack.clear();
+  PopParentOverride();
+  FUI_ASSERT(tStack.empty());
 
-  if (widgets.size() > 1) {
-    throw std::logic_error(
-      "Immediate widget root must have a single child, usually a layout or "
-      "card");
-  }
-  mImmediateRoot->SetStructuralChildren(std::move(widgets));
+  FUI_ASSERT(
+    mImmediateRoot->GetStructuralChildren().size() == 1,
+    "Immediate widget root must have a single child, usually a layout or "
+    "card");
   mActualRoot->ComputeStyles({});
 
   if (tResizeThisFrame) {
