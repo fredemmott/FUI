@@ -15,7 +15,7 @@ namespace FredEmmott::GUI::Immediate {
  *
  * This is primarily intended to allow ints, `std::size_t`, and
  * enums, but given all we need to allow is equality, it's fairly
- * permissive.
+ * permissive, e.g. you could use an `std::variant<empty_marker_t, indexed_t>`
  *
  * - Pointers are disallowed to avoid confusion for parameters that
  *   take a pointer

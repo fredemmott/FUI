@@ -15,9 +15,6 @@ class NavigationViewTogglePaneButton final : public NavigationViewButton {
 
   void Invoke() override;
 
- protected:
-  void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
-
  private:
   NavigationView* mNavigationView {};
 };

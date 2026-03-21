@@ -170,6 +170,12 @@ const ImmutableStyle& NavigationViewItemStyle() {
           .BorderColor(NavigationViewItemBorderBrushPressed)
           .Color(NavigationViewItemForegroundPressed))
       .And(
+        Disabled,
+        Style()
+          .BackgroundColor(NavigationViewItemBackgroundDisabled)
+          .BorderColor(NavigationViewItemBorderBrushDisabled)
+          .Color(NavigationViewItemForegroundDisabled))
+      .And(
         Checked,
         Style()
           .BackgroundColor(NavigationViewItemBackgroundSelected)

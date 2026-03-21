@@ -7,27 +7,20 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-// "GlobalNavButton", a.k.a 'Hamburger'
-constexpr auto Glyph = "\ue700";
+// a.k.a. Hamburger Menu
+constexpr auto GlobalNavButtonGlyph = "\ue700";
 }// namespace
 
 NavigationViewTogglePaneButton::NavigationViewTogglePaneButton(
   const id_type id,
   NavigationView* nav)
-  : NavigationViewButton(id, Glyph),
+  : NavigationViewButton(id, GlobalNavButtonGlyph),
     mNavigationView(nav) {}
 
 NavigationViewTogglePaneButton::~NavigationViewTogglePaneButton() = default;
 
 void NavigationViewTogglePaneButton::Invoke() {
   mNavigationView->TogglePaneIsExpanded();
-}
-
-void NavigationViewTogglePaneButton::PaintOwnContent(
-  Renderer* renderer,
-  const Rect& rect,
-  const Style& style) const {
-  this->PaintCenteredGlyph(renderer, rect, style.Color().value());
 }
 
 }// namespace FredEmmott::GUI::Widgets

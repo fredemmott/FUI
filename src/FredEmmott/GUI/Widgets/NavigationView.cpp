@@ -4,6 +4,7 @@
 
 #include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
 #include "Label.hpp"
+#include "NavigationViewBackButton.hpp"
 #include "NavigationViewTogglePaneButton.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -55,13 +56,15 @@ NavigationView::NavigationView(const id_type id)
       0,
       NavigationViewContentInnerStyleClass,
       NavigationViewContentInnerStyle())) {
-  mPane->SetStructuralChildren({mPaneHeader, mItemsRoot, mFooterItemsRoot});
+  mBackButton = new NavigationViewBackButton(0);
+  mTogglePaneButton = new NavigationViewTogglePaneButton(0, this);
+  mPaneHeader->SetLogicalChildren({mTogglePaneButton});
+
+  mPane->SetStructuralChildren(
+    {mBackButton, mPaneHeader, mItemsRoot, mFooterItemsRoot});
   mContentOuter->SetStructuralChildren({mContentHeader, mContentInner});
   this->SetStructuralChildren({mPane, mContentOuter});
   mPane->AddStyleClass(NavigationViewPaneExpandedStyleClass);
-
-  mTogglePaneButton = new NavigationViewTogglePaneButton(0, this);
-  mPaneHeader->SetLogicalChildren({mTogglePaneButton});
 }
 
 NavigationView::~NavigationView() = default;

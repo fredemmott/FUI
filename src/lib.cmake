@@ -117,6 +117,8 @@ add_library(
   FredEmmott/GUI/Widgets/NavigationViewSettingsItem.hpp
   FredEmmott/GUI/Widgets/NavigationViewButton.cpp
   FredEmmott/GUI/Widgets/NavigationViewButton.hpp
+  FredEmmott/GUI/Widgets/NavigationViewBackButton.cpp
+  FredEmmott/GUI/Widgets/NavigationViewBackButton.hpp
   FredEmmott/GUI/Widgets/NavigationViewTogglePaneButton.cpp
   FredEmmott/GUI/Widgets/NavigationViewTogglePaneButton.hpp
   FredEmmott/GUI/Widgets/PopupWindow.cpp FredEmmott/GUI/Widgets/PopupWindow.hpp

@@ -3,9 +3,11 @@
 #pragma once
 
 #include <FredEmmott/GUI/Widgets/NavigationView.hpp>
+#include <FredEmmott/GUI/Widgets/NavigationViewBackButton.hpp>
 #include <FredEmmott/GUI/Widgets/NavigationViewItem.hpp>
 #include <FredEmmott/GUI/detail/immediate/SelectionManager.hpp>
 #include <FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp>
+#include <stack>
 
 #include "FredEmmott/GUI/Widgets/NavigationViewSettingsItem.hpp"
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
@@ -13,6 +15,30 @@
 #include "selectable_key.hpp"
 
 namespace FredEmmott::GUI::Immediate {
+
+namespace immediate_detail {
+
+template <selectable_key TKey>
+struct NavigationViewContext : Widgets::Context {
+  struct BackStack : std::stack<TKey> {
+    void erase_if(auto&& predicate) {
+      std::erase_if(this->c, std::forward<decltype(predicate)>(predicate));
+    }
+  };
+  ~NavigationViewContext() override = default;
+
+  BackStack mBackStack;
+};
+
+// Workaround for https://github.com/microsoft/STL/issues/6171
+template <class T>
+struct totally_ordered_msvc_workaround_t
+  : std::bool_constant<std::totally_ordered<T>> {};
+template <class... Ts>
+struct totally_ordered_msvc_workaround_t<std::variant<Ts...>>
+  : std::bool_constant<(std::totally_ordered<Ts> && ...)> {};
+
+}// namespace immediate_detail
 
 inline void EndNavigationView() {
   immediate_detail::PopParentOverride();
@@ -28,7 +54,42 @@ NavigationViewResult BeginNavigationView(
   const ID id = ID {std::source_location::current()}) {
   using namespace immediate_detail;
   const auto w = ChildlessWidget<Widgets::NavigationView>(id);
-  SelectionManager<T>::BeginContainer(w, selectedKey);
+
+  auto& manager = SelectionManager<T>::Get(w);
+  auto ctx = w->GetContext<NavigationViewContext<T>>();
+
+  if (ctx && !ctx->mBackStack.empty()) {
+    static constexpr bool Sortable
+      = std::movable<T> && totally_ordered_msvc_workaround_t<T>::value;
+
+    auto keys = manager.GetAllKeys();
+    if constexpr (Sortable) {
+      std::ranges::sort(keys);
+    }
+
+    ctx->mBackStack.erase_if([&keys](auto&& key) {
+      if constexpr (Sortable) {
+        return !std::ranges::binary_search(keys, key);
+      } else {
+        return !std::ranges::contains(keys, key);
+      }
+    });
+    w->GetBackButton()->SetIsDirectlyDisabled(ctx->mBackStack.empty());
+  }
+
+  if (const auto back = w->GetBackButton(); back->ConsumeWasActivated()) {
+    FUI_ASSERT(!ctx->mBackStack.empty());
+    *selectedKey = ctx->mBackStack.top();
+    ctx->mBackStack.pop();
+    back->SetIsDirectlyDisabled(ctx->mBackStack.empty());
+  }
+
+  const auto oldKey = *selectedKey;
+  manager.BeginContainer(selectedKey);
+  if (*selectedKey != oldKey) {
+    w->GetOrCreateContext<NavigationViewContext<T>>()->mBackStack.push(oldKey);
+    w->GetBackButton()->SetIsDirectlyDisabled(false);
+  }
   PushParentOverride(w->GetItemsRoot());
   return {w};
 }

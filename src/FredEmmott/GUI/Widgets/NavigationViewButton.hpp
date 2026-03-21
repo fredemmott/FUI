@@ -14,10 +14,7 @@ class NavigationViewButton : public Widget, public IInvocable {
   ~NavigationViewButton() override;
 
  protected:
-  void PaintCenteredGlyph(
-    Renderer* renderer,
-    const Rect& rect,
-    const Brush& brush) const;
+  void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     final;

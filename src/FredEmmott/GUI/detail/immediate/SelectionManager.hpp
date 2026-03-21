@@ -10,12 +10,16 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 template <selectable_key T>
 class SelectionManager : public Widgets::Context {
  public:
-  static void BeginContainer(
-    Widgets::ISelectionContainer* const container,
-    T* state) {
-    auto& self
-      = *container->GetWidget()->GetOrCreateContext<SelectionManager>();
-    self.mNextIndex = 0;
+  const auto& GetAllKeys() {
+    FUI_ASSERT(
+      mNextIndex > mSelectedIndex || (mNextIndex == 0 && mSelectedIndex == 0),
+      "GetAllKeys() should be called before BeginContainer()");
+    mAllKeys.resize(mNextIndex);
+    return mAllKeys;
+  }
+
+  void BeginContainer(T* state) {
+    mNextIndex = 0;
 
     struct Item {
       std::size_t mIndex {};
@@ -25,7 +29,7 @@ class SelectionManager : public Widgets::Context {
     };
 
     const auto items
-      = container->GetSelectionItems() | std::views::enumerate
+      = mContainer->GetSelectionItems() | std::views::enumerate
       | std::views::transform([](const auto& pair) {
           const auto [idx, item] = pair;
           const auto ctx
@@ -49,8 +53,8 @@ class SelectionManager : public Widgets::Context {
 
     for (auto&& [idx, item, ctx, key]: items) {
       if (item->ConsumeWasSelected()) {
-        self.mSelectedIndex = idx;
-        self.mSelectedKey = *state = key;
+        mSelectedIndex = idx;
+        mSelectedKey = *state = key;
         ctx->mSelectedThisFrame = true;
       } else {
         ctx->mSelectedThisFrame = false;
@@ -59,15 +63,15 @@ class SelectionManager : public Widgets::Context {
 
     // Optimize "no new or removed items"
     if (
-      self.mSelectedKey == *state && self.mSelectedIndex < items.size()
-      && items.at(self.mSelectedIndex).mKey == *state) {
+      mSelectedKey == *state && mSelectedIndex < items.size()
+      && items.at(mSelectedIndex).mKey == *state) {
       return;
     }
 
-    const auto it = std::ranges::find(items, *state, &Item::mKey);
-    if (it != items.end()) {
-      self.mSelectedIndex = it->mIndex;
-      self.mSelectedKey = it->mKey;
+    if (const auto it = std::ranges::find(items, *state, &Item::mKey);
+        it != items.end()) {
+      mSelectedIndex = it->mIndex;
+      mSelectedKey = it->mKey;
       it->mItem->Select();
       it->mContext->mSelectedThisFrame = it->mItem->ConsumeWasSelected();
       return;
@@ -75,17 +79,31 @@ class SelectionManager : public Widgets::Context {
 
     if (items.empty()) {
       *state = T {};
-      self.mSelectedIndex = 0;
-      self.mSelectedKey.reset();
+      mSelectedIndex = 0;
+      mSelectedKey.reset();
       return;
     }
 
-    self.mSelectedIndex
-      = std::clamp<std::size_t>(self.mSelectedIndex, 0, items.size() - 1);
-    auto& item = items.at(self.mSelectedIndex);
-    self.mSelectedKey = *state = item.mKey;
+    mSelectedIndex
+      = std::clamp<std::size_t>(mSelectedIndex, 0, items.size() - 1);
+    auto& item = items.at(mSelectedIndex);
+    mSelectedKey = *state = item.mKey;
     item.mItem->Select();
-    it->mContext->mSelectedThisFrame = it->mItem->ConsumeWasSelected();
+    item.mContext->mSelectedThisFrame = item.mItem->ConsumeWasSelected();
+  }
+
+  [[nodiscard]]
+  static auto& Get(Widgets::ISelectionContainer* const container) {
+    auto& self
+      = *container->GetWidget()->GetOrCreateContext<SelectionManager>();
+    self.mContainer = container;
+    return self;
+  }
+
+  static void BeginContainer(
+    Widgets::ISelectionContainer* const container,
+    T* state) {
+    Get(container).BeginContainer(state);
   }
 
   [[nodiscard]]
@@ -97,6 +115,14 @@ class SelectionManager : public Widgets::Context {
     const auto ctx = widget->GetOrCreateContext<ItemContext>();
     ctx->mKey = key;
     const auto idx = self.mNextIndex++;
+
+    if (idx < self.mAllKeys.size()) {
+      self.mAllKeys[idx] = key;
+    } else {
+      FUI_ASSERT(idx == self.mAllKeys.size());
+      self.mAllKeys.push_back(key);
+    }
+
     if (idx != self.mSelectedIndex) {
       return false;
     }
@@ -117,11 +143,14 @@ class SelectionManager : public Widgets::Context {
     bool mSelectedThisFrame {};
   };
 
+  Widgets::ISelectionContainer* mContainer {};
+
   /// 0 can mean 'first item', but can also mean 'no items' or 'first frame'
   std::size_t mNextIndex {};
 
   std::size_t mSelectedIndex {};
   std::optional<T> mSelectedKey;
+  std::vector<T> mAllKeys;
 };
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

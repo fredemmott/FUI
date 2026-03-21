@@ -52,11 +52,12 @@ NavigationViewButton::NavigationViewButton(
 
 NavigationViewButton::~NavigationViewButton() = default;
 
-void NavigationViewButton::PaintCenteredGlyph(
+void NavigationViewButton::PaintOwnContent(
   Renderer* renderer,
   const Rect& rect,
-  const Brush& brush) const {
+  const Style& style) const {
   FUI_ASSERT(mFont);
+  const auto& brush = style.Color().value();
 
   const auto t = std::chrono::duration_cast<std::chrono::duration<float>>(
                    std::chrono::steady_clock::now() - mAnimationStart)

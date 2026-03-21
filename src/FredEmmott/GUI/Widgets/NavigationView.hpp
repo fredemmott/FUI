@@ -6,6 +6,7 @@
 #include "Widget.hpp"
 
 namespace FredEmmott::GUI::Widgets {
+class NavigationViewBackButton;
 class NavigationViewTogglePaneButton;
 
 class Label;
@@ -37,6 +38,11 @@ class NavigationView final : public Widget, public ISelectionContainer {
 
   void TogglePaneIsExpanded();
 
+  [[nodiscard]]
+  NavigationViewBackButton* GetBackButton() const noexcept {
+    return mBackButton;
+  }
+
  private:
   // Contains menu/NavigationViewItems
   Widget* mPane {};
@@ -44,6 +50,7 @@ class NavigationView final : public Widget, public ISelectionContainer {
   Widget* mItemsRoot {};
   Widget* mFooterItemsRoot {};
 
+  NavigationViewBackButton* mBackButton {};
   NavigationViewTogglePaneButton* mTogglePaneButton {};
 
   // Has the rounded corner, contains header and mContentInner
