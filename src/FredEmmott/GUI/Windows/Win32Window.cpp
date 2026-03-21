@@ -593,7 +593,26 @@ void Win32Window::ResizeSwapchain() {
 
 void Win32Window::ResizeIfNeeded() {
   if (!std::exchange(mPendingResize, false)) {
-    return;
+    const auto yoga = this->GetRoot()->GetLayoutNode();
+    if (!YGNodeGetHasNewLayout(yoga)) {
+      return;
+    }
+    YGNodeSetHasNewLayout(yoga, false);
+    const auto hadOverflow = YGNodeLayoutGetHadOverflow(yoga);
+    if (!hadOverflow) {
+      return;
+    }
+    const auto neededWidth = GetMinimumWidth(yoga, YGNodeLayoutGetWidth(yoga));
+    const Rect canvasRect {
+      Point {},
+      Size {std::ceilf(neededWidth), mGeometry->mCanvasSize.mHeight},
+    };
+    auto screenRect = CanvasRectToScreenRect(canvasRect);
+    std::ignore = ApplySizeConstraints(&screenRect);
+    WINDOWPLACEMENT placement {sizeof(placement)};
+    GetWindowPlacement(mHwnd.get(), &placement);
+    placement.rcNormalPosition = screenRect;
+    SetWindowPlacement(mHwnd.get(), &placement);
   }
 
   ResizeSwapchain();
