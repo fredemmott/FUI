@@ -379,6 +379,10 @@ Widget* Widget::DispatchEvent(const Event& e) {
     auto relativeToSelf = *it;
     const auto yoga = this->GetLayoutNode();
     const auto display = YGNodeStyleGetDisplay(yoga);
+    if (display == YGDisplayNone) {
+      return nullptr;
+    }
+
     if (display != YGDisplayContents) {
       relativeToSelf = relativeToSelf.WithOffset({
         -YGNodeLayoutGetLeft(yoga),
@@ -387,13 +391,18 @@ Widget* Widget::DispatchEvent(const Event& e) {
     }
 
     for (auto&& child: mRawStructuralChildren) {
-      if (YGNodeStyleGetDisplay(child->GetLayoutNode()) == YGDisplayNone) {
-        continue;
-      }
       if (const auto target = child->DispatchEvent(relativeToSelf)) {
         return target;
       }
     }
+
+    if (
+      relativeToSelf.mPoint.mX < 0 || relativeToSelf.mPoint.mY < 0
+      || relativeToSelf.mPoint.mX >= YGNodeLayoutGetWidth(yoga)
+      || relativeToSelf.mPoint.mY >= YGNodeLayoutGetHeight(yoga)) {
+      return nullptr;
+    }
+
     if (dynamic_cast<IFocusable*>(this)) {
       return this;
     }
