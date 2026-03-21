@@ -51,7 +51,8 @@ class SkiaRenderer final : public Renderer {
     const Brush& brush,
     const Point& start,
     const Point& end,
-    float thickness) override;
+    float thickness,
+    StrokeCap = {}) override;
 
   // Transformations
   void Scale(float x, float y) override;

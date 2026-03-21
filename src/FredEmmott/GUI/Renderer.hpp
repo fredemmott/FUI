@@ -129,7 +129,8 @@ class Renderer {
     const Brush& brush,
     const Point& start,
     const Point& end,
-    float thickness = 0) = 0;
+    float thickness = 0,
+    StrokeCap = StrokeCap::None) = 0;
 
   virtual void FillRoundedRect(
     const Brush& brush,

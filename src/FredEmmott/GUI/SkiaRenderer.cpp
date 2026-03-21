@@ -38,6 +38,19 @@ struct ImportedSkiaFence : ImportedFence {
   GrD3DFenceInfo mSkiaFence {};
 #endif
 };
+
+SkPaint::Cap GetSkiaStrokeCap(const StrokeCap cap) {
+  using enum StrokeCap;
+  switch (cap) {
+    case None:
+      return SkPaint::kButt_Cap;
+    case Round:
+      return SkPaint::kRound_Cap;
+    case Square:
+      return SkPaint::kSquare_Cap;
+  }
+  std::unreachable();
+}
 }// namespace
 
 SkiaRenderer::SkiaRenderer(
@@ -99,9 +112,13 @@ void SkiaRenderer::DrawLine(
   const Brush& brush,
   const Point& start,
   const Point& end,
-  float thickness) {
+  const float thickness,
+  const StrokeCap strokeCap) {
   auto paint = brush.as<SkPaint>(this, Rect {start, end});
   paint.setStrokeWidth(thickness);
+  paint.setAntiAlias(true);
+  paint.setStrokeCap(GetSkiaStrokeCap(strokeCap));
+
   mCanvas->drawLine(start.as<SkPoint>(), end.as<SkPoint>(), paint);
 }
 
@@ -326,18 +343,7 @@ void SkiaRenderer::StrokeArc(
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(thickness);
   paint.setAntiAlias(true);
-
-  switch (strokeCap) {
-    case StrokeCap::None:
-      paint.setStrokeCap(SkPaint::kButt_Cap);
-      break;
-    case StrokeCap::Round:
-      paint.setStrokeCap(SkPaint::kRound_Cap);
-      break;
-    case StrokeCap::Square:
-      paint.setStrokeCap(SkPaint::kSquare_Cap);
-      break;
-  }
+  paint.setStrokeCap(GetSkiaStrokeCap(strokeCap));
   mCanvas->drawArc(rect, startAngle, sweepAngle, false, paint);
 }
 

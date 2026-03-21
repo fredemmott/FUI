@@ -143,13 +143,14 @@ void Direct2DRenderer::DrawLine(
   const Brush& brush,
   const Point& start,
   const Point& end,
-  const float thickness) {
+  const float thickness,
+  const StrokeCap strokeCap) {
   mDeviceResources.mD2DDeviceContext->DrawLine(
     start.as<D2D1_POINT_2F>(),
     end.as<D2D1_POINT_2F>(),
     brush.as<ID2D1Brush*>(this, {start, end}),
     thickness == 0 ? 1 : thickness,
-    nullptr);
+    GetStrokeStyle(strokeCap));
 }
 
 void Direct2DRenderer::FillRoundedRect(

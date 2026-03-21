@@ -55,7 +55,8 @@ class Direct2DRenderer final : public Renderer {
     const Brush& brush,
     const Point& start,
     const Point& end,
-    float thickness) override;
+    float thickness,
+    StrokeCap) override;
 
   // Rounded rectangle drawing
   void FillRoundedRect(
