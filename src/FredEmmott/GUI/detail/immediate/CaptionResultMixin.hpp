@@ -10,7 +10,7 @@ namespace FredEmmott::GUI::Immediate::immediate_detail {
 struct CaptionResultMixin {
   template <class Self>
   decltype(auto) Caption(this Self&& self, const std::string_view label) {
-    AttachCaption(label);
+    AttachCaption(widget_from_result(self), label);
     return std::forward<Self>(self);
   }
 
@@ -19,13 +19,13 @@ struct CaptionResultMixin {
   decltype(auto)
   Caption(this Self&& self, std::format_string<Args...> fmt, Args&&... args) {
     const auto [id, text] = ParsedID(fmt, std::forward<Args>(args)...);
-    AttachCaption(text, id);
+    AttachCaption(widget_from_result(self), text, id);
     return std::forward<Self>(self);
   }
 
  private:
-  static void AttachCaption(std::string_view label);
-  static void AttachCaption(std::string_view label, const ID&);
+  static void AttachCaption(Widget* w, std::string_view label);
+  static void AttachCaption(Widget* w, std::string_view label, const ID&);
 };
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail

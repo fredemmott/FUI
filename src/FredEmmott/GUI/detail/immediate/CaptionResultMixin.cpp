@@ -7,26 +7,25 @@
 
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
-void CaptionResultMixin::AttachCaption(const std::string_view label) {
-  const auto target = GetCurrentNode();
+void CaptionResultMixin::AttachCaption(
+  Widget* const target,
+  const std::string_view label) {
   AttachCaption(
-    label, ID {std::format("{}__GeneratedCaptionID", target->GetID())});
+    target, label, ID {std::format("{}__GeneratedCaptionID", target->GetID())});
 }
 
 void CaptionResultMixin::AttachCaption(
+  Widget* const target,
   const std::string_view label,
   const ID& id) {
-  const auto target = GetCurrentNode();
   const auto caption = widget_from_result(
     Label(label, id).Caption().Styled(Style().MarginBottom(-4)));
-  auto& siblings = tStack.back().mNewSiblings;
 
-  FUI_ASSERT(siblings.size() >= 2);
-  auto& back = siblings.back();
-  auto& prev = siblings.at(siblings.size() - 2);
-  FUI_ASSERT(back == caption);
-  FUI_ASSERT(prev == target);
-  std::swap(back, prev);
+  auto& siblings = tStack.back().mNewSiblings;
+  FUI_ASSERT(siblings.back() == caption);
+  const auto it = std::ranges::find(siblings, target);
+  FUI_ASSERT(it != siblings.end());
+  std::ranges::rotate(it, siblings.end() - 1, siblings.end());
 }
 
 }// namespace FredEmmott::GUI::Immediate::immediate_detail
