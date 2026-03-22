@@ -133,10 +133,22 @@ struct SwapChainPusher {
   SwapChainPusher(fui::Widgets::SwapChainPanel::SwapChain swapChain)
     : mSwapChain(std::move(swapChain)) {
     mThread = std::jthread {std::bind_front(&SwapChainPusher::Run, this)};
+    mSwapChainEvent.create();
+  }
+
+  void SetSwapchain(fui::Widgets::SwapChainPanel::SwapChain swapChain) {
+    if (swapChain == mSwapChain) {
+      return;
+    }
+    const std::unique_lock lock(mMutex);
+    mSwapChain = std::move(swapChain);
+    mSwapChainEvent.SetEvent();
   }
 
  private:
   std::jthread mThread;
+  std::mutex mMutex;
+  wil::unique_event mSwapChainEvent {};
 
   void Run(const std::stop_token& stop) {
     using fui::win32_detail::CheckHResult;
@@ -171,7 +183,21 @@ struct SwapChainPusher {
     static constexpr float Green[4] {0.f, 1.f, 0.f, 1.f};
     static constexpr float White[4] {1.f, 1.f, 1.f, 1.f};
     while (!stop.stop_requested()) {
-      const auto begin = mSwapChain.BeginFrame();
+      std::unique_lock lock(mMutex);
+
+      const auto begin = [&] {
+        auto ret = mSwapChain.BeginFrame();
+        while (!ret) {
+          lock.unlock();
+          const auto cancel = std::stop_callback(
+            stop, [&] { SetEvent(mSwapChainEvent.get()); });
+          std::ignore = mSwapChainEvent.wait();
+          lock.lock();
+          ret = mSwapChain.BeginFrame();
+        }
+        mSwapChainEvent.ResetEvent();
+        return ret;
+      }();
       if (!begin) {
         return;
       }
@@ -242,6 +268,7 @@ void demo_win32() {
 
   fuii::SwapChainPanel([](const auto& swapChain) {
     static SwapChainPusher swapChainPusher {swapChain};
+    swapChainPusher.SetSwapchain(swapChain);
     swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
   })
     .Styled(
