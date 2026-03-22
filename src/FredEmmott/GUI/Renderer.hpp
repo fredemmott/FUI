@@ -8,7 +8,9 @@
 
 #include "Brush.hpp"
 #include "Color.hpp"
+#include "CornerRadius.hpp"
 #include "Font.hpp"
+#include "FredEmmott/utility/almost_equal.hpp"
 #include "Point.hpp"
 #include "Rect.hpp"
 
@@ -160,6 +162,14 @@ class Renderer {
     StrokeCap strokeCap = StrokeCap::None) = 0;
   virtual void
   StrokeEllipse(const Brush& brush, const Rect& rect, float thickness = 1) = 0;
+
+  void FillEllipse(const Brush& brush, const Rect& rect) {
+    FUI_ASSERT(
+      utility::almost_equal(rect.GetHeight(), rect.GetWidth()),
+      "FillEllipse is not fully implemented, and currently wraps "
+      "FillRoundedRect()");
+    FillRoundedRect(brush, rect, CornerRadius {rect.GetHeight() / 2});
+  }
 
   virtual void DrawText(
     const Brush& brush,

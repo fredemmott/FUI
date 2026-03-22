@@ -66,7 +66,7 @@ SliderResult SliderImpl(
   w->SetRange(minimum, maximum);
 
   const auto ctx = w->GetOrCreateContext<SliderImmediateContext>();
-  if (w->ConsumeWasThumbHovered()) {
+  if (w->ConsumeWasThumbStationaryHovered()) {
     ctx->mToolTipReason = SliderImmediateContext::ToolTipReason::Hover;
   }
   if (w->ConsumeDidReceiveKeyboardInput()) {
@@ -141,10 +141,7 @@ SliderResult SliderImpl(
 
   const auto value
     = w->IsDragging() ? w->GetSnappedDraggingValue() : w->GetValue();
-  const auto [min, max] = w->GetRange();
-  const auto pixelOffset = w->IsDragging()
-    ? w->GetDraggingTrackOffset()
-    : (w->GetTrackLength() * (value - min) / (max - min));
+  const auto pixelOffset = w->GetThumbCenterOffsetWithinTrack();
 
   // 2. Centering container: Probably bigger than the content, just centers it
   // Because of the relationship between the two widths, this is centered over

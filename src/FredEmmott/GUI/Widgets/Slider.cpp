@@ -1,4 +1,5 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
 #include "Slider.hpp"
@@ -14,8 +15,24 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
+
 using namespace StaticTheme::Slider;
 using namespace StaticTheme::Common;
+
+static_assert(SliderHorizontalThumbWidth == SliderHorizontalThumbHeight);
+static_assert(SliderVerticalThumbWidth == SliderVerticalThumbHeight);
+static_assert(SliderHorizontalThumbWidth == SliderVerticalThumbWidth);
+constexpr auto SliderThumbLength = SliderHorizontalThumbWidth;
+constexpr auto SliderHalfThumbLength = SliderThumbLength / 2.0f;
+
+constexpr auto SliderInnerThumbScaleAnimationDuration
+  = ControlFastAnimationDuration;
+constexpr auto SliderInnerThumbScaleAnimationEasingFunction
+  = EasingFunctions::CubicBezier(ControlFastOutSlowInKeySpline);
+constexpr auto SliderInnerThumbSize = 0.86f;
+constexpr auto SliderInnerThumbScalePointerOver = 1.167f;
+constexpr auto SliderInnerThumbScalePressed = 0.71f;
+constexpr auto SliderInnerThumbScaleDisabled = 1.167f;
 
 auto& SliderBaseStyle() {
   static const ImmutableStyle ret {Style().AlignItems(YGAlignCenter)};
@@ -42,105 +59,76 @@ auto& VerticalSliderStyle() {
   return ret;
 }
 
-auto& TrackBaseStyle() {
-  static const ImmutableStyle ret {
-    Style()
-      .AlignItems(YGAlignCenter)
-      .AlignSelf(YGAlignCenter)
-      .BackgroundColor(SliderTrackBackgroundThemeBrush)
-      .BorderRadius(SliderTrackCornerRadius)
-      .FlexGrow(1)
-      .MarginTop(SliderPreContentMargin)
-      .MarginBottom(SliderPostContentMargin)
-      .And(
-        PseudoClasses::Hover,
-        Style().BackgroundColor(SliderTrackPointerOverBackgroundThemeBrush))};
-  return ret;
+struct SliderBrushes {
+  Brush mTrackFill;
+  Brush mTrackValueFill;
+  Brush mTickBarFill;
+
+  Brush mOuterThumbStroke;
+  Brush mOuterThumbFill;
+};
+
+enum class SliderState : uint8_t {
+  Normal,
+  Hover,
+  Active,
+  Disabled,
+};
+
+Brush GetSliderInnerThumbBrush(const SliderState state) {
+  // Thumb hover state is indepednent of slider pointer-hover
+  switch (state) {
+    case SliderState::Normal:
+      return SliderThumbBackground;
+    case SliderState::Hover:
+      return SliderThumbBackgroundPointerOver;
+    case SliderState::Active:
+      return SliderThumbBackgroundPressed;
+    case SliderState::Disabled:
+      return SliderThumbBackgroundDisabled;
+  }
+  std::unreachable();
 }
 
-auto& HorizontalTrackStyle() {
-  static const ImmutableStyle ret {
-    TrackBaseStyle()
-    + Style().Height(SliderTrackThemeHeight).FlexDirection(YGFlexDirectionRow)};
-  return ret;
-}
-
-auto& VerticalTrackStyle() {
-  static const ImmutableStyle ret {
-    TrackBaseStyle()
-    + Style()
-        .Width(SliderTrackThemeHeight)
-        .FlexDirection(YGFlexDirectionColumn)};
-  return ret;
-}
-
-auto& OuterThumbBaseStyle() {
-  static const ImmutableStyle ret {
-    Style()
-      .AlignItems(YGAlignCenter)
-      .JustifyContent(YGJustifyCenter)
-      .BackgroundColor(SliderOuterThumbBackground)
-      .BorderColor(SliderThumbBorderBrush)
-      .BorderRadius(SliderThumbCornerRadius)
-      .BorderWidth(1)};
-  return ret;
-}
-
-auto& HorizontalOuterThumbStyle() {
-  static const ImmutableStyle ret {
-    OuterThumbBaseStyle()
-    + Style()
-        .Width(SliderHorizontalThumbWidth)
-        .Height(SliderHorizontalThumbHeight)};
-  return ret;
-}
-
-auto& VerticalOuterThumbStyle() {
-  static const ImmutableStyle ret {
-    OuterThumbBaseStyle()
-    + Style()
-        .Width(SliderVerticalThumbWidth)
-        .Height(SliderVerticalThumbHeight)};
-  return ret;
-}
-
-auto& InnerThumbStyle() {
-  static constexpr auto ScaleAnimation = CubicBezierStyleTransition(
-    {}, ControlFastAnimationDuration, ControlFastOutSlowInKeySpline);
-  static constexpr auto NormalScale = 0.86f;
-  static constexpr auto PointerOverScale = 1.167;
-  static constexpr auto PressedScale = 0.71f;
-  static constexpr auto DisabledScale = PointerOverScale;
-
-  static const ImmutableStyle ret {
-    Style()
-      .Width(SliderInnerThumbWidth)
-      .Height(SliderInnerThumbHeight)
-      .BackgroundColor(SliderThumbBackground)
-      .BorderRadius(SliderThumbCornerRadius)
-      .ScaleX(NormalScale, ScaleAnimation)
-      .ScaleY(NormalScale, ScaleAnimation)
-      .TransformOriginX(0.5f)
-      .TransformOriginY(0.5f)
-      .And(
-        PseudoClasses::Hover,
-        Style()
-          .BackgroundColor(SliderThumbBackgroundPointerOver)
-          .ScaleX(PointerOverScale, ScaleAnimation)
-          .ScaleY(PointerOverScale, ScaleAnimation))
-      .And(
-        PseudoClasses::Disabled,
-        Style()
-          .BackgroundColor(SliderThumbBackgroundDisabled)
-          .ScaleX(DisabledScale, ScaleAnimation)
-          .ScaleY(DisabledScale, ScaleAnimation))
-      .And(
-        PseudoClasses::Active,
-        Style()
-          .BackgroundColor(SliderThumbBackgroundPressed)
-          .ScaleX(PressedScale, ScaleAnimation)
-          .ScaleY(PressedScale, ScaleAnimation))};
-  return ret;
+SliderBrushes GetSliderBrushes(const SliderState state) {
+  // While WinUI3 XAML defines SliderThumbPressedBorderThemeBrush and friends,
+  // they're unused by WinUI3. SliderThumbBorderBrush is used for all
+  // states instead.
+  switch (state) {
+    case SliderState::Normal:
+      return {
+        .mTrackFill = SliderTrackFill,
+        .mTrackValueFill = SliderTrackValueFill,
+        .mTickBarFill = SliderTickBarFill,
+        .mOuterThumbStroke = SliderThumbBorderBrush,
+        .mOuterThumbFill = SliderOuterThumbBackground,
+      };
+    case SliderState::Hover:
+      return {
+        .mTrackFill = SliderTrackFillPointerOver,
+        .mTrackValueFill = SliderTrackValueFillPointerOver,
+        .mTickBarFill = SliderTickBarFill,
+        .mOuterThumbStroke = SliderThumbBorderBrush,
+        .mOuterThumbFill = SliderOuterThumbBackground,
+      };
+    case SliderState::Active:
+      return {
+        .mTrackFill = SliderTrackFillPressed,
+        .mTrackValueFill = SliderTrackValueFillPressed,
+        .mTickBarFill = SliderTickBarFill,
+        .mOuterThumbStroke = SliderThumbBorderBrush,
+        .mOuterThumbFill = SliderOuterThumbBackground,
+      };
+    case SliderState::Disabled:
+      return {
+        .mTrackFill = SliderTrackFillDisabled,
+        .mTrackValueFill = SliderTrackValueFillDisabled,
+        .mTickBarFill = SliderTickBarFill,
+        .mOuterThumbStroke = SliderThumbBorderBrush,
+        .mOuterThumbFill = SliderOuterThumbBackground,
+      };
+  };
+  std::unreachable();
 }
 
 }// namespace
@@ -153,30 +141,10 @@ Slider::Slider(const id_type id, const Orientation orientation)
                                                 : VerticalSliderStyle())),
     IFocusable(this),
     mOrientation(orientation) {
-  const auto isHorizontal = orientation == Orientation::Horizontal;
-  mTrack = new Widget(
-    {},
-    LiteralStyleClass("Slider/Track"),
-    isHorizontal ? HorizontalTrackStyle() : VerticalTrackStyle());
-  mOuterThumb = new Widget(
-    {},
-    LiteralStyleClass("Slider/Thumb"),
-    isHorizontal ? HorizontalOuterThumbStyle() : VerticalOuterThumbStyle());
-  mInnerThumb = new Widget(
-    {}, LiteralStyleClass("Slider/Thumb/Inner"), InnerThumbStyle());
-  mOuterThumb->SetStructuralChildren({mInnerThumb});
-
-  mBeforeThumb = new Widget({}, LiteralStyleClass("Slider/Thumb/Spacer"), {});
-  mAfterThumb = new Widget({}, LiteralStyleClass("Slider/Thumb/Spacer"), {});
-
-  mTrack->SetStructuralChildren({
-    mBeforeThumb,
-    mOuterThumb,
-    mAfterThumb,
-  });
-
-  this->SetStructuralChildren({mTrack});
-  this->UpdateThumbPosition();
+  mInnerThumbScale = {
+    .mStartValue = SliderInnerThumbSize,
+    .mEndValue = SliderInnerThumbSize,
+  };
 }
 
 void Slider::SetValue(const float value) {
@@ -186,7 +154,6 @@ void Slider::SetValue(const float value) {
   }
   mWasChanged = true;
   mValue = clamped;
-  this->UpdateThumbPosition();
 }
 
 float Slider::GetValue() const {
@@ -208,96 +175,6 @@ void Slider::SetRange(const float min, const float max) {
   mMinimum = min;
   mMaximum = max;
   mValue = std::clamp(mValue, mMinimum, mMaximum);
-  this->UpdateThumbPosition();
-}
-
-void Slider::UpdateThumbPosition() {
-  const auto renderValue = mDraggingValue.value_or(mValue);
-  const auto ratio = (renderValue - mMinimum) / (mMaximum - mMinimum);
-
-  Point fillStart {0, 0};
-  Point fillEnd {1, 0};
-
-  // Handle dragging differently to dropping because:
-  // - while we're dragging, we want to avoid re-layout every frame for
-  //   performance, so we don't want to modify FlexGrow every frame, as that
-  //   marks the layout as dirty, including all ancestors and descendants. So,
-  //   we hide the spacers, and use Translate instead
-  // - after drop, we want a layout that can be recalculated independently of
-  //   this widget, e.g. while resizing parent, so we use ratio-based spacers
-  //   with 0 Translate
-  if (mDraggingValue) {
-    mBeforeThumb->SetMutableStyles(Style().Display(YGDisplayNone));
-    mAfterThumb->SetMutableStyles(Style().Display(YGDisplayNone));
-  }
-
-  if (mOrientation == Orientation::Horizontal) {
-    if (mDraggingValue) {
-      static constexpr auto ThumbLength = SliderHorizontalThumbWidth;
-      const auto usableLength
-        = YGNodeLayoutGetWidth(mTrack->GetLayoutNode()) - ThumbLength;
-      mOuterThumb->SetMutableStyles(Style().TranslateX(ratio * usableLength));
-    } else {
-      mBeforeThumb->SetMutableStyles(
-        Style().Display(YGDisplayFlex).FlexGrow(ratio));
-      mAfterThumb->SetMutableStyles(
-        Style().Display(YGDisplayFlex).FlexGrow(1.0f - ratio));
-      mOuterThumb->SetMutableStyles(Style().TranslateX(0));
-    }
-  } else {
-    fillStart = {0, 1};
-    fillEnd = {0, 0};
-    if (mDraggingValue) {
-      static constexpr auto ThumbLength = SliderVerticalThumbHeight;
-      const auto usableLength
-        = YGNodeLayoutGetHeight(mTrack->GetLayoutNode()) - ThumbLength;
-      mOuterThumb->SetMutableStyles(
-        Style().TranslateY((1.0f - ratio) * usableLength));
-    } else {
-      mBeforeThumb->SetMutableStyles(
-        Style().Display(YGDisplayFlex).FlexGrow(1.0f - ratio));
-      mAfterThumb->SetMutableStyles(
-        Style().Display(YGDisplayFlex).FlexGrow(ratio));
-      mOuterThumb->SetMutableStyles(Style().TranslateY(0));
-    }
-  }
-
-  // This is not generally a safe assumption, but as we're built against
-  // vendored-in copies of the WinUI3 XAML files for the slider which define
-  // these brushes as solid color, we know that we're not going to have this
-  // suddenly fail at runtime.
-  //
-  const auto makeValueFill = [ratio, &fillStart, &fillEnd](
-                               const auto& valueFill, const auto& trackFill) {
-    const auto valueColor = *valueFill->Resolve()->GetSolidColor();
-    const auto trackColor = *trackFill->Resolve()->GetSolidColor();
-    using Stop = LinearGradientBrush::Stop;
-    return LinearGradientBrush(
-      LinearGradientBrush::MappingMode::RelativeToBoundingBox,
-      fillStart,
-      fillEnd,
-      {
-        Stop {0.0f, valueColor},
-        Stop {ratio, valueColor},
-        Stop {ratio, trackColor},
-        Stop {1.0f, trackColor},
-      });
-  };
-  mTrack->SetMutableStyles(
-    Style()
-      .BackgroundColor(makeValueFill(SliderTrackValueFill, SliderTrackFill))
-      .And(
-        PseudoClasses::Hover,
-        Style().BackgroundColor(makeValueFill(
-          SliderTrackValueFillPointerOver, SliderTrackFillPointerOver)))
-      .And(
-        PseudoClasses::Active,
-        Style().BackgroundColor(
-          makeValueFill(SliderTrackValueFillPressed, SliderTrackFillPressed)))
-      .And(
-        PseudoClasses::Disabled,
-        Style().BackgroundColor(makeValueFill(
-          SliderTrackValueFillDisabled, SliderTrackFillDisabled))));
 }
 
 float Slider::GetSnappedValue(float value) const noexcept {
@@ -308,6 +185,22 @@ float Slider::GetSnappedValue(float value) const noexcept {
     value = mMinimum + (std::round(offset / snapFrequency) * snapFrequency);
   }
   return std::clamp(value, mMinimum, mMaximum);
+}
+
+Slider::Layout Slider::GetLayout(const float length) const noexcept {
+  static constexpr auto thumbMin = SliderHalfThumbLength;
+  const auto thumbMax = length - SliderHalfThumbLength;
+
+  const auto thumbValue = mDraggingValue.value_or(mValue);
+  const auto thumbRatio = (thumbValue - mMinimum) / (mMaximum - mMinimum);
+
+  return Layout {
+    .mTrackStart = 0,
+    .mThumbMin = thumbMin,
+    .mThumbMax = thumbMax,
+    .mTrackEnd = length,
+    .mThumbPoint = thumbMin + (thumbRatio * (thumbMax - thumbMin)),
+  };
 }
 
 Widget::EventHandlerResult Slider::OnMouseButtonPress(const MouseEvent& event) {
@@ -324,15 +217,11 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
   if (mDraggingValue) {
     EndMouseCapture();
 
-    const auto release = wil::scope_exit([this] {
-      mDraggingValue.reset();
-      mDraggingTrackOffset.reset();
-      this->UpdateThumbPosition();
-    });
-
     this->SetValue(this->GetSnappedValue(*mDraggingValue));
+    mDraggingValue.reset();
   }
   std::ignore = Widget::OnMouseButtonRelease(e);
+  this->OnMouseMove(e);
   if (const auto fm = FocusManager::Get()) {
     fm->GiveImplicitFocus(this);
   }
@@ -344,70 +233,164 @@ float Slider::GetSnappedDraggingValue() const {
 }
 
 Point Slider::GetTrackOriginOffset() const {
-  const auto tl = mTrack->GetTopLeftCanvasPoint(this);
+  const auto yoga = GetLayoutNode();
   if (mOrientation == Orientation::Horizontal) {
-    return tl
-      + Point {
-        SliderHorizontalThumbWidth / 2,
-        YGNodeLayoutGetHeight(mTrack->GetLayoutNode()) / 2};
+    const auto layout = GetLayout(YGNodeLayoutGetWidth(yoga));
+    return Point {
+      layout.mTrackStart,
+      (YGNodeLayoutGetHeight(yoga) - *SliderTrackThemeHeight->Resolve()) / 2};
   }
-  // Vertical
-  return tl
-    + Point {
-      YGNodeLayoutGetWidth(mTrack->GetLayoutNode()) / 2,
-      (SliderVerticalThumbHeight / 2),
-    };
+
+  const auto layout = GetLayout(YGNodeLayoutGetHeight(yoga));
+  return Point {
+    (YGNodeLayoutGetWidth(yoga) - *SliderTrackThemeHeight->Resolve()) / 2,
+    layout.mTrackStart,
+  };
+}
+
+float Slider::GetThumbCenterOffsetWithinTrack() const {
+  const auto yoga = GetLayoutNode();
+  if (mOrientation == Orientation::Horizontal) {
+    const auto layout = GetLayout(YGNodeLayoutGetWidth(yoga));
+    return layout.mThumbPoint - layout.mTrackStart;
+  }
+  const auto layout = GetLayout(YGNodeLayoutGetHeight(yoga));
+  return layout.mThumbPoint - layout.mTrackStart;
 }
 
 float Slider::GetTrackLength() const {
+  const auto yoga = this->GetLayoutNode();
   if (mOrientation == Orientation::Horizontal) {
-    return YGNodeLayoutGetWidth(mTrack->GetLayoutNode())
-      - SliderHorizontalThumbWidth;
-  } else {
-    return YGNodeLayoutGetHeight(mTrack->GetLayoutNode())
-      - SliderVerticalThumbHeight;
+    const auto layout = GetLayout(YGNodeLayoutGetWidth(yoga));
+    return layout.mTrackEnd - layout.mTrackStart;
   }
+  const auto layout = GetLayout(YGNodeLayoutGetHeight(yoga));
+  return layout.mTrackEnd - layout.mTrackStart;
 }
 
 Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
+  const auto isHorizontal = mOrientation == Orientation::Horizontal;
+  const auto mouseOffset
+    = isHorizontal ? event.GetPosition().mX : event.GetPosition().mY;
+
+  const auto fullLength = isHorizontal
+    ? YGNodeLayoutGetWidth(GetLayoutNode())
+    : YGNodeLayoutGetHeight(GetLayoutNode());
+  const auto layout = GetLayout(fullLength);
+  const auto yoga = GetLayoutNode();
+  const auto thumbCenter = isHorizontal ? Point {
+    layout.mThumbPoint,
+    YGNodeLayoutGetHeight(yoga) / 2,
+  } : Point {
+    YGNodeLayoutGetWidth(yoga) / 2,
+    YGNodeLayoutGetHeight(yoga) - layout.mThumbPoint,
+  };
+  const auto thumb = Rect::FromCenterAndSize(
+    thumbCenter, {SliderThumbLength, SliderThumbLength});
+
+  if (thumb.ContainsPoint(event.GetPosition())) {
+    if ((event.mButtons & MouseButton::Left) == MouseButton::Left) {
+      SetThumbState(std::to_underlying(SliderState::Active));
+    } else {
+      SetThumbState(std::to_underlying(SliderState::Hover));
+    }
+  } else {
+    SetThumbState(std::to_underlying(SliderState::Normal));
+  }
+
   if (!mDraggingValue)
     return EventHandlerResult::Default;
 
-  const auto ratio = [&event, this] {
-    switch (mOrientation) {
-      case Orientation::Horizontal: {
-        const auto trackLength = YGNodeLayoutGetWidth(mTrack->GetLayoutNode());
-        const auto usableLength = trackLength - SliderHorizontalThumbWidth;
-        mDraggingTrackOffset = std::clamp(
-          event.GetPosition().mX - (SliderHorizontalThumbWidth / 2),
-          0.0f,
-          usableLength);
-        return *mDraggingTrackOffset / usableLength;
-      }
-      case Orientation::Vertical: {
-        const auto trackLength = YGNodeLayoutGetHeight(mTrack->GetLayoutNode());
-        const auto usableLength = trackLength - SliderVerticalThumbHeight;
-        mDraggingTrackOffset = std::clamp(
-          usableLength
-            - (event.GetPosition().mY - (SliderVerticalThumbHeight / 2)),
-          0.0f,
-          usableLength);
-        return *mDraggingTrackOffset / usableLength;
-      }
-    }
-    std::unreachable();
-  }();
+  const auto thumbRange = layout.mThumbMax - layout.mThumbMin;
+
+  const auto visualOffset = isHorizontal
+    ? std::clamp(mouseOffset - layout.mThumbMin, 0.0f, thumbRange)
+    : std::clamp(layout.mThumbMax - mouseOffset, 0.0f, thumbRange);
+
+  const auto ratio = visualOffset / thumbRange;
 
   const auto valueOffset = ratio * (mMaximum - mMinimum);
   mDraggingValue = std::clamp(mMinimum + valueOffset, mMinimum, mMaximum);
   this->SetValue(this->GetSnappedValue(*mDraggingValue));
-  this->UpdateThumbPosition();
   return EventHandlerResult::StopPropagation;
+}
+
+Widget::EventHandlerResult Slider::OnMouseHover(const MouseEvent& e) {
+  const auto isHorizontal = mOrientation == Orientation::Horizontal;
+
+  const auto fullLength = isHorizontal
+    ? YGNodeLayoutGetWidth(GetLayoutNode())
+    : YGNodeLayoutGetHeight(GetLayoutNode());
+  const auto layout = GetLayout(fullLength);
+  const auto yoga = GetLayoutNode();
+  const auto thumbCenter = isHorizontal ? Point {
+    layout.mThumbPoint,
+    YGNodeLayoutGetHeight(yoga) / 2,
+  } : Point {
+    YGNodeLayoutGetWidth(yoga) / 2,
+    YGNodeLayoutGetHeight(yoga) - layout.mThumbPoint,
+  };
+  const auto thumb = Rect::FromCenterAndSize(
+    thumbCenter, {SliderThumbLength, SliderThumbLength});
+
+  if (thumb.ContainsPoint(e.GetPosition())) {
+    mWasThumbStationaryHovered = true;
+  }
+
+  return Widget::OnMouseHover(e);
+}
+
+void Slider::SetThumbState(const uint8_t raw) {
+  if (mThumbState == raw) {
+    return;
+  }
+  mThumbState = raw;
+
+  const auto now = std::chrono::steady_clock::now();
+
+  const auto oldInnerThumbScale = mInnerThumbScale.Evaluate(
+    SliderInnerThumbScaleAnimationEasingFunction, now);
+
+  float newInnerThumbScale = SliderInnerThumbSize;
+  switch (static_cast<SliderState>(raw)) {
+    case SliderState::Normal:
+      break;
+    case SliderState::Disabled:
+      newInnerThumbScale = SliderInnerThumbScaleDisabled;
+      break;
+    case SliderState::Hover:
+      newInnerThumbScale = SliderInnerThumbScalePointerOver;
+      break;
+    case SliderState::Active:
+      newInnerThumbScale = SliderInnerThumbScalePressed;
+      break;
+  }
+
+  if (utility::almost_equal(oldInnerThumbScale, newInnerThumbScale)) {
+    return;
+  }
+
+  mInnerThumbScale = {
+    .mStartValue = oldInnerThumbScale,
+    .mStartTime = now,
+    .mEndValue = newInnerThumbScale,
+    .mEndTime = now + SliderInnerThumbScaleAnimationDuration,
+  };
+}
+
+void Slider::OnMouseLeave(const MouseEvent& e) {
+  if (!IsDisabled()) {
+    SetThumbState(std::to_underlying(SliderState::Normal));
+  }
+  Widget::OnMouseLeave(e);
 }
 
 Widget::ComputedStyleFlags Slider::OnComputedStyleChange(
   const Style& style,
   const StateFlags state) {
+  if (IsDisabled()) {
+    SetThumbState(std::to_underlying(SliderState::Disabled));
+  }
   return Widget::OnComputedStyleChange(style, state)
     | ComputedStyleFlags::InheritableHoverState
     | ComputedStyleFlags::InheritableActiveState;
@@ -446,6 +429,12 @@ Widget::EventHandlerResult Slider::OnKeyPress(const KeyPressEvent& e) {
       return Widget::OnKeyPress(e);
   }
 }
+FrameRateRequirement Slider::GetFrameRateRequirement() const noexcept {
+  if (mInnerThumbScale.mEndTime > std::chrono::steady_clock::now()) {
+    return FrameRateRequirement::SmoothAnimation {};
+  }
+  return Widget::GetFrameRateRequirement();
+}
 
 void Slider::PaintOwnContent(
   Renderer* renderer,
@@ -453,44 +442,165 @@ void Slider::PaintOwnContent(
   const Style& style) const {
   Widget::PaintOwnContent(renderer, rect, style);
 
-  if (!mTickFrequency) {
-    return;
+  const auto isHorizontal = mOrientation == Orientation::Horizontal;
+
+  const auto length = isHorizontal ? rect.GetWidth() : rect.GetHeight();
+  const auto layout = GetLayout(length);
+
+  const auto [centerX, centerY] = rect.GetCenter();
+  const auto origin = (isHorizontal ? rect.GetLeft() : rect.GetBottom());
+  const auto makeCenteredPoint = [=](const float offset) {
+    if (isHorizontal) {
+      return Point {origin + offset, centerY};
+    }
+    return Point {centerX, origin - offset};
+  };
+
+  const auto brushes = [this]() -> SliderBrushes {
+    if (IsDisabled()) {
+      return GetSliderBrushes(SliderState::Disabled);
+    }
+    if (IsActive()) {
+      return GetSliderBrushes(SliderState::Active);
+    }
+    if (IsHovered()) {
+      return GetSliderBrushes(SliderState::Hover);
+    }
+
+    return GetSliderBrushes(SliderState::Normal);
+  }();
+
+  const auto trackThickness = *SliderTrackThemeHeight->Resolve();
+  const auto thumbRange = layout.mThumbMax - layout.mThumbMin;
+
+  // MIN_TICKMARK_GAP from WinUI3 TickBar_Partial.hpp
+  static constexpr auto MinimumTickMarkGap = 20.0f;
+  if (
+    mTickFrequency > std::numeric_limits<float>::epsilon()
+    && thumbRange >= MinimumTickMarkGap
+    && mTickFrequency <= (mMaximum - mMinimum) / 2) {
+    auto tickCount = std::lround((mMaximum - mMinimum) / mTickFrequency) + 1;
+    const auto maximumTickCount
+      = std::floor(thumbRange / MinimumTickMarkGap) + 1;
+
+    std::size_t divisor = 1;
+    while (tickCount > maximumTickCount) {
+      ++divisor;
+      tickCount
+        = std::lround((mMaximum - mMinimum) / (mTickFrequency * divisor)) + 1;
+    }
+    const auto pixelsPerTick = thumbRange / (tickCount - 1);
+
+    if (pixelsPerTick <= thumbRange) {
+      FUI_ASSERT(pixelsPerTick >= MinimumTickMarkGap);
+      const auto increment
+        = isHorizontal ? Point {pixelsPerTick, 0} : Point {0, -pixelsPerTick};
+
+      const auto distanceFromCenterline = (trackThickness / 2) + 4;
+      const auto offsetFromCenter = isHorizontal
+        ? Point {0, distanceFromCenterline}
+        : Point {distanceFromCenterline, 0};
+      const auto vector = isHorizontal
+        ? Point {0, SliderOutsideTickBarThemeHeight}
+        : Point {SliderOutsideTickBarThemeHeight, 0};
+      const auto singlePixel = isHorizontal ? Point {0, 1} : Point {1, 0};
+
+      const auto firstTickPoint = makeCenteredPoint(layout.mThumbMin);
+      for (auto i = 0; i < tickCount; ++i) {
+        const auto it = (i == (tickCount - 1))
+          ? makeCenteredPoint(layout.mThumbMax)
+          : (firstTickPoint + (increment * i));
+        {
+          const auto begin = it + offsetFromCenter;
+          const auto end = begin + vector;
+          renderer->DrawLine(brushes.mTickBarFill, begin, end);
+        }
+        {
+          // When the thumb is perfectly on top of the tick mark,
+          // the tick mark above (horizontal) or to the left (vertical) should
+          // *just* be visible, but the one below or to the right should not.
+          const auto begin = it - (offsetFromCenter + singlePixel);
+          const auto end = begin - vector;
+          renderer->DrawLine(brushes.mTickBarFill, begin, end);
+        }
+      }
+    }
   }
 
-  float halfThumb, begin, end, valueMid;
-  Point (*makePoint)(float i, float value) = nullptr;
-  if (mOrientation == Orientation::Horizontal) {
-    halfThumb = SliderHorizontalThumbWidth / 2;
-    begin = rect.GetLeft() + halfThumb;
-    end = rect.GetRight() - halfThumb;
-    valueMid = rect.GetTop() + (rect.GetHeight() / 2);
-    makePoint
-      = [](const float i, const float value) { return Point {i, value}; };
-  } else {
-    halfThumb = SliderVerticalThumbHeight / 2;
-    begin = rect.GetTop() + halfThumb;
-    end = rect.GetBottom() - halfThumb;
-    valueMid = rect.GetLeft() + (rect.GetWidth() / 2);
-    makePoint
-      = [](const float i, const float value) { return Point {value, i}; };
+  // Draw track
+  {
+    const auto radius
+      = std::min(SliderTrackCornerRadius.GetUniformValue(), trackThickness / 2);
+
+    auto lineFrom = makeCenteredPoint(layout.mTrackStart + radius);
+    auto lineTo = makeCenteredPoint(layout.mTrackEnd - radius);
+
+    if (isHorizontal) {
+      renderer->PushClipRect({
+        rect.GetTopLeft(),
+        Size {layout.mThumbPoint, rect.GetHeight()},
+      });
+      renderer->DrawLine(
+        brushes.mTrackValueFill,
+        lineFrom,
+        lineTo,
+        trackThickness,
+        StrokeCap::Round);
+      renderer->PopClipRect();
+      renderer->PushClipRect({
+        rect.GetTopLeft() + Point {layout.mThumbPoint, 0},
+        rect.GetBottomRight(),
+      });
+      renderer->DrawLine(
+        brushes.mTrackFill, lineFrom, lineTo, trackThickness, StrokeCap::Round);
+      renderer->PopClipRect();
+    } else {
+      std::swap(lineFrom, lineTo);
+      renderer->PushClipRect({
+        rect.GetTopLeft(),
+        Size {rect.GetWidth(), length - layout.mThumbPoint},
+      });
+      renderer->DrawLine(
+        brushes.mTrackFill, lineFrom, lineTo, trackThickness, StrokeCap::Round);
+      renderer->PopClipRect();
+      renderer->PushClipRect({
+        rect.GetTopLeft() + Point {0, length - layout.mThumbPoint},
+        rect.GetBottomRight(),
+      });
+      renderer->DrawLine(
+        brushes.mTrackValueFill,
+        lineFrom,
+        lineTo,
+        trackThickness,
+        StrokeCap::Round);
+      renderer->PopClipRect();
+    }
   }
 
-  const auto valueRange = (mMaximum - mMinimum);
-  const auto tickSpacing = ((end - begin) / valueRange) * mTickFrequency;
+  const auto thumbCenter = makeCenteredPoint(layout.mThumbPoint);
 
-  const auto v1 = valueMid - halfThumb;
-  const auto v2 = v1 + SliderOutsideTickBarThemeHeight;
-  const auto v3 = valueMid + halfThumb;
-  const auto v4 = v3 - SliderOutsideTickBarThemeHeight;
-  const auto& brush
-    = *(this->IsDisabled() ? SliderTickBarFillDisabled : SliderTickBarFill)
-         ->Resolve();
+  /* SliderThumbLength
+   *   + 2px negative margin on both sides (harcoded in the XAML)
+   *   - 1px for stroke thickness
+   */
+  static constexpr auto OuterThumbRadius = SliderThumbLength + 3.0f;
+  const auto outerThumb = Rect::FromCenterAndSize(
+    thumbCenter, {OuterThumbRadius, OuterThumbRadius});
+  renderer->FillEllipse(brushes.mOuterThumbFill, outerThumb);
+  renderer->StrokeEllipse(brushes.mOuterThumbStroke, outerThumb);
 
-  for (float i = begin; i <= end + std::numeric_limits<float>::epsilon();
-       i += tickSpacing) {
-    renderer->DrawLine(brush, makePoint(i, v1), makePoint(i, v2));
-    renderer->DrawLine(brush, makePoint(i, v3), makePoint(i, v4));
-  }
+  const auto innerThumbScale = mInnerThumbScale.Evaluate(
+    SliderInnerThumbScaleAnimationEasingFunction,
+    std::chrono::steady_clock::now());
+  const auto innerThumb = Rect::FromCenterAndSize(
+    thumbCenter,
+    {
+      std::roundf(SliderInnerThumbWidth * innerThumbScale),
+      std::roundf(SliderInnerThumbHeight * innerThumbScale),
+    });
+  renderer->FillEllipse(
+    GetSliderInnerThumbBrush(static_cast<SliderState>(mThumbState)),
+    innerThumb);
 }
 
 void Slider::SetTickFrequency(const float frequency) {
