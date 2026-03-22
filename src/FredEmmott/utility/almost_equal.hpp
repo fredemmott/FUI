@@ -30,7 +30,8 @@ almost_equal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
     return false;
   }
 
-  const auto diff = std::abs(a - b) / std::min(std::abs(a), std::abs(b));
+  // Weird brackets for compatibility with MS `min`/`max` macros (*shudder*)
+  const auto diff = std::abs(a - b) / (std::min)(std::abs(a), std::abs(b));
   return diff <= epsilon;
 }
 
