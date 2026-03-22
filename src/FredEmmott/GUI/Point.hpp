@@ -3,8 +3,10 @@
 #pragma once
 
 #include <FredEmmott/GUI/config.hpp>
+#include <cmath>
 #include <concepts>
 #include <cstdint>
+#include <limits>
 
 #include "Size.hpp"
 
@@ -32,6 +34,25 @@ struct BasicPoint {
 
   T mX {};
   T mY {};
+
+  constexpr T DistanceTo(const BasicPoint& other) const noexcept {
+    const auto dx = other.mX - mX;
+    const auto dy = other.mY - mY;
+    if consteval {
+      const auto distanceSquared = (dx * dx) + (dy * dy);
+      if (distanceSquared < std::numeric_limits<T>::epsilon()) {
+        return T {};
+      }
+      double it
+        = (distanceSquared >= 4) ? (distanceSquared / 2) : distanceSquared;
+      while ((it * it) - distanceSquared >= std::numeric_limits<T>::epsilon()) {
+        it = 0.5 * (it + (distanceSquared / it));
+      }
+      return static_cast<T>(it);
+    } else {
+      return std::hypot(dx, dy);
+    }
+  }
 
   template <class Self>
   constexpr auto operator+(this const Self& self, const BasicPoint& other) {

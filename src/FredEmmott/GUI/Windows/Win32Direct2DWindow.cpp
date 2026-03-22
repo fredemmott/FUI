@@ -144,7 +144,10 @@ Win32Direct2DWindow::GetSharedResources(IDXGIFactory4* dxgiFactory) {
 
   CheckHResult(ret->mD2DFactory->CreateStrokeStyle(
     D2D1::StrokeStyleProperties(
-      D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND),
+      D2D1_CAP_STYLE_ROUND,
+      D2D1_CAP_STYLE_ROUND,
+      D2D1_CAP_STYLE_ROUND,
+      D2D1_LINE_JOIN_ROUND),
     nullptr,
     0,
     ret->mD2DStrokeStyleRoundCap.put()));

@@ -32,6 +32,12 @@ class Direct2DRenderer final : public Renderer {
     std::shared_ptr<GPUCompletionFlag> frameCompletionFlag);
   ~Direct2DRenderer() override;
 
+  const auto& GetDeviceResources() const {
+    return mDeviceResources;
+  }
+  [[nodiscard]]
+  ID2D1StrokeStyle* GetStrokeStyle(StrokeCap) const;
+
   // State management
   void PushLayer(float alpha = 1.f) override;
   void PopLayer() override;
@@ -139,9 +145,6 @@ class Direct2DRenderer final : public Renderer {
 
   friend ID2D1DeviceContext* direct2d_device_context_cast(
     Renderer* renderer) noexcept;
-
-  [[nodiscard]]
-  ID2D1StrokeStyle* GetStrokeStyle(StrokeCap) const;
 
   [[nodiscard]]
   wil::com_ptr<ID2D1PathGeometry> MakeRoundedRectPathGeometry(

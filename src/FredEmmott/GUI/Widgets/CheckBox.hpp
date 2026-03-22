@@ -29,6 +29,7 @@ class CheckBox final : public Widget, public IToggleable {
  private:
   Widget* mFosterParent {nullptr};
   bool mWasChanged {false};
+  Widget* mGlyph {};
 };
 
 }// namespace FredEmmott::GUI::Widgets
