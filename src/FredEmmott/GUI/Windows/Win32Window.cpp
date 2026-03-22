@@ -1526,7 +1526,7 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
     SW_SHOWDEFAULT,
     {
       .mWindowStyle = WS_POPUP | WS_BORDER,
-      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP,
+      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_NOACTIVATE,
       .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
       .mDXGIFactory = mDXGIFactory.get(),
     });
@@ -1687,7 +1687,14 @@ void Win32Window::Geometry::InitializeForNonClientCanvas(
 }
 
 void Win32Window::SetIsModal(const bool modal) {
+  if (mIsModal) {
+    FUI_ASSERT(modal);
+    return;
+  }
+  FUI_ASSERT(!mHwnd);
   FUI_ASSERT(mParentHwnd);
+  mOptions.mWindowExStyle &= ~WS_EX_NOACTIVATE;
+  mIsModal = modal;
   EnableWindow(mParentHwnd, !modal);
 }
 

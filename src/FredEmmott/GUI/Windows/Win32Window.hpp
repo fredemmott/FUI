@@ -294,6 +294,7 @@ class Win32Window : public Window {
   std::vector<HWND> mChildren;
 
   bool mIsToolTip {false};
+  bool mIsModal {false};
   float mMinimumCanvasWidth {};
   Widgets::Widget* mOffsetToChild {nullptr};
   bool mPendingResize {false};
