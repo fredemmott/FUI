@@ -90,6 +90,12 @@ struct BasicRect {
     return mTopLeft.mY + mSize.mHeight;
   }
 
+  [[nodiscard]]
+  constexpr bool ContainsPoint(const BasicPoint<T>& point) const noexcept {
+    return point.mX >= GetLeft() && point.mX < GetRight()
+      && point.mY >= GetTop() && point.mY < GetBottom();
+  }
+
   constexpr void Inset(T dx, T dy) noexcept {
     mTopLeft.mX += dx;
     mTopLeft.mY += dy;
