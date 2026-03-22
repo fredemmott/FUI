@@ -174,12 +174,14 @@ void Win32Window::HideWindow() {
   if (!mHwnd) {
     return;
   }
+  if (mParentHwnd) {
+    EnableWindow(mParentHwnd, TRUE);
+  }
   ShowWindow(mHwnd.get(), SW_HIDE);
 
   if (!mParentHwnd) {
     return;
   }
-  EnableWindow(mParentHwnd, TRUE);
   SetForegroundWindow(mParentHwnd);
 }
 
