@@ -20,10 +20,34 @@ struct TransitionState<T> {
   using value_type = T;
   using time_point = std::chrono::steady_clock::time_point;
 
-  T mStartValue;
+  T mStartValue {};
   time_point mStartTime;
-  T mEndValue;
+  T mEndValue {};
   time_point mEndTime;
+
+  bool mFirstTransition {true};
+
+  void TransitionTo(
+    const T newValue,
+    const std::invocable<float> auto& easingFunction,
+    const time_point& now,
+    const time_point& startTime,
+    const time_point& endTime) {
+    if (mEndValue == newValue) {
+      return;
+    }
+
+    if (std::exchange(mFirstTransition, false)) {
+      mStartValue = mEndValue = newValue;
+      mStartTime = mEndTime = endTime;
+    } else {
+      mStartValue = Evaluate(easingFunction, now);
+      mEndValue = newValue;
+
+      mStartTime = startTime;
+      mEndTime = endTime;
+    }
+  }
 
   [[nodiscard]] T Evaluate(
     const std::invocable<float> auto& easingFunction,

@@ -139,7 +139,6 @@ add_library(
   FredEmmott/GUI/Widgets/TitleBar.hpp
   FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
   FredEmmott/GUI/Widgets/ToggleSwitchKnob.cpp FredEmmott/GUI/Widgets/ToggleSwitchKnob.hpp
-  FredEmmott/GUI/Widgets/ToggleSwitchThumb.cpp FredEmmott/GUI/Widgets/ToggleSwitchThumb.hpp
   FredEmmott/GUI/Widgets/Widget.cpp
   FredEmmott/GUI/Widgets/Widget.hpp
   FredEmmott/GUI/Widgets/WidgetList.hpp
