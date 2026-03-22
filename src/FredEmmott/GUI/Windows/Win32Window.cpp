@@ -593,22 +593,27 @@ void Win32Window::ResizeSwapchain() {
 
 void Win32Window::ResizeIfNeeded() {
   if (!std::exchange(mPendingResize, false)) {
-    const auto yoga = this->GetRoot()->GetLayoutNode();
-    if (!YGNodeGetHasNewLayout(yoga)) {
-      return;
-    }
-    YGNodeSetHasNewLayout(yoga, false);
     if (IsZoomed(mHwnd.get())) {
       return;
     }
-    if (!YGNodeLayoutGetHadOverflow(yoga)) {
+
+    const auto content = mImmediateRoot->GetLayoutNode();
+    const auto w = YGNodeLayoutGetWidth(content);
+    const auto h = YGNodeLayoutGetHeight(content)
+      + (mTitleBar ? YGNodeLayoutGetHeight(mTitleBar->GetLayoutNode()) : 0);
+
+    if (
+      w <= mGeometry->mCanvasSize.mWidth
+      && h <= mGeometry->mCanvasSize.mHeight) {
       return;
     }
 
-    const auto neededWidth = GetMinimumWidth(yoga, YGNodeLayoutGetWidth(yoga));
     const Rect canvasRect {
       {0, 0},
-      Size {std::ceilf(neededWidth), mGeometry->mCanvasSize.mHeight},
+      Size {
+        std::ceilf(w),
+        std::ceilf(h),
+      },
     };
     const auto initialRect = CanvasRectToScreenRect(canvasRect);
     RECT finalRect {};
@@ -983,7 +988,8 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       FUI_ASSERT(mHwnd.get() == hwnd);
       this->OnDestroy();
       // Explicitly call this to make sure we don't accidentally have any
-      // references to hwnd (no longer valid, or we wouldn't have WM_NCDESTROY)
+      // references to hwnd (no longer valid, or we wouldn't have
+      // WM_NCDESTROY)
       return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     case WM_GETOBJECT: {
       if (static_cast<long>(lParam) == UiaRootObjectId) {
@@ -1544,7 +1550,8 @@ void Win32Window::WaitFrameImpl(
   if (callerHandles.size() + 2 > MAXIMUM_WAIT_OBJECTS) {
     throw std::runtime_error(
       std::format(
-        "Windows can only wait for up to {} objects; need to wait on {} events "
+        "Windows can only wait for up to {} objects; need to wait on {} "
+        "events "
         "({} caller-provided)",
         MAXIMUM_WAIT_OBJECTS,
         callerHandles.size() + 2,
