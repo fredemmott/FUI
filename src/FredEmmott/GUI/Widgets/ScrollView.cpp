@@ -161,9 +161,18 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
     mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
   }
 
+  const auto inheritable = GetComputedStyle().InheritableValues();
+  mHorizontalScrollBar->ComputeStyles(inheritable);
+  mVerticalScrollBar->ComputeStyles(inheritable);
+  FUI_ASSERT(
+    mHorizontalScrollBar->GetComputedStyle().Display()
+    == (showHScroll ? YGDisplayFlex : YGDisplayNone));
+  FUI_ASSERT(
+    mVerticalScrollBar->GetComputedStyle().Display()
+    == (showVScroll ? YGDisplayFlex : YGDisplayNone));
+
   const auto newHValue = mHorizontalScrollBar->GetValue();
   const auto newVValue = mVerticalScrollBar->GetValue();
-
   if (
     utility::almost_equal(oldHValue, newHValue)
     && utility::almost_equal(oldVValue, newVValue)) {
@@ -174,7 +183,7 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
     Style()
       .TranslateX(-mHorizontalScrollBar->GetValue(), InstantStyleTransition)
       .TranslateY(-mVerticalScrollBar->GetValue(), InstantStyleTransition));
-  mContentInner->ComputeStyles(GetComputedStyle().InheritableValues());
+  mContentInner->ComputeStyles(inheritable);
 }
 
 void ScrollView::PaintChildren(Renderer* renderer) const {
