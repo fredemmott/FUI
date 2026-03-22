@@ -85,7 +85,10 @@ static void demo_display() {
     fuii::ProgressRing().Active(isActive);
 
     static float value = 0.0f;
-    fuii::HSlider(&value).Caption("ProgressRing(value)");
+    fuii::HSlider(&value)
+      .Caption("ProgressRing(value)")
+      .TickFrequency(20)
+      .ValueFormatter([](const float f) { return std::format("{:.0f}%", f); });
     fuii::ProgressRing(value);
   }
 }
