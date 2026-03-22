@@ -151,7 +151,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
       .mEndValue = endValue,
       .mEndTime = now + transition.mDelay + duration,
     };
-    newProp = state.Evaluate(transition, now);
+    newProp = state.Evaluate(transition.mEasingFunction, now);
     if (almost_equal(newProp.value(), endValue)) {
       return NotAnimating;
     }
@@ -181,7 +181,7 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
   //  4. Use the current animation //
   ///////////////////////////////////
 
-  newProp = transitionState.Evaluate(transition, now);
+  newProp = transitionState.Evaluate(transition.mEasingFunction, now);
 
   // Has it finished?
   if (almost_equal(newProp.value(), endValue)) {

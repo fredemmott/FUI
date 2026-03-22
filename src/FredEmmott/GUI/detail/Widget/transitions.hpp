@@ -25,8 +25,9 @@ struct TransitionState<T> {
   T mEndValue;
   time_point mEndTime;
 
-  [[nodiscard]] T Evaluate(const auto& transition, const time_point& now)
-    const noexcept {
+  [[nodiscard]] T Evaluate(
+    const std::invocable<float> auto& easingFunction,
+    const time_point& now) const noexcept {
     if (now >= mEndTime) {
       return mEndValue;
     }
@@ -35,8 +36,10 @@ struct TransitionState<T> {
     }
     const auto duration = mEndTime - mStartTime;
     const auto elapsed = now - mStartTime;
-    const auto t = static_cast<double>(elapsed.count()) / duration.count();
-    const auto eased = transition.mEasingFunction(t);
+    const auto t
+      = std::chrono::duration_cast<std::chrono::duration<float>>(elapsed)
+      / duration;
+    const auto eased = easingFunction(t);
     return Interpolation::Linear(mStartValue, mEndValue, eased);
   }
 };
