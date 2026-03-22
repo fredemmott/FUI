@@ -69,10 +69,10 @@ struct SliderBrushes {
 };
 
 enum class SliderState : uint8_t {
+  Disabled,
   Normal,
   Hover,
   Active,
-  Disabled,
 };
 
 Brush GetSliderInnerThumbBrush(const SliderState state) {
@@ -141,10 +141,7 @@ Slider::Slider(const id_type id, const Orientation orientation)
                                                 : VerticalSliderStyle())),
     IFocusable(this),
     mOrientation(orientation) {
-  mInnerThumbScale = {
-    .mStartValue = SliderInnerThumbSize,
-    .mEndValue = SliderInnerThumbSize,
-  };
+  SetThumbState(std::to_underlying(SliderState::Normal));
 }
 
 void Slider::SetValue(const float value) {
@@ -346,36 +343,29 @@ void Slider::SetThumbState(const uint8_t raw) {
   }
   mThumbState = raw;
 
-  const auto now = std::chrono::steady_clock::now();
-
-  const auto oldInnerThumbScale = mInnerThumbScale.Evaluate(
-    SliderInnerThumbScaleAnimationEasingFunction, now);
-
-  float newInnerThumbScale = SliderInnerThumbSize;
+  const auto setInnerThumbScale = [this](const float scale) {
+    const auto now = std::chrono::steady_clock::now();
+    mInnerThumbScale.TransitionTo(
+      scale,
+      SliderInnerThumbScaleAnimationEasingFunction,
+      now,
+      now,
+      now + SliderInnerThumbScaleAnimationDuration);
+  };
   switch (static_cast<SliderState>(raw)) {
     case SliderState::Normal:
+      setInnerThumbScale(SliderInnerThumbSize);
       break;
     case SliderState::Disabled:
-      newInnerThumbScale = SliderInnerThumbScaleDisabled;
+      setInnerThumbScale(SliderInnerThumbScaleDisabled);
       break;
     case SliderState::Hover:
-      newInnerThumbScale = SliderInnerThumbScalePointerOver;
+      setInnerThumbScale(SliderInnerThumbScalePointerOver);
       break;
     case SliderState::Active:
-      newInnerThumbScale = SliderInnerThumbScalePressed;
+      setInnerThumbScale(SliderInnerThumbScalePressed);
       break;
   }
-
-  if (utility::almost_equal(oldInnerThumbScale, newInnerThumbScale)) {
-    return;
-  }
-
-  mInnerThumbScale = {
-    .mStartValue = oldInnerThumbScale,
-    .mStartTime = now,
-    .mEndValue = newInnerThumbScale,
-    .mEndTime = now + SliderInnerThumbScaleAnimationDuration,
-  };
 }
 
 void Slider::OnMouseLeave(const MouseEvent& e) {
