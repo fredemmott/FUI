@@ -14,7 +14,8 @@ const ImmutableStyle& NavigationViewStyle() {
       .FlexDirection(YGFlexDirectionRow)
       .AlignItems(YGAlignStretch)
       .AlignSelf(YGAlignStretch)
-      .FlexGrow(1),
+      .FlexGrow(1)
+      .FlexShrink(1),
   };
   return ret;
 }

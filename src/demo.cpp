@@ -451,6 +451,6 @@ int WINAPI wWinMain(
     {
       "Initial Window Title",
       fui::Window::ResizeMode::AllowGrow,
-      fui::Window::ResizeMode::AllowGrow,
+      fui::Window::ResizeMode::Allow,
     });
 }
