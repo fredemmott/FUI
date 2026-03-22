@@ -23,8 +23,6 @@ class SelectionManager : public Widgets::Context {
   }
 
   void FinalizeKeys() {
-    FUI_ASSERT(
-      mNextIndex > mSelectedIndex || (mNextIndex == 0 && mSelectedIndex == 0));
     if (mNextIndex < mAllKeys.size()) {
       mHaveChangedKeys = true;
       mAllKeys.resize(mNextIndex);
@@ -34,6 +32,7 @@ class SelectionManager : public Widgets::Context {
   }
 
   void BeginContainer(T* state) {
+    mSelectedKey = *state;
     mNextIndex = 0;
     mHaveChangedKeys = false;
     mHaveFinalizedKeys = false;
@@ -70,7 +69,6 @@ class SelectionManager : public Widgets::Context {
 
     for (auto&& [idx, item, ctx, key]: items) {
       if (item->ConsumeWasSelected()) {
-        mSelectedIndex = idx;
         mSelectedKey = *state = key;
         ctx->mSelectedThisFrame = true;
       } else {
@@ -87,17 +85,14 @@ class SelectionManager : public Widgets::Context {
 
     if (const auto it = std::ranges::find(items, *state, &Item::mKey);
         it != items.end()) {
-      mSelectedIndex = it->mIndex;
       mSelectedKey = it->mKey;
       it->mItem->Select();
-      it->mContext->mSelectedThisFrame = it->mItem->ConsumeWasSelected();
+      std::ignore = it->mItem->ConsumeWasSelected();
       return;
     }
 
     if (items.empty()) {
-      *state = T {};
       mSelectedIndex = 0;
-      mSelectedKey.reset();
       return;
     }
 
@@ -145,17 +140,13 @@ class SelectionManager : public Widgets::Context {
       self.mAllKeys.push_back(key);
     }
 
-    if (idx != self.mSelectedIndex) {
+    if (key != self.mSelectedKey) {
       return false;
     }
-
-    self.mSelectedKey = key;
-    if (item->IsSelected()) {
-      return std::exchange(ctx->mSelectedThisFrame, false);
-    }
+    self.mSelectedIndex = idx;
     item->Select();
     std::ignore = item->ConsumeWasSelected();
-    return true;
+    return std::exchange(ctx->mSelectedThisFrame, false);
   }
 
  private:
@@ -171,7 +162,7 @@ class SelectionManager : public Widgets::Context {
   std::size_t mNextIndex {};
 
   std::size_t mSelectedIndex {};
-  std::optional<T> mSelectedKey;
+  T mSelectedKey {};
   std::vector<T> mAllKeys;
   bool mHaveChangedKeys {false};
   bool mHaveFinalizedKeys {false};
