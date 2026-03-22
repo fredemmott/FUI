@@ -43,7 +43,7 @@ class SwapChainPanel final : public Widget {
     std::optional<BeginFrameInfo> BeginFrame();
     void EndFrame(const BeginFrameInfo&, const EndFrameInfo&);
 
-    constexpr bool operator==(const SwapChain& other) const noexcept {
+    bool operator==(const SwapChain& other) const noexcept {
       return mWeak.lock() == other.mWeak.lock();
     }
 
