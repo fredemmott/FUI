@@ -99,6 +99,10 @@ void demo_buttons() {
   if (fuii::Button("Button().Accent()").Accent()) {
     std::println(stderr, "Accent button clicked");
   }
+
+  if (fuii::HyperlinkButton("HyperlinkButton()")) {
+    std::println(stderr, "HyperlinkButton clicked");
+  }
 }
 
 static void demo_booleans() {
