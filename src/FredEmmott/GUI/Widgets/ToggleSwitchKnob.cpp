@@ -141,8 +141,6 @@ void ToggleSwitchKnob::PaintOwnContent(
   const auto height = mThumbHeight.Evaluate(EasingFunction, now);
   const auto center = mThumbCenter.Evaluate(EasingFunction, now);
 
-  OutputDebugStringA(std::format("{} {} {}\n", width, height, center).c_str());
-
   const auto left = center - (width / 2);
   const auto right = center + (width / 2);
   const UniformCornerRadius radii {height / 2};
