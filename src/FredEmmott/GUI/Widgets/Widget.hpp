@@ -10,6 +10,8 @@
 #include <FredEmmott/GUI/events/Event.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <FredEmmott/GUI/yoga.hpp>
+#include <boost/container/flat_map.hpp>
+#include <boost/container/small_vector.hpp>
 #include <typeindex>
 
 #include "FredEmmott/GUI/events/TextInputEvent.hpp"
@@ -350,7 +352,8 @@ class Widget {
   std::vector<unique_ptr<Widget>> mStructuralChildren;
   std::vector<Widget*> mRawStructuralChildren;
 
-  std::unordered_map<std::type_index, std::unique_ptr<Context>> mContexts;
+  boost::container::small_flat_map<std::type_index, std::unique_ptr<Context>, 2>
+    mContexts;
 
   Point mMouseCaptureOffset {};
 
