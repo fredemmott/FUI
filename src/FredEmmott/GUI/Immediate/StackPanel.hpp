@@ -21,14 +21,16 @@ inline void EndHStackPanel() {
   EndStackPanel();
 }
 
-inline Result<&EndHStackPanel> BeginHStackPanel(
+using HStackPanelResult = Result<&EndHStackPanel>;
+inline HStackPanelResult BeginHStackPanel(
   ID id = ID {std::source_location::current()}) {
   using Widgets::StackPanel;
   return {
     immediate_detail::BeginWidget<StackPanel>(id, Orientation::Horizontal)};
 }
 
-inline Result<&EndVStackPanel> BeginVStackPanel(
+using VStackPanelResult = Result<&EndVStackPanel>;
+inline VStackPanelResult BeginVStackPanel(
   ID id = ID {std::source_location::current()}) {
   using Widgets::StackPanel;
   return {immediate_detail::BeginWidget<StackPanel>(id, Orientation::Vertical)};

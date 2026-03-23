@@ -1,17 +1,12 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include "demo.hpp"
+
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <map>
 #include <print>
-
-#ifdef _WIN32
-#include "demo_win32.hpp"
-#endif
-
-namespace fui = FredEmmott::GUI;
-namespace fuii = fui::Immediate;
 
 constexpr auto LoremIpsum
   = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
@@ -22,13 +17,12 @@ constexpr auto LoremIpsum
     "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
     "mollit anim id est laborum.";
 
-static auto BeginPage() {
+fuii::VStackPanelResult BeginDemoPage() {
   return fuii::BeginVStackPanel().Styled(
     fui::Style().FlexGrow(1).Gap(12).Margin(12).Padding(8));
 }
 
-static auto BeginCard(
-  const fuii::ID id = fuii::ID {std::source_location::current()}) {
+fuii::CardResult BeginDemoCard(const fuii::ID id) {
   return fuii::BeginCard(id).Styled(
     fui::Style()
       .FlexDirection(YGFlexDirectionColumn)
@@ -39,11 +33,11 @@ static auto BeginCard(
 
 static void demo_display() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
-  const auto page = BeginPage().Scoped();
+  const auto page = BeginDemoPage().Scoped();
 
   {
     fuii::Label("TextBlock").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     fuii::Label("Label()");
     fuii::Label("Label().Caption()").Caption();
@@ -57,7 +51,7 @@ static void demo_display() {
 
   {
     fuii::Label("FontIcon").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     // Glyphs are Unicode private usage code points from
     // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
@@ -72,13 +66,13 @@ static void demo_display() {
 
   {
     fuii::Label("TextBlock").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
     fuii::TextBlock(LoremIpsum);
   }
 
   {
     fuii::Label("ProgressRing").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static bool isActive = false;
     std::ignore = fuii::ToggleSwitch(&isActive).Caption("ProgressRing()");
@@ -95,8 +89,8 @@ static void demo_display() {
 
 void demo_buttons() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
-  const auto page = BeginPage().Scoped();
-  const auto card = BeginCard().Scoped();
+  const auto page = BeginDemoPage().Scoped();
+  const auto card = BeginDemoCard().Scoped();
 
   if (fuii::Button("Button()")) {
     std::println(stderr, "Button clicked");
@@ -109,10 +103,10 @@ void demo_buttons() {
 
 static void demo_booleans() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
-  const auto page = BeginPage().Scoped();
+  const auto page = BeginDemoPage().Scoped();
 
   {
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static bool checked {false};
     if (fuii::CheckBox(&checked, "CheckBox()").Caption("CheckBox()")) {
@@ -127,7 +121,7 @@ static void demo_booleans() {
 
   {
     fuii::Label("Discouraged").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     fuii::Label(
       "Microsoft style guidelines discourage custom on/off text; use "
@@ -146,11 +140,11 @@ static void demo_booleans() {
 
 static void demo_selection() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
-  const auto page = BeginPage().Scoped();
+  const auto page = BeginDemoPage().Scoped();
 
   {
     fuii::Label("Radio Buttons").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static std::size_t selected = 1;
     const auto buttons
@@ -164,7 +158,7 @@ static void demo_selection() {
 
   {
     fuii::Label("Combo Boxes").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     {
       static int selectedIndex = 1;
@@ -227,11 +221,11 @@ static void demo_selection() {
 
 static void demo_input() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
-  const auto page = BeginPage().Scoped();
+  const auto page = BeginDemoPage().Scoped();
 
   {
     fuii::Label("Text Box").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static std::string textBoxValue {"Hello, 💩 world!"};
     if (fuii::TextBox(&textBoxValue).Caption("TextBox()")) {
@@ -241,7 +235,7 @@ static void demo_input() {
 
   {
     fuii::Label("Number Box").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static std::optional<int> numberBoxValue;
     if (fuii::NumberBox(&numberBoxValue).Caption("NumberBox()")) {
@@ -255,7 +249,7 @@ static void demo_input() {
 
   {
     fuii::Label("Sliders").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static float hslider {};
     if (fuii::HSlider(&hslider).TickFrequency(25).Caption(
@@ -276,11 +270,11 @@ static void demo_input() {
 
 static void demo_popups() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
-  const auto page = BeginPage().Scoped();
+  const auto page = BeginDemoPage().Scoped();
 
   {
     fuii::Label("Basic Popup").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static bool visible = false;
     if (fuii::Button("Click Me!")) {
@@ -288,7 +282,7 @@ static void demo_popups() {
       std::println(stderr, "Clicked!");
     }
     if (const auto popup = fuii::BeginPopup(&visible).Scoped()) {
-      const auto popupCard = BeginCard().Scoped();
+      const auto popupCard = BeginDemoCard().Scoped();
 
       fuii::Label("This is a popup");
       if (fuii::Button("Close")) {
@@ -299,7 +293,7 @@ static void demo_popups() {
 
   {
     fuii::Label("Content Dialog").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     static bool visible = false;
     if (fuii::Button("Click Me!")) {
@@ -326,7 +320,7 @@ static void demo_popups() {
 
   {
     fuii::Label("Tooltips").Subtitle();
-    const auto card = BeginCard().Scoped();
+    const auto card = BeginDemoCard().Scoped();
 
     std::ignore = fuii::Button("Hover here")
                     .ToolTip("Tooltip")
@@ -341,8 +335,8 @@ static void demo_popups() {
 }
 
 static void demo_about() {
-  const auto page = BeginPage().Scoped();
-  const auto card = BeginCard().Scoped();
+  const auto page = BeginDemoPage().Scoped();
+  const auto card = BeginDemoCard().Scoped();
 
   fuii::Label(
     "Backend: {} ({} ICU)",
@@ -424,9 +418,6 @@ static void AppTick(fui::Window&) {
   if (
     const auto navItem
     = fuii::BeginNavigationViewItem(Page::Win32, "\ue74c", "Win32").Scoped()) {
-    const auto scroll = fuii::BeginVScrollView().Scoped();
-    const auto page = BeginPage().Scoped();
-    const auto card = BeginCard().Scoped();
     demo_win32();
   }
 #endif

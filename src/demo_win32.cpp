@@ -1,12 +1,12 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
-#include "demo_win32.hpp"
-
 #include <d3d11.h>
 #include <d3d11_4.h>
 
 #include <FredEmmott/GUI.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+
+#include "demo.hpp"
 
 namespace fui = FredEmmott::GUI;
 namespace fuii = fui::Immediate;
@@ -252,27 +252,47 @@ struct SwapChainPusher {
 }// namespace
 
 void demo_win32() {
-  static TextureProducer textureSource;
-  textureSource.WaitUntilReady();
-  fuii::ToggleSwitch(&textureSource.mEarlySignal).Caption("Early fence signal");
-  fuii::GPUTexture(
-    fui::ImportedTexture::HandleKind::NTHandle,
-    textureSource.mTexture.get(),
-    textureSource.mFence.get(),
-    textureSource.mFenceValue,
-    fui::Rect {fui::Point {}, TextureProducer::Size})
-    .Styled(
-      fui::Style()
-        .Width(TextureProducer::Size.mWidth)
-        .Height(TextureProducer::Size.mHeight));
+  const auto scroll = fuii::BeginVScrollView().Scoped();
+  const auto page = BeginDemoPage().Scoped();
 
-  fuii::SwapChainPanel([](const auto& swapChain) {
-    static SwapChainPusher swapChainPusher {swapChain};
-    swapChainPusher.SetSwapchain(swapChain);
-    swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
-  })
-    .Styled(
-      fui::Style()
-        .Width(SwapChainPusher::Size.mWidth)
-        .Height(SwapChainPusher::Size.mHeight));
+  {
+    fuii::Label("D3D11 Texture (pull)").Subtitle();
+    const auto card = BeginDemoCard().Scoped();
+
+    static TextureProducer textureSource;
+    textureSource.WaitUntilReady();
+    fuii::ToggleSwitch(&textureSource.mEarlySignal)
+      .Caption("Early fence signal");
+    fuii::GPUTexture(
+      fui::ImportedTexture::HandleKind::NTHandle,
+      textureSource.mTexture.get(),
+      textureSource.mFence.get(),
+      textureSource.mFenceValue,
+      fui::Rect {fui::Point {}, TextureProducer::Size})
+      .Styled(
+        fui::Style()
+          .Width(TextureProducer::Size.mWidth)
+          .Height(TextureProducer::Size.mHeight));
+  }
+
+  {
+    fuii::Label("D3D11 Texture (push)").Subtitle();
+    const auto card = BeginDemoCard().Scoped();
+
+    static bool active {false};
+    static TextureProducer textureSource;
+    fuii::ToggleSwitch(&active).Caption("Active");
+    fuii::ToggleSwitch(&textureSource.mEarlySignal)
+      .Caption("Early fence signal");
+    fuii::SwapChainPanel([](const auto& swapChain) {
+      static SwapChainPusher swapChainPusher {{}};
+      swapChainPusher.SetSwapchain(
+        active ? swapChain : fui::Widgets::SwapChainPanel::SwapChain {});
+      swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
+    })
+      .Styled(
+        fui::Style()
+          .Width(SwapChainPusher::Size.mWidth)
+          .Height(SwapChainPusher::Size.mHeight));
+  }
 }

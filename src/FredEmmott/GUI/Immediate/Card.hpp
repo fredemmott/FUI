@@ -11,8 +11,8 @@ inline void EndCard() {
   immediate_detail::EndWidget<Widgets::Card>();
 }
 
-inline Result<&EndCard> BeginCard(
-  ID id = ID {std::source_location::current()}) {
+using CardResult = Result<&EndCard>;
+inline CardResult BeginCard(ID id = ID {std::source_location::current()}) {
   return {immediate_detail::BeginWidget<Widgets::Card>(ID {id})};
 }
 

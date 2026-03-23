@@ -3,6 +3,7 @@ add_executable(
   WIN32
   app.exe.manifest
   demo.cpp
+  demo.hpp
 )
 target_link_libraries(
   fredemmott-gui-demo
@@ -14,7 +15,6 @@ if (WIN32)
     fredemmott-gui-demo
     PRIVATE
     demo_win32.cpp
-    demo_win32.hpp
   )
   # Used for VRAMTexture() demo even if using Skia
   #
