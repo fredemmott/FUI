@@ -256,7 +256,7 @@ void demo_win32() {
   const auto page = BeginDemoPage().Scoped();
 
   {
-    fuii::Label("D3D11 Texture (pull)").Subtitle();
+    fuii::Label("GPUTexture() - pull from D3D11").Subtitle();
     const auto card = BeginDemoCard().Scoped();
 
     static TextureProducer textureSource;
@@ -276,7 +276,7 @@ void demo_win32() {
   }
 
   {
-    fuii::Label("D3D11 Texture (push)").Subtitle();
+    fuii::Label("SwapChainPanel() - push from D3D11").Subtitle();
     const auto card = BeginDemoCard().Scoped();
 
     static bool active {false};
