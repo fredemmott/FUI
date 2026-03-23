@@ -62,6 +62,7 @@ struct Style final {
 #define FUI_DECLARE_PROPERTY_GETTER(NAME, TYPE, ...) \
   [[nodiscard]] constexpr decltype(auto) NAME(this auto&& self) noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
+    /* Can be const- or non-const- reference */ \
     return self.template GetProperty<TYPE>(key); \
   } \
   [[nodiscard]] constexpr bool Has##NAME() const noexcept { \
@@ -71,10 +72,7 @@ struct Style final {
 #define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, PARAM_TYPE) \
   template <class... Args> \
   [[nodiscard]] \
-  decltype(auto) NAME( \
-    this auto&& self, PARAM_TYPE value, Args&&... args) noexcept \
-    requires std::is_rvalue_reference_v<decltype(self)> \
-  { \
+  Style NAME(this Style&& self, PARAM_TYPE value, Args&&... args) noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
     self.mStorage.insert_or_assign( \
       key, StyleProperty<TYPE>(value, std::forward<Args>(args)...)); \
@@ -84,7 +82,7 @@ struct Style final {
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const TYPE&); \
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const StaticTheme::Resource<TYPE>&); \
   FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, std::nullopt_t) \
-  decltype(auto) Unset##NAME() noexcept { \
+  void Unset##NAME() noexcept { \
     mStorage.erase(StylePropertyKey::NAME); \
   }
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_PROPERTY_GETTER)
@@ -94,9 +92,7 @@ struct Style final {
 #undef FUI_DECLARE_PROPERTY_SETTERS
 #define FUI_IMPL_DECLARE_EDGE_SETTER(_UNUSED, PREFIX, SUFFIX) \
   [[nodiscard]] \
-  decltype(auto) PREFIX##SUFFIX(this auto&& self, const Edges<float>& value) \
-    requires std::is_rvalue_reference_v<decltype(self)> \
-  { \
+  Style PREFIX##SUFFIX(this Style&& self, const Edges<float>& value) { \
     return std::move(self) \
       .PREFIX##Left##SUFFIX(value.GetLeft()) \
       .PREFIX##Top##SUFFIX(value.GetTop()) \
@@ -104,9 +100,7 @@ struct Style final {
       .PREFIX##Bottom##SUFFIX(value.GetBottom()); \
   } \
   [[nodiscard]] \
-  decltype(auto) PREFIX##SUFFIX(this auto&& self, const float value) \
-    requires std::is_rvalue_reference_v<decltype(self)> \
-  { \
+  Style PREFIX##SUFFIX(this Style&& self, const float value) { \
     return std::move(self) \
       .PREFIX##Left##SUFFIX(value) \
       .PREFIX##Top##SUFFIX(value) \
@@ -116,9 +110,8 @@ struct Style final {
   template <std::convertible_to<float>... Ts> \
     requires(sizeof...(Ts) > 1) \
   [[nodiscard]] \
-  decltype(auto) PREFIX##SUFFIX(this auto&& self, const Ts... values) \
-    requires std::is_rvalue_reference_v<decltype(self)> \
-    && std::constructible_from<Edges<float>, Ts...> \
+  Style PREFIX##SUFFIX(this Style&& self, const Ts... values) \
+    requires std::constructible_from<Edges<float>, Ts...> \
   { \
     return std::move(self).PREFIX##SUFFIX(Edges<float> {values...}); \
   }
