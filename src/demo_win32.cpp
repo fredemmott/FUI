@@ -187,7 +187,7 @@ struct SwapChainPusher {
 
       const auto begin = [&] {
         auto ret = mSwapChain.BeginFrame();
-        while (!ret) {
+        while (!(ret || stop.stop_requested())) {
           lock.unlock();
           const auto cancel = std::stop_callback(
             stop, [&] { SetEvent(mSwapChainEvent.get()); });
