@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include "Brush.hpp"
+#include "Edges.hpp"
 #include "Font.hpp"
 #include "PseudoClasses.hpp"
 #include "StyleClass.hpp"
@@ -93,6 +94,16 @@ struct Style {
 #undef FUI_DECLARE_PROPERTY_SETTERS
 #define FUI_IMPL_DECLARE_EDGE_SETTER(_UNUSED, PREFIX, SUFFIX) \
   [[nodiscard]] \
+  decltype(auto) PREFIX##SUFFIX(this auto&& self, const Edges<float>& value) \
+    requires std::is_rvalue_reference_v<decltype(self)> \
+  { \
+    return std::move(self) \
+      .PREFIX##Left##SUFFIX(value.GetLeft()) \
+      .PREFIX##Top##SUFFIX(value.GetTop()) \
+      .PREFIX##Right##SUFFIX(value.GetRight()) \
+      .PREFIX##Bottom##SUFFIX(value.GetBottom()); \
+  } \
+  [[nodiscard]] \
   decltype(auto) PREFIX##SUFFIX(this auto&& self, const float value) \
     requires std::is_rvalue_reference_v<decltype(self)> \
   { \
@@ -101,6 +112,15 @@ struct Style {
       .PREFIX##Top##SUFFIX(value) \
       .PREFIX##Right##SUFFIX(value) \
       .PREFIX##Bottom##SUFFIX(value); \
+  } \
+  template <std::convertible_to<float>... Ts> \
+    requires(sizeof...(Ts) > 1) \
+  [[nodiscard]] \
+  decltype(auto) PREFIX##SUFFIX(this auto&& self, const Ts... values) \
+    requires std::is_rvalue_reference_v<decltype(self)> \
+    && std::constructible_from<Edges<float>, Ts...> \
+  { \
+    return std::move(self).PREFIX##SUFFIX(Edges<float> {values...}); \
   }
   FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_DECLARE_EDGE_SETTER, UNUSED)
 #undef FUI_IMPL_DECLARE_EDGE_SETTER

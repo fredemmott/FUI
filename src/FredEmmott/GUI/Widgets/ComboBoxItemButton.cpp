@@ -28,9 +28,7 @@ Style MakeComboBoxItemStyles() {
         .MarginLeft(5)
         .MarginRight(5)
         .MarginTop(2)
-        .PaddingBottom(ComboBoxItemThemePaddingBottom)
-        .PaddingRight(ComboBoxItemThemePaddingRight)
-        .PaddingTop(ComboBoxItemThemePaddingTop)
+        .Padding(ComboBoxItemThemePadding)
         .And(
           Disabled,
           Style()

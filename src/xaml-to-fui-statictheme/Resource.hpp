@@ -9,6 +9,7 @@ struct Resource {
     Any,
     Alias,
     Literal,
+    BracedLiteral,
   };
   std::string mName;
   std::string mValue;
@@ -21,6 +22,6 @@ struct Resource {
   }
 
   constexpr bool IsLiteral() const {
-    return mKind == Kind::Literal;
+    return mKind == Kind::Literal || mKind == Kind::BracedLiteral;
   }
 };

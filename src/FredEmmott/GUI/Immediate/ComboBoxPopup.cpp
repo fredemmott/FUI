@@ -46,10 +46,7 @@ auto& InnerStyles() {
       .MarginRight(0)
       .MarginTop(-0.5)
       .MinWidth(ComboBoxPopupThemeMinWidth)
-      .PaddingBottom(ComboBoxDropdownContentMarginBottom)
-      .PaddingLeft(ComboBoxDropdownContentMarginLeft)
-      .PaddingRight(ComboBoxDropdownContentMarginRight)
-      .PaddingTop(ComboBoxDropdownContentMarginTop),
+      .Padding(ComboBoxDropdownContentMargin),
   };
   return ret;
 }

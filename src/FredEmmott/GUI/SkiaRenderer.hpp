@@ -73,7 +73,7 @@ class SkiaRenderer final : public Renderer {
     const Brush& brush,
     const Rect& rect,
     const CornerRadius& radius,
-    Edges edges,
+    EdgeFlags edges,
     float thickness) override;
 
   void StrokeArc(

@@ -73,7 +73,7 @@ enum class StrokeCap {
   Round,
 };
 
-enum class Edges : uint8_t {
+enum class EdgeFlags : uint8_t {
   None,
   Top = 1,
   Bottom = 2,
@@ -81,7 +81,7 @@ enum class Edges : uint8_t {
   Right = 8,
   All = Top | Bottom | Left | Right,
 };
-consteval bool is_bitflag_enum(std::type_identity<Edges>) {
+consteval bool is_bitflag_enum(std::type_identity<EdgeFlags>) {
   return true;
 };
 
@@ -142,7 +142,7 @@ class Renderer {
     const Brush& brush,
     const Rect& rect,
     const CornerRadius&,
-    Edges edges = Edges::All,
+    EdgeFlags edges = EdgeFlags::All,
     float thickness = 1) = 0;
 
   /** Stroke an arc.

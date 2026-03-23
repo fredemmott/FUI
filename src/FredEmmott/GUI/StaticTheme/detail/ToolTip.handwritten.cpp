@@ -22,10 +22,7 @@ const ImmutableStyle& DefaultToolTipStyle() {
           .WithSize(ToolTipContentThemeFontSize))
       .Color(ToolTipForegroundBrush)
       .MaxWidth(ToolTipMaxWidth)
-      .PaddingLeft(ToolTipBorderPaddingLeft)
-      .PaddingTop(ToolTipBorderPaddingTop)
-      .PaddingBottom(ToolTipBorderPaddingBottom)
-      .PaddingRight(ToolTipBorderPaddingRight),
+      .Padding(ToolTipBorderPadding),
   };
   return ret;
 }

@@ -9,6 +9,7 @@ add_library(
   FredEmmott/GUI/Color.hpp
   FredEmmott/GUI/CornerRadius.hpp
   FredEmmott/GUI/EasingFunctions.hpp
+  FredEmmott/GUI/Edges.hpp
   FredEmmott/GUI/ExitException.hpp
   FredEmmott/GUI/FocusManager.cpp FredEmmott/GUI/FocusManager.hpp
   FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp

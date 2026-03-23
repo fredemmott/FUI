@@ -93,10 +93,7 @@ const ImmutableStyle& TitleBarTitleStyle() {
     Style()
       .Color(TitleBarForegroundBrush)
       .Font(SystemFont::Caption)
-      .MarginLeft(TitleBarTitleMarginLeft)
-      .MarginTop(TitleBarTitleMarginTop)
-      .MarginRight(TitleBarTitleMarginRight)
-      .MarginBottom(TitleBarTitleMarginBottom)
+      .Margin(TitleBarTitleMargin)
       .MinWidth(TitleBarTitleMinWidth)
       .And(
         TitleBarInactiveWindowStyleClass,
@@ -109,10 +106,7 @@ const ImmutableStyle& TitleBarSubtitleStyle() {
     Style()
       .Color(TitleBarSubtitleForegroundBrush)
       .Font(SystemFont::Caption)
-      .MarginLeft(TitleBarSubtitleMarginLeft)
-      .MarginTop(TitleBarSubtitleMarginTop)
-      .MarginRight(TitleBarSubtitleMarginRight)
-      .MarginBottom(TitleBarSubtitleMarginBottom)
+      .Margin(TitleBarSubtitleMargin)
       .MinWidth(TitleBarSubtitleMinWidth)
       .And(
         TitleBarInactiveWindowStyleClass,
@@ -125,10 +119,10 @@ const ImmutableStyle& TitleBarIconStyle() {
     Style()
       .AspectRatio(1.0f)
       .FlexGrow(1)
-      .MarginLeft(TitleBarIconMarginLeft + TitleBarLeftHeaderPaddingWidth)
-      .MarginTop(TitleBarIconMarginTop)
-      .MarginRight(TitleBarIconMarginRight)
-      .MarginBottom(TitleBarIconMarginBottom)
+      .MarginLeft(TitleBarIconMargin.GetLeft() + TitleBarLeftHeaderPaddingWidth)
+      .MarginTop(TitleBarIconMargin.GetTop())
+      .MarginRight(TitleBarIconMargin.GetRight())
+      .MarginBottom(TitleBarIconMargin.GetBottom())
       .MaxWidth(TitleBarIconMaxWidth)
       .MaxHeight(TitleBarIconMaxHeight)
       .Height(TitleBarIconMaxHeight)

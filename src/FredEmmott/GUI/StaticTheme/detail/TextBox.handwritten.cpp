@@ -72,10 +72,7 @@ const ImmutableStyle& DefaultTextBoxButtonStyle() {
       .BorderWidth(Generic::TextControlBorderThemeThickness)
       .Color(TextControlForeground)
       .Cursor(Cursor::Default)
-      .PaddingLeft(HelperButtonThemePaddingLeft)
-      .PaddingTop(HelperButtonThemePaddingTop)
-      .PaddingBottom(HelperButtonThemePaddingBottom)
-      .PaddingRight(HelperButtonThemePaddingRight)
+      .Padding(HelperButtonThemePadding)
       .And(
         Hover,
         Style()

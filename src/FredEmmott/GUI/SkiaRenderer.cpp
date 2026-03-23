@@ -184,7 +184,7 @@ void SkiaRenderer::StrokeRoundedRect(
   const Brush& brush,
   const Rect& rect,
   const CornerRadius& radii,
-  const Edges edges,
+  const EdgeFlags edges,
   const float thickness) {
   static constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
 
@@ -197,7 +197,7 @@ void SkiaRenderer::StrokeRoundedRect(
   const auto br = radii.GetBottomRight();
   const auto bl = radii.GetBottomLeft();
 
-  if (edges == Edges::All) {
+  if (edges == EdgeFlags::All) {
     const SkVector skRadii[4] {
       {tl, tl},
       {tr, tr},
@@ -222,7 +222,7 @@ void SkiaRenderer::StrokeRoundedRect(
   const auto LineTo
     = [&path](const Point& point) { path.lineTo(point.mX, point.mY); };
 
-  if ((edges & Edges::Top) == Edges::Top) {
+  if ((edges & EdgeFlags::Top) == EdgeFlags::Top) {
     MoveOrLineTo(rect.GetTopLeft() + Point {tl, 0});
     LineTo(rect.GetTopRight() - Point {tr, 0});
   } else {
@@ -232,8 +232,8 @@ void SkiaRenderer::StrokeRoundedRect(
   }
 
   if (tr > Epsilon) {
-    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
-    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
+    FUI_ASSERT((edges & EdgeFlags::Top) == EdgeFlags::Top);
+    FUI_ASSERT((edges & EdgeFlags::Right) == EdgeFlags::Right);
     FUI_ASSERT(attached);
     // Rect represents the full circle, not the arc
     path.arcTo(
@@ -247,7 +247,7 @@ void SkiaRenderer::StrokeRoundedRect(
       false);
   }
 
-  if ((edges & Edges::Right) == Edges::Right) {
+  if ((edges & EdgeFlags::Right) == EdgeFlags::Right) {
     MoveOrLineTo(rect.GetTopRight() + Point {0, tr});
     LineTo(rect.GetBottomRight() - Point {0, br});
   } else {
@@ -257,8 +257,8 @@ void SkiaRenderer::StrokeRoundedRect(
   }
 
   if (br > Epsilon) {
-    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
-    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
+    FUI_ASSERT((edges & EdgeFlags::Right) == EdgeFlags::Right);
+    FUI_ASSERT((edges & EdgeFlags::Bottom) == EdgeFlags::Bottom);
     FUI_ASSERT(attached);
     path.arcTo(
       SkRect::MakeLTRB(
@@ -271,7 +271,7 @@ void SkiaRenderer::StrokeRoundedRect(
       false);
   }
 
-  if ((edges & Edges::Bottom) == Edges::Bottom) {
+  if ((edges & EdgeFlags::Bottom) == EdgeFlags::Bottom) {
     MoveOrLineTo(rect.GetBottomRight() - Point {br, 0});
     LineTo(rect.GetBottomLeft() + Point {bl, 0});
   } else {
@@ -281,8 +281,8 @@ void SkiaRenderer::StrokeRoundedRect(
   }
 
   if (bl > Epsilon) {
-    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
-    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
+    FUI_ASSERT((edges & EdgeFlags::Bottom) == EdgeFlags::Bottom);
+    FUI_ASSERT((edges & EdgeFlags::Left) == EdgeFlags::Left);
     FUI_ASSERT(attached);
     path.arcTo(
       SkRect::MakeLTRB(
@@ -295,7 +295,7 @@ void SkiaRenderer::StrokeRoundedRect(
       false);
   }
 
-  if ((edges & Edges::Left) == Edges::Left) {
+  if ((edges & EdgeFlags::Left) == EdgeFlags::Left) {
     MoveOrLineTo(rect.GetBottomLeft() - Point {0, bl});
     LineTo(rect.GetTopLeft() + Point {0, tl});
   } else {
@@ -305,8 +305,8 @@ void SkiaRenderer::StrokeRoundedRect(
   }
 
   if (tl > Epsilon) {
-    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
-    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
+    FUI_ASSERT((edges & EdgeFlags::Left) == EdgeFlags::Left);
+    FUI_ASSERT((edges & EdgeFlags::Top) == EdgeFlags::Top);
     FUI_ASSERT(attached);
     path.arcTo(
       SkRect::MakeLTRB(

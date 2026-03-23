@@ -35,11 +35,21 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
       members.push_back(fmt::format("using {} = {};", type, resource.mType));
     }
 
-    if (resource.IsLiteral()) {
+    if (resource.mKind == Resource::Kind::Literal) {
       constants.emplace_back(
         resource.mName,
         fmt::format(
           "constexpr {} {} {{ {} }};",
+          resource.mType,
+          resource.mName,
+          resource.mValue));
+      continue;
+    }
+    if (resource.mKind == Resource::Kind::BracedLiteral) {
+      constants.emplace_back(
+        resource.mName,
+        fmt::format(
+          "constexpr {} {} {};",
           resource.mType,
           resource.mName,
           resource.mValue));
@@ -121,6 +131,7 @@ std::string GetDetailHpp(const HppData& data) {
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/CornerRadius.hpp>
+#include <FredEmmott/GUI/Edges.hpp>
 #include <FredEmmott/GUI/StaticTheme/Resource.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/ResourceSupertype.hpp>
 

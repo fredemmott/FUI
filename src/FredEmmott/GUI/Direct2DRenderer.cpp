@@ -164,7 +164,7 @@ void Direct2DRenderer::FillRoundedRect(
     return;
   }
 
-  const auto path = MakeRoundedRectPathGeometry(rect, radii, Edges::All);
+  const auto path = MakeRoundedRectPathGeometry(rect, radii, EdgeFlags::All);
   mDeviceResources.mD2DDeviceContext->FillGeometry(
     path.get(), brush.as<ID2D1Brush*>(this, rect), nullptr);
 }
@@ -173,12 +173,12 @@ void Direct2DRenderer::StrokeRoundedRect(
   const Brush& brush,
   const Rect& rect,
   const CornerRadius& radii,
-  const Edges edges,
+  const EdgeFlags edges,
   const float thickness) {
   FUI_ASSERT(
-    edges != Edges::None,
+    edges != EdgeFlags::None,
     "Should never call StrokeRoundedRect if there's nothing to do");
-  if (radii.IsUniform() && edges == Edges::All) {
+  if (radii.IsUniform() && edges == EdgeFlags::All) {
     const auto radius = radii.GetUniformValue();
     mDeviceResources.mD2DDeviceContext->DrawRoundedRectangle(
       {rect, radius, radius},
@@ -415,7 +415,7 @@ ID2D1StrokeStyle* Direct2DRenderer::GetStrokeStyle(const StrokeCap cap) const {
 wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   const Rect& rect,
   const CornerRadius& radii,
-  const Edges edges) const {
+  const EdgeFlags edges) const {
   static constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
 
   FUI_ASSERT(
@@ -447,7 +447,7 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
     isFigureOpen = false;
   };
 
-  if ((edges & Edges::Top) == Edges::Top) {
+  if ((edges & EdgeFlags::Top) == EdgeFlags::Top) {
     MaybeStartFigure(rect.GetTopLeft() + Point {topLeftRadius, 0});
     sink->AddLine(
       (rect.GetTopRight() - Point {topRightRadius, 0}).as<D2D1_POINT_2F>());
@@ -458,8 +458,8 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   }
 
   if (topRightRadius > Epsilon) {
-    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
-    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
+    FUI_ASSERT((edges & EdgeFlags::Top) == EdgeFlags::Top);
+    FUI_ASSERT((edges & EdgeFlags::Right) == EdgeFlags::Right);
     FUI_ASSERT(isFigureOpen);
     sink->AddArc({
       (rect.GetTopRight() + Point {0, topRightRadius}).as<D2D1_POINT_2F>(),
@@ -470,7 +470,7 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
     });
   }
 
-  if ((edges & Edges::Right) == Edges::Right) {
+  if ((edges & EdgeFlags::Right) == EdgeFlags::Right) {
     MaybeStartFigure(rect.GetTopRight() + Point {0, topRightRadius});
     sink->AddLine((rect.GetBottomRight() - Point {0, bottomRightRadius})
                     .as<D2D1_POINT_2F>());
@@ -481,8 +481,8 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   }
 
   if (bottomRightRadius > Epsilon) {
-    FUI_ASSERT((edges & Edges::Right) == Edges::Right);
-    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
+    FUI_ASSERT((edges & EdgeFlags::Right) == EdgeFlags::Right);
+    FUI_ASSERT((edges & EdgeFlags::Bottom) == EdgeFlags::Bottom);
     FUI_ASSERT(isFigureOpen);
     sink->AddArc({
       (rect.GetBottomRight() - Point {bottomRightRadius, 0})
@@ -494,7 +494,7 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
     });
   }
 
-  if ((edges & Edges::Bottom) == Edges::Bottom) {
+  if ((edges & EdgeFlags::Bottom) == EdgeFlags::Bottom) {
     MaybeStartFigure(rect.GetBottomRight() - Point {bottomRightRadius, 0});
     sink->AddLine(
       (rect.GetBottomLeft() + Point {bottomLeftRadius, 0}).as<D2D1_POINT_2F>());
@@ -505,8 +505,8 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   }
 
   if (bottomLeftRadius > Epsilon) {
-    FUI_ASSERT((edges & Edges::Bottom) == Edges::Bottom);
-    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
+    FUI_ASSERT((edges & EdgeFlags::Bottom) == EdgeFlags::Bottom);
+    FUI_ASSERT((edges & EdgeFlags::Left) == EdgeFlags::Left);
     FUI_ASSERT(isFigureOpen);
     sink->AddArc({
       (rect.GetBottomLeft() - Point {0, bottomLeftRadius}).as<D2D1_POINT_2F>(),
@@ -517,7 +517,7 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
     });
   }
 
-  if ((edges & Edges::Left) == Edges::Left) {
+  if ((edges & EdgeFlags::Left) == EdgeFlags::Left) {
     MaybeStartFigure(rect.GetBottomLeft() - Point {0, bottomLeftRadius});
     sink->AddLine(
       (rect.GetTopLeft() + Point {0, topLeftRadius}).as<D2D1_POINT_2F>());
@@ -528,8 +528,8 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
   }
 
   if (topLeftRadius > Epsilon) {
-    FUI_ASSERT((edges & Edges::Left) == Edges::Left);
-    FUI_ASSERT((edges & Edges::Top) == Edges::Top);
+    FUI_ASSERT((edges & EdgeFlags::Left) == EdgeFlags::Left);
+    FUI_ASSERT((edges & EdgeFlags::Top) == EdgeFlags::Top);
     FUI_ASSERT(isFigureOpen);
     sink->AddArc({
       (rect.GetTopLeft() + Point {topLeftRadius, 0}).as<D2D1_POINT_2F>(),
@@ -540,7 +540,7 @@ wil::com_ptr<ID2D1PathGeometry> Direct2DRenderer::MakeRoundedRectPathGeometry(
     });
   }
 
-  if (edges == Edges::All) {
+  if (edges == EdgeFlags::All) {
     sink->EndFigure(D2D1_FIGURE_END_CLOSED);
   } else {
     MaybeEndFigure();

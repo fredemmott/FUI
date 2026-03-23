@@ -38,12 +38,9 @@ auto MakeCheckBoxStyles() {
         .Color(CheckBoxForegroundUnchecked)
         .Font(WidgetFont::ControlContent)
         .Height(CheckBoxHeight)
-        .MarginLeft(-CheckBoxPaddingLeft)
+        .MarginLeft(-CheckBoxPadding.GetLeft())
         .MinWidth(CheckBoxMinWidth)
-        .PaddingBottom(CheckBoxPaddingBottom)
-        .PaddingLeft(CheckBoxPaddingLeft)
-        .PaddingRight(CheckBoxPaddingRight)
-        .PaddingTop(CheckBoxPaddingTop)
+        .Padding(CheckBoxPadding)
         .OutlineLeftOffset(7)
         .OutlineTopOffset(3)
         .OutlineRightOffset(7)
@@ -108,10 +105,10 @@ auto& FosterParentStyles() {
   using namespace StaticTheme::CheckBox;
   static const ImmutableStyle ret {
     Style()
-      .PaddingBottom(CheckBoxPaddingBottom + 6)
-      .PaddingLeft(CheckBoxPaddingLeft)
-      .PaddingRight(CheckBoxPaddingRight)
-      .PaddingTop(CheckBoxPaddingTop),
+      .PaddingBottom(CheckBoxPadding.GetBottom() + 6)
+      .PaddingLeft(CheckBoxPadding.GetLeft())
+      .PaddingRight(CheckBoxPadding.GetRight())
+      .PaddingTop(CheckBoxPadding.GetTop()),
   };
   return ret;
 }

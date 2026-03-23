@@ -80,7 +80,7 @@ void PaintOutline(
       radii->GetBottomRight() + pad,
       radii->GetBottomLeft() + pad,
     },
-    Edges::All,
+    EdgeFlags::All,
     thickness);
 }
 
@@ -110,9 +110,9 @@ void PaintBorder(
   const auto brush = *style.BorderColor();
 
   if (const auto radii = style.BorderRadius(); radii && !radii->IsEmpty()) {
-    auto edges = Edges::All;
+    auto edges = EdgeFlags::All;
     if (!allSame) {
-      edges = Edges::None;
+      edges = EdgeFlags::None;
 
       struct NoOpValidator final {
         void Check(const float) {};
@@ -136,19 +136,19 @@ void PaintBorder(
 
       if (left >= Eps) {
         validator.Check(left);
-        edges |= Edges::Left;
+        edges |= EdgeFlags::Left;
       }
       if (top >= Eps) {
         validator.Check(top);
-        edges |= Edges::Top;
+        edges |= EdgeFlags::Top;
       }
       if (right >= Eps) {
         validator.Check(right);
-        edges |= Edges::Right;
+        edges |= EdgeFlags::Right;
       }
       if (bottom >= Eps) {
         validator.Check(bottom);
-        edges |= Edges::Bottom;
+        edges |= EdgeFlags::Bottom;
       }
     }
     renderer->StrokeRoundedRect(brush, borderRect, *radii, edges, top);

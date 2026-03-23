@@ -17,10 +17,7 @@ Style MakeBaseButtonStyle() {
     .BorderRadius(ControlCornerRadius)
     .BorderWidth(ButtonBorderThemeThickness)
     .Font(WidgetFont::ControlContent)
-    .PaddingBottom(ButtonPaddingBottom)
-    .PaddingLeft(ButtonPaddingLeft)
-    .PaddingRight(ButtonPaddingRight)
-    .PaddingTop(ButtonPaddingTop)
+    .Padding(ButtonPadding)
     .TextAlign(TextAlign::Center);
 }
 

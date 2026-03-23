@@ -60,7 +60,7 @@ const ImmutableStyle& NavigationViewPaneHeaderStyle() {
       .AlignSelf(YGAlignStretch)
       .FlexDirection(YGFlexDirectionRow)
       .Height(NavigationViewPaneHeaderRowMinHeight)
-      .MarginBottom(NavigationViewButtonHolderGridMarginBottom)};
+      .Margin(NavigationViewButtonHolderGridMargin)};
   return ret;
 }
 
@@ -86,16 +86,10 @@ const ImmutableStyle& NavigationViewContentOuterStyle() {
       .BackgroundColor(NavigationViewContentBackground)
       .BorderColor(NavigationViewContentGridBorderBrush)
       .BorderRadius(NavigationViewContentGridCornerRadius)
-      .BorderLeftWidth(NavigationViewContentGridBorderThicknessLeft)
-      .BorderTopWidth(NavigationViewContentGridBorderThicknessTop)
-      .BorderRightWidth(NavigationViewContentGridBorderThicknessRight)
-      .BorderBottomWidth(NavigationViewContentGridBorderThicknessBottom)
+      .BorderWidth(NavigationViewContentGridBorderThickness)
       .FlexGrow(1.0f)
       .FlexDirection(YGFlexDirectionColumn)
-      .PaddingLeft(NavigationViewPaneContentGridMarginLeft)
-      .PaddingTop(NavigationViewPaneContentGridMarginTop)
-      .PaddingRight(NavigationViewPaneContentGridMarginRight)
-      .PaddingBottom(NavigationViewPaneContentGridMarginBottom),
+      .Padding(NavigationViewPaneContentGridMargin),
   };
   return ret;
 }
@@ -112,10 +106,7 @@ const ImmutableStyle& NavigationViewContentHeaderStyle() {
        * For a comparable example, see the 'window' example under the Title Bar
        * control samples instead.
        */
-      .MarginLeft(NavigationViewHeaderMarginLeft)
-      .MarginTop(NavigationViewHeaderMarginTop)
-      .MarginRight(NavigationViewHeaderMarginRight)
-      .MarginBottom(NavigationViewHeaderMarginBottom)
+      .Margin(NavigationViewHeaderMargin)
       .Color(TextFillColorPrimary)
       .Font(SystemFont::Title)
       // overridden by NavigationView::SetHeaderText
@@ -131,10 +122,7 @@ const ImmutableStyle& NavigationViewContentInnerStyle() {
       .FlexGrow(1.0f)
       .FlexShrink(1.0f)
       .FlexDirection(YGFlexDirectionColumn)
-      .MarginLeft(NavigationViewContentPresenterMarginLeft)
-      .MarginTop(NavigationViewContentPresenterMarginTop)
-      .MarginRight(NavigationViewContentPresenterMarginRight)
-      .MarginBottom(NavigationViewContentPresenterMarginBottom)};
+      .Margin(NavigationViewContentPresenterMargin)};
   return ret;
 }
 
@@ -148,10 +136,7 @@ const ImmutableStyle& NavigationViewItemStyle() {
       .FlexDirection(YGFlexDirectionRow)
       .AlignItems(YGAlignCenter)
       .AlignSelf(YGAlignStretch)
-      .MarginLeft(NavigationViewItemButtonMarginLeft)
-      .MarginTop(NavigationViewItemButtonMarginTop)
-      .MarginRight(NavigationViewItemButtonMarginRight)
-      .MarginBottom(NavigationViewItemButtonMarginBottom)
+      .Margin(NavigationViewItemButtonMargin)
       .BorderRadius(ControlCornerRadius)
       .BorderColor(NavigationViewItemBorderBrush)
       .BorderWidth(NavigationViewItemBorderThickness)

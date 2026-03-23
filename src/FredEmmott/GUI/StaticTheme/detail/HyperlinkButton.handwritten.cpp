@@ -22,10 +22,7 @@ const ImmutableStyle& DefaultHyperlinkButtonStyle() {
       .Color(HyperlinkButtonForeground)
       .BorderColor(HyperlinkButtonBorderBrush)
       .BorderWidth(HyperlinkButtonBorderThemeThickness)
-      .PaddingLeft(HyperlinkButtonPaddingLeft)
-      .PaddingRight(HyperlinkButtonPaddingRight)
-      .PaddingTop(HyperlinkButtonPaddingTop)
-      .PaddingBottom(HyperlinkButtonPaddingBottom)
+      .Padding(HyperlinkButtonPadding)
       .BorderRadius(ControlCornerRadius)
       .Cursor(Cursor::Pointer)// hand
       .And(

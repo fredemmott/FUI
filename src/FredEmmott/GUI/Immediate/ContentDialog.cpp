@@ -88,15 +88,9 @@ ContentDialogResult BeginContentDialog(const ID id) {
   static const auto InnerStyle
     = Style()
         .BackgroundColor(ContentDialogTopOverlay)
-        .BorderBottomWidth(ContentDialogSeparatorThicknessBottom)
+        .BorderWidth(ContentDialogSeparatorThickness)
         .BorderColor(ContentDialogSeparatorBorderBrush)
-        .BorderLeftWidth(ContentDialogSeparatorThicknessLeft)
-        .BorderRightWidth(ContentDialogSeparatorThicknessRight)
-        .BorderTopWidth(ContentDialogSeparatorThicknessTop)
-        .PaddingBottom(ContentDialogPaddingBottom)
-        .PaddingLeft(ContentDialogPaddingLeft)
-        .PaddingRight(ContentDialogPaddingRight)
-        .PaddingTop(ContentDialogPaddingTop);
+        .Padding(ContentDialogPadding);
   BeginVStackPanel().Styled(InnerStyle);
 
   static const auto TitleStyle
@@ -104,10 +98,7 @@ ContentDialogResult BeginContentDialog(const ID id) {
         .Font(
           Font {WidgetFont::ControlContent}.WithSize(20).WithWeight(
             FontWeight::SemiBold))
-        .MarginBottom(ContentDialogTitleMarginBottom)
-        .MarginLeft(ContentDialogTitleMarginLeft)
-        .MarginRight(ContentDialogTitleMarginRight)
-        .MarginTop(ContentDialogTitleMarginTop);
+        .Margin(ContentDialogTitleMargin);
   Label(tContext->mTitleText).Styled(TitleStyle);
   tContext->mTitleLabel = GetCurrentNode<Widgets::Label>();
   return true;
@@ -292,10 +283,7 @@ BeginContentDialogButtons() {
         .BackgroundColor(ContentDialogBackground)
         .BorderRadius({0, 0, OverlayCornerRadius, OverlayCornerRadius})
         .Gap(0)
-        .PaddingBottom(ContentDialogPaddingBottom)
-        .PaddingLeft(ContentDialogPaddingLeft)
-        .PaddingRight(ContentDialogPaddingRight)
-        .PaddingTop(ContentDialogPaddingTop);
+        .Padding(ContentDialogPadding);
   const auto ctx = tButtonsContext
     = GetCurrentParentNode()->GetOrCreateContext<ButtonsContext>();
   const auto outer = BeginHStackPanel().Styled(OuterStyle).Scoped();

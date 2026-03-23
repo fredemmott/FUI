@@ -55,10 +55,7 @@ RadioButtonsWidgets BeginRadioButtons(
     static const ImmutableStyle TitleStyle {
       Style()
         .Color(RadioButtonsHeaderForeground)
-        .MarginBottom(RadioButtonsTopHeaderMarginBottom)
-        .MarginLeft(RadioButtonsTopHeaderMarginLeft)
-        .MarginRight(RadioButtonsTopHeaderMarginRight)
-        .MarginTop(RadioButtonsTopHeaderMarginTop)
+        .Margin(RadioButtonsTopHeaderMargin)
         .And(Disabled, Style().Color(RadioButtonsHeaderForegroundDisabled))};
     Label(title, ID {"RadioButtons/Title"}).Styled(TitleStyle);
   }

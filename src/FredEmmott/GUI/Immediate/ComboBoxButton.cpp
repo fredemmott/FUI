@@ -31,10 +31,7 @@ auto& ComboBoxButtonStyles() {
       .Font(WidgetFont::ControlContent)
       .MinHeight(ComboBoxMinHeight)
       .MinWidth(ComboBoxThemeMinWidth)
-      .PaddingBottom(ComboBoxPaddingBottom)
-      .PaddingLeft(ComboBoxPaddingLeft)
-      .PaddingRight(ComboBoxPaddingRight)
-      .PaddingTop(ComboBoxPaddingTop)
+      .Padding(ComboBoxPadding)
       .And(
         Disabled,
         Style()
