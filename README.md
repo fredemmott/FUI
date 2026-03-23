@@ -47,3 +47,12 @@ The easiest way to meet these requirements is to:
 - make your build process set `-D_WIN32_WINNT=_WIN32_WINNT_WIN10` *and* `-DNTDDI_VERSION=NTDDI_WIN10`, or use the values for newer Windows versions.
 
 The original Windows 10 version is currently targeted, but this is just because it's the oldest version that happens to provide all the features this library current uses. For my current needs, I only care about *consumer x64* versions of Windows 10 that *Microsoft currently support for all consumers* outside of extended service plans; if things work under any non-consumer versions - including LTSC - this is a happy accident. Future versions of this library may require a newer version of Windows, including v0.x and v1.x versions of this library.
+
+## AI Usage
+
+I've used LLMS (primarily Gemini 3 Flash) for:
+
+- analysis of WinUI3 animations: the WinUI3 source tree includes C++ generated from Lottie files, but not the actual Lottie/Illustrator files. Gemini was great at providing a human-readable explanation of these machine-readable files, which I then implemented with Direct2D/Skia primitives.
+- code review
+- bug investigation
+- semantic find/replace
