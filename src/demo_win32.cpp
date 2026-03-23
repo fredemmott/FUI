@@ -132,7 +132,12 @@ struct SwapChainPusher {
 
   SwapChainPusher(fui::SwapChain swapChain) : mSwapChain(std::move(swapChain)) {
     mThread = std::jthread {std::bind_front(&SwapChainPusher::Run, this)};
-    mSwapChainEvent.create();
+    mInterruptEvent.create();
+  }
+
+  ~SwapChainPusher() {
+    mThread.request_stop();
+    SetEvent(mInterruptEvent.get());
   }
 
   void SetSwapchain(fui::SwapChain swapChain) {
@@ -141,13 +146,13 @@ struct SwapChainPusher {
     }
     const std::unique_lock lock(mMutex);
     mSwapChain = std::move(swapChain);
-    mSwapChainEvent.SetEvent();
+    SetEvent(mInterruptEvent.get());
   }
 
  private:
   std::jthread mThread;
   std::mutex mMutex;
-  wil::unique_event mSwapChainEvent {};
+  wil::unique_event mInterruptEvent {};
 
   void Run(const std::stop_token& stop) {
     using fui::win32_detail::CheckHResult;
@@ -189,14 +194,17 @@ struct SwapChainPusher {
         while (!(ret || stop.stop_requested())) {
           lock.unlock();
           const auto cancel = std::stop_callback(
-            stop, [&] { SetEvent(mSwapChainEvent.get()); });
-          std::ignore = mSwapChainEvent.wait();
+            stop, [&] { SetEvent(mInterruptEvent.get()); });
+          std::ignore = mInterruptEvent.wait();
           lock.lock();
           ret = mSwapChain.BeginFrame();
         }
-        mSwapChainEvent.ResetEvent();
+        ResetEvent(mInterruptEvent.get());
         return ret;
       }();
+      if (stop.stop_requested()) {
+        return;
+      }
       if (!begin) {
         return;
       }
