@@ -10,15 +10,18 @@ namespace FredEmmott::GUI::Widgets {
 
 class Label final : public Widget {
  public:
+  explicit Label(id_type id);
   Label(
     id_type id,
-    const std::optional<ImmutableStyle>& = {},
+    StyleClass primaryClass,
+    const ImmutableStyle&,
     const StyleClasses& = {});
 
+  [[nodiscard]]
   std::string_view GetText() const noexcept {
     return mText;
   }
-  Widget* SetText(std::string_view);
+  Label* SetText(std::string_view);
 
  protected:
   void PaintOwnContent(Renderer*, const Rect&, const Style& style)

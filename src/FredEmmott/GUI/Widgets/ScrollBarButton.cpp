@@ -12,7 +12,9 @@
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
-const auto ScrollBarButtonStyleClass = StyleClass::Make("ScrollBarButton");
+constexpr LiteralStyleClass ScrollBarButtonStyleClass {"ScrollBar/Button"};
+constexpr LiteralStyleClass ScrollBarButtonLabelStyleClass {
+  "ScrollBar/Button/Label"};
 }// namespace
 
 ScrollBarButton::ScrollBarButton(
@@ -31,7 +33,7 @@ void ScrollBarButton::SetText(std::string_view text) {
     SystemFont::ResolveGlyphFont(SystemFont::Body)
       .WithSize(StaticTheme::ScrollBar::ScrollBarButtonArrowIconFontSize))};
 
-  auto label = new Label(0, FontIconStyle);
+  auto label = new Label(0, ScrollBarButtonLabelStyleClass, FontIconStyle);
   label->SetText(text);
   this->SetStructuralChildren({label});
 }

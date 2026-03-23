@@ -9,8 +9,10 @@ namespace FredEmmott::GUI::Widgets {
 
 namespace {
 using namespace StaticTheme::NavigationView;
-constexpr LiteralStyleClass NavigationViewItemIconHolderStyleClass(
-  "NavigationView/Item/IconHolder");
+constexpr LiteralStyleClass NavigationViewItemIconHolderStyleClass {
+  "NavigationView/Item/IconHolder"};
+constexpr LiteralStyleClass NavigationViewItemIconStyleClass {
+  "NavigationView/Item/Icon"};
 using PillState = detail::SelectionPill::State;
 }// namespace
 
@@ -21,11 +23,14 @@ NavigationViewItem::NavigationViewItem(const id_type id)
       0,
       NavigationViewItemIconHolderStyleClass,
       NavigationViewItemIconHolderStyle())),
-    mIcon(new Label(0, NavigationViewItemIconStyle())),
+    mIcon(new Label(
+      0,
+      NavigationViewItemIconStyleClass,
+      NavigationViewItemIconStyle())),
     mText(new Label(
       0,
-      NavigationViewItemLabelStyle(),
-      {NavigationViewItemLabelStyleClass})) {
+      NavigationViewItemLabelStyleClass,
+      NavigationViewItemLabelStyle())) {
   mIconHolder->SetStructuralChildren({mIcon});
   this->SetLogicalChildren({mIconHolder, mText});
 }

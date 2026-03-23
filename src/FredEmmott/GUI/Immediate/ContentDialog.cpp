@@ -20,7 +20,10 @@ using namespace StaticTheme::Common;
 using namespace StaticTheme::ContentDialog;
 
 namespace {
-constexpr LiteralStyleClass ContentDialogButtonClass {"ContentDialogButton"};
+constexpr LiteralStyleClass ContentDialogButtonClass {"ContentDialog/Button"};
+constexpr LiteralStyleClass ContentDialogLabelStyleClass {
+  "ContentDialog/Label"};
+
 struct Context : Widgets::Context {
   std::string mTitleText {};
   Widgets::Label* mTitleLabel {nullptr};
@@ -302,7 +305,8 @@ BeginContentDialogButtons() {
     };
     it.mButton = BeginWidget<Widgets::Button>(
       id, ButtonStyles, StyleClasses {ContentDialogButtonClass});
-    it.mLabel = ChildlessWidget<Widgets::Label>(ID {0}, LabelStyles);
+    it.mLabel = ChildlessWidget<Widgets::Label>(
+      ID {0}, ContentDialogLabelStyleClass, LabelStyles);
     EndWidget<Widgets::Button>();
   };
   const auto spacer = [](const ID& id = ID {std::source_location::current()}) {

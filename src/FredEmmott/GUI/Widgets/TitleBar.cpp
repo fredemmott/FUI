@@ -17,6 +17,9 @@ namespace {
 constexpr LiteralStyleClass ContentContainerStyleClass {"TitleBar/Content"};
 constexpr LiteralStyleClass ChromeButtonsContainerStyleClass {
   "TitleBar/ChromeButtons"};
+constexpr LiteralStyleClass TitleBarTitleStyleClass {"TitleBar/Title"};
+constexpr LiteralStyleClass TitleBarSubtitleStyleClass {"TitleBar/Subtitle"};
+constexpr LiteralStyleClass TitleBarGlyphStyleClass {"TitleBar/Glyph"};
 constexpr std::string_view MinimizeGlyph = "\ue921";
 constexpr std::string_view MaximizeGlyph = "\ue922";
 constexpr std::string_view RestoreGlyph = "\ue923";
@@ -180,24 +183,27 @@ TitleBar::TitleBar(const id_type id)
   this->SetStructuralChildren({mContent, chromeButtons});
 
   mIconButton = new TitleBarIconButton(0, TitleBarIconStyle(), {});
-  mTitleLabel = new Label(0, TitleBarTitleStyle());
-  mSubtitleLabel = new Label(0, TitleBarSubtitleStyle());
+  mTitleLabel = new Label(0, TitleBarTitleStyleClass, TitleBarTitleStyle());
+  mSubtitleLabel
+    = new Label(0, TitleBarSubtitleStyleClass, TitleBarSubtitleStyle());
   this->SetLeftWidgets({});
 
   chromeButtons->SetStructuralChildren({
     mMinimizeButton = new Button(0, WindowMinimizeMaximizeButtonStyle(), {}),
-    mMaximizeButton = new Button(1, WindowMinimizeMaximizeButtonStyle(), {}),
-    mCloseButton = new Button(2, WindowCloseButtonStyle(), {}),
+    mMaximizeButton = new Button(0, WindowMinimizeMaximizeButtonStyle(), {}),
+    mCloseButton = new Button(0, WindowCloseButtonStyle(), {}),
   });
   mMinimizeButton->SetStructuralChildren({
-    (new Label(0, ImmutableStyle {}))->SetText(MinimizeGlyph),
+    (new Label(0, TitleBarGlyphStyleClass, ImmutableStyle {}))
+      ->SetText(MinimizeGlyph),
   });
   mMaximizeButton->SetStructuralChildren({
-    mMaximizeLabel = new Label(0, ImmutableStyle {}),
+    mMaximizeLabel = (new Label(0, TitleBarGlyphStyleClass, ImmutableStyle {}))
+                       ->SetText(MaximizeGlyph),
   });
   mCloseButton->SetStructuralChildren(
-    {(new Label(0, ImmutableStyle {}))->SetText(CloseGlyph)});
-  mMaximizeLabel->SetText(MaximizeGlyph);
+    {(new Label(0, TitleBarGlyphStyleClass, ImmutableStyle {}))
+       ->SetText(CloseGlyph)});
 }
 
 }// namespace FredEmmott::GUI::Widgets

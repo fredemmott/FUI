@@ -52,8 +52,8 @@ NavigationView::NavigationView(const id_type id)
       NavigationViewContentOuterStyle())),
     mContentHeader(new Label(
       0,
-      NavigationViewContentHeaderStyle(),
-      {NavigationViewContentHeaderStyleClass})),
+      NavigationViewContentHeaderStyleClass,
+      NavigationViewContentHeaderStyle())),
     mContentInner(new Widget(
       0,
       NavigationViewContentInnerStyleClass,

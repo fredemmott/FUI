@@ -14,14 +14,15 @@ namespace FredEmmott::GUI::Immediate {
 
 namespace {
 
-constexpr LiteralStyleClass StackedStyleClass {"FontIcon/Stacked"};
+constexpr LiteralStyleClass StackedFontIconStyleClass {"FontIcon/Stacked"};
+constexpr auto FontIconStyleClass = LiteralStyleClass {"FontIcon"};
 
 Style MakeFontIconStyle(const FontIconSize size) {
   const auto font = ResolveGlyphFont(size);
   const auto width = font.GetMetrics().mSize;
   FUI_ASSERT(width == font.MeasureTextWidth("\ue700"));
   return Style().Font(font).Width(width).Height(width).And(
-    StackedStyleClass, Style().Left(-width));
+    StackedFontIconStyleClass, Style().Left(-width));
 }
 
 const ImmutableStyle& FontIconStyle() {
@@ -63,12 +64,16 @@ StyleClass GetStyleClass(const FontIconSize size) {
       std::unreachable();
   }
 }
+
 }// namespace
 
 FontIconResult
 FontIcon(const std::string_view glyph, const FontIconSize size, const ID id) {
   const auto label = immediate_detail::ChildlessWidget<Widgets::Label>(
-    id, FontIconStyle(), StyleClasses {GetStyleClass(size)});
+    id,
+    FontIconStyleClass,
+    FontIconStyle(),
+    StyleClasses {GetStyleClass(size)});
   label->SetText(glyph);
   return {label};
 }
@@ -86,7 +91,7 @@ FontIconResult FontIcon(
     FontIcon(glyph, size, ID {count++});
     const auto widget = immediate_detail::GetCurrentNode();
     if (!std::exchange(first, false)) {
-      widget->AddStyleClass(StackedStyleClass);
+      widget->AddStyleClass(StackedFontIconStyleClass);
     }
     widget->SetMutableStyles(style);
   }

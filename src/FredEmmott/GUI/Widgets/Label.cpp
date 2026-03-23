@@ -15,20 +15,20 @@ namespace {
 constexpr LiteralStyleClass LabelStyleClass("Label");
 }
 
+Label::Label(const id_type id)
+  : Label(id, LabelStyleClass, TextBlockClassStyles()) {}
+
 Label::Label(
-  id_type id,
-  const std::optional<ImmutableStyle>& style,
+  const id_type id,
+  const StyleClass primaryClass,
+  const ImmutableStyle& style,
   const StyleClasses& classes)
-  : Widget(
-      id,
-      LabelStyleClass,
-      style.value_or(TextBlockClassStyles()),
-      classes) {
+  : Widget(id, primaryClass, style, classes) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
 
-Widget* Label::SetText(std::string_view text) {
+Label* Label::SetText(std::string_view text) {
   if (text == mText) {
     return this;
   }
