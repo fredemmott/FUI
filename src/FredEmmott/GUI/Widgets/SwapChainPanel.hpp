@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/SwapChain.hpp>
+
 #include "Widget.hpp"
 
 struct ID3D11Device3;
@@ -10,48 +12,7 @@ struct ID3D12Device;
 namespace FredEmmott::GUI::Widgets {
 
 class SwapChainPanel final : public Widget {
- private:
-  struct Resources;
-
  public:
-  struct SwapChain final {
-    constexpr SwapChain() = default;
-    explicit SwapChain(std::weak_ptr<Resources> weak)
-      : mWeak(std::move(weak)) {}
-    SwapChain(const SwapChain&) = default;
-    SwapChain(SwapChain&&) = default;
-    SwapChain& operator=(const SwapChain&) = default;
-    SwapChain& operator=(SwapChain&&) = default;
-    ~SwapChain();
-
-    struct BeginFrameInfo {
-      uint64_t mSequenceNumber {};
-      BasicSize<uint16_t> mTextureSize {};
-
-      bool mMustFlushCachedHandles {};
-
-      HANDLE mTexture {};
-    };
-
-    struct EndFrameInfo {
-      HANDLE mFence {};
-      uint64_t mFenceValue {};
-      bool mFenceIsNew {true};
-    };
-
-    [[nodiscard]]
-    std::optional<BeginFrameInfo> BeginFrame();
-    void EndFrame(const BeginFrameInfo&, const EndFrameInfo&);
-
-    bool operator==(const SwapChain& other) const noexcept {
-      return mWeak.lock() == other.mWeak.lock();
-    }
-
-   private:
-    std::weak_ptr<Resources> mWeak;
-    std::shared_ptr<Resources> mStrong;
-  };
-
   explicit SwapChainPanel(id_type id);
   ~SwapChainPanel() override;
 
@@ -61,6 +22,8 @@ class SwapChainPanel final : public Widget {
   void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
 
  private:
+  friend class ::FredEmmott::GUI::SwapChain;
+  using Resources = SwapChain::Resources;
   struct Submission {
     ImportedTexture* mTexture {};
     bool mFenceIsNew {};

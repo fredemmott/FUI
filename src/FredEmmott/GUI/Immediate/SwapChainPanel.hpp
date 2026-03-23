@@ -18,9 +18,7 @@ struct SwapChainPanelResultMixin {
   }
 
   template <class Self>
-  decltype(auto) GetSwapChain(
-    this Self&& self,
-    Widgets::SwapChainPanel::SwapChain* p) {
+  decltype(auto) GetSwapChain(this Self&& self, SwapChain* p) {
     FUI_ASSERT(p);
     *p = widget_from_result<Widgets::SwapChainPanel>(self)->GetSwapChain();
     return std::forward<Self>(self);
@@ -29,7 +27,7 @@ struct SwapChainPanelResultMixin {
   template <class Self>
   decltype(auto) GetSwapChain(
     this Self&& self,
-    std::invocable<Widgets::SwapChainPanel::SwapChain> auto&& fn) {
+    std::invocable<SwapChain> auto&& fn) {
     std::invoke(
       std::forward<decltype(fn)>(fn),
       widget_from_result<Widgets::SwapChainPanel>(self)->GetSwapChain());

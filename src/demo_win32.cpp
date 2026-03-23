@@ -123,20 +123,19 @@ struct TextureProducer {
   }
 };
 struct SwapChainPusher {
-  fui::Widgets::SwapChainPanel::SwapChain mSwapChain;
+  fui::SwapChain mSwapChain;
   wil::unique_handle mFence {};
   std::atomic<uint64_t> mFenceValue {};
   bool mEarlySignal {false};
 
   static constexpr fui::Size Size {128, 128};
 
-  SwapChainPusher(fui::Widgets::SwapChainPanel::SwapChain swapChain)
-    : mSwapChain(std::move(swapChain)) {
+  SwapChainPusher(fui::SwapChain swapChain) : mSwapChain(std::move(swapChain)) {
     mThread = std::jthread {std::bind_front(&SwapChainPusher::Run, this)};
     mSwapChainEvent.create();
   }
 
-  void SetSwapchain(fui::Widgets::SwapChainPanel::SwapChain swapChain) {
+  void SetSwapchain(fui::SwapChain swapChain) {
     if (swapChain == mSwapChain) {
       return;
     }
@@ -237,7 +236,7 @@ struct SwapChainPusher {
         CheckHResult(context->Signal(fence.get(), mFenceValue));
       }
 
-      const fui::Widgets::SwapChainPanel::SwapChain::EndFrameInfo end {
+      const fui::SwapChain::EndFrameInfo end {
         .mFence = mFence.get(),
         .mFenceValue = mFenceValue,
         .mFenceIsNew = std::exchange(fenceIsNew, false),
@@ -286,8 +285,7 @@ void demo_win32() {
       .Caption("Early fence signal");
     fuii::SwapChainPanel([](const auto& swapChain) {
       static SwapChainPusher swapChainPusher {{}};
-      swapChainPusher.SetSwapchain(
-        active ? swapChain : fui::Widgets::SwapChainPanel::SwapChain {});
+      swapChainPusher.SetSwapchain(active ? swapChain : fui::SwapChain {});
       swapChainPusher.mEarlySignal = textureSource.mEarlySignal;
     })
       .Styled(

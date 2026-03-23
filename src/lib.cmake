@@ -96,6 +96,9 @@ add_library(
   FredEmmott/GUI/StyleProperty.hpp
   FredEmmott/GUI/StylePropertyTypes.hpp
   FredEmmott/GUI/StyleTransition.hpp
+  FredEmmott/GUI/SwapChain.cpp
+  FredEmmott/GUI/SwapChain.hpp
+  FredEmmott/GUI/SwapChain_Resources.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
   FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
   FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
