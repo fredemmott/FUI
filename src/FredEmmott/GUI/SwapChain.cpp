@@ -5,6 +5,7 @@
 
 #include "SwapChain_Resources.hpp"
 #include "Widgets/SwapChainPanel.hpp"
+#include "Window.hpp"
 
 namespace FredEmmott::GUI {
 
