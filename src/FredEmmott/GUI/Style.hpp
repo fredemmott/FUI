@@ -133,6 +133,13 @@ struct Style final {
       .PREFIX##TopRight##SUFFIX(value.GetTopRight()) \
       .PREFIX##BottomRight##SUFFIX(value.GetBottomRight()) \
       .PREFIX##BottomLeft##SUFFIX(value.GetBottomLeft()); \
+  } \
+  template <std::convertible_to<float>... Ts> \
+    requires(sizeof...(Ts) > 1) \
+    && std::constructible_from<CornerRadius, Ts...> \
+  [[nodiscard]] \
+  Style PREFIX##SUFFIX(this Style&& self, const Ts... values) { \
+    return std::move(self).PREFIX##SUFFIX(CornerRadius {values...}); \
   }
   FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_DECLARE_CORNER_ACCESSORS, _UNUSED)
 #undef FUI_IMPL_DECLARE_CORNER_SETTER
