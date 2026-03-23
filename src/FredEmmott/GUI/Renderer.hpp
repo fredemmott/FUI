@@ -4,19 +4,17 @@
 
 #include <wil/com.h>
 
+#include <FredEmmott/utility/almost_equal.hpp>
 #include <FredEmmott/utility/bitflag_enums.hpp>
 
 #include "Brush.hpp"
 #include "Color.hpp"
 #include "CornerRadius.hpp"
 #include "Font.hpp"
-#include "FredEmmott/utility/almost_equal.hpp"
 #include "Point.hpp"
 #include "Rect.hpp"
 
 namespace FredEmmott::GUI {
-struct CornerRadius;
-
 struct SoftwareBitmap;
 
 /** VRAM imported from some other API

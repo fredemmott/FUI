@@ -6,23 +6,29 @@
 
 namespace FredEmmott::GUI {
 
-struct CornerRadius {
-  constexpr CornerRadius() = default;
+template <class T>
+struct Corners {
+  constexpr Corners() = default;
 
-  constexpr CornerRadius(const float radius)
-    : mTopLeft(radius),
+  constexpr Corners(const T radius)
+    : mFlags(IsUniformBit | ConditionalBit<IsEmptyBit>(IsEmpty(radius))),
+      mTopLeft(radius),
       mTopRight(radius),
       mBottomRight(radius),
       mBottomLeft(radius) {}
 
-  constexpr CornerRadius(
-    const float topLeft,
-    const float topRight,
-    const float bottomRight,
-    const float bottomLeft)
-    : mIsUniform(
-        topLeft == topRight && topRight == bottomRight
-        && bottomRight == bottomLeft),
+  constexpr Corners(
+    const T topLeft,
+    const T topRight,
+    const T bottomRight,
+    const T bottomLeft)
+    : mFlags(
+        ConditionalBit<IsUniformBit>(
+          topLeft == topRight && topRight == bottomRight
+          && bottomRight == bottomLeft)
+        | ConditionalBit<IsEmptyBit>(
+          IsEmpty(topLeft) && IsEmpty(topRight) && IsEmpty(bottomRight)
+          && IsEmpty(bottomLeft))),
       mTopLeft(topLeft),
       mTopRight(topRight),
       mBottomRight(bottomRight),
@@ -30,66 +36,77 @@ struct CornerRadius {
 
   [[nodiscard]]
   constexpr bool IsUniform() const noexcept {
-    return mIsUniform;
+    return (mFlags & IsUniformBit);
   }
 
   [[nodiscard]]
   constexpr bool IsEmpty() const noexcept {
-    static constexpr auto Epsilon = std::numeric_limits<float>::epsilon();
-    if (mTopLeft >= Epsilon) {
-      return false;
-    }
-    if (mIsUniform) {
-      return true;
-    }
-    return (mTopRight < Epsilon) && (mBottomRight < Epsilon)
-      && (mBottomLeft < Epsilon);
+    return (mFlags & IsEmptyBit);
   }
 
   [[nodiscard]]
-  constexpr float GetUniformValue() const {
-    FUI_ASSERT(mIsUniform);
+  constexpr T GetUniformValue() const {
+    FUI_ASSERT(IsUniform());
     return mTopLeft;
   }
 
   [[nodiscard]]
-  constexpr float GetTopLeft() const noexcept {
+  constexpr T GetTopLeft() const noexcept {
     return mTopLeft;
   }
   [[nodiscard]]
-  constexpr float GetTopRight() const noexcept {
+  constexpr T GetTopRight() const noexcept {
     return mTopRight;
   }
 
   [[nodiscard]]
-  constexpr float GetBottomRight() const noexcept {
+  constexpr T GetBottomRight() const noexcept {
     return mBottomRight;
   }
 
   [[nodiscard]]
-  constexpr float GetBottomLeft() const noexcept {
+  constexpr T GetBottomLeft() const noexcept {
     return mBottomLeft;
   }
 
-  constexpr bool operator==(const CornerRadius&) const noexcept = default;
+  constexpr bool operator==(const Corners&) const noexcept = default;
 
  private:
-  bool mIsUniform {true};
-  float mTopLeft {};
-  float mTopRight {};
-  float mBottomRight {};
-  float mBottomLeft {};
-};
+  static constexpr auto Epsilon = std::numeric_limits<T>::epsilon();
+  static constexpr uint8_t IsUniformBit = 0x01;
+  static constexpr uint8_t IsEmptyBit = 0x02;
 
-struct UniformCornerRadius : CornerRadius {
-  constexpr UniformCornerRadius() = default;
-  constexpr UniformCornerRadius(const float radius) : CornerRadius(radius) {}
-
-  constexpr operator float() const noexcept {
-    return GetUniformValue();
+  template <uint8_t TBit>
+  [[nodiscard]]
+  static constexpr uint8_t ConditionalBit(const bool isSet) {
+    return isSet ? TBit : 0;
   }
 
-  using CornerRadius::operator==;
+  [[nodiscard]]
+  static constexpr bool IsEmpty(const T value) {
+    return value > -Epsilon && value < Epsilon;
+  }
+
+  uint8_t mFlags {};
+  T mTopLeft {};
+  T mTopRight {};
+  T mBottomRight {};
+  T mBottomLeft {};
 };
+
+template <class T>
+struct UniformCorners : Corners<T> {
+  constexpr UniformCorners() = default;
+  constexpr UniformCorners(const T radius) : Corners<T>(radius) {}
+
+  constexpr operator T() const noexcept {
+    return Corners<T>::GetUniformValue();
+  }
+
+  using Corners<T>::operator==;
+};
+
+using CornerRadius = Corners<float>;
+using UniformCornerRadius = UniformCorners<float>;
 
 }// namespace FredEmmott::GUI

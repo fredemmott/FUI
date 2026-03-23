@@ -24,7 +24,7 @@ namespace FredEmmott::GUI {
 
 using style_detail::StylePropertyKey;
 
-struct Style {
+struct Style final {
   static const Style& Empty();
   struct PropertyTypes {
     PropertyTypes() = delete;
@@ -122,8 +122,27 @@ struct Style {
   { \
     return std::move(self).PREFIX##SUFFIX(Edges<float> {values...}); \
   }
-  FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_DECLARE_EDGE_SETTER, UNUSED)
+  FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_DECLARE_EDGE_SETTER, _UNUSED)
 #undef FUI_IMPL_DECLARE_EDGE_SETTER
+#define FUI_IMPL_DECLARE_CORNER_ACCESSORS(_UNUSED, PREFIX, SUFFIX) \
+  [[nodiscard]] \
+  Style PREFIX##SUFFIX(this Style&& self, float value) { \
+    return std::move(self) \
+      .PREFIX##TopLeft##SUFFIX(value) \
+      .PREFIX##TopRight##SUFFIX(value) \
+      .PREFIX##BottomRight##SUFFIX(value) \
+      .PREFIX##BottomLeft##SUFFIX(value); \
+  } \
+  [[nodiscard]] \
+  Style PREFIX##SUFFIX(this Style&& self, const CornerRadius& value) { \
+    return std::move(self) \
+      .PREFIX##TopLeft##SUFFIX(value.GetTopLeft()) \
+      .PREFIX##TopRight##SUFFIX(value.GetTopRight()) \
+      .PREFIX##BottomRight##SUFFIX(value.GetBottomRight()) \
+      .PREFIX##BottomLeft##SUFFIX(value.GetBottomLeft()); \
+  }
+  FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_DECLARE_CORNER_ACCESSORS, _UNUSED)
+#undef FUI_IMPL_DECLARE_CORNER_SETTER
 
   using Selector = std::variant<
     std::monostate,
@@ -175,7 +194,7 @@ struct Style {
   static void CopyInheritableValues(
     decltype(mStorage)& dest,
     const decltype(mStorage)& source);
-};
+};// namespace FredEmmott::GUI
 
 inline Style operator+(const Style& lhs, const Style& rhs) noexcept {
   Style ret {lhs};

@@ -6,7 +6,6 @@
 
 #include <type_traits>
 
-#include "FredEmmott/GUI/CornerRadius.hpp"
 #include "FredEmmott/GUI/StylePropertyTypes.hpp"
 
 namespace FredEmmott::GUI {
@@ -16,7 +15,6 @@ class StyleProperty;
 
 #define FUI_ENUM_STYLE_PROPERTY_TYPES(X) \
   X(Brush, Brush) \
-  X(GUI::CornerRadius, CornerRadius) \
   X(GUI::Cursor, Cursor) \
   X(GUI::Font, Font) \
   X(float, Float) \
@@ -50,6 +48,16 @@ class StyleProperty;
   X(PREFIX##Right##SUFFIX, float, Self) \
   X(PREFIX##Bottom##SUFFIX, float, Self)
 
+#define FUI_STYLE_CORNER_PROPERTIES(X, Y) \
+  X(Y, Border, Radius) \
+  X(Y, Outline, Radius)
+
+#define FUI_IMPL_EXPAND_CORNERS(X, PREFIX, SUFFIX) \
+  X(PREFIX##TopLeft##SUFFIX, float, Self) \
+  X(PREFIX##TopRight##SUFFIX, float, Self) \
+  X(PREFIX##BottomRight##SUFFIX, float, Self) \
+  X(PREFIX##BottomLeft##SUFFIX, float, Self)
+
 #define FUI_ENUM_STYLE_PROPERTIES(X) \
   X(AlignContent, YGAlign, Self) \
   X(AlignItems, YGAlign, Self) \
@@ -57,7 +65,6 @@ class StyleProperty;
   X(AspectRatio, float, Self) \
   X(BackgroundColor, Brush, Self) \
   X(BorderColor, Brush, Self) \
-  X(BorderRadius, CornerRadius, Self) \
   X(BoxSizing, YGBoxSizing, Self) \
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
@@ -78,7 +85,6 @@ class StyleProperty;
   X(MinWidth, float, Self) \
   X(Opacity, float, Self) \
   X(OutlineColor, Brush, Self) \
-  X(OutlineRadius, CornerRadius, Self) \
   X(OutlineWidth, float, Self) \
   X(Overflow, YGOverflow, Self) \
   X(PointerEvents, GUI::PointerEvents, Self) \
@@ -94,7 +100,8 @@ class StyleProperty;
   X(TranslateX, float, Self) \
   X(TranslateY, float, Self) \
   X(Width, float, Self) \
-  FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_EXPAND_EDGES, X)
+  FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_EXPAND_EDGES, X) \
+  FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_EXPAND_CORNERS, X)
 
 namespace FredEmmott::GUI::style_detail {
 

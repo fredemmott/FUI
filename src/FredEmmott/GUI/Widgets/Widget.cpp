@@ -32,15 +32,21 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
     return;
   }
 
-  auto brush = *style.BackgroundColor();
+  const auto brush = *style.BackgroundColor();
 
-  const auto radii = style.BorderRadius();
-  if ((!radii) || radii->IsEmpty()) {
+  const CornerRadius radii {
+    style.BorderTopLeftRadius().value_or(0),
+    style.BorderTopRightRadius().value_or(0),
+    style.BorderBottomRightRadius().value_or(0),
+    style.BorderBottomLeftRadius().value_or(0),
+  };
+
+  if (radii.IsEmpty()) {
     renderer->FillRect(brush, rect);
     return;
   }
 
-  renderer->FillRoundedRect(brush, rect, *radii);
+  renderer->FillRoundedRect(brush, rect, radii);
 }
 
 void PaintOutline(
@@ -61,9 +67,14 @@ void PaintOutline(
   const auto bottom = style.OutlineBottomOffset().value_or(0) + thickness / 2;
 
   const auto rect = contentRect.WithOutset(left, top, right, bottom);
-  const auto radii = style.OutlineRadius();
+  const CornerRadius radii {
+    style.OutlineTopLeftRadius().value_or(0),
+    style.OutlineTopRightRadius().value_or(0),
+    style.OutlineBottomRightRadius().value_or(0),
+    style.OutlineBottomLeftRadius().value_or(0),
+  };
 
-  if ((!radii) || radii->IsEmpty()) {
+  if (radii.IsEmpty()) {
     renderer->StrokeRect(style.OutlineColor().value(), rect, thickness);
     return;
   }
@@ -75,10 +86,10 @@ void PaintOutline(
     style.OutlineColor().value(),
     rect,
     CornerRadius {
-      radii->GetTopLeft() + pad,
-      radii->GetTopRight() + pad,
-      radii->GetBottomRight() + pad,
-      radii->GetBottomLeft() + pad,
+      radii.GetTopLeft() + pad,
+      radii.GetTopRight() + pad,
+      radii.GetBottomRight() + pad,
+      radii.GetBottomLeft() + pad,
     },
     EdgeFlags::All,
     thickness);
@@ -109,7 +120,13 @@ void PaintBorder(
 
   const auto brush = *style.BorderColor();
 
-  if (const auto radii = style.BorderRadius(); radii && !radii->IsEmpty()) {
+  const CornerRadius radii {
+    style.BorderTopLeftRadius().value_or(0),
+    style.BorderTopRightRadius().value_or(0),
+    style.BorderBottomRightRadius().value_or(0),
+    style.BorderBottomLeftRadius().value_or(0),
+  };
+  if (!radii.IsEmpty()) {
     auto edges = EdgeFlags::All;
     if (!allSame) {
       edges = EdgeFlags::None;
@@ -151,7 +168,7 @@ void PaintBorder(
         edges |= EdgeFlags::Bottom;
       }
     }
-    renderer->StrokeRoundedRect(brush, borderRect, *radii, edges, top);
+    renderer->StrokeRoundedRect(brush, borderRect, radii, edges, top);
     return;
   }
 
