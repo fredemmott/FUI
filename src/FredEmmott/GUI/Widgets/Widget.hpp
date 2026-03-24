@@ -231,6 +231,14 @@ class Widget {
     return mDestructionInProgress;
   }
 
+  /** Gets the actual size allocated to the widget.
+   *
+   * This may be different to the requested size, depending on layout
+   * constraints.
+   */
+  [[nodiscard]]
+  Size GetSize() const noexcept;
+
  protected:
   enum class StateFlags {
     Default = 0,

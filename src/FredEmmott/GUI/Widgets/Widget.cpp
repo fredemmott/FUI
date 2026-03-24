@@ -770,4 +770,11 @@ std::string Widget::GetAccessibilityName() const {
   return std::format("{}#{}", mPrimaryClass.GetName(), this->GetID());
 }
 
+Size Widget::GetSize() const noexcept {
+  return {
+    YGNodeLayoutGetWidth(GetLayoutNode()),
+    YGNodeLayoutGetHeight(GetLayoutNode()),
+  };
+}
+
 }// namespace FredEmmott::GUI::Widgets
