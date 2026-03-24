@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include <Windows.h>
+#include <Yoga.h>
 #include <skia/core/SkFont.h>
 #include <skia/core/SkFontMgr.h>
 #include <skia/modules/skparagraph/include/ParagraphBuilder.h>
