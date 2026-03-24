@@ -18,11 +18,10 @@ constexpr LiteralStyleClass ScrollBarButtonLabelStyleClass {
 }// namespace
 
 ScrollBarButton::ScrollBarButton(
-  const id_type id,
   const ImmutableStyle& style,
   std::function<void(const Point&)> pressCallback,
   std::function<void()> tickCallback)
-  : Widget(id, ScrollBarButtonStyleClass, style),
+  : Widget(ScrollBarButtonStyleClass, style),
     mPressCallback(pressCallback),
     mTickCallback(tickCallback) {}
 
@@ -33,7 +32,7 @@ void ScrollBarButton::SetText(std::string_view text) {
     SystemFont::ResolveGlyphFont(SystemFont::Body)
       .WithSize(StaticTheme::ScrollBar::ScrollBarButtonArrowIconFontSize))};
 
-  auto label = new Label(0, ScrollBarButtonLabelStyleClass, FontIconStyle);
+  auto label = new Label(ScrollBarButtonLabelStyleClass, FontIconStyle);
   label->SetText(text);
   this->SetStructuralChildren({label});
 }

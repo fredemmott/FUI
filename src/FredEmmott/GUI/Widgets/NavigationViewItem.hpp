@@ -18,7 +18,7 @@ namespace FredEmmott::GUI::Widgets {
  */
 class NavigationViewItem : public Widget, public ISelectionItem {
  public:
-  explicit NavigationViewItem(id_type id);
+  NavigationViewItem();
   ~NavigationViewItem() override;
 
   auto* SetIcon(const std::string_view text) {

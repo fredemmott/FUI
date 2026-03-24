@@ -10,7 +10,7 @@ namespace FredEmmott::GUI::Widgets {
 /// Base class for the back button and the pane toggle button
 class NavigationViewButton : public Widget, public IInvocable {
  public:
-  explicit NavigationViewButton(id_type id, std::string_view glyph);
+  explicit NavigationViewButton(std::string_view glyph);
   ~NavigationViewButton() override;
 
  protected:

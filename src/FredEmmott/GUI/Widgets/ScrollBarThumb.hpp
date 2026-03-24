@@ -11,7 +11,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ScrollBarThumb final : public Widget {
  public:
-  explicit ScrollBarThumb(Orientation, id_type id);
+  explicit ScrollBarThumb(Orientation);
   ~ScrollBarThumb() override;
 
   void OnDrag(std::function<void(Point*)> callback);

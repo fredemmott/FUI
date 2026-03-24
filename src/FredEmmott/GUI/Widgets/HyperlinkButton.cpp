@@ -6,9 +6,8 @@
 #include <FredEmmott/GUI/StaticTheme/HyperlinkButton.hpp>
 
 namespace FredEmmott::GUI::Widgets {
-HyperlinkButton::HyperlinkButton(id_type id, const StyleClasses& classes)
+HyperlinkButton::HyperlinkButton(const StyleClasses& classes)
   : Widget(
-      id,
       LiteralStyleClass {"HyperlinkButton"},
       StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle(),
       classes),

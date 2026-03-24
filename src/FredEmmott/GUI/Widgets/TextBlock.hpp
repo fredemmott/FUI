@@ -17,7 +17,8 @@ namespace FredEmmott::GUI::Widgets {
 
 class TextBlock final : public Widget {
  public:
-  explicit TextBlock(id_type id);
+  TextBlock();
+  ~TextBlock() override;
 
   void SetText(std::string_view);
 

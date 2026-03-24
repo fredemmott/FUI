@@ -21,6 +21,8 @@ auto& CardStyle() {
 }
 }// namespace
 
-Card::Card(const id_type id) : Widget(id, CardStyleClass, CardStyle()) {}
+Card::Card() : Widget(CardStyleClass, CardStyle()) {}
+
+Card::~Card() = default;
 
 }// namespace FredEmmott::GUI::Widgets

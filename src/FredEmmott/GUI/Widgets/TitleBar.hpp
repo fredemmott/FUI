@@ -23,7 +23,7 @@ class TitleBar final : public Widget {
     Maximize,
     Close,
   };
-  explicit TitleBar(id_type id);
+  TitleBar();
   ~TitleBar() override;
 
   void SetTitle(std::string_view);

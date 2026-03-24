@@ -80,7 +80,7 @@ FontIcon(const std::string_view glyph, const FontIconSize size, const ID id) {
 
 FontIconResult FontIcon(
   std::initializer_list<FontIconStackedGlyph> glyphs,
-  FontIconSize size,
+  const FontIconSize size,
   const ID id) {
   const auto ret = immediate_detail::BeginWidget<Widgets::Widget>(
     id, LiteralStyleClass {"font-icon"}, ImmutableStyle {});

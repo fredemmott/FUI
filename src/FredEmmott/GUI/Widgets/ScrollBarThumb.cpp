@@ -45,9 +45,8 @@ auto& VerticalThumbStyle() {
 
 }// namespace
 
-ScrollBarThumb::ScrollBarThumb(const Orientation o, id_type id)
+ScrollBarThumb::ScrollBarThumb(const Orientation o)
   : Widget(
-      id,
       ScrollBarThumbStyleClass,
       (o == Orientation::Horizontal) ? HorizontalThumbStyle()
                                      : VerticalThumbStyle()) {}

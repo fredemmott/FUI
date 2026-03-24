@@ -12,7 +12,7 @@ class ProgressRing final : public Widget {
     Indeterminate,
     Determinate,
   };
-  explicit ProgressRing(id_type id, const Kind kind);
+  explicit ProgressRing(Kind kind);
   ~ProgressRing() override;
 
   void SetRange(float minimum, float maximum);

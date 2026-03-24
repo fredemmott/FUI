@@ -196,14 +196,12 @@ void PaintBorder(
 }// namespace
 
 Widget::Widget(
-  const id_type id,
   const StyleClass primaryClass,
   const ImmutableStyle& immutableStyle,
   const StyleClasses& classes)
   : mOwnerWindow(Immediate::immediate_detail::tWindow),
     mPrimaryClass(primaryClass),
     mImmutableStyle(immutableStyle),
-    mID(id),
     mClassList(classes),
     mYoga(YGNodeNewWithConfig(GetYogaConfig())) {
   AddStyleClass(primaryClass);

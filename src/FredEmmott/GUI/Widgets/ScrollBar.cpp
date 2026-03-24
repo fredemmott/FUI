@@ -156,18 +156,14 @@ auto& LargeChangeStyles() {
 }
 }// namespace
 
-ScrollBar::ScrollBar(const id_type id, const Orientation orientation)
+ScrollBar::ScrollBar(const Orientation orientation)
   : ScrollBar(
-      id,
       (orientation == Orientation::Horizontal) ? HorizontalStyles()
                                                : VerticalStyles(),
       orientation) {}
 
-ScrollBar::ScrollBar(
-  const id_type id,
-  const ImmutableStyle& style,
-  const Orientation orientation)
-  : Widget(id, ScrollBarStyleClass, style),
+ScrollBar::ScrollBar(const ImmutableStyle& style, const Orientation orientation)
+  : Widget(ScrollBarStyleClass, style),
     mOrientation(orientation) {
   // https://learn.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font
   static constexpr auto LeftGlyph = "\uedd9";
@@ -178,17 +174,15 @@ ScrollBar::ScrollBar(
   const auto isHorizontal = (orientation == Orientation::Horizontal);
 
   mLargeDecrement = new ScrollBarButton(
-    0,
     LargeChangeStyles(),
     std::bind_front(
       &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeDecrement),
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::LargeDecrement));
-  mThumb = new ScrollBarThumb(orientation, 0);
+  mThumb = new ScrollBarThumb(orientation);
   mThumb->OnDrag(std::bind_front(&ScrollBar::OnThumbDrag, this));
   mThumb->OnDrop([this](const Point&) { this->UpdateChildSizes(); });
   mLargeIncrement = new ScrollBarButton(
-    0,
     LargeChangeStyles(),
     std::bind_front(
       &ScrollBar::ScrollBarButtonDown, this, ButtonTickKind::LargeIncrement),
@@ -199,18 +193,15 @@ ScrollBar::ScrollBar(
     ? HorizontalSmallChangeStyles()
     : VerticalSmallChangeStyles();
   mSmallDecrement = new ScrollBarButton(
-    0,
     SmallChangeStyles,
     nullptr,
     std::bind_front(
       &ScrollBar::ScrollBarButtonTick, this, ButtonTickKind::SmallDecrement));
   mTrack = new Widget(
-    0,
     ScrollBarTrackStyleClass,
     (isHorizontal) ? HorizontalTrackStyle() : VerticalTrackStyle());
   mTrack->SetStructuralChildren({mLargeDecrement, mThumb, mLargeIncrement});
   mSmallIncrement = new ScrollBarButton(
-    0,
     SmallChangeStyles,
     nullptr,
     std::bind_front(

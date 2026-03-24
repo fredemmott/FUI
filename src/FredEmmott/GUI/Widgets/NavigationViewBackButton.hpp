@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class NavigationViewBackButton final : public NavigationViewButton {
  public:
-  explicit NavigationViewBackButton(id_type id);
+  NavigationViewBackButton();
   ~NavigationViewBackButton() override;
 
   void Invoke() override;

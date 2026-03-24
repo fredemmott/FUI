@@ -26,9 +26,10 @@ T* ChildlessWidget(const ID id, Args&&... args) {
     = std::ranges::find(frame.mPending, id.GetValue(), &Widget::GetID);
 
   if (pending == frame.mPending.end()) {
-    frame.mNewSiblings.push_back(
-      new T(id.GetValue(), std::forward<Args>(args)...));
-    frame.mNewSiblings.back()->ForceLogicalParent(GetCurrentParentNode());
+    frame.mNewSiblings.push_back(new T(std::forward<Args>(args)...));
+    const auto it = frame.mNewSiblings.back();
+    it->SetID(id.GetValue());
+    it->ForceLogicalParent(GetCurrentParentNode());
   } else {
     frame.mNewSiblings.push_back(*pending);
     frame.mPending.erase(pending);

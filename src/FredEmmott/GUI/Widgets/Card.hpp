@@ -8,7 +8,8 @@ namespace FredEmmott::GUI::Widgets {
 
 class Card final : public Widget {
  public:
-  explicit Card(id_type id);
+  Card();
+  ~Card() override;
 };
 
 }// namespace FredEmmott::GUI::Widgets

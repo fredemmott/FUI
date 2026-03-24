@@ -28,8 +28,8 @@ using namespace win32_detail;
 constexpr auto SwapChainLength = 3;
 }// namespace
 
-SwapChainPanel::SwapChainPanel(const id_type id)
-  : Widget(id, LiteralStyleClass {"SwapChainPanel"}, {}) {
+SwapChainPanel::SwapChainPanel()
+  : Widget(LiteralStyleClass {"SwapChainPanel"}, {}) {
   mResources.reset(new Resources(
     Resources::GuardedData {.mOwnerWindow = this->GetOwnerWindow()}));
 }

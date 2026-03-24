@@ -190,7 +190,7 @@ auto& GlyphStyles() {
 
 class CheckBoxGlyph final : public Widget {
  public:
-  CheckBoxGlyph() : Widget(0, CheckGlyphStyleClass, GlyphStyles()) {}
+  CheckBoxGlyph() : Widget(CheckGlyphStyleClass, GlyphStyles()) {}
   ~CheckBoxGlyph() override = default;
 
  protected:
@@ -402,18 +402,19 @@ const SkPath& CheckBoxGlyph::GetCompleteSkiaPath() const {
 
 }// namespace
 
-CheckBox::CheckBox(id_type id)
+CheckBox::CheckBox()
   : Widget(
-      id,
       LiteralStyleClass {"CheckBox"},
       CheckBoxStyles(),
       {*CheckBoxStyleClass}),
     IToggleable(this) {
   this->SetStructuralChildren({
     mGlyph = new CheckBoxGlyph(),
-    mFosterParent = new Widget(0, FosterParentStyleClass, FosterParentStyles()),
+    mFosterParent = new Widget(FosterParentStyleClass, FosterParentStyles()),
   });
 }
+
+CheckBox::~CheckBox() = default;
 
 void CheckBox::Toggle() {
   SetIsChecked(!IsChecked());

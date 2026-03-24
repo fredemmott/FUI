@@ -35,8 +35,8 @@ consteval bool is_bitflag_enum(std::type_identity<TextBlock::DirtyFlags>) {
   return true;
 }
 
-TextBlock::TextBlock(const id_type id)
-  : Widget(id, LiteralStyleClass {"TextBlock"}, TextBlockClassStyles()) {
+TextBlock::TextBlock()
+  : Widget(LiteralStyleClass {"TextBlock"}, TextBlockClassStyles()) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &TextBlock::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }
@@ -63,6 +63,8 @@ void TextBlock::UpdateTextLayout(const DirtyFlags flags) {
   }
   std::unreachable();
 }
+
+TextBlock::~TextBlock() = default;
 
 void TextBlock::SetText(const std::string_view text) {
   if (text == mText) {

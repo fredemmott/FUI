@@ -40,10 +40,8 @@ const auto& NavigationViewButtonStyle() {
 
 }// namespace
 
-NavigationViewButton::NavigationViewButton(
-  const id_type id,
-  const std::string_view glyph)
-  : Widget(id, NavigationViewButtonStyleClass, NavigationViewButtonStyle()),
+NavigationViewButton::NavigationViewButton(const std::string_view glyph)
+  : Widget(NavigationViewButtonStyleClass, NavigationViewButtonStyle()),
     IInvocable(this),
     mGlyph(glyph) {
   FUI_ASSERT(!mGlyph.empty());

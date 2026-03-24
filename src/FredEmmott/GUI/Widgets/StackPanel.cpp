@@ -29,13 +29,14 @@ auto& VerticalStyles() {
 
 }// namespace
 
-StackPanel::StackPanel(const id_type id, const Orientation orientation)
+StackPanel::StackPanel(const Orientation orientation)
   : Widget(
-      id,
       LiteralStyleClass {"StackPanel"},
       (orientation == Orientation::Horizontal) ? HorizontalStyles()
                                                : VerticalStyles(),
       {orientation == Orientation::Horizontal ? *HorizontalStyleClass
                                               : *VerticalStyleClass}) {}
+
+StackPanel::~StackPanel() = default;
 
 }// namespace FredEmmott::GUI::Widgets

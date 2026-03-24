@@ -18,7 +18,8 @@ class Slider final : public Widget, public IFocusable {
     Ticks,
   };
   Slider() = delete;
-  explicit Slider(id_type id, Orientation);
+  explicit Slider(Orientation);
+  ~Slider() override;
 
   void SetSnapTo(const SnapTo snapTo) {
     mSnapTo = snapTo;

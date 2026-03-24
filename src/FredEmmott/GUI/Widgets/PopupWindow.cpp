@@ -19,13 +19,14 @@ const auto& InvisibleStyle() {
 
 }// namespace
 
-PopupWindow::PopupWindow(const id_type id)
+PopupWindow::PopupWindow()
   : Widget(
-      id,
       LiteralStyleClass {"PopupWindow"},
       InvisibleStyle(),
       {PseudoClasses::LayoutOrphan}),
     mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {}
+
+PopupWindow::~PopupWindow() = default;
 
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(
   const Style& style,

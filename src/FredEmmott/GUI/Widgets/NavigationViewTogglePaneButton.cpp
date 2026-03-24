@@ -12,9 +12,8 @@ constexpr auto GlobalNavButtonGlyph = "\ue700";
 }// namespace
 
 NavigationViewTogglePaneButton::NavigationViewTogglePaneButton(
-  const id_type id,
   NavigationView* nav)
-  : NavigationViewButton(id, GlobalNavButtonGlyph),
+  : NavigationViewButton(GlobalNavButtonGlyph),
     mNavigationView(nav) {}
 
 NavigationViewTogglePaneButton::~NavigationViewTogglePaneButton() = default;

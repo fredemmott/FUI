@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ToggleSwitchKnob final : public Widget {
  public:
-  explicit ToggleSwitchKnob(id_type id);
+  ToggleSwitchKnob();
   ~ToggleSwitchKnob() override;
 
  protected:

@@ -133,9 +133,8 @@ SliderBrushes GetSliderBrushes(const SliderState state) {
 
 }// namespace
 
-Slider::Slider(const id_type id, const Orientation orientation)
+Slider::Slider(const Orientation orientation)
   : Widget(
-      id,
       LiteralStyleClass("Slider"),
       ((orientation == Orientation::Horizontal) ? HorizontalSliderStyle()
                                                 : VerticalSliderStyle())),
@@ -143,6 +142,8 @@ Slider::Slider(const id_type id, const Orientation orientation)
     mOrientation(orientation) {
   SetThumbState(std::to_underlying(SliderState::Normal));
 }
+
+Slider::~Slider() = default;
 
 void Slider::SetValue(const float value) {
   const auto clamped = std::clamp(value, mMinimum, mMaximum);

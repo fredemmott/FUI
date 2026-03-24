@@ -16,19 +16,16 @@ constexpr LiteralStyleClass NavigationViewItemIconStyleClass {
 using PillState = detail::SelectionPill::State;
 }// namespace
 
-NavigationViewItem::NavigationViewItem(const id_type id)
-  : Widget(id, NavigationViewItemStyleClass, NavigationViewItemStyle()),
+NavigationViewItem::NavigationViewItem()
+  : Widget(NavigationViewItemStyleClass, NavigationViewItemStyle()),
     ISelectionItem(this),
     mIconHolder(new Widget(
-      0,
       NavigationViewItemIconHolderStyleClass,
       NavigationViewItemIconHolderStyle())),
     mIcon(new Label(
-      0,
       NavigationViewItemIconStyleClass,
       NavigationViewItemIconStyle())),
     mText(new Label(
-      0,
       NavigationViewItemLabelStyleClass,
       NavigationViewItemLabelStyle())) {
   mIconHolder->SetStructuralChildren({mIcon});

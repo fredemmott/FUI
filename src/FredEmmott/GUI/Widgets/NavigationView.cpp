@@ -29,37 +29,30 @@ constexpr LiteralStyleClass NavigationViewContentInnerStyleClass {
   "NavigationView/ContentInner"};
 }// namespace
 
-NavigationView::NavigationView(const id_type id)
-  : Widget(id, NavigationViewStyleClass, NavigationViewStyle()),
+NavigationView::NavigationView()
+  : Widget(NavigationViewStyleClass, NavigationViewStyle()),
     ISelectionContainer(this),
-    mPane(
-      new Widget(0, NavigationViewPaneStyleClass, NavigationViewPaneStyle())),
+    mPane(new Widget(NavigationViewPaneStyleClass, NavigationViewPaneStyle())),
     mPaneHeader(new Widget(
-      0,
       NavigationViewPaneHeaderStyleClass,
       NavigationViewPaneHeaderStyle())),
     mItemsRoot(new Widget(
-      0,
       NavigationViewItemsRootStyleClass,
       NavigationViewItemsRootStyle())),
     mFooterItemsRoot(new Widget(
-      0,
       NavigationViewFooterItemsRootStyleClass,
       NavigationViewFooterItemsRootStyle())),
     mContentOuter(new Widget(
-      0,
       NavigationViewContentOuterStyleClass,
       NavigationViewContentOuterStyle())),
     mContentHeader(new Label(
-      0,
       NavigationViewContentHeaderStyleClass,
       NavigationViewContentHeaderStyle())),
     mContentInner(new Widget(
-      0,
       NavigationViewContentInnerStyleClass,
       NavigationViewContentInnerStyle())) {
-  mBackButton = new NavigationViewBackButton(0);
-  mTogglePaneButton = new NavigationViewTogglePaneButton(0, this);
+  mBackButton = new NavigationViewBackButton();
+  mTogglePaneButton = new NavigationViewTogglePaneButton(this);
   mPaneHeader->SetLogicalChildren({mTogglePaneButton});
 
   mPane->SetStructuralChildren(
@@ -117,9 +110,9 @@ void NavigationView::IntegrateWithTitleBar() {
   std::erase(headerChildren, std::exchange(mTogglePaneButton, nullptr));
   mPaneHeader->SetStructuralChildren(headerChildren);
 
-  mBackButton = new NavigationViewBackButton(0);
+  mBackButton = new NavigationViewBackButton();
   mBackButton->SetIsDirectlyDisabled(backDisabled);
-  mTogglePaneButton = new NavigationViewTogglePaneButton(0, this);
+  mTogglePaneButton = new NavigationViewTogglePaneButton(this);
 
   titleBar->SetLeftWidgets({mBackButton, mTogglePaneButton});
   mPaneHeader->SetMutableStyles(Style().Display(YGDisplayNone));

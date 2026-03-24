@@ -20,8 +20,8 @@ auto& ProgressRingStyle() {
 }
 }// namespace
 
-ProgressRing::ProgressRing(const id_type id, const Kind kind)
-  : Widget(id, ProgressRingStyleClass, ProgressRingStyle()),
+ProgressRing::ProgressRing(const Kind kind)
+  : Widget(ProgressRingStyleClass, ProgressRingStyle()),
     mKind(kind) {}
 
 void ProgressRing::SetRange(const float minimum, const float maximum) {

@@ -63,17 +63,12 @@ auto& ButtonContainerStyles() {
 }
 }// namespace
 
-TextBox::TextBox(const id_type id)
-  : Widget(
-      id,
-      TextBoxStyleClass,
-      StaticTheme::TextBox::DefaultTextBoxStyle(),
-      {}),
+TextBox::TextBox()
+  : Widget(TextBoxStyleClass, StaticTheme::TextBox::DefaultTextBoxStyle(), {}),
     IFocusable(this),
     mAutomation(std::make_unique<Automation>()) {
-  mTextContainer
-    = new Widget({}, TextContainerStyleClass, TextContainerStyles());
-  mButtons = new Widget({}, ButtonsStyleClass, ButtonContainerStyles());
+  mTextContainer = new Widget(TextContainerStyleClass, TextContainerStyles());
+  mButtons = new Widget(ButtonsStyleClass, ButtonContainerStyles());
   this->SetStructuralChildren({mTextContainer, mButtons});
 
   YGNodeSetMeasureFunc(mTextContainer->GetLayoutNode(), &TextBox::Measure);

@@ -64,16 +64,15 @@ auto& HorizontalScrollBarStyle() {
 
 }// namespace
 
-ScrollView::ScrollView(id_type id, const StyleClasses& classes)
-  : Widget(id, ScrollViewStyleClass, ScrollViewStyle(), classes) {
+ScrollView::ScrollView(const StyleClasses& classes)
+  : Widget(ScrollViewStyleClass, ScrollViewStyle(), classes) {
   this->SetStructuralChildren({
     mHorizontalScrollBar
-    = new ScrollBar({}, HorizontalScrollBarStyle(), Orientation::Horizontal),
+    = new ScrollBar(HorizontalScrollBarStyle(), Orientation::Horizontal),
     mVerticalScrollBar
-    = new ScrollBar({}, VerticalScrollBarStyle(), Orientation::Vertical),
-    mContentOuter = new Widget({}, ContentOuterStyleClass, {}),
+    = new ScrollBar(VerticalScrollBarStyle(), Orientation::Vertical),
+    mContentOuter = new Widget(ContentOuterStyleClass, {}),
     mContentInner = new Widget(
-      {},
       ContentInnerStyleClass,
       ContentInnerStyle(),
       {PseudoClasses::LayoutOrphan}),

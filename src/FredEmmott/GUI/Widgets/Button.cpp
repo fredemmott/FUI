@@ -19,13 +19,10 @@ auto& ButtonStyles() {
 }
 }// namespace
 
-Button::Button(const id_type id) : Button(id, ButtonStyles(), {}) {}
+Button::Button() : Button(ButtonStyles(), {}) {}
 
-Button::Button(
-  const id_type id,
-  const ImmutableStyle& style,
-  const StyleClasses& classes)
-  : Widget(id, ButtonStyleClass, style, classes),
+Button::Button(const ImmutableStyle& style, const StyleClasses& classes)
+  : Widget(ButtonStyleClass, style, classes),
     IInvocable(this) {}
 
 Button::~Button() = default;

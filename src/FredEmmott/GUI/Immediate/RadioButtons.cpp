@@ -27,9 +27,10 @@ constexpr LiteralStyleClass InnerStyleClass {"RadioButtons/Inner"};
 class RadioButtonsInner : public Widgets::Widget,
                           public Widgets::ISelectionContainer {
  public:
-  explicit RadioButtonsInner(const std::size_t id)
-    : Widget(id, InnerStyleClass, InnerStyle()),
+  RadioButtonsInner()
+    : Widget(InnerStyleClass, InnerStyle()),
       ISelectionContainer(this) {}
+  ~RadioButtonsInner() override = default;
 
   std::vector<Widgets::ISelectionItem*> GetSelectionItems()
     const noexcept override {
@@ -37,10 +38,9 @@ class RadioButtonsInner : public Widgets::Widget,
       | std::views::transform(&CastToSelectionItem<Widgets::RadioButton>)
       | std::ranges::to<std::vector>();
   }
-
- private:
 };
 }// namespace
+
 namespace immediate_detail {
 RadioButtonsWidgets BeginRadioButtons(
   const std::string_view title,

@@ -18,7 +18,6 @@ class ScrollBarButton final : public Widget {
    *   down.
    */
   ScrollBarButton(
-    id_type id,
     const ImmutableStyle&,
     std::function<void(const Point&)> pressCallback,
     std::function<void()> tickCallback);

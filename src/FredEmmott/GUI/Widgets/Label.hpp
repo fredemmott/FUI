@@ -10,12 +10,12 @@ namespace FredEmmott::GUI::Widgets {
 
 class Label final : public Widget {
  public:
-  explicit Label(id_type id);
+  Label();
   Label(
-    id_type id,
     StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
+  ~Label() override;
 
   [[nodiscard]]
   std::string_view GetText() const noexcept {

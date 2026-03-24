@@ -51,11 +51,18 @@ class Widget {
   Widget& operator=(Widget&&) = delete;
 
   explicit Widget(
-    id_type id,
     StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
   virtual ~Widget();
+
+  // Used for immediate-style API
+  auto SetID(this auto& self, const id_type id) noexcept {
+    FUI_ASSERT(
+      !self.mID.has_value(), "Widget ID can not be modified once it is set");
+    self.mID = id;
+    return &self;
+  }
 
   // TODO: make this part of the Widget constructor
   void ForceLogicalParent(Widget* const logicalParent) {
@@ -101,8 +108,9 @@ class Widget {
     return mYoga.get();
   }
 
-  id_type GetID() const noexcept {
-    return mID;
+  id_type GetID() const {
+    FUI_ASSERT(mID.has_value());
+    return mID.value();
   }
 
   /** Attach user-supplied data, derived from the `Context` class.
@@ -337,7 +345,7 @@ class Widget {
   unique_ptr<StyleTransitions> mStyleTransitions;
 
   ImmutableStyle mImmutableStyle;
-  const id_type mID {};
+  std::optional<id_type> mID {};
   StyleClasses mClassList;
   unique_ptr<YGNode> mYoga;
 

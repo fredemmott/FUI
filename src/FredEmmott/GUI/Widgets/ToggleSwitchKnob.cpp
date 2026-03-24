@@ -95,8 +95,8 @@ auto& Styles() {
 
 using namespace widget_detail;
 
-ToggleSwitchKnob::ToggleSwitchKnob(const id_type id)
-  : Widget(id, ToggleSwitchKnobStyleClass, Styles()) {
+ToggleSwitchKnob::ToggleSwitchKnob()
+  : Widget(ToggleSwitchKnobStyleClass, Styles()) {
   SetState(State::Normal);
 }
 
