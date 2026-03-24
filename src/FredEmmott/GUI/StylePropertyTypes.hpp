@@ -65,4 +65,9 @@ enum class Align {
   SpaceEvenly,
 };
 
+enum class BoxSizing {
+  BorderBox,
+  ContentBox,
+};
+
 }// namespace FredEmmott::GUI

@@ -61,6 +61,14 @@ constexpr auto MakeYogaValue(const Align v) {
   return static_cast<YGAlign>(v);
 }
 
+constexpr auto MakeYogaValue(const BoxSizing v) {
+  static_assert(
+    std::to_underlying(BoxSizing::ContentBox) == YGBoxSizingContentBox);
+  static_assert(
+    std::to_underlying(BoxSizing::BorderBox) == YGBoxSizingBorderBox);
+  return static_cast<YGBoxSizing>(v);
+}
+
 }// namespace
 
 void Widget::ComputeStyles(const Style& inherited) {

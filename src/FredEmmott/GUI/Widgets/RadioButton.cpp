@@ -44,7 +44,7 @@ auto MakeOuterStyles() {
         .AlignSelf(Align::Center)
         .BorderRadius(10)
         .BorderWidth(RadioButtonBorderThemeThickness)
-        .BoxSizing(YGBoxSizingBorderBox)
+        .BoxSizing(BoxSizing::BorderBox)
         .Height(20)
         .JustifyContent(YGJustifyCenter)
         .Width(20);
