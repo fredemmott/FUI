@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <yoga/yoga.h>
-
 #include <type_traits>
 
 #include "FredEmmott/GUI/StylePropertyTypes.hpp"
@@ -25,7 +23,6 @@ class StyleProperty;
   X(GUI::Justify, Justify) \
   X(GUI::Overflow, Overflow) \
   X(GUI::PositionType, PositionType) \
-  X(YGWrap, YGWrap) \
   X(GUI::PointerEvents, PointerEvents) \
   X(GUI::TextAlign, TextAlign)
 
@@ -117,7 +114,7 @@ struct default_value_by_type_t {
 
 template <>
 struct default_value_by_type_t<float> {
-  static constexpr float value {YGUndefined};
+  static constexpr float value {std::numeric_limits<float>::quiet_NaN()};
 };
 
 template <class T>
