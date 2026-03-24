@@ -172,37 +172,42 @@ void TitleBar::SetLeftWidgets(const std::vector<Widget*>& prepend) {
   mContent->SetStructuralChildren(widgets);
 }
 
-TitleBar::TitleBar()
+TitleBar::TitleBar(Window* const window)
   : Widget(
+      window,
       LiteralStyleClass("TitleBar"),
       StaticTheme::TitleBar::DefaultTitleBarStyle()) {
   using namespace StaticTheme::TitleBar;
-  mContent
-    = new Widget(ContentContainerStyleClass, TitleBarContentContainerStyle());
-  auto chromeButtons = new Widget(ChromeButtonsContainerStyleClass, {});
+  mContent = new Widget(
+    window, ContentContainerStyleClass, TitleBarContentContainerStyle());
+  auto chromeButtons = new Widget(window, ChromeButtonsContainerStyleClass, {});
   this->SetStructuralChildren({mContent, chromeButtons});
 
-  mIconButton = new TitleBarIconButton(TitleBarIconStyle(), {});
-  mTitleLabel = new Label(TitleBarTitleStyleClass, TitleBarTitleStyle());
+  mIconButton = new TitleBarIconButton(window, TitleBarIconStyle(), {});
+  mTitleLabel
+    = new Label(window, TitleBarTitleStyleClass, TitleBarTitleStyle());
   mSubtitleLabel
-    = new Label(TitleBarSubtitleStyleClass, TitleBarSubtitleStyle());
+    = new Label(window, TitleBarSubtitleStyleClass, TitleBarSubtitleStyle());
   this->SetLeftWidgets({});
 
   chromeButtons->SetStructuralChildren({
-    mMinimizeButton = new Button(WindowMinimizeMaximizeButtonStyle(), {}),
-    mMaximizeButton = new Button(WindowMinimizeMaximizeButtonStyle(), {}),
-    mCloseButton = new Button(WindowCloseButtonStyle(), {}),
+    mMinimizeButton
+    = new Button(window, WindowMinimizeMaximizeButtonStyle(), {}),
+    mMaximizeButton
+    = new Button(window, WindowMinimizeMaximizeButtonStyle(), {}),
+    mCloseButton = new Button(window, WindowCloseButtonStyle(), {}),
   });
   mMinimizeButton->SetStructuralChildren({
-    (new Label(TitleBarGlyphStyleClass, ImmutableStyle {}))
+    (new Label(window, TitleBarGlyphStyleClass, ImmutableStyle {}))
       ->SetText(MinimizeGlyph),
   });
   mMaximizeButton->SetStructuralChildren({
-    mMaximizeLabel = (new Label(TitleBarGlyphStyleClass, ImmutableStyle {}))
-                       ->SetText(MaximizeGlyph),
+    mMaximizeLabel
+    = (new Label(window, TitleBarGlyphStyleClass, ImmutableStyle {}))
+        ->SetText(MaximizeGlyph),
   });
   mCloseButton->SetStructuralChildren(
-    {(new Label(TitleBarGlyphStyleClass, ImmutableStyle {}))
+    {(new Label(window, TitleBarGlyphStyleClass, ImmutableStyle {}))
        ->SetText(CloseGlyph)});
 }
 

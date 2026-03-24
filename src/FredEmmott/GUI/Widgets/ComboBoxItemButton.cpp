@@ -81,8 +81,8 @@ auto& ComboBoxItemStyles() {
 
 }// namespace
 
-ComboBoxItemButton::ComboBoxItemButton()
-  : Button(ComboBoxItemStyles(), {ComboBoxItemButtonStyleClass}),
+ComboBoxItemButton::ComboBoxItemButton(Window* const window)
+  : Button(window, ComboBoxItemStyles(), {ComboBoxItemButtonStyleClass}),
     ISelectionItem(this) {}
 
 ComboBoxItemButton::~ComboBoxItemButton() = default;

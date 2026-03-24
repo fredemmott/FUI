@@ -5,7 +5,8 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-NavigationViewSettingsItem::NavigationViewSettingsItem() {
+NavigationViewSettingsItem::NavigationViewSettingsItem(Window* const window)
+  : NavigationViewItem(window) {
   this->SetIcon("\ue713");
 }
 

@@ -30,7 +30,8 @@ class ComboBoxWidget final : public Widgets::Widget {
   }
 
  public:
-  ComboBoxWidget() : Widget(ComboBoxWidgetStyleClass, Styles()) {}
+  explicit ComboBoxWidget(Window* const window)
+    : Widget(window, ComboBoxWidgetStyleClass, Styles()) {}
   ~ComboBoxWidget() override = default;
 
   bool mIsPopupOpen = false;

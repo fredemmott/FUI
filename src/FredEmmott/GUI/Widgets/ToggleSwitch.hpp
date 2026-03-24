@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ToggleSwitch final : public Widget, public IToggleable {
  public:
-  ToggleSwitch();
+  explicit ToggleSwitch(Window*);
   ~ToggleSwitch() override;
 
   [[nodiscard]]

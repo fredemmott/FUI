@@ -15,7 +15,7 @@ class ScrollView final : public Widget {
     Hidden,
   };
 
-  explicit ScrollView(const StyleClasses& classes = {});
+  explicit ScrollView(Window*, const StyleClasses& classes = {});
   ~ScrollView() override;
 
   [[nodiscard]]

@@ -19,8 +19,9 @@ const auto& InvisibleStyle() {
 
 }// namespace
 
-PopupWindow::PopupWindow()
+PopupWindow::PopupWindow(Window* const window)
   : Widget(
+      window,
       LiteralStyleClass {"PopupWindow"},
       InvisibleStyle(),
       {PseudoClasses::LayoutOrphan}),
@@ -30,7 +31,7 @@ PopupWindow::~PopupWindow() = default;
 
 Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(
   const Style& style,
-  StateFlags flags) {
+  const StateFlags flags) {
   auto ret = Widget::OnComputedStyleChange(style, flags);
   if (mWindow->GetFrameRateRequirement().RequiresSmoothAnimation()) {
     ret |= ComputedStyleFlags::Animating;

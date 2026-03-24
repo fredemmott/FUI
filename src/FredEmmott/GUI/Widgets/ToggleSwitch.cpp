@@ -48,13 +48,13 @@ auto& FosterParentStyle() {
 using namespace StaticTheme;
 using namespace widget_detail;
 
-ToggleSwitch::ToggleSwitch()
-  : Widget(ToggleSwitchStyleClass, ToggleSwitchStyle()),
+ToggleSwitch::ToggleSwitch(Window* const window)
+  : Widget(window, ToggleSwitchStyleClass, ToggleSwitchStyle()),
     IToggleable(this) {
   this->SetStructuralChildren({
-    new ToggleSwitchKnob(),
+    new ToggleSwitchKnob(window),
     mFosterParent
-    = new Widget(ToggleSwitchContentStyleClass, FosterParentStyle()),
+    = new Widget(window, ToggleSwitchContentStyleClass, FosterParentStyle()),
   });
 }
 

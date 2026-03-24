@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class RadioButton final : public Widget, public ISelectionItem {
  public:
-  RadioButton();
+  explicit RadioButton(Window*);
   ~RadioButton() override;
 
   using Widget::IsChecked;

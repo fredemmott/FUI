@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class HyperlinkButton final : public Widget, public IInvocable {
  public:
-  HyperlinkButton(const StyleClasses& classes = {});
+  HyperlinkButton(Window*, const StyleClasses& classes = {});
   ~HyperlinkButton() override;
 
   void Invoke() override;

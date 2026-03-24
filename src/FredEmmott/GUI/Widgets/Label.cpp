@@ -15,13 +15,15 @@ namespace {
 constexpr LiteralStyleClass LabelStyleClass("Label");
 }
 
-Label::Label() : Label(LabelStyleClass, TextBlockClassStyles()) {}
+Label::Label(Window* const window)
+  : Label(window, LabelStyleClass, TextBlockClassStyles()) {}
 
 Label::Label(
+  Window* const window,
   const StyleClass primaryClass,
   const ImmutableStyle& style,
   const StyleClasses& classes)
-  : Widget(primaryClass, style, classes) {
+  : Widget(window, primaryClass, style, classes) {
   YGNodeSetMeasureFunc(this->GetLayoutNode(), &Label::Measure);
   YGNodeSetNodeType(this->GetLayoutNode(), YGNodeTypeText);
 }

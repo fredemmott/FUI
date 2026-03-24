@@ -54,8 +54,8 @@ auto& InnerStyles() {
 class ComboBoxList final : public Widgets::Widget,
                            public Widgets::ISelectionContainer {
  public:
-  ComboBoxList()
-    : Widget(LiteralStyleClass {"ComboBox/List"}, InnerStyles(), {}),
+  explicit ComboBoxList(Window* const window)
+    : Widget(window, LiteralStyleClass {"ComboBox/List"}, InnerStyles(), {}),
       ISelectionContainer(this) {}
   ~ComboBoxList() override = default;
 

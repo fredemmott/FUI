@@ -9,8 +9,8 @@ namespace FredEmmott::GUI::Widgets {
 
 class Button : public Widget, public IInvocable {
  public:
-  explicit Button();
-  explicit Button(const ImmutableStyle&, const StyleClasses&);
+  explicit Button(Window*);
+  Button(Window*, const ImmutableStyle&, const StyleClasses&);
   ~Button() override;
 
   static ImmutableStyle MakeImmutableStyle(const Style& mixin);

@@ -5,6 +5,8 @@
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
 
+#include "FredEmmott/GUI/Window.hpp"
+
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
@@ -21,7 +23,8 @@ auto& CardStyle() {
 }
 }// namespace
 
-Card::Card() : Widget(CardStyleClass, CardStyle()) {}
+Card::Card(Window* const window)
+  : Widget(window, CardStyleClass, CardStyle()) {}
 
 Card::~Card() = default;
 

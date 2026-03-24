@@ -147,7 +147,7 @@ void Win32Window::InitializeWidgetTree() {
     || !mOptions.mAllowModernTitleBar) {
     mActualRoot->SetStructuralChildren({mImmediateRoot});
   } else {
-    mTitleBar = new Widgets::TitleBar();
+    mTitleBar = new Widgets::TitleBar(this);
     mTitleBar->SetTitle(mOptions.mTitle);
     mActualRoot->SetStructuralChildren({mTitleBar, mImmediateRoot});
   }
@@ -191,9 +191,10 @@ Win32Window::Win32Window(
   const Options& options)
   : Win32Window(
       std::make_unique<Widgets::Widget>(
+        this,
         ActualRootStyleClass,
         ActualRootStyles()),
-      new Widgets::Widget(ImmediateRootStyleClass, ImmediateRootStyles()),
+      new Widgets::Widget(this, ImmediateRootStyleClass, ImmediateRootStyles()),
       hInstance,
       nCmdShow,
       options) {}

@@ -30,7 +30,7 @@ class TextBox : public Widget, public IFocusable {
     Rect mRect;
     bool mClipped {false};
   };
-  TextBox();
+  explicit TextBox(Window*);
   ~TextBox() override;
 
   [[nodiscard]]

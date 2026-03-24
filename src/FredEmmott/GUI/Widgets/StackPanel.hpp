@@ -10,7 +10,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class StackPanel final : public Widget {
  public:
-  explicit StackPanel(Orientation);
+  StackPanel(Window*, Orientation);
   ~StackPanel() override;
 };
 

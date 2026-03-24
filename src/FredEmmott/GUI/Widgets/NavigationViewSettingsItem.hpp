@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class NavigationViewSettingsItem final : public NavigationViewItem {
  public:
-  NavigationViewSettingsItem();
+  explicit NavigationViewSettingsItem(Window*);
   ~NavigationViewSettingsItem() override;
 
  protected:

@@ -11,7 +11,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class GPUTexture final : public Widget {
  public:
-  GPUTexture();
+  explicit GPUTexture(Window*);
   ~GPUTexture() override;
 
   void SetContent(

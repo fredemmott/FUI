@@ -13,7 +13,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class SwapChainPanel final : public Widget {
  public:
-  SwapChainPanel();
+  explicit SwapChainPanel(Window*);
   ~SwapChainPanel() override;
 
   SwapChain GetSwapChain() const noexcept;

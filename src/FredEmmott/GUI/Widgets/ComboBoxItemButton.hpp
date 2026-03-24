@@ -9,7 +9,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class ComboBoxItemButton : public Button, public ISelectionItem {
  public:
-  ComboBoxItemButton();
+  explicit ComboBoxItemButton(Window*);
   ~ComboBoxItemButton() override;
 
   using Widget::IsChecked;

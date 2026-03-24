@@ -50,30 +50,14 @@ class Widget {
   Widget& operator=(const Widget&) = delete;
   Widget& operator=(Widget&&) = delete;
 
-  explicit Widget(
+  Widget(
+    Window* ownerWindow,
     StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
   virtual ~Widget();
 
-  // Used for immediate-style API
-  auto SetID(this auto& self, const id_type id) noexcept {
-    FUI_ASSERT(
-      !self.mID.has_value(), "Widget ID can not be modified once it is set");
-    self.mID = id;
-    return &self;
-  }
-
-  // TODO: make this part of the Widget constructor
-  void ForceLogicalParent(Widget* const logicalParent) {
-    FUI_ASSERT(!mStructuralParent);
-    FUI_ASSERT(!mLogicalParent);
-    if (!logicalParent) {
-      return;
-    }
-    mLogicalParent = logicalParent;
-    mStructuralParent = logicalParent->GetStructuralParentForLogicalChildren();
-  }
+  void SetImmediateContext(Widget* logicalParent, id_type id);
 
   std::optional<MouseEvent> mWasStationaryHovered;
 
@@ -337,15 +321,17 @@ class Widget {
     Widget* mTarget {nullptr};
   };
   struct StyleTransitions;
-  Window* mOwnerWindow {};
+
+  Window* const mOwnerWindow {};
   Widget* mLogicalParent {};
   Widget* mStructuralParent {};
-  StyleClass mPrimaryClass;
+  std::optional<id_type> mID {};
+
+  const StyleClass mPrimaryClass;
+  ImmutableStyle mImmutableStyle;
 
   unique_ptr<StyleTransitions> mStyleTransitions;
 
-  ImmutableStyle mImmutableStyle;
-  std::optional<id_type> mID {};
   StyleClasses mClassList;
   unique_ptr<YGNode> mYoga;
 

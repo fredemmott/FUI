@@ -29,31 +29,40 @@ constexpr LiteralStyleClass NavigationViewContentInnerStyleClass {
   "NavigationView/ContentInner"};
 }// namespace
 
-NavigationView::NavigationView()
-  : Widget(NavigationViewStyleClass, NavigationViewStyle()),
+NavigationView::NavigationView(Window* const window)
+  : Widget(window, NavigationViewStyleClass, NavigationViewStyle()),
     ISelectionContainer(this),
-    mPane(new Widget(NavigationViewPaneStyleClass, NavigationViewPaneStyle())),
+    mPane(new Widget(
+      window,
+      NavigationViewPaneStyleClass,
+      NavigationViewPaneStyle())),
     mPaneHeader(new Widget(
+      window,
       NavigationViewPaneHeaderStyleClass,
       NavigationViewPaneHeaderStyle())),
     mItemsRoot(new Widget(
+      window,
       NavigationViewItemsRootStyleClass,
       NavigationViewItemsRootStyle())),
     mFooterItemsRoot(new Widget(
+      window,
       NavigationViewFooterItemsRootStyleClass,
       NavigationViewFooterItemsRootStyle())),
     mContentOuter(new Widget(
+      window,
       NavigationViewContentOuterStyleClass,
       NavigationViewContentOuterStyle())),
     mContentHeader(new Label(
+      window,
       NavigationViewContentHeaderStyleClass,
       NavigationViewContentHeaderStyle())),
     mContentInner(new Widget(
+      window,
       NavigationViewContentInnerStyleClass,
       NavigationViewContentInnerStyle())) {
-  mBackButton = new NavigationViewBackButton();
-  mTogglePaneButton = new NavigationViewTogglePaneButton(this);
-  mPaneHeader->SetLogicalChildren({mTogglePaneButton});
+  mBackButton = new NavigationViewBackButton(window);
+  mTogglePaneButton = new NavigationViewTogglePaneButton(window, this);
+  mPaneHeader->SetStructuralChildren({mTogglePaneButton});
 
   mPane->SetStructuralChildren(
     {mBackButton, mPaneHeader, mItemsRoot, mFooterItemsRoot});
@@ -96,8 +105,8 @@ void NavigationView::IntegrateWithTitleBar() {
     return;
   }
 
-  const auto titleBar
-    = static_cast<Win32Window*>(GetOwnerWindow())->GetTitleBar();
+  const auto window = static_cast<Win32Window*>(this->GetOwnerWindow());
+  const auto titleBar = window->GetTitleBar();
   FUI_ASSERT(titleBar);
 
   const auto backDisabled = mBackButton->IsDisabled();
@@ -110,9 +119,9 @@ void NavigationView::IntegrateWithTitleBar() {
   std::erase(headerChildren, std::exchange(mTogglePaneButton, nullptr));
   mPaneHeader->SetStructuralChildren(headerChildren);
 
-  mBackButton = new NavigationViewBackButton();
+  mBackButton = new NavigationViewBackButton(window);
   mBackButton->SetIsDirectlyDisabled(backDisabled);
-  mTogglePaneButton = new NavigationViewTogglePaneButton(this);
+  mTogglePaneButton = new NavigationViewTogglePaneButton(window, this);
 
   titleBar->SetLeftWidgets({mBackButton, mTogglePaneButton});
   mPaneHeader->SetMutableStyles(Style().Display(YGDisplayNone));

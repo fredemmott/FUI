@@ -7,7 +7,6 @@
 #include <FredEmmott/GUI/Widgets/Focusable.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
-#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/events/HitTestEvent.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <felly/overload.hpp>
@@ -196,10 +195,11 @@ void PaintBorder(
 }// namespace
 
 Widget::Widget(
+  Window* const ownerWindow,
   const StyleClass primaryClass,
   const ImmutableStyle& immutableStyle,
   const StyleClasses& classes)
-  : mOwnerWindow(Immediate::immediate_detail::tWindow),
+  : mOwnerWindow(ownerWindow),
     mPrimaryClass(primaryClass),
     mImmutableStyle(immutableStyle),
     mClassList(classes),
@@ -231,6 +231,17 @@ Widget::~Widget() {
   this->EndMouseCapture();
 
   YGNodeSetContext(mYoga.get(), nullptr);
+}
+
+void Widget::SetImmediateContext(
+  Widget* const logicalParent,
+  const id_type id) {
+  FUI_ASSERT(!mID);
+  FUI_ASSERT(!mLogicalParent);
+  FUI_ASSERT(!mStructuralParent);
+  mLogicalParent = logicalParent;
+  mStructuralParent = logicalParent->GetStructuralParentForLogicalChildren();
+  mID = id;
 }
 
 void Widget::AddStyleClass(const StyleClass klass) {
@@ -325,9 +336,11 @@ void Widget::SetStructuralChildren(
       continue;
     }
 
-    FUI_ASSERT((!child->mStructuralParent) || child->mStructuralParent == this);
     FUI_ASSERT(
-      (!child->mLogicalParent) || child->mLogicalParent == logicalParent);
+      child->mStructuralParent == nullptr || child->mStructuralParent == this);
+    FUI_ASSERT(
+      child->mLogicalParent == nullptr
+      || child->mLogicalParent == logicalParent);
     child->mStructuralParent = this;
     child->mLogicalParent = logicalParent;
     ownedChildren.emplace_back(child);

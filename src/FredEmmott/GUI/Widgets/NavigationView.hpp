@@ -13,7 +13,7 @@ class Label;
 
 class NavigationView final : public Widget, public ISelectionContainer {
  public:
-  NavigationView();
+  explicit NavigationView(Window*);
   ~NavigationView() override;
 
   [[nodiscard]]

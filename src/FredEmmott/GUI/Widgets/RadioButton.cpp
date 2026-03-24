@@ -155,16 +155,19 @@ auto& InnerStyles() {
 }
 }// namespace
 
-RadioButton::RadioButton()
-  : Widget(RadioButtonStyleClass, RadioButtonStyles()),
+RadioButton::RadioButton(Window* const window)
+  : Widget(window, RadioButtonStyleClass, RadioButtonStyles()),
     ISelectionItem(this) {
-  const auto inner
-    = new Widget(LiteralStyleClass {"RadioButton/Inner"}, InnerStyles());
+  const auto inner = new Widget(
+    window, LiteralStyleClass {"RadioButton/Inner"}, InnerStyles());
   const auto outer
-    = (new Widget(LiteralStyleClass {"RadioButton/Outer"}, OuterStyles()))
+    = (new Widget(
+         window, LiteralStyleClass {"RadioButton/Outer"}, OuterStyles()))
         ->SetStructuralChildren({inner});
   mFosterParent = new Widget(
-    LiteralStyleClass {"RadioButton/FosterParent"}, FosterParentStyles());
+    window,
+    LiteralStyleClass {"RadioButton/FosterParent"},
+    FosterParentStyles());
 
   this->SetStructuralChildren({outer, mFosterParent});
 }

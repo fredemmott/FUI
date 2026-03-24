@@ -7,7 +7,8 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-GPUTexture::GPUTexture() : Widget(LiteralStyleClass {"GPUTexture"}, {}) {}
+GPUTexture::GPUTexture(Window* const Window)
+  : Widget(Window, LiteralStyleClass {"GPUTexture"}, {}) {}
 
 GPUTexture::~GPUTexture() {
   this->ClearImportedResourceCache();

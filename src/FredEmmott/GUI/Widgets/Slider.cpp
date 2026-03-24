@@ -133,8 +133,9 @@ SliderBrushes GetSliderBrushes(const SliderState state) {
 
 }// namespace
 
-Slider::Slider(const Orientation orientation)
+Slider::Slider(Window* const window, const Orientation orientation)
   : Widget(
+      window,
       LiteralStyleClass("Slider"),
       ((orientation == Orientation::Horizontal) ? HorizontalSliderStyle()
                                                 : VerticalSliderStyle())),

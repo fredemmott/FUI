@@ -9,8 +9,8 @@ namespace {
 constexpr std::string_view BackGlyph = "\ue72b";
 }// namespace
 
-NavigationViewBackButton::NavigationViewBackButton()
-  : NavigationViewButton(BackGlyph) {
+NavigationViewBackButton::NavigationViewBackButton(Window* const window)
+  : NavigationViewButton(window, BackGlyph) {
   // Disabled until something is pushed on the stack
   this->SetIsDirectlyDisabled(true);
 }

@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::Widgets {
 
 class CheckBox final : public Widget, public IToggleable {
  public:
-  CheckBox();
+  explicit CheckBox(Window*);
   ~CheckBox() override;
 
   using Widget::IsChecked;

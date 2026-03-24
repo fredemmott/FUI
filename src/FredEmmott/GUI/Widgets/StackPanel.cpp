@@ -29,8 +29,11 @@ auto& VerticalStyles() {
 
 }// namespace
 
-StackPanel::StackPanel(const Orientation orientation)
+StackPanel::StackPanel(
+  Window* const window,
+  const Orientation orientation)
   : Widget(
+      window,
       LiteralStyleClass {"StackPanel"},
       (orientation == Orientation::Horizontal) ? HorizontalStyles()
                                                : VerticalStyles(),

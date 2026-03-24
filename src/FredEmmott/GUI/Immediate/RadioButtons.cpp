@@ -27,11 +27,12 @@ constexpr LiteralStyleClass InnerStyleClass {"RadioButtons/Inner"};
 class RadioButtonsInner : public Widgets::Widget,
                           public Widgets::ISelectionContainer {
  public:
-  RadioButtonsInner()
-    : Widget(InnerStyleClass, InnerStyle()),
+  explicit RadioButtonsInner(Window* const window)
+    : Widget(window, InnerStyleClass, InnerStyle()),
       ISelectionContainer(this) {}
   ~RadioButtonsInner() override = default;
 
+  [[nodiscard]]
   std::vector<Widgets::ISelectionItem*> GetSelectionItems()
     const noexcept override {
     return GetLogicalChildren()

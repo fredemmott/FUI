@@ -5,6 +5,7 @@
 
 #include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
 #include "FredEmmott/GUI/StaticTheme/TitleBar.hpp"
+#include "FredEmmott/GUI/Window.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -40,8 +41,10 @@ const auto& NavigationViewButtonStyle() {
 
 }// namespace
 
-NavigationViewButton::NavigationViewButton(const std::string_view glyph)
-  : Widget(NavigationViewButtonStyleClass, NavigationViewButtonStyle()),
+NavigationViewButton::NavigationViewButton(
+  Window* const window,
+  const std::string_view glyph)
+  : Widget(window, NavigationViewButtonStyleClass, NavigationViewButtonStyle()),
     IInvocable(this),
     mGlyph(glyph) {
   FUI_ASSERT(!mGlyph.empty());

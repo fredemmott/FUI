@@ -10,7 +10,7 @@ class NavigationView;
 
 class NavigationViewTogglePaneButton final : public NavigationViewButton {
  public:
-  explicit NavigationViewTogglePaneButton(NavigationView*);
+  NavigationViewTogglePaneButton(Window*, NavigationView*);
   ~NavigationViewTogglePaneButton() override;
 
   void Invoke() override;

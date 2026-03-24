@@ -10,8 +10,9 @@ namespace FredEmmott::GUI::Widgets {
 
 class Label final : public Widget {
  public:
-  Label();
+  explicit Label(Window*);
   Label(
+    Window*,
     StyleClass primaryClass,
     const ImmutableStyle&,
     const StyleClasses& = {});
