@@ -26,14 +26,14 @@ constexpr auto MakeYogaValue(const Overflow overflow) {
   static_assert(std::to_underlying(Overflow::Hidden) == YGOverflowHidden);
   static_assert(std::to_underlying(Overflow::Visible) == YGOverflowVisible);
   static_assert(std::to_underlying(Overflow::Scroll) == YGOverflowScroll);
-  return static_cast<YGOverflow>(overflow);
+  return std::bit_cast<YGOverflow>(overflow);
 }
 
 constexpr auto MakeYogaValue(const Display display) {
   static_assert(std::to_underlying(Display::None) == YGDisplayNone);
   static_assert(std::to_underlying(Display::Flex) == YGDisplayFlex);
   static_assert(std::to_underlying(Display::Contents) == YGDisplayContents);
-  return static_cast<YGDisplay>(display);
+  return std::bit_cast<YGDisplay>(display);
 }
 
 constexpr auto MakeYogaValue(const FlexDirection v) {
@@ -45,7 +45,7 @@ constexpr auto MakeYogaValue(const FlexDirection v) {
   static_assert(
     std::to_underlying(FlexDirection::ColumnReverse)
     == YGFlexDirectionColumnReverse);
-  return static_cast<YGFlexDirection>(v);
+  return std::bit_cast<YGFlexDirection>(v);
 }
 
 constexpr auto MakeYogaValue(const Align v) {
@@ -58,7 +58,7 @@ constexpr auto MakeYogaValue(const Align v) {
   static_assert(std::to_underlying(Align::SpaceBetween) == YGAlignSpaceBetween);
   static_assert(std::to_underlying(Align::SpaceAround) == YGAlignSpaceAround);
   static_assert(std::to_underlying(Align::SpaceEvenly) == YGAlignSpaceEvenly);
-  return static_cast<YGAlign>(v);
+  return std::bit_cast<YGAlign>(v);
 }
 
 constexpr auto MakeYogaValue(const BoxSizing v) {
@@ -66,7 +66,7 @@ constexpr auto MakeYogaValue(const BoxSizing v) {
     std::to_underlying(BoxSizing::ContentBox) == YGBoxSizingContentBox);
   static_assert(
     std::to_underlying(BoxSizing::BorderBox) == YGBoxSizingBorderBox);
-  return static_cast<YGBoxSizing>(v);
+  return std::bit_cast<YGBoxSizing>(v);
 }
 
 constexpr auto MakeYogaValue(const Justify v) {
@@ -79,7 +79,7 @@ constexpr auto MakeYogaValue(const Justify v) {
     std::to_underlying(Justify::SpaceAround) == YGJustifySpaceAround);
   static_assert(
     std::to_underlying(Justify::SpaceEvenly) == YGJustifySpaceEvenly);
-  return static_cast<YGJustify>(v);
+  return std::bit_cast<YGJustify>(v);
 }
 
 constexpr auto MakeYogaValue(const PositionType v) {
@@ -87,7 +87,7 @@ constexpr auto MakeYogaValue(const PositionType v) {
     std::to_underlying(PositionType::Absolute) == YGPositionTypeAbsolute);
   static_assert(
     std::to_underlying(PositionType::Relative) == YGPositionTypeRelative);
-  return static_cast<YGPositionType>(v);
+  return std::bit_cast<YGPositionType>(v);
 }
 
 }// namespace
