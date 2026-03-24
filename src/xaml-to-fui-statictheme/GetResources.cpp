@@ -92,10 +92,6 @@ void GetResource(
     // TODO
     return;
   }
-  if (tagType == "GridLength") {
-    // TODO
-    return;
-  }
   if (tagType == "FontFamily" || tagType == "ListViewItemPresenterCheckMode") {
     // honestly probably not going to do.
     return;
