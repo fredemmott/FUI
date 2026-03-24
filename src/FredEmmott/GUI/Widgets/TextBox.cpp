@@ -207,7 +207,10 @@ TextBox::BoundingBox TextBox::GetTextBoundingBoxW(
 }
 
 void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
-  const auto isFocused = FocusManager::IsWidgetFocused(this);
+  const auto window = this->GetOwnerWindow();
+  FUI_ASSERT(window);
+
+  const auto isFocused = window->GetFocusManager()->IsWidgetFocused(this);
   const bool focusChanged = (isFocused != mIsFocused);
   mIsFocused = isFocused;
 
@@ -215,7 +218,7 @@ void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   if (focusChanged) {
     if (mIsFocused) {
       auto& tm = TSFThreadManager::Get();
-      const auto hwnd = this->GetOwnerWindow()->GetNativeHandle().mValue;
+      const auto hwnd = window->GetNativeHandle().mValue;
       tm.Initialize(hwnd);
       *mAutomation = tm.ActivateFor(hwnd, this);
       tm.SetFocus(hwnd, mAutomation.get());
@@ -459,7 +462,7 @@ void TextBox::PaintCursor(
   Renderer* renderer,
   const Rect& rect,
   const Style& style) const {
-  if (!FocusManager::IsWidgetFocused(this)) {
+  if (!this->GetOwnerWindow()->GetFocusManager()->IsWidgetFocused(this)) {
     return;
   }
 

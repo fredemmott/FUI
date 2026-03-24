@@ -239,9 +239,7 @@ NumberBoxResult NumberBox(float* const value, const ID id) {
     }
 
     *value = ctx->mValue;
-    if (const auto fm = FocusManager::Get()) {
-      fm->GiveImplicitFocus(w);
-    }
+    immediate_detail::tWindow->GetFocusManager()->GiveImplicitFocus(w);
   });
 
   // Typing

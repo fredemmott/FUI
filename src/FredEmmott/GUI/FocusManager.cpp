@@ -25,25 +25,7 @@ bool IsFocusable(Widgets::Widget const* widget) {
   }
   return !dynamic_cast<Widgets::ISelectionItem const*>(widget);
 }
-
-thread_local std::stack<FocusManager*> tInstances;
 }// namespace
-
-FocusManager* FocusManager::Get() {
-  if (tInstances.empty()) {
-    return nullptr;
-  }
-  return tInstances.top();
-}
-
-void FocusManager::PushInstance(FocusManager* it) {
-  tInstances.push(it);
-}
-
-void FocusManager::PopInstance([[maybe_unused]] const FocusManager* const it) {
-  FUI_ASSERT(it == tInstances.top());
-  tInstances.pop();
-}
 
 FocusManager::~FocusManager() = default;
 
@@ -61,16 +43,9 @@ FocusManager::GetFocusedWidget() const {
   return std::tuple {mFocusedWidget, mFocusKind};
 }
 
-bool FocusManager::IsWidgetFocused(Widgets::Widget const* widget) {
-  const auto fm = Get();
-  if (!fm) {
-    return false;
-  }
-  const auto focus = fm->GetFocusedWidget();
-  if (!focus) {
-    return false;
-  }
-  return get<0>(*focus) == widget;
+bool FocusManager::IsWidgetFocused(const Widgets::Widget* const widget) const {
+  FUI_ASSERT(widget);
+  return mFocusedWidget == widget;
 }
 
 void FocusManager::GiveImplicitFocus(Widgets::Widget* widget) {

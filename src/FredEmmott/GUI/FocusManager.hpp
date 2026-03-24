@@ -53,7 +53,7 @@ class FocusManager final {
   GetFocusedWidget() const;
 
   [[nodiscard]]
-  static bool IsWidgetFocused(Widgets::Widget const*);
+  bool IsWidgetFocused(Widgets::Widget const*) const;
 
   void GiveImplicitFocus(Widgets::Widget*);
   void GiveVisibleFocus(Widgets::Widget*);
@@ -64,12 +64,6 @@ class FocusManager final {
 
   [[nodiscard]]
   bool OnKeyPress(const KeyPressEvent& e);
-
-  /// Thread-local
-  static FocusManager* Get();
-
-  static void PushInstance(FocusManager*);
-  static void PopInstance(const FocusManager*);
 
  private:
   Widgets::Widget* mRootWidget {};

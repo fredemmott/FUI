@@ -156,10 +156,6 @@ Widgets::Widget* Window::DispatchEvent(const MouseEvent& e) {
 
 void Window::DispatchEvent(const KeyEvent& e) {
   const auto fm = GetRoot()->GetFocusManager();
-  FocusManager::PushInstance(fm);
-  const auto popFocusManager
-    = wil::scope_exit([&]() { FocusManager::PopInstance(fm); });
-
   if (GetRoot()->DispatchEvent(e)) {
     return;
   }

@@ -41,13 +41,9 @@ void Root::BeginFrame() {
   }
 
   PushParentOverride(mImmediateRoot);
-  FocusManager::PushInstance(&mFocusManager);
 }
 
 void Root::EndFrame() {
-  const auto pop = felly::scope_exit(
-    std::bind_front(&FocusManager::PopInstance, &mFocusManager));
-
   if (tStack.size() != 2) {
     throw std::logic_error("EndFrame() called, but children are open");
   }
@@ -67,18 +63,11 @@ void Root::EndFrame() {
 }
 
 Widget* Root::DispatchEvent(const Event& e) {
-  FocusManager::PushInstance(&mFocusManager);
-  const auto pop
-    = felly::scope_exit([this] { FocusManager::PopInstance(&mFocusManager); });
   return mActualRoot->DispatchEvent(e);
 }
 
 void Root::Paint(Renderer* renderer, const Size& size) {
   const auto clipRegion = renderer->ScopedClipRect({size});
-
-  FocusManager::PushInstance(&mFocusManager);
-  const auto popFocusManager
-    = felly::scope_exit([this] { FocusManager::PopInstance(&mFocusManager); });
 
   const auto frameStartTime = std::chrono::steady_clock::now();
 
