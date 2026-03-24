@@ -132,16 +132,6 @@ struct default_value_by_type_t<T> {
 };
 
 template <>
-struct default_value_by_type_t<Overflow> {
-  static constexpr auto value {Overflow::Visible};
-};
-
-template <>
-struct default_value_by_type_t<Display> {
-  static constexpr auto value {Display::Flex};
-};
-
-template <>
 struct default_value_by_type_t<FlexDirection> {
   static constexpr auto value {FlexDirection::Row};
 };
