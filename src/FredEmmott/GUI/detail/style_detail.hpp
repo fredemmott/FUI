@@ -105,43 +105,40 @@ class StyleProperty;
 
 namespace FredEmmott::GUI::style_detail {
 template <class T>
-struct default_t {
+struct default_value_by_type_t {
   static constexpr auto value = std::nullopt;
 };
 
 template <>
-struct default_t<Cursor> {
+struct default_value_by_type_t<Cursor> {
   static constexpr auto value = Cursor::Default;
 };
 
 template <>
-struct default_t<float> {
+struct default_value_by_type_t<float> {
   static constexpr float value {YGUndefined};
 };
 
 template <class T>
   requires std::is_scoped_enum_v<T>
-struct default_t<T> {
+struct default_value_by_type_t<T> {
   static constexpr T value {};
 };
 
 template <>
-struct default_t<Overflow> {
+struct default_value_by_type_t<Overflow> {
   static constexpr auto value {Overflow::Visible};
 };
 
 template <>
-struct default_t<Display> {
+struct default_value_by_type_t<Display> {
   static constexpr auto value {Display::Flex};
 };
 
 template <>
-struct default_t<FlexDirection> {
+struct default_value_by_type_t<FlexDirection> {
   static constexpr auto value {FlexDirection::Row};
 };
-
-template <class T>
-constexpr auto default_v = default_t<T>::value;
 
 enum class StylePropertyKey {
 #define FUI_DECLARE_STYLE_PROPERTY(NAME, ...) NAME,
@@ -149,34 +146,31 @@ enum class StylePropertyKey {
 #undef FUI_DECLARE_STYLE_PROPERTY
 };
 
-consteval auto last_value_v(auto only) {
-  return only;
-}
-consteval auto last_value_v(auto, auto second, auto... rest) {
-  return last_value_v(second, rest...);
-}
-
-template <StylePropertyKey P>
-struct property_metadata_t;
-
-#define FUI_DECLARE_DEFAULT_PROPERTY_VALUE(NAME, TYPE, SCOPE, ...) \
+template <StylePropertyKey K>
+struct property_type_t;
+template <StylePropertyKey K>
+struct default_property_scope_t;
+#define FUI_DECLARE_STYLE_PROPERTY_SPECIALIZATIONS(NAME, TYPE, SCOPE) \
   template <> \
-  struct property_metadata_t<StylePropertyKey::NAME> { \
-    using value_type = TYPE; \
-    static constexpr auto default_value { \
-      last_value_v(default_t<TYPE>::value, ##__VA_ARGS__)}; \
-    static constexpr auto default_scope = StylePropertyScope::SCOPE; \
+  struct property_type_t<StylePropertyKey::NAME> : std::type_identity<TYPE> { \
+  }; \
+  template <> \
+  struct default_property_scope_t<StylePropertyKey::NAME> \
+    : std::integral_constant<StylePropertyScope, StylePropertyScope::SCOPE> { \
   };
-FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_DEFAULT_PROPERTY_VALUE)
-#undef FUI_DECLARE_STYLE_PROPERTY
-template <StylePropertyKey P>
-static constexpr auto default_property_value_v
-  = property_metadata_t<P>::default_value;
-template <StylePropertyKey P>
-static constexpr auto default_property_scope_v
-  = property_metadata_t<P>::default_scope;
-template <StylePropertyKey P>
-using property_value_t = typename property_metadata_t<P>::value_type;
+FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY_SPECIALIZATIONS)
+#undef FUI_DECLARE_STYLE_PROPERTY_SPECIALIZATIONS
+
+template <StylePropertyKey K>
+struct default_property_value_t {
+  using type = property_type_t<K>::type;
+  static constexpr auto value = default_value_by_type_t<type>::value;
+};
+
+template <StylePropertyKey K>
+constexpr auto default_property_value_v = default_property_value_t<K>::value;
+template <StylePropertyKey K>
+constexpr auto default_property_scope_v = default_property_scope_t<K>::value;
 
 constexpr StylePropertyScope GetDefaultPropertyScope(
   const StylePropertyKey prop) {
