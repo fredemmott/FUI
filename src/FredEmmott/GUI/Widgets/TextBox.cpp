@@ -3,6 +3,8 @@
 
 #include "TextBox.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/StaticTheme/TextBox.hpp>
 

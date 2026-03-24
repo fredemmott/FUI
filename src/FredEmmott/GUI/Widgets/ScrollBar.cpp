@@ -3,6 +3,8 @@
 
 #include "ScrollBar.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>
 #include <FredEmmott/GUI/SystemFont.hpp>
 #include <FredEmmott/GUI/detail/Widget/ScrollBar.hpp>

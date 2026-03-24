@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #include "Widget.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/Widgets/Focusable.hpp>

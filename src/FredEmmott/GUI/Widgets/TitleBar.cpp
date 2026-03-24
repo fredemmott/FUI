@@ -3,6 +3,8 @@
 
 #include "TitleBar.hpp"
 
+#include <Yoga.h>
+
 #include <felly/numeric_cast.hpp>
 
 #include "Button.hpp"

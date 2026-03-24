@@ -4,6 +4,7 @@
 #include "TextBlock.hpp"
 
 #include <Windows.h>
+#include <Yoga.h>
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/assert.hpp>

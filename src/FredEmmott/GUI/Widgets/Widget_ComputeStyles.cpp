@@ -1,6 +1,8 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <FredEmmott/GUI/assert.hpp>

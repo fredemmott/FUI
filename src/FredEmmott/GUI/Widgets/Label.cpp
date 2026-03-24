@@ -3,6 +3,8 @@
 
 #include "Label.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/StaticTheme.hpp>
 
 using namespace FredEmmott::utility;
@@ -125,7 +127,7 @@ YGSize Label::Measure(
   auto& self = *static_cast<Label*>(FromYogaNode(node));
 
   if (self.mCachedMeasurement) {
-    return *self.mCachedMeasurement;
+    return std::bit_cast<YGSize>(*self.mCachedMeasurement);
   }
 
   const auto& font = self.mFont;
@@ -134,7 +136,7 @@ YGSize Label::Measure(
   const auto tw = font.MeasureTextWidth(text);
 
   self.mCachedMeasurement.emplace(tw, -font.GetMetrics().mAscent);
-  return *self.mCachedMeasurement;
+  return std::bit_cast<YGSize>(*self.mCachedMeasurement);
 }
 
 }// namespace FredEmmott::GUI::Widgets

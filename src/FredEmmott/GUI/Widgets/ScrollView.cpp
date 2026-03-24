@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 
 #include <Windows.h>
+#include <Yoga.h>
 
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>
 #include <FredEmmott/GUI/Widgets/ScrollView.hpp>
 #include <FredEmmott/GUI/Widgets/WidgetList.hpp>
-#include <print>
 
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "FredEmmott/GUI/assert.hpp"
@@ -18,6 +18,13 @@ namespace FredEmmott::GUI::Widgets {
 using namespace widget_detail;
 
 namespace {
+
+enum class MeasureMode : std::underlying_type_t<YGMeasureMode> {
+  StretchFit = YGMeasureModeExactly,
+  MaxContent = YGMeasureModeUndefined,
+  FitContent = YGMeasureModeAtMost,
+};
+
 constexpr LiteralStyleClass ScrollViewStyleClass("ScrollView");
 constexpr LiteralStyleClass ContentOuterStyleClass("ScrollView/ContentOuter");
 constexpr LiteralStyleClass ContentInnerStyleClass("ScrollView/ContentInner");
@@ -268,14 +275,14 @@ bool ScrollView::IsScrollBarVisible(
   return !fits;
 }
 
-void ScrollView::OnInnerContentDirty(const YGNode* node) {
+void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
   auto& self = *FromYogaNode(node)->GetStructuralParent<ScrollView>();
   self.mDirtyInner = true;
   YGNodeMarkDirty(self.mContentOuter->GetLayoutNode());
 }
 
 YGSize ScrollView::MeasureOuterContent(
-  const YGNode* node,
+  YGNodeConstRef node,
   float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   float height,
@@ -301,8 +308,8 @@ YGSize ScrollView::MeasureOuterContent(
   }
 
   width = contentWidth;
-  using enum CSSMeasureMode;
-  switch (static_cast<CSSMeasureMode>(heightMode)) {
+  using enum MeasureMode;
+  switch (static_cast<MeasureMode>(heightMode)) {
     case StretchFit:
       // Should always use provided height
       break;

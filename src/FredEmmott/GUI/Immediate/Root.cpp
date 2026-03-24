@@ -3,6 +3,8 @@
 
 #include "Root.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/Widgets/Widget.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <felly/scope_exit.hpp>

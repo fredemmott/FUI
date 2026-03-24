@@ -3,10 +3,13 @@
 
 #include "yoga.hpp"
 
+#include <Yoga.h>
+
 #include <mutex>
 #include <optional>
 
 #include "assert.hpp"
+#include "detail/win32_detail/UIANode.hpp"
 
 namespace FredEmmott::GUI {
 YGConfig* GetYogaConfig() {
@@ -124,4 +127,35 @@ Size GetMinimumWidthAndIdealHeight(const YGNode* original) {
     GetIdealHeight(original, width),
   };
 }
+ScopedYogaParentCheck::ScopedYogaParentCheck(
+  [[maybe_unused]] const YGNode* const node) {
+  if constexpr (Config::Debug) {
+    const auto childCount = YGNodeGetChildCount(node);
+    if (childCount > 0) {
+      FUI_ALWAYS_ASSERT(
+        YGNodeGetParent(YGNodeGetChild(const_cast<YGNode*>(node), 0)) == node);
+      mInput = {node, childCount};
+    }
+  }
+}
+
+ScopedYogaParentCheck::~ScopedYogaParentCheck() {
+  if constexpr (Config::Debug) {
+    const auto [node, childCount] = mInput;
+    FUI_ALWAYS_ASSERT(YGNodeGetChildCount(node) == childCount);
+    if (childCount > 0) {
+      FUI_ALWAYS_ASSERT(
+        YGNodeGetParent(YGNodeGetChild(const_cast<YGNode*>(node), 0)) == node,
+        "Children have incorrect parent; consider using `FixYogaChildren()`");
+    }
+  }
+}
+
+void FixYogaChildren(YGNode* const parent) {
+  const auto childCount = YGNodeGetChildCount(parent);
+  for (auto i = 0; i < childCount; ++i) {
+    YGNodeSwapChild(parent, YGNodeGetChild(parent, i), i);
+  }
+}
+
 }// namespace FredEmmott::GUI

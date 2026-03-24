@@ -34,7 +34,7 @@ class Label final : public Widget {
   std::string mText;
   Font mFont;
 
-  std::optional<YGSize> mCachedMeasurement;
+  std::optional<Size> mCachedMeasurement;
 
   static YGSize Measure(
     const YGNode* node,

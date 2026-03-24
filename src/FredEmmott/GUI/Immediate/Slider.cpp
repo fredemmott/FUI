@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #include "Slider.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/StaticTheme/ToolTip.hpp>
 #include <FredEmmott/utility/almost_equal.hpp>
 #include <stdexcept>

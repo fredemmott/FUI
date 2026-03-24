@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #include "ComboBoxPopup.hpp"
 
+#include <Yoga.h>
+
 #include "ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/Common.hpp"

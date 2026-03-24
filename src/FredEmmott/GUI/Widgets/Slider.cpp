@@ -4,6 +4,8 @@
 
 #include "Slider.hpp"
 
+#include <Yoga.h>
+
 #include <FredEmmott/GUI/StaticTheme/Slider.hpp>
 #include <FredEmmott/GUI/events/KeyCode.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
@@ -12,7 +14,6 @@
 #include "FredEmmott/GUI/FocusManager.hpp"
 #include "FredEmmott/GUI/Window.hpp"
 #include "FredEmmott/utility/almost_equal.hpp"
-
 namespace FredEmmott::GUI::Widgets {
 
 namespace {
