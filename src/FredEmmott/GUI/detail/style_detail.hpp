@@ -116,11 +116,6 @@ struct default_value_by_type_t {
 };
 
 template <>
-struct default_value_by_type_t<Cursor> {
-  static constexpr auto value = Cursor::Default;
-};
-
-template <>
 struct default_value_by_type_t<float> {
   static constexpr float value {YGUndefined};
 };
