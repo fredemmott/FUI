@@ -26,10 +26,6 @@ class ToggleSwitch final : public Widget, public IToggleable {
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
 
-  Widget* GetStructuralParentForLogicalChildren() noexcept override {
-    return mFosterParent;
-  }
-
   EventHandlerResult OnClick(const MouseEvent& event) override;
 
  private:

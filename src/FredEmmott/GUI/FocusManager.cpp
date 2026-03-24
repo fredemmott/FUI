@@ -13,9 +13,13 @@ namespace FredEmmott::GUI {
 
 namespace {
 bool IsFocusable(Widgets::Widget const* widget) {
+  if (widget->IsDestructionInProgress()) {
+    return false;
+  }
   if (widget->IsDisabled()) {
     return false;
   }
+
   if (!dynamic_cast<Widgets::IFocusable const*>(widget)) {
     return false;
   }
@@ -186,6 +190,7 @@ void FocusManager::BeforeDestroy(Widgets::Widget* widget) {
   while (const auto parent = child->GetLogicalParentOrNull()) {
     const auto children = parent->GetLogicalChildren();
     const auto it = std::ranges::find(children, child);
+    FUI_ASSERT(it != children.end());
     for (auto&& sibling: std::ranges::subrange(children.begin(), it)) {
       if (const auto target = FirstFocusableWidget(sibling)) {
         mFocusedWidget = target;
@@ -321,6 +326,10 @@ void FocusManager::FocusPreviousSelectionItem() {
 }
 
 Widgets::Widget* FocusManager::FirstFocusableWidget(Widgets::Widget* parent) {
+  if (parent->IsDestructionInProgress()) {
+    return nullptr;
+  }
+
   if (IsFocusable(parent)) {
     return parent;
   }

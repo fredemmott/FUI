@@ -78,6 +78,8 @@ ScrollView::ScrollView(Window* const window, const StyleClasses& classes)
       ContentInnerStyle(),
       {PseudoClasses::LayoutOrphan}),
   });
+  this->SetStructuralParentForLogicalChildren(mContentInner);
+
   mContentYoga.reset(YGNodeNew());
   YGNodeInsertChild(mContentYoga.get(), mContentInner->GetLayoutNode(), 0);
 
@@ -114,10 +116,6 @@ ScrollView& ScrollView::SetVerticalScrollBarVisibility(
   const ScrollBarVisibility value) noexcept {
   mVerticalScrollBarVisibility = value;
   return *this;
-}
-
-Widget* ScrollView::GetStructuralParentForLogicalChildren() noexcept {
-  return mContentInner;
 }
 
 void ScrollView::UpdateScrollBars(const Size& containerSize) const {

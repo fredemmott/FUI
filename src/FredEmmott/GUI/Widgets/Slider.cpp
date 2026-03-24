@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "FredEmmott/GUI/FocusManager.hpp"
+#include "FredEmmott/GUI/Window.hpp"
 #include "FredEmmott/utility/almost_equal.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -221,9 +222,7 @@ Widget::EventHandlerResult Slider::OnMouseButtonRelease(const MouseEvent& e) {
   }
   std::ignore = Widget::OnMouseButtonRelease(e);
   this->OnMouseMove(e);
-  if (const auto fm = FocusManager::Get()) {
-    fm->GiveImplicitFocus(this);
-  }
+  this->GetOwnerWindow()->GetFocusManager()->GiveImplicitFocus(this);
   return EventHandlerResult::StopPropagation;
 }
 

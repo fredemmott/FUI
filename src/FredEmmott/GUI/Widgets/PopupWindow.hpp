@@ -13,6 +13,7 @@ class PopupWindow final : public Widget {
   explicit PopupWindow(Window*);
   ~PopupWindow() override;
 
+  [[nodiscard]]
   Window* GetWindow() const noexcept {
     return mWindow.get();
   }

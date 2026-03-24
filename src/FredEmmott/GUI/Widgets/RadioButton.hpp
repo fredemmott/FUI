@@ -34,7 +34,6 @@ class RadioButton final : public Widget, public ISelectionItem {
   }
 
  protected:
-  Widget* GetStructuralParentForLogicalChildren() noexcept override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
   [[nodiscard]] EventHandlerResult OnClick(const MouseEvent&) override;

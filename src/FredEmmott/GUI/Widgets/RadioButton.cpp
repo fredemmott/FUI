@@ -164,10 +164,11 @@ RadioButton::RadioButton(Window* const window)
     = (new Widget(
          window, LiteralStyleClass {"RadioButton/Outer"}, OuterStyles()))
         ->SetStructuralChildren({inner});
-  mFosterParent = new Widget(
-    window,
-    LiteralStyleClass {"RadioButton/FosterParent"},
-    FosterParentStyles());
+  this->SetStructuralParentForLogicalChildren(
+    mFosterParent = new Widget(
+      window,
+      LiteralStyleClass {"RadioButton/FosterParent"},
+      FosterParentStyles()));
 
   this->SetStructuralChildren({outer, mFosterParent});
 }
@@ -176,10 +177,6 @@ RadioButton::~RadioButton() = default;
 
 bool RadioButton::IsSelected() const noexcept {
   return IsChecked();
-}
-
-Widget* RadioButton::GetStructuralParentForLogicalChildren() noexcept {
-  return mFosterParent;
 }
 
 Widget::ComputedStyleFlags RadioButton::OnComputedStyleChange(

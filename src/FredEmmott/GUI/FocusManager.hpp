@@ -67,6 +67,7 @@ class FocusManager final {
 
   /// Thread-local
   static FocusManager* Get();
+
   static void PushInstance(FocusManager*);
   static void PopInstance(const FocusManager*);
 

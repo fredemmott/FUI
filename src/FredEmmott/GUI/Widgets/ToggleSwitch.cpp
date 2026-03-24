@@ -56,6 +56,7 @@ ToggleSwitch::ToggleSwitch(Window* const window)
     mFosterParent
     = new Widget(window, ToggleSwitchContentStyleClass, FosterParentStyle()),
   });
+  this->SetStructuralParentForLogicalChildren(mFosterParent);
 }
 
 ToggleSwitch::~ToggleSwitch() = default;

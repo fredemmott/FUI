@@ -415,6 +415,7 @@ CheckBox::CheckBox(Window* const window)
     mFosterParent
     = new Widget(window, FosterParentStyleClass, FosterParentStyles()),
   });
+  this->SetStructuralParentForLogicalChildren(mFosterParent);
 }
 
 CheckBox::~CheckBox() = default;
@@ -427,10 +428,6 @@ void CheckBox::Toggle() {
 Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
   this->Toggle();
   return EventHandlerResult::StopPropagation;
-}
-
-Widget* CheckBox::GetStructuralParentForLogicalChildren() noexcept {
-  return mFosterParent;
 }
 
 Widget::ComputedStyleFlags CheckBox::OnComputedStyleChange(

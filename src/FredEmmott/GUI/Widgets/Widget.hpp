@@ -227,6 +227,11 @@ class Widget {
   [[nodiscard]]
   std::string GetAccessibilityName() const;
 
+  [[nodiscard]]
+  bool IsDestructionInProgress() const noexcept {
+    return mDestructionInProgress;
+  }
+
  protected:
   enum class StateFlags {
     Default = 0,
@@ -298,14 +303,9 @@ class Widget {
    *
    * Use `SetStructuralChildren()` for internal sub-widgets
    */
-  [[nodiscard]]
-  virtual Widget* GetStructuralParentForLogicalChildren() noexcept {
-    return this;
-  }
-
-  [[nodiscard]]
-  const Widget* GetStructuralParentForLogicalChildren() const noexcept {
-    return const_cast<Widget*>(this)->GetStructuralParentForLogicalChildren();
+  void SetStructuralParentForLogicalChildren(Widget* const it) {
+    FUI_ASSERT(!mStructuralParentForLogicalChildren);
+    mStructuralParentForLogicalChildren = it;
   }
 
   void StartMouseCapture();
@@ -322,9 +322,12 @@ class Widget {
   };
   struct StyleTransitions;
 
+  bool mDestructionInProgress {};
+
   Window* const mOwnerWindow {};
   Widget* mLogicalParent {};
   Widget* mStructuralParent {};
+  mutable Widget* mStructuralParentForLogicalChildren {};
   std::optional<id_type> mID {};
 
   const StyleClass mPrimaryClass;
@@ -350,6 +353,19 @@ class Widget {
     mContexts;
 
   Point mMouseCaptureOffset {};
+
+  [[nodiscard]]
+  Widget* GetStructuralParentForLogicalChildren() {
+    if (!mStructuralParentForLogicalChildren) {
+      mStructuralParentForLogicalChildren = this;
+    }
+    return mStructuralParentForLogicalChildren;
+  }
+
+  [[nodiscard]]
+  const Widget* GetStructuralParentForLogicalChildren() const noexcept {
+    return const_cast<Widget*>(this)->GetStructuralParentForLogicalChildren();
+  }
 
   // Returns the innermost widget that received the event.
   [[nodiscard]]

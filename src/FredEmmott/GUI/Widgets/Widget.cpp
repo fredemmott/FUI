@@ -5,14 +5,15 @@
 #include <FredEmmott/GUI/FocusManager.hpp>
 #include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/Widgets/Focusable.hpp>
+#include <FredEmmott/GUI/Window.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
 #include <FredEmmott/GUI/events/HitTestEvent.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
+#include <FredEmmott/utility/almost_equal.hpp>
 #include <felly/overload.hpp>
 #include <ranges>
 
-#include "FredEmmott/utility/almost_equal.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -224,11 +225,12 @@ Widget* Widget::FromYogaNode(YGNodeConstRef const node) {
 }
 
 Widget::~Widget() {
-  if (const auto fm = FocusManager::Get()) {
-    fm->BeforeDestroy(this);
-  }
-
+  mDestructionInProgress = true;
   this->EndMouseCapture();
+
+  this->SetStructuralChildren({}, nullptr);
+
+  this->GetOwnerWindow()->GetFocusManager()->BeforeDestroy(this);
 
   YGNodeSetContext(mYoga.get(), nullptr);
 }
@@ -320,12 +322,18 @@ void Widget::AddMutableStyles(const Style& styles) {
 void Widget::SetStructuralChildren(
   const std::vector<Widget*>& children,
   Widget* const logicalParent) {
-  FUI_ASSERT(logicalParent);
-
   if (children == mRawStructuralChildren) {
     return;
   }
 
+  if (children.empty()) {
+    mStructuralChildren.clear();
+    mRawStructuralChildren.clear();
+    YGNodeSetChildren(mYoga.get(), nullptr, 0);
+    return;
+  }
+
+  FUI_ASSERT(logicalParent);
   std::vector<unique_ptr<Widget>> ownedChildren;
   ownedChildren.reserve(children.size());
   for (auto child: children) {
@@ -434,9 +442,10 @@ Widget* Widget::DispatchEvent(const Event& e) {
     return this->DispatchMouseEvent(*it).mTarget;
   }
 
+  const auto fm = this->GetOwnerWindow()->GetFocusManager();
+  FUI_ASSERT(fm);
   if (const auto it = dynamic_cast<KeyEvent const*>(&e)) {
-    if (const auto fm = FocusManager::Get();
-        const auto target = fm->GetFocusedWidget()) {
+    if (const auto target = fm->GetFocusedWidget()) {
       const auto widget = get<0>(*target);
       return widget->DispatchKeyEvent(*it);
     }
@@ -444,8 +453,7 @@ Widget* Widget::DispatchEvent(const Event& e) {
   }
 
   if (const auto it = dynamic_cast<TextInputEvent const*>(&e)) {
-    if (const auto fm = FocusManager::Get();
-        const auto target = fm->GetFocusedWidget()) {
+    if (const auto target = fm->GetFocusedWidget()) {
       const auto widget = get<0>(*target);
       return widget->DispatchTextInputEvent(*it);
     }
@@ -647,9 +655,7 @@ Widget* Widget::DispatchKeyEvent(const KeyEvent& e) {
   }
 
   if (result == EventHandlerResult::StopPropagation) {
-    if (const auto fm = FocusManager::Get()) {
-      fm->GiveVisibleFocus(this);
-    }
+    this->GetOwnerWindow()->GetFocusManager()->GiveVisibleFocus(this);
     return this;
   }
 
@@ -710,9 +716,7 @@ Widget::EventHandlerResult Widget::OnMouseButtonRelease(
   const MouseEvent& event) {
   const auto result = this->OnClick(event);
   if (result == EventHandlerResult::StopPropagation) {
-    if (const auto fm = FocusManager::Get()) {
-      fm->GiveImplicitFocus(this);
-    }
+    this->GetOwnerWindow()->GetFocusManager()->GiveImplicitFocus(this);
   }
   return result;
 }

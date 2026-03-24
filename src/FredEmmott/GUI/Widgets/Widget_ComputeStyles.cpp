@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 
 #include <FredEmmott/GUI/FocusManager.hpp>
-#include <FredEmmott/GUI/StaticTheme.hpp>
+#include <FredEmmott/GUI/Window.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/Widget/transitions.hpp>
-#include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <felly/overload.hpp>
 
 #include "Widget.hpp"
@@ -23,15 +22,14 @@ constexpr auto default_v = style_detail::default_property_value_v<P>;
 void Widget::ComputeStyles(const Style& inherited) {
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
 
-  if (const auto fm = FocusManager::Get()) {
-    mDirectStateFlags
-      &= ~(StateFlags::HaveFocus | StateFlags::HaveVisibleFocus);
-    if (const auto target = fm->GetFocusedWidget()) {
-      if (const auto [widget, reason] = *target; widget == this) {
-        mDirectStateFlags |= StateFlags::HaveFocus;
-        if (reason == FocusKind::Visible) {
-          mDirectStateFlags |= StateFlags::HaveVisibleFocus;
-        }
+  const auto fm = this->GetOwnerWindow()->GetFocusManager();
+  FUI_ASSERT(fm);
+  mDirectStateFlags &= ~(StateFlags::HaveFocus | StateFlags::HaveVisibleFocus);
+  if (const auto target = fm->GetFocusedWidget()) {
+    if (const auto [widget, reason] = *target; widget == this) {
+      mDirectStateFlags |= StateFlags::HaveFocus;
+      if (reason == FocusKind::Visible) {
+        mDirectStateFlags |= StateFlags::HaveVisibleFocus;
       }
     }
   }

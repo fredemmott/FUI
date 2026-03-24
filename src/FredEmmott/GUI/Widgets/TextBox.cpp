@@ -74,6 +74,7 @@ TextBox::TextBox(Window* const window)
   mTextContainer
     = new Widget(window, TextContainerStyleClass, TextContainerStyles());
   mButtons = new Widget(window, ButtonsStyleClass, ButtonContainerStyles());
+  this->SetStructuralParentForLogicalChildren(mButtons);
   this->SetStructuralChildren({mTextContainer, mButtons});
 
   YGNodeSetMeasureFunc(mTextContainer->GetLayoutNode(), &TextBox::Measure);
@@ -203,10 +204,6 @@ TextBox::BoundingBox TextBox::GetTextBoundingBoxW(
   const auto utf8Begin = WideToUtf8Index(text, begin);
   const auto utf8End = (begin == end) ? utf8Begin : WideToUtf8Index(text, end);
   return GetTextBoundingBox(utf8Begin, utf8End);
-}
-
-Widget* TextBox::GetStructuralParentForLogicalChildren() noexcept {
-  return mButtons;
 }
 
 void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
@@ -430,9 +427,7 @@ Widget::EventHandlerResult TextBox::OnMouseButtonPress(const MouseEvent& e) {
   this->StartMouseCapture();
 
   // Give focus to this widget so caret is visible and keyboard works
-  if (const auto fm = FocusManager::Get()) {
-    fm->GiveImplicitFocus(this);
-  }
+  this->GetOwnerWindow()->GetFocusManager()->GiveImplicitFocus(this);
 
   return StopPropagation;
 }

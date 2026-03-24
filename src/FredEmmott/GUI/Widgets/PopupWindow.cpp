@@ -3,7 +3,6 @@
 
 #include "PopupWindow.hpp"
 
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
 #include "WidgetList.hpp"
 
 namespace FredEmmott::GUI::Widgets {
@@ -25,7 +24,7 @@ PopupWindow::PopupWindow(Window* const window)
       LiteralStyleClass {"PopupWindow"},
       InvisibleStyle(),
       {PseudoClasses::LayoutOrphan}),
-    mWindow(Immediate::immediate_detail::tWindow->CreatePopup()) {}
+    mWindow(window->CreatePopup()) {}
 
 PopupWindow::~PopupWindow() = default;
 

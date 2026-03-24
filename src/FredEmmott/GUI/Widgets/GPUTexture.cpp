@@ -3,8 +3,6 @@
 
 #include "GPUTexture.hpp"
 
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
-
 namespace FredEmmott::GUI::Widgets {
 
 GPUTexture::GPUTexture(Window* const Window)
