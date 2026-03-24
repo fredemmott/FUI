@@ -204,9 +204,7 @@ HRESULT STDMETHODCALLTYPE UIANode::GetRuntimeId(SAFEARRAY** pRetVal) {
 }
 
 HRESULT STDMETHODCALLTYPE UIANode::get_BoundingRectangle(UiaRect* pRetVal) {
-  const auto yoga = mWidget->GetLayoutNode();
-  const float width = YGNodeLayoutGetWidth(yoga);
-  const float height = YGNodeLayoutGetHeight(yoga);
+  const auto [width, height] = mWidget->GetSize();
 
   const auto topLeftCanvas = mWidget->GetTopLeftCanvasPoint();
   const auto [left, top]

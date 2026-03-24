@@ -3,8 +3,6 @@
 
 #include "TitleBar.hpp"
 
-#include <Yoga.h>
-
 #include <felly/numeric_cast.hpp>
 
 #include "Button.hpp"
@@ -148,15 +146,11 @@ void TitleBar::SetIsActiveWindow(const bool isActive) {
 }
 
 TitleBar::Rects TitleBar::GetRects() const {
-  const auto yoga = this->GetLayoutNode();
   const auto topLeft = this->GetTopLeftCanvasPoint(this);
-  const auto width = YGNodeLayoutGetWidth(yoga);
-  const auto height = YGNodeLayoutGetHeight(yoga);
+  const auto [width, height] = this->GetSize();
 
   const auto iconTopLeft = mIconButton->GetTopLeftCanvasPoint(this);
-  const auto iconYoga = mIconButton->GetLayoutNode();
-  const auto iconWidth = YGNodeLayoutGetWidth(iconYoga);
-  const auto iconHeight = YGNodeLayoutGetHeight(iconYoga);
+  const auto [iconWidth, iconHeight] = mIconButton->GetSize();
 
   const auto minTopLeft = mMinimizeButton->GetTopLeftCanvasPoint(this);
   const auto maxTopLeft = mMaximizeButton->GetTopLeftCanvasPoint(this);

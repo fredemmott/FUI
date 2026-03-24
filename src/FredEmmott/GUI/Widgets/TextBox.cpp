@@ -160,10 +160,7 @@ Rect TextBox::GetContentRect() const noexcept {
   // Full area of the text box
   const Rect outerRect = Rect {
     Point {},
-    Size {
-      YGNodeLayoutGetWidth(yoga),
-      YGNodeLayoutGetHeight(yoga),
-    },
+    this->GetSize(),
   };
   // Where we can render text
   return outerRect.WithInset(

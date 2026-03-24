@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 #include "ComboBoxPopup.hpp"
 
-#include <Yoga.h>
-
 #include "ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/Common.hpp"
@@ -86,7 +84,7 @@ ComboBoxPopupResult BeginComboBoxPopup(const ID id) {
     return false;
   }
 
-  const auto width = YGNodeLayoutGetWidth(button->GetLayoutNode()) + 8;
+  const auto width = button->GetSize().mWidth + 8;
 
   BeginWidget<Widget>(
     ID {0}, LiteralStyleClass {"ComboBox/Popup"}, OuterStyles());
