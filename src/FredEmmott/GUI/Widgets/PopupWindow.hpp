@@ -23,7 +23,7 @@ class PopupWindow final : public Widget {
     override;
 
  private:
-  unique_ptr<Widget> mRootWidget;
-  unique_ptr<Window> mWindow;
+  std::unique_ptr<Widget> mRootWidget;
+  std::unique_ptr<Window> mWindow;
 };
 }// namespace FredEmmott::GUI::Widgets

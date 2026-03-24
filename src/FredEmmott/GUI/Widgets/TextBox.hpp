@@ -114,11 +114,11 @@ class TextBox : public Widget, public IFocusable {
     std::size_t mSelectionEnd {};
   };
   struct Caches {
-    unique_ptr<UText, &utext_close> mUText;
+    felly::unique_ptr<UText, &utext_close> mUText;
     std::wstring mWideText;
 
-    unique_ptr<UBreakIterator, &ubrk_close> mGraphemeIterator;
-    unique_ptr<UBreakIterator, &ubrk_close> mWordIterator;
+    felly::unique_ptr<UBreakIterator, &ubrk_close> mGraphemeIterator;
+    felly::unique_ptr<UBreakIterator, &ubrk_close> mWordIterator;
     std::optional<TextMetrics> mTextMetrics;
   };
 

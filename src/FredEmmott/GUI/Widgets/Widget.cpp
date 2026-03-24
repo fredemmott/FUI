@@ -334,11 +334,11 @@ void Widget::SetStructuralChildren(
   }
 
   FUI_ASSERT(logicalParent);
-  std::vector<unique_ptr<Widget>> ownedChildren;
+  std::vector<std::unique_ptr<Widget>> ownedChildren;
   ownedChildren.reserve(children.size());
   for (auto child: children) {
-    auto it
-      = std::ranges::find(mStructuralChildren, child, &unique_ptr<Widget>::get);
+    auto it = std::ranges::find(
+      mStructuralChildren, child, &std::unique_ptr<Widget>::get);
     if (it != mStructuralChildren.end()) {
       ownedChildren.emplace_back(std::move(*it));
       continue;

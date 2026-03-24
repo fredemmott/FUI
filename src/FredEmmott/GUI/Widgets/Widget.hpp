@@ -23,7 +23,6 @@ struct KeyPressEvent;
 class Window;
 }// namespace FredEmmott::GUI
 namespace FredEmmott::GUI::Widgets {
-using namespace FredEmmott::Memory;
 
 struct WidgetList;
 
@@ -333,10 +332,10 @@ class Widget {
   const StyleClass mPrimaryClass;
   ImmutableStyle mImmutableStyle;
 
-  unique_ptr<StyleTransitions> mStyleTransitions;
+  std::unique_ptr<StyleTransitions> mStyleTransitions;
 
   StyleClasses mClassList;
-  unique_ptr<YGNode> mYoga;
+  unique_yoga_node_ptr mYoga;
 
   StateFlags mDirectStateFlags {};
   StateFlags mInheritedStateFlags {};
@@ -346,7 +345,7 @@ class Widget {
   Style mInheritedStyles;
   Style mComputedStyle;
 
-  std::vector<unique_ptr<Widget>> mStructuralChildren;
+  std::vector<std::unique_ptr<Widget>> mStructuralChildren;
   std::vector<Widget*> mRawStructuralChildren;
 
   boost::container::small_flat_map<std::type_index, std::unique_ptr<Context>, 2>

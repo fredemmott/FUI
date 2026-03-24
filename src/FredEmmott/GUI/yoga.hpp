@@ -4,30 +4,16 @@
 
 #include <yoga/Yoga.h>
 
-#include <FredEmmott/memory.hpp>
 #include <felly/scope_exit.hpp>
+#include <felly/unique_ptr.hpp>
 
 #include "Size.hpp"
 #include "assert.hpp"
 
-namespace FredEmmott::Memory::extensions {
-template <>
-struct deleter<YGNode> {
-  void operator()(YGNode* p) const {
-    YGNodeFree(p);
-  }
-};
-
-template <>
-struct deleter<YGConfig> {
-  void operator()(YGConfig* p) const {
-    YGConfigFree(p);
-  }
-};
-}// namespace FredEmmott::Memory::extensions
-
 namespace FredEmmott::GUI {
-using namespace FredEmmott::Memory;
+
+using unique_yoga_node_ptr = felly::unique_ptr<YGNode, &YGNodeFree>;
+using unique_yoga_config_ptr = felly::unique_ptr<YGConfig, &YGConfigFree>;
 
 YGConfigRef GetYogaConfig();
 float GetMinimumWidth(YGNodeConstRef node);

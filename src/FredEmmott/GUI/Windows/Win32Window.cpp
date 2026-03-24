@@ -245,7 +245,7 @@ void Win32Window::ProcessNativeEvents() {
   }
 }
 
-unique_ptr<Win32Window> Win32Window::CreateAny(
+std::unique_ptr<Win32Window> Win32Window::CreateAny(
   HINSTANCE hinstance,
   int showCommand,
   const Options& options) {
@@ -300,7 +300,7 @@ int Win32Window::WinMain(
     options.mHooks.mBeforeWindow();
   }
 
-  unique_ptr<Win32Window> window;
+  std::unique_ptr<Win32Window> window;
   if (options.mHooks.mCreateWindow) {
     window = options.mHooks.mCreateWindow(hInstance, nCmdShow, windowOptions);
   } else {

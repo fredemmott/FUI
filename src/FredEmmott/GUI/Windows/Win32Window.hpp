@@ -13,7 +13,6 @@
 #include <optional>
 
 #include "FredEmmott/GUI/Point.hpp"
-#include "FredEmmott/memory.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 class Widget;
@@ -48,7 +47,7 @@ class Win32Window;
 struct WinMainOptions {
   struct Hooks {
     void (*mBeforeWindow)() {nullptr};
-    unique_ptr<Win32Window> (*mCreateWindow)(
+    std::unique_ptr<Win32Window> (*mCreateWindow)(
       HINSTANCE instance,
       UINT showCommand,
       const WindowOptions&) {nullptr};
@@ -81,7 +80,7 @@ class Win32Window : public Window {
   Win32Window& operator=(const Win32Window&) = delete;
   Win32Window& operator=(Win32Window&&) = delete;
 
-  static unique_ptr<Win32Window>
+  static std::unique_ptr<Win32Window>
   CreateAny(HINSTANCE hinstance, int showCommand, const Options& options = {});
 
   /** Main loop; continues until a stop is requested.

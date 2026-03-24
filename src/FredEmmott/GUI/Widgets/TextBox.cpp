@@ -649,7 +649,7 @@ UText* TextBox::GetUText() const noexcept {
 }
 
 static UBreakIterator* LazyUBreakIterator(
-  unique_ptr<UBreakIterator, &ubrk_close>& owned,
+  felly::unique_ptr<UBreakIterator, &ubrk_close>& owned,
   const UBreakIteratorType iteratorType,
   UText* text) noexcept {
   if (owned) {

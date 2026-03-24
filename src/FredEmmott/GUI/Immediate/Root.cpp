@@ -100,7 +100,7 @@ bool Root::CanFit(float width, float height) const {
   const auto yoga = this->GetLayoutNode();
   const auto checkParents = ScopedYogaParentCheck(yoga);
   const auto fixParents = felly::scope_exit([yoga] { FixYogaChildren(yoga); });
-  const unique_ptr<YGNode> testRoot {YGNodeClone(yoga)};
+  const unique_yoga_node_ptr testRoot {YGNodeClone(yoga)};
   const auto cloned = testRoot.get();
   YGNodeStyleSetWidth(cloned, std::ceil(width));
   YGNodeStyleSetHeight(cloned, std::ceil(height));

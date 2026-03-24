@@ -10,7 +10,7 @@
 
 namespace FredEmmott::GUI {
 YGConfigRef GetYogaConfig() {
-  static unique_ptr<YGConfig> sInstance;
+  static unique_yoga_config_ptr sInstance;
   static std::once_flag sOnceFlag;
   std::call_once(sOnceFlag, [&ret = sInstance]() {
     ret.reset(YGConfigNew());
@@ -31,8 +31,8 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
   const auto fixParents = felly::scope_exit([node] {
     FixYogaChildren(const_cast<YGNodeRef>(node));
   });
-  const unique_ptr<YGNode> owned {YGNodeClone(node)};
-  auto yoga = owned.get();
+  const unique_yoga_node_ptr owned {YGNodeClone(node)};
+  const auto yoga = owned.get();
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
   YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);
   YGNodeStyleSetWidth(yoga, hint);
@@ -70,7 +70,7 @@ float GetClampedMinimumWidth(
   const auto fixParents = felly::scope_exit([node] {
     FixYogaChildren(const_cast<YGNodeRef>(node));
   });
-  const unique_ptr<YGNode> owned {YGNodeClone(node)};
+  const unique_yoga_node_ptr owned {YGNodeClone(node)};
   const auto yoga = owned.get();
 
   if (hint == ClampedMinimumWidthHint::MinimumIsLikely) {
@@ -109,7 +109,7 @@ float GetIdealHeight(YGNodeConstRef node, float width) {
     FixYogaChildren(const_cast<YGNodeRef>(node));
   });
 
-  const unique_ptr<YGNode> owned {YGNodeClone(node)};
+  const unique_yoga_node_ptr owned {YGNodeClone(node)};
   const auto yoga = owned.get();
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
   YGNodeStyleSetFlexDirection(yoga, YGFlexDirectionRow);

@@ -188,8 +188,6 @@ add_library(
   FredEmmott/GUI/events/MouseEvent.hpp
   FredEmmott/GUI/events/TextInputEvent.hpp
   FredEmmott/GUI/yoga.cpp FredEmmott/GUI/yoga.hpp
-  FredEmmott/memory.hpp
-  FredEmmott/memory/memory_detail.hpp
   FredEmmott/type_traits/concepts.hpp
   FredEmmott/utility/almost_equal.hpp
   FredEmmott/utility/bitflag_enums.hpp

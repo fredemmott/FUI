@@ -54,7 +54,7 @@ class Root final {
   Widgets::Widget* mActualRoot {};
   Widgets::Widget* mImmediateRoot {};
   FocusManager mFocusManager;
-  unique_ptr<YGNode> mYogaRoot;
+  unique_yoga_node_ptr mYogaRoot;
 };
 
 }// namespace FredEmmott::GUI::Immediate
