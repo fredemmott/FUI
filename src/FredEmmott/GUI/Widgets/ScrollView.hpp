@@ -58,9 +58,9 @@ class ScrollView final : public Widget {
     float content,
     float container) noexcept;
 
-  static void OnInnerContentDirty(YGNodeConstRef);
+  static void OnInnerContentDirty(const YGNode*);
   static YGSize MeasureOuterContent(
-    YGNodeConstRef node,
+    const YGNode* node,
     float width,
     YGMeasureMode widthMode,
     float height,

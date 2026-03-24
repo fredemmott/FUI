@@ -137,7 +137,7 @@ Widget::ComputedStyleFlags TextBlock::OnComputedStyleChange(
 }
 
 YGSize TextBlock::Measure(
-  YGNodeConstRef node,
+  const YGNode* node,
   float width,
   YGMeasureMode widthMode,
   float height,

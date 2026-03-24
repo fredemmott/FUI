@@ -65,7 +65,7 @@ class Widget {
 
   // Can return nullptr
   [[nodiscard]]
-  static Widget* FromYogaNode(YGNodeConstRef);
+  static Widget* FromYogaNode(const YGNode*);
   [[nodiscard]]
   Widget* GetLogicalParentOrNull() const {
     return mLogicalParent;
@@ -87,7 +87,7 @@ class Widget {
     return NonNullCastToSubtype<T>(GetStructuralParentOrNull());
   }
 
-  [[nodiscard]] YGNodeRef GetLayoutNode() const noexcept {
+  [[nodiscard]] YGNode* GetLayoutNode() const noexcept {
     return mYoga.get();
   }
 

@@ -108,7 +108,7 @@ bool Root::CanFit(float width, float height) const {
   return !YGNodeLayoutGetHadOverflow(cloned);
 }
 
-YGNodeRef Root::GetLayoutNode() const {
+YGNode* Root::GetLayoutNode() const {
   return mYogaRoot.get();
 }
 

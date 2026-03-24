@@ -117,7 +117,7 @@ Widget::ComputedStyleFlags Label::OnComputedStyleChange(
 }
 
 YGSize Label::Measure(
-  YGNodeConstRef node,
+  const YGNode* node,
   [[maybe_unused]] float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,

@@ -268,14 +268,14 @@ bool ScrollView::IsScrollBarVisible(
   return !fits;
 }
 
-void ScrollView::OnInnerContentDirty(YGNodeConstRef node) {
+void ScrollView::OnInnerContentDirty(const YGNode* node) {
   auto& self = *FromYogaNode(node)->GetStructuralParent<ScrollView>();
   self.mDirtyInner = true;
   YGNodeMarkDirty(self.mContentOuter->GetLayoutNode());
 }
 
 YGSize ScrollView::MeasureOuterContent(
-  YGNodeConstRef node,
+  const YGNode* node,
   float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   float height,

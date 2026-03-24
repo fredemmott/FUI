@@ -762,14 +762,14 @@ TextBox::BoundingBox TextBox::GetTextBoundingBox(
 }
 
 YGSize TextBox::Measure(
-  const YGNodeConstRef node,
+  const YGNode* node,
   [[maybe_unused]] float width,
   [[maybe_unused]] YGMeasureMode widthMode,
   [[maybe_unused]] float height,
   [[maybe_unused]] YGMeasureMode heightMode) {
   // Getting the parent as `node` is the 'text' child node
   const auto& self = *static_cast<TextBox*>(
-    FromYogaNode(YGNodeGetParent(const_cast<YGNodeRef>(node))));
+    FromYogaNode(YGNodeGetParent(const_cast<YGNode*>(node))));
 
   const auto& metrics = self.GetMetrics();
 

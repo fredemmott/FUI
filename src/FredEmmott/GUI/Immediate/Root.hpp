@@ -32,7 +32,7 @@ class Root final {
   bool CanFit(const Size&) const;
   [[nodiscard]]
   bool CanFit(float width, float height) const;
-  YGNodeRef GetLayoutNode() const;
+  YGNode* GetLayoutNode() const;
   Size GetInitialSize() const;
 
   FocusManager* GetFocusManager() const;

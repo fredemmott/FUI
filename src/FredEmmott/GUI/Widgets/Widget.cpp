@@ -96,7 +96,7 @@ void PaintOutline(
 }
 
 void PaintBorder(
-  YGNodeConstRef yoga,
+  const YGNode* yoga,
   Renderer* renderer,
   const Rect& contentRect,
   const Style& style) {
@@ -210,7 +210,7 @@ Widget::Widget(
   mStyleTransitions.reset(new StyleTransitions());
 }
 
-Widget* Widget::FromYogaNode(YGNodeConstRef const node) {
+Widget* Widget::FromYogaNode(const YGNode* const node) {
   if (!node) {
     return nullptr;
   }
@@ -356,7 +356,7 @@ void Widget::SetStructuralChildren(
   mStructuralChildren = std::move(ownedChildren);
   mRawStructuralChildren = children;
 
-  std::vector<YGNodeRef> layoutChildren;
+  std::vector<YGNode*> layoutChildren;
   layoutChildren.reserve(children.end() - children.begin());
   for (auto&& child: children) {
     if (!child->mClassList.contains(PseudoClasses::LayoutOrphan)) {

@@ -9,18 +9,19 @@
 #include "assert.hpp"
 
 namespace FredEmmott::GUI {
-YGConfigRef GetYogaConfig() {
-  static unique_yoga_config_ptr sInstance;
-  static std::once_flag sOnceFlag;
-  std::call_once(sOnceFlag, [&ret = sInstance]() {
-    ret.reset(YGConfigNew());
-    YGConfigSetUseWebDefaults(ret.get(), true);
-    YGConfigSetPointScaleFactor(ret.get(), 0.0f);
-  });
+YGConfig* GetYogaConfig() {
+  static unique_yoga_config_ptr sInstance {
+    [] {
+      const auto ret = YGConfigNew();
+      YGConfigSetUseWebDefaults(ret, true);
+      YGConfigSetPointScaleFactor(ret, 0.0f);
+      return ret;
+    }(),
+  };
   return sInstance.get();
 }
 
-float GetMinimumWidth(YGNodeConstRef node, float hint) {
+float GetMinimumWidth(const YGNode* node, float hint) {
   // We clone the node due to caching bugs with YGNodeCalculateLayout with
   // varying sizes, and instead set the width property on the clone.
   //
@@ -28,9 +29,8 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
   //
   // https://github.com/facebook/yoga/issues/1003#issuecomment-642888983
   const auto checkParents = ScopedYogaParentCheck(node);
-  const auto fixParents = felly::scope_exit([node] {
-    FixYogaChildren(const_cast<YGNodeRef>(node));
-  });
+  const auto fixParents
+    = felly::scope_exit([node] { FixYogaChildren(const_cast<YGNode*>(node)); });
   const unique_yoga_node_ptr owned {YGNodeClone(node)};
   const auto yoga = owned.get();
   YGNodeStyleSetOverflow(yoga, YGOverflowVisible);
@@ -62,14 +62,13 @@ float GetMinimumWidth(YGNodeConstRef node, float hint) {
 }
 
 float GetClampedMinimumWidth(
-  YGNodeConstRef node,
+  const YGNode* node,
   float min,
   float max,
   const ClampedMinimumWidthHint hint) {
   const auto checkParents = ScopedYogaParentCheck(node);
-  const auto fixParents = felly::scope_exit([node] {
-    FixYogaChildren(const_cast<YGNodeRef>(node));
-  });
+  const auto fixParents
+    = felly::scope_exit([node] { FixYogaChildren(const_cast<YGNode*>(node)); });
   const unique_yoga_node_ptr owned {YGNodeClone(node)};
   const auto yoga = owned.get();
 
@@ -99,15 +98,14 @@ float GetClampedMinimumWidth(
   }
   return max;
 }
-float GetMinimumWidth(YGNodeConstRef node) {
+float GetMinimumWidth(const YGNode* node) {
   return GetMinimumWidth(node, YGUndefined);
 }
 
-float GetIdealHeight(YGNodeConstRef node, float width) {
+float GetIdealHeight(const YGNode* node, float width) {
   const auto checkParents = ScopedYogaParentCheck(node);
-  const auto fixParents = felly::scope_exit([node] {
-    FixYogaChildren(const_cast<YGNodeRef>(node));
-  });
+  const auto fixParents
+    = felly::scope_exit([node] { FixYogaChildren(const_cast<YGNode*>(node)); });
 
   const unique_yoga_node_ptr owned {YGNodeClone(node)};
   const auto yoga = owned.get();
@@ -119,7 +117,7 @@ float GetIdealHeight(YGNodeConstRef node, float width) {
   return YGNodeLayoutGetHeight(yoga);
 }
 
-Size GetMinimumWidthAndIdealHeight(YGNodeConstRef original) {
+Size GetMinimumWidthAndIdealHeight(const YGNode* original) {
   const auto width = GetMinimumWidth(original);
   return Size {
     width,

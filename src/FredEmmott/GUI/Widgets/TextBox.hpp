@@ -157,7 +157,7 @@ class TextBox : public Widget, public IFocusable {
   std::size_t IndexFromLocalX(float x) const noexcept;
 
   static YGSize Measure(
-    YGNodeConstRef node,
+    const YGNode* node,
     float width,
     YGMeasureMode widthMode,
     float height,

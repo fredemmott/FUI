@@ -37,7 +37,7 @@ class Label final : public Widget {
   std::optional<YGSize> mCachedMeasurement;
 
   static YGSize Measure(
-    YGNodeConstRef node,
+    const YGNode* node,
     float width,
     YGMeasureMode widthMode,
     float height,

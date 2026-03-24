@@ -70,7 +70,7 @@ class TextBlock final : public Widget {
 #endif
 
   static YGSize Measure(
-    YGNodeConstRef node,
+    const YGNode* node,
     float width,
     YGMeasureMode widthMode,
     float height,
