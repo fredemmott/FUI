@@ -119,7 +119,7 @@ auto& InnerStyles() {
       .BackgroundColor(RadioButtonCheckGlyphFill)
       .BorderColor(RadioButtonCheckGlyphStroke)
       .BorderRadius(7)
-      .Display(YGDisplayNone)
+      .Display(Display::None)
       .Height(RadioButtonCheckGlyphSize)
       .Width(RadioButtonCheckGlyphSize)
       .ScaleX(1, SizeAnimation)
@@ -139,7 +139,7 @@ auto& InnerStyles() {
           .BackgroundColor(RadioButtonCheckGlyphFillPressed)
           .BorderColor(RadioButtonCheckGlyphStrokePressed)
           .BorderRadius(6)
-          .Display(YGDisplayFlex)
+          .Display(Display::Flex)
           .ScaleX(ActiveScale)
           .ScaleY(ActiveScale))
       .And(
@@ -149,7 +149,7 @@ auto& InnerStyles() {
           .BorderColor(RadioButtonCheckGlyphStrokeDisabled)
           .ScaleX(DisabledScale)
           .ScaleY(DisabledScale))
-      .And(Checked, Style().Display(YGDisplayFlex)),
+      .And(Checked, Style().Display(Display::Flex)),
   };
   return ret;
 }

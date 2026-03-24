@@ -9,9 +9,9 @@ namespace FredEmmott::GUI::Immediate {
 
 Result<&EndDisabled, void, immediate_detail::WidgetlessResultMixin>
 BeginDisabled(const bool isDisabled, const ID id) {
-  static const auto PrimaryClass = StyleClass::Make("conditionally-disabled");
+  static constexpr LiteralStyleClass PrimaryClass {"ConditionallyDisabled"};
   static const ImmutableStyle Styles {
-    Style().Display(YGDisplayContents),
+    Style().Display(Display::Contents),
   };
 
   using namespace immediate_detail;

@@ -17,7 +17,26 @@ using namespace widget_detail;
 namespace {
 template <style_detail::StylePropertyKey P>
 constexpr auto default_v = style_detail::default_property_value_v<P>;
+
+constexpr auto MakeYogaValue(const auto v) {
+  return v;
 }
+
+constexpr auto MakeYogaValue(const Overflow overflow) {
+  static_assert(std::to_underlying(Overflow::Hidden) == YGOverflowHidden);
+  static_assert(std::to_underlying(Overflow::Visible) == YGOverflowVisible);
+  static_assert(std::to_underlying(Overflow::Scroll) == YGOverflowScroll);
+  return static_cast<YGOverflow>(overflow);
+}
+
+constexpr auto MakeYogaValue(const Display display) {
+  static_assert(std::to_underlying(Display::None) == YGDisplayNone);
+  static_assert(std::to_underlying(Display::Flex) == YGDisplayFlex);
+  static_assert(std::to_underlying(Display::Contents) == YGDisplayContents);
+  return static_cast<YGDisplay>(display);
+}
+
+}// namespace
 
 void Widget::ComputeStyles(const Style& inherited) {
   static const auto GlobalBaselineStyle = Style::BuiltinBaseline();
@@ -132,14 +151,20 @@ void Widget::ComputeStyles(const Style& inherited) {
         FrontArgs&&... frontArgs) {
         const auto& optional = std::invoke(member, mComputedStyle);
         if (optional.has_value()) {
-          setter(yoga, std::forward<FrontArgs>(frontArgs)..., optional.value());
+          setter(
+            yoga,
+            std::forward<FrontArgs>(frontArgs)...,
+            MakeYogaValue(optional.value()));
           return;
         }
 
         if constexpr (!std::same_as<
                         std::nullopt_t,
                         std::decay_t<decltype(defaultValue)>>) {
-          setter(yoga, std::forward<FrontArgs>(frontArgs)..., defaultValue);
+          setter(
+            yoga,
+            std::forward<FrontArgs>(frontArgs)...,
+            MakeYogaValue(defaultValue));
         }
       };
 

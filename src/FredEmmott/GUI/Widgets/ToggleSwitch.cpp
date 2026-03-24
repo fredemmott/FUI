@@ -39,7 +39,7 @@ auto& ToggleSwitchStyle() {
 
 auto& FosterParentStyle() {
   static const ImmutableStyle ret {
-    Style().Display(YGDisplayContents),
+    Style().Display(Display::Contents),
   };
   return ret;
 }

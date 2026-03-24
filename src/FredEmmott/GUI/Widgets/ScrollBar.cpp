@@ -64,7 +64,7 @@ constexpr auto TrackThumbMargin = 2.f;
 auto& HorizontalTrackStyle() {
   static const ImmutableStyle ret {
     Style()
-      .Display(YGDisplayFlex)
+      .Display(Display::Flex)
       .FlexGrow(1)
       .FlexDirection(YGFlexDirectionRow)
       .MarginLeft(TrackThumbMargin)
@@ -85,7 +85,7 @@ auto& HorizontalTrackStyle() {
 auto& VerticalTrackStyle() {
   static const ImmutableStyle ret {
     Style()
-      .Display(YGDisplayFlex)
+      .Display(Display::Flex)
       .FlexGrow(1)
       .FlexDirection(YGFlexDirectionColumn)
       .MarginBottom(TrackThumbMargin)
@@ -406,8 +406,8 @@ void ScrollBar::SetValue(const float value, const ChangeReason reason) {
   }
 
   // Use Translate instead to avoid relayout while dragging
-  mLargeDecrement->SetMutableStyles(Style().Display(YGDisplayNone));
-  mLargeIncrement->SetMutableStyles(Style().Display(YGDisplayNone));
+  mLargeDecrement->SetMutableStyles(Style().Display(Display::None));
+  mLargeIncrement->SetMutableStyles(Style().Display(Display::None));
   const auto getLength = (mOrientation == Orientation::Horizontal)
     ? &YGNodeLayoutGetWidth
     : &YGNodeLayoutGetHeight;

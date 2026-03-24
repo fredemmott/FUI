@@ -370,7 +370,7 @@ void Widget::SetStructuralChildren(
 void Widget::Paint(Renderer* renderer) const {
   const auto& style = mComputedStyle;
 
-  if (style.Display() == YGDisplayNone) {
+  if (style.Display() == Display::None) {
     return;
   }
 

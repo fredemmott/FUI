@@ -48,9 +48,9 @@ const ImmutableStyle& NavigationViewPaneStyle() {
           .BackgroundColor(NavigationViewExpandedPaneBackground)
           .Width(SplitViewOpenPaneThemeLength, ExpandAnimation)
           .Descendants(
-            NavigationViewItemLabelStyleClass, Style().Display(YGDisplayFlex)))
+            NavigationViewItemLabelStyleClass, Style().Display(Display::Flex)))
       .Descendants(
-        NavigationViewItemLabelStyleClass, Style().Display(YGDisplayNone))};
+        NavigationViewItemLabelStyleClass, Style().Display(Display::None))};
   return ret;
 }
 const ImmutableStyle& NavigationViewPaneHeaderStyle() {
@@ -110,7 +110,7 @@ const ImmutableStyle& NavigationViewContentHeaderStyle() {
       .Color(TextFillColorPrimary)
       .Font(SystemFont::Title)
       // overridden by NavigationView::SetHeaderText
-      .Display(YGDisplayNone),
+      .Display(Display::None),
 
   };
   return ret;
@@ -211,7 +211,7 @@ const ImmutableStyle& NavigationViewItemLabelStyle() {
   static const ImmutableStyle ret {
     Style()
       // Overridden by Pane when expanded
-      .Display(YGDisplayNone),
+      .Display(Display::None),
   };
   return ret;
 }

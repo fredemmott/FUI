@@ -75,10 +75,10 @@ NavigationView::~NavigationView() = default;
 
 void NavigationView::SetHeaderText(const std::string_view text) {
   if (text.empty()) {
-    mContentHeader->SetMutableStyles(Style().Display(YGDisplayNone));
+    mContentHeader->SetMutableStyles(Style().Display(Display::None));
     return;
   }
-  mContentHeader->SetMutableStyles(Style().Display(YGDisplayFlex));
+  mContentHeader->SetMutableStyles(Style().Display(Display::Flex));
   mContentHeader->SetText(text);
 }
 
@@ -124,7 +124,7 @@ void NavigationView::IntegrateWithTitleBar() {
   mTogglePaneButton = new NavigationViewTogglePaneButton(window, this);
 
   titleBar->SetLeftWidgets({mBackButton, mTogglePaneButton});
-  mPaneHeader->SetMutableStyles(Style().Display(YGDisplayNone));
+  mPaneHeader->SetMutableStyles(Style().Display(Display::None));
 }
 
 }// namespace FredEmmott::GUI::Widgets

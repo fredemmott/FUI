@@ -75,7 +75,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
     Style().AlignSelf(YGAlignCenter).FlexGrow(1),
   };
   static const ImmutableStyle InnerStyles {
-    Style().Display(YGDisplayContents),
+    Style().Display(Display::Contents),
   };
   BeginWidget<Widget>(
     ID {"container"}, LiteralStyleClass {"ComboBox/Button/Outer"}, OuterStyles);

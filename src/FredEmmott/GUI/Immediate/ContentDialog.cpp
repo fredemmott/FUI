@@ -140,11 +140,11 @@ auto GetButtonWidget(const T& v) {
 };
 
 void Hide(auto w) {
-  static const auto Hide = Style().Display(YGDisplayNone);
+  static const ImmutableStyle Hide {Style().Display(Display::None)};
   GetButtonWidget(w)->AddMutableStyles(Hide);
 }
 auto Show(auto w) {
-  static const auto Show = Style().Display(YGDisplayFlex);
+  static const ImmutableStyle Show {Style().Display(Display::Flex)};
   GetButtonWidget(w)->AddMutableStyles(Show);
 };
 

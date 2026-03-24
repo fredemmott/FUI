@@ -174,7 +174,7 @@ Style Style::BuiltinBaseline() {
   auto ret = StaticTheme::Generic::BodyTextBlockStyle()
     + Style()
         .Color(StaticTheme::TextFillColorPrimaryBrush)
-        .Display(YGDisplayFlex)
+        .Display(Display::Flex)
         .FlexGrow(0)
         .FlexShrink(0)
         .Opacity(1)

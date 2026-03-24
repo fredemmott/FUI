@@ -34,4 +34,16 @@ enum class Cursor {
   Text,// I-beam cursor
 };
 
+enum class Overflow {
+  Visible,
+  Hidden,
+  Scroll,
+};
+
+enum class Display {
+  Flex,
+  None,
+  Contents,
+};
+
 }// namespace FredEmmott::GUI

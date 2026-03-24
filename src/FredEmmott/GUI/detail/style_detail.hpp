@@ -20,10 +20,10 @@ class StyleProperty;
   X(float, Float) \
   X(YGAlign, YGAlign) \
   X(YGBoxSizing, YGBoxSizing) \
-  X(YGDisplay, YGDisplay) \
+  X(GUI::Display, Display) \
   X(YGFlexDirection, YGFlexDirection) \
   X(YGJustify, YGJustify) \
-  X(YGOverflow, YGOverflow) \
+  X(GUI::Overflow, Overflow) \
   X(YGPositionType, YGPositionType) \
   X(YGWrap, YGWrap) \
   X(GUI::PointerEvents, PointerEvents) \
@@ -69,7 +69,7 @@ class StyleProperty;
   X(Bottom, float, Self) \
   X(Color, Brush, SelfAndDescendants) \
   X(Cursor, GUI::Cursor, SelfAndDescendants) \
-  X(Display, YGDisplay, Self) \
+  X(Display, GUI::Display, Self) \
   X(FlexBasis, float, Self) \
   X(FlexDirection, YGFlexDirection, Self) \
   X(FlexGrow, float, Self) \
@@ -86,7 +86,7 @@ class StyleProperty;
   X(Opacity, float, Self) \
   X(OutlineColor, Brush, Self) \
   X(OutlineWidth, float, Self) \
-  X(Overflow, YGOverflow, Self) \
+  X(Overflow, GUI::Overflow, Self) \
   X(PointerEvents, GUI::PointerEvents, Self) \
   X(Position, YGPositionType, Self) \
   X(Right, float, Self) \

@@ -14,7 +14,7 @@ void PopID() {
 
 Result<&PopID, void, immediate_detail::WidgetlessResultMixin> PushID(
   const ID id) {
-  static const ImmutableStyle MyStyle {Style().Display(YGDisplayContents)};
+  static const ImmutableStyle MyStyle {Style().Display(Display::Contents)};
   immediate_detail::BeginWidget<Widgets::Widget>(
     id, LiteralStyleClass {"id-scope"}, MyStyle);
   return {};

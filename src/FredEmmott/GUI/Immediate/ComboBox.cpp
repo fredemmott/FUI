@@ -24,7 +24,7 @@ class ComboBoxWidget final : public Widgets::Widget {
  private:
   static auto& Styles() {
     static const ImmutableStyle ret {
-      Style().Display(YGDisplayContents),
+      Style().Display(Display::Contents),
     };
     return ret;
   }

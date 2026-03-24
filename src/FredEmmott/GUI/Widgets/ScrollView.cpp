@@ -139,24 +139,24 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   if (showHScroll) {
     mHorizontalScrollBar->SetThumbSize(w);
     mHorizontalScrollBar->SetRange(0, cw - w);
-    mHorizontalScrollBar->AddMutableStyles(Style().Display(YGDisplayFlex));
+    mHorizontalScrollBar->AddMutableStyles(Style().Display(Display::Flex));
     mVerticalScrollBar->AddMutableStyles(
       Style().Bottom(StaticTheme::ScrollBar::ScrollBarSize + 4));
   } else {
     mHorizontalScrollBar->SetValue(0);
     mHorizontalScrollBar->SetRange(0, 0);
-    mHorizontalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
+    mHorizontalScrollBar->AddMutableStyles(Style().Display(Display::None));
     mVerticalScrollBar->AddMutableStyles(Style().Bottom(4));
   }
 
   if (showVScroll) {
     mVerticalScrollBar->SetThumbSize(h);
     mVerticalScrollBar->SetRange(0, ch - h);
-    mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayFlex));
+    mVerticalScrollBar->AddMutableStyles(Style().Display(Display::Flex));
   } else {
     mVerticalScrollBar->SetValue(0);
     mVerticalScrollBar->SetRange(0, 0);
-    mVerticalScrollBar->AddMutableStyles(Style().Display(YGDisplayNone));
+    mVerticalScrollBar->AddMutableStyles(Style().Display(Display::None));
   }
 
   const auto inheritable = GetComputedStyle().InheritableValues();
@@ -164,10 +164,10 @@ void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   mVerticalScrollBar->ComputeStyles(inheritable);
   FUI_ASSERT(
     mHorizontalScrollBar->GetComputedStyle().Display()
-    == (showHScroll ? YGDisplayFlex : YGDisplayNone));
+    == (showHScroll ? Display::Flex : Display::None));
   FUI_ASSERT(
     mVerticalScrollBar->GetComputedStyle().Display()
-    == (showVScroll ? YGDisplayFlex : YGDisplayNone));
+    == (showVScroll ? Display::Flex : Display::None));
 
   const auto newHValue = mHorizontalScrollBar->GetValue();
   const auto newVValue = mVerticalScrollBar->GetValue();

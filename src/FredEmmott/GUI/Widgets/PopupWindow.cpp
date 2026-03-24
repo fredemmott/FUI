@@ -11,7 +11,7 @@ namespace {
 
 const auto& InvisibleStyle() {
   static const ImmutableStyle ret {
-    Style().Display(YGDisplayNone),
+    Style().Display(Display::None),
   };
   return ret;
 }
