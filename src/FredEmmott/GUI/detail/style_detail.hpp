@@ -24,7 +24,7 @@ class StyleProperty;
   X(GUI::FlexDirection, FlexDirection) \
   X(GUI::Justify, Justify) \
   X(GUI::Overflow, Overflow) \
-  X(YGPositionType, YGPositionType) \
+  X(GUI::PositionType, PositionType) \
   X(YGWrap, YGWrap) \
   X(GUI::PointerEvents, PointerEvents) \
   X(GUI::TextAlign, TextAlign)
@@ -88,7 +88,7 @@ class StyleProperty;
   X(OutlineWidth, float, Self) \
   X(Overflow, GUI::Overflow, Self) \
   X(PointerEvents, GUI::PointerEvents, Self) \
-  X(Position, YGPositionType, Self) \
+  X(Position, GUI::PositionType, Self) \
   X(Right, float, Self) \
   X(Rotate, float, Self) \
   X(ScaleX, float, Self) \
@@ -129,6 +129,11 @@ struct default_value_by_type_t<T> {
 template <>
 struct default_value_by_type_t<FlexDirection> {
   static constexpr auto value {FlexDirection::Row};
+};
+
+template <>
+struct default_value_by_type_t<PositionType> {
+  static constexpr auto value {PositionType::Relative};
 };
 
 template <>

@@ -45,7 +45,7 @@ auto& ContentInnerStyle() {
 auto& VerticalScrollBarStyle() {
   static const auto ret = ScrollBar::MakeImmutableStyle(
     Orientation::Vertical,
-    Style().Position(YGPositionTypeAbsolute).Right(4).Top(4));
+    Style().Position(PositionType::Absolute).Right(4).Top(4));
   return ret;
 }
 
@@ -57,7 +57,7 @@ auto& HorizontalScrollBarStyle() {
       .Bottom(4)
       .FlexGrow(1)
       .Left(0.f)
-      .Position(YGPositionTypeAbsolute)
+      .Position(PositionType::Absolute)
       .Right(ScrollBarSize));
   return ret;
 }

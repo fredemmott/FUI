@@ -79,4 +79,10 @@ enum class Justify {
   SpaceEvenly
 };
 
+enum class PositionType {
+  Static,
+  Relative,
+  Absolute,
+};
+
 }// namespace FredEmmott::GUI

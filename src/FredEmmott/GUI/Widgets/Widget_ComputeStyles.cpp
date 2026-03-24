@@ -82,6 +82,14 @@ constexpr auto MakeYogaValue(const Justify v) {
   return static_cast<YGJustify>(v);
 }
 
+constexpr auto MakeYogaValue(const PositionType v) {
+  static_assert(
+    std::to_underlying(PositionType::Absolute) == YGPositionTypeAbsolute);
+  static_assert(
+    std::to_underlying(PositionType::Relative) == YGPositionTypeRelative);
+  return static_cast<YGPositionType>(v);
+}
+
 }// namespace
 
 void Widget::ComputeStyles(const Style& inherited) {

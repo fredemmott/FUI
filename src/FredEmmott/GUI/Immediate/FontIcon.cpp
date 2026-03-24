@@ -29,7 +29,7 @@ const ImmutableStyle& FontIconStyle() {
   static ImmutableStyle ret {
     Style()
       .AlignSelf(Align::FlexStart)
-      .Position(YGPositionTypeRelative)
+      .Position(PositionType::Relative)
       .And(CaptionTextBlockClass, MakeFontIconStyle(FontIconSize::Caption))
       .And(BodyTextBlockClass, MakeFontIconStyle(FontIconSize::Body))
       .And(

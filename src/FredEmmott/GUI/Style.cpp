@@ -178,7 +178,7 @@ Style Style::BuiltinBaseline() {
         .FlexGrow(0)
         .FlexShrink(0)
         .Opacity(1)
-        .Position(YGPositionTypeRelative)
+        .Position(PositionType::Relative)
         .ScaleX(1)
         .ScaleY(1)
         .TextAlign(TextAlign::Left)
