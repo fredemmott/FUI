@@ -8,7 +8,7 @@ namespace FredEmmott::GUI::StaticTheme::TitleBar {
 const ImmutableStyle& DefaultTitleBarStyle() {
   static const ImmutableStyle ret {
     Style()
-      .FlexDirection(YGFlexDirectionRow)
+      .FlexDirection(FlexDirection::Row)
       .JustifyContent(YGJustifyFlexEnd)
       .MinHeight(TitleBarCompactHeight)
       .MaxHeight(TitleBarExpandedHeight)
@@ -81,7 +81,7 @@ const ImmutableStyle& TitleBarContentContainerStyle() {
   static const ImmutableStyle ret {
     Style()
       .AlignItems(YGAlignCenter)
-      .FlexDirection(YGFlexDirectionRow)
+      .FlexDirection(FlexDirection::Row)
       .FlexGrow(1)
       .PaddingLeft(TitleBarLeftPaddingWidth)
       .PaddingRight(TitleBarRightPaddingWidth),

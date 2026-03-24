@@ -46,7 +46,7 @@ auto MakeStyles() {
         .BorderRadius(10)
         .BorderWidth(ToggleSwitchOuterBorderStrokeThickness)
         .FlexBasis(40)
-        .FlexDirection(YGFlexDirectionColumn)
+        .FlexDirection(FlexDirection::Column)
         .Height(KnobHeight)
         .MarginRight(ToggleSwitchPreContentMargin)
         .Width(KnobWidth);

@@ -46,4 +46,11 @@ enum class Display {
   Contents,
 };
 
+enum class FlexDirection {
+  Column,
+  ColumnReverse,
+  Row,
+  RowReverse,
+};
+
 }// namespace FredEmmott::GUI

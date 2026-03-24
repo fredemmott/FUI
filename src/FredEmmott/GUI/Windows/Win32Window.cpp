@@ -54,7 +54,7 @@ constexpr LiteralStyleClass ImmediateRootStyleClass {
   "Win32Window/ImmediateRoot"};
 auto& ActualRootStyles() {
   static const ImmutableStyle ret {
-    Style().FlexDirection(YGFlexDirectionColumn).FlexGrow(1),
+    Style().FlexDirection(FlexDirection::Column).FlexGrow(1),
   };
   return ret;
 }

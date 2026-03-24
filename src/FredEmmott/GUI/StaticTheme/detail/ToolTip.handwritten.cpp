@@ -16,7 +16,7 @@ const ImmutableStyle& DefaultToolTipStyle() {
       .BorderColor(ToolTipBorderBrush)
       .BorderRadius(ControlCornerRadius)
       .BorderWidth(ToolTipBorderThemeThickness)
-      .FlexDirection(YGFlexDirectionColumn)
+      .FlexDirection(FlexDirection::Column)
       .Font(
         SystemFont::Resolve(SystemFont::Body)
           .WithSize(ToolTipContentThemeFontSize))

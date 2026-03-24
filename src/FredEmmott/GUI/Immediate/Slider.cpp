@@ -127,7 +127,7 @@ SliderResult SliderImpl(
         .AlignContent(YGAlignFlexEnd)
         .JustifyContent(YGJustifyCenter)
         .FlexDirection(
-          isHorizontal ? YGFlexDirectionRow : YGFlexDirectionColumn)
+          isHorizontal ? FlexDirection::Row : FlexDirection::Column)
       //.BackgroundColor(Color::Constant::FromRGBA32(0x5500FF00))
     };
   }

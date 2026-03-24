@@ -26,7 +26,7 @@ auto& ToggleSwitchStyle() {
     Style()
       .AlignSelf(YGAlignFlexStart)
       .Color(ToggleSwitchContentForeground)
-      .FlexDirection(YGFlexDirectionRow)
+      .FlexDirection(FlexDirection::Row)
       .MarginRight(ToggleSwitchPostContentMargin)
       .OutlineLeftOffset(7)
       .OutlineTopOffset(3)

@@ -38,7 +38,7 @@ auto& InnerStyles() {
     Style()
       .BorderRadius(OverlayCornerRadius)
       .Color(ComboBoxDropDownForeground)
-      .FlexDirection(YGFlexDirectionColumn)
+      .FlexDirection(FlexDirection::Column)
       .FlexGrow(1.0)
       .Gap(0.0)
       .MarginBottom(-1.0)

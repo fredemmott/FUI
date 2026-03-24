@@ -44,7 +44,7 @@ auto& HorizontalSliderStyle() {
   static const ImmutableStyle ret {
     SliderBaseStyle()
     + Style()
-        .FlexDirection(YGFlexDirectionRow)
+        .FlexDirection(FlexDirection::Row)
         .Height(SliderHorizontalHeight)
         .MinHeight(SliderHorizontalHeight)};
   return ret;
@@ -54,7 +54,7 @@ auto& VerticalSliderStyle() {
   static const ImmutableStyle ret {
     SliderBaseStyle()
     + Style()
-        .FlexDirection(YGFlexDirectionColumn)
+        .FlexDirection(FlexDirection::Column)
         .Width(SliderVerticalWidth)
         .MinWidth(SliderVerticalWidth)};
   return ret;

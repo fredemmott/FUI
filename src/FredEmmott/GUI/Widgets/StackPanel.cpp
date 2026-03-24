@@ -15,23 +15,21 @@ auto BaseStyles() {
 
 auto& HorizontalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles() + Style().FlexDirection(YGFlexDirectionRow),
+    BaseStyles() + Style().FlexDirection(FlexDirection::Row),
   };
   return ret;
 }
 
 auto& VerticalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles() + Style().FlexDirection(YGFlexDirectionColumn),
+    BaseStyles() + Style().FlexDirection(FlexDirection::Column),
   };
   return ret;
 }
 
 }// namespace
 
-StackPanel::StackPanel(
-  Window* const window,
-  const Orientation orientation)
+StackPanel::StackPanel(Window* const window, const Orientation orientation)
   : Widget(
       window,
       LiteralStyleClass {"StackPanel"},

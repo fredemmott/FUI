@@ -49,13 +49,13 @@ auto BaseStyles() {
 
 auto& HorizontalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles() + Style().FlexDirection(YGFlexDirectionRow)};
+    BaseStyles() + Style().FlexDirection(FlexDirection::Row)};
   return ret;
 }
 
 auto& VerticalStyles() {
   static const ImmutableStyle ret {
-    BaseStyles() + Style().FlexDirection(YGFlexDirectionColumn)};
+    BaseStyles() + Style().FlexDirection(FlexDirection::Column)};
   return ret;
 }
 
@@ -66,7 +66,7 @@ auto& HorizontalTrackStyle() {
     Style()
       .Display(Display::Flex)
       .FlexGrow(1)
-      .FlexDirection(YGFlexDirectionRow)
+      .FlexDirection(FlexDirection::Row)
       .MarginLeft(TrackThumbMargin)
       .MarginRight(TrackThumbMargin)
       .Height(ScrollBarSize)
@@ -87,7 +87,7 @@ auto& VerticalTrackStyle() {
     Style()
       .Display(Display::Flex)
       .FlexGrow(1)
-      .FlexDirection(YGFlexDirectionColumn)
+      .FlexDirection(FlexDirection::Column)
       .MarginBottom(TrackThumbMargin)
       .MarginTop(TrackThumbMargin)
       .Width(ScrollBarSize)

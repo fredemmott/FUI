@@ -21,7 +21,7 @@ class StyleProperty;
   X(YGAlign, YGAlign) \
   X(YGBoxSizing, YGBoxSizing) \
   X(GUI::Display, Display) \
-  X(YGFlexDirection, YGFlexDirection) \
+  X(GUI::FlexDirection, FlexDirection) \
   X(YGJustify, YGJustify) \
   X(GUI::Overflow, Overflow) \
   X(YGPositionType, YGPositionType) \
@@ -71,7 +71,7 @@ class StyleProperty;
   X(Cursor, GUI::Cursor, SelfAndDescendants) \
   X(Display, GUI::Display, Self) \
   X(FlexBasis, float, Self) \
-  X(FlexDirection, YGFlexDirection, Self) \
+  X(FlexDirection, GUI::FlexDirection, Self) \
   X(FlexGrow, float, Self) \
   X(FlexShrink, float, Self) \
   X(Font, GUI::Font, SelfAndDescendants) \
@@ -104,7 +104,6 @@ class StyleProperty;
   FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_EXPAND_CORNERS, X)
 
 namespace FredEmmott::GUI::style_detail {
-
 template <class T>
 struct default_t {
   static constexpr auto value = std::nullopt;
@@ -127,8 +126,18 @@ struct default_t<T> {
 };
 
 template <>
-struct default_t<YGOverflow> {
-  static constexpr YGOverflow value {YGOverflowVisible};
+struct default_t<Overflow> {
+  static constexpr auto value {Overflow::Visible};
+};
+
+template <>
+struct default_t<Display> {
+  static constexpr auto value {Display::Flex};
+};
+
+template <>
+struct default_t<FlexDirection> {
+  static constexpr auto value {FlexDirection::Row};
 };
 
 template <class T>

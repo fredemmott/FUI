@@ -21,7 +21,7 @@ const ImmutableStyle& DefaultTextBoxStyle() {
       .BorderRadius(ControlCornerRadius)
       .BorderWidth(1)
       .Color(TextControlForeground)
-      .FlexDirection(YGFlexDirectionRow)
+      .FlexDirection(FlexDirection::Row)
       .PaddingLeft(12)
       .PaddingRight(12)
       .PaddingTop(5)

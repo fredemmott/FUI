@@ -25,7 +25,7 @@ fuii::VStackPanelResult BeginDemoPage() {
 fuii::CardResult BeginDemoCard(const fuii::ID id) {
   return fuii::BeginCard(id).Styled(
     fui::Style()
-      .FlexDirection(YGFlexDirectionColumn)
+      .FlexDirection(fui::FlexDirection::Column)
       .Gap(12)
       .Margin(12)
       .Margin(8));

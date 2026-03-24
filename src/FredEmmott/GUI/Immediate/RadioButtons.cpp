@@ -16,7 +16,7 @@ namespace {
 auto& InnerStyle() {
   static const ImmutableStyle ret {
     Style()
-      .FlexDirection(YGFlexDirectionColumn)
+      .FlexDirection(FlexDirection::Column)
       .Gap(StaticTheme::RadioButtons::RadioButtonsRowSpacing),
   };
   return ret;
@@ -50,7 +50,7 @@ RadioButtonsWidgets BeginRadioButtons(
   using namespace PseudoClasses;
 
   const auto outer = BeginVStackPanel(id).Styled(
-    Style().FlexDirection(YGFlexDirectionColumn).Gap(0));
+    Style().FlexDirection(FlexDirection::Column).Gap(0));
 
   if (!title.empty()) {
     static const ImmutableStyle TitleStyle {

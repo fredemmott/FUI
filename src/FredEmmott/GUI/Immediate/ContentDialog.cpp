@@ -66,7 +66,7 @@ thread_local ButtonsContext* tButtonsContext {nullptr};
 auto& OuterStyles() {
   static const ImmutableStyle ret {
     DefaultContentDialogStyle()
-      + Style().FlexDirection(YGFlexDirectionColumn).Gap(0),
+      + Style().FlexDirection(FlexDirection::Column).Gap(0),
   };
   return ret;
 }

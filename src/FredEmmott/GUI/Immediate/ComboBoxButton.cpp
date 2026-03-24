@@ -27,7 +27,7 @@ auto& ComboBoxButtonStyles() {
       .BorderRadius(ControlCornerRadius)
       .BorderWidth(ComboBoxBorderThemeThickness)
       .Color(ComboBoxForeground)
-      .FlexDirection(YGFlexDirectionRow)
+      .FlexDirection(FlexDirection::Row)
       .Font(WidgetFont::ControlContent)
       .MinHeight(ComboBoxMinHeight)
       .MinWidth(ComboBoxThemeMinWidth)

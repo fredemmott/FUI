@@ -22,7 +22,7 @@ Style MakeComboBoxItemStyles() {
         .BorderColor(ComboBoxItemBorderBrush)
         .BorderRadius(ComboBoxItemCornerRadius)
         .Color(ComboBoxItemForeground)
-        .FlexDirection(YGFlexDirectionRow)
+        .FlexDirection(FlexDirection::Row)
         .Gap(0)
         .MarginBottom(2)
         .MarginLeft(5)

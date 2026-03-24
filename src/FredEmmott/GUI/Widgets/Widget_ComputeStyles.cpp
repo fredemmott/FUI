@@ -36,6 +36,19 @@ constexpr auto MakeYogaValue(const Display display) {
   return static_cast<YGDisplay>(display);
 }
 
+constexpr auto MakeYogaValue(const FlexDirection v) {
+  static_assert(std::to_underlying(FlexDirection::Row) == YGFlexDirectionRow);
+  static_assert(
+    std::to_underlying(FlexDirection::Column) == YGFlexDirectionColumn);
+  static_assert(
+    std::to_underlying(FlexDirection::RowReverse) == YGFlexDirectionRowReverse);
+  static_assert(
+    std::to_underlying(FlexDirection::ColumnReverse)
+    == YGFlexDirectionColumnReverse);
+  FUI_ASSERT(static_cast<YGFlexDirection>(v) == std::to_underlying(v));
+  return static_cast<YGFlexDirection>(v);
+}
+
 }// namespace
 
 void Widget::ComputeStyles(const Style& inherited) {
