@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 #include "Slider.hpp"
 
-#include <Yoga.h>
-
 #include <FredEmmott/GUI/StaticTheme/ToolTip.hpp>
 #include <FredEmmott/utility/almost_equal.hpp>
 #include <stdexcept>
@@ -97,11 +95,11 @@ SliderResult SliderImpl(
   }
 
   if (!tWindow->GetNativeHandle().mValue) {
-    const auto width = ToolTipMaxWidth
-      + (isHorizontal ? YGNodeLayoutGetWidth(w->GetLayoutNode()) : 0);
+    const auto sliderSize = w->GetSize();
+    const auto width = ToolTipMaxWidth + (isHorizontal ? sliderSize.mWidth : 0);
     const auto height = isHorizontal
       ? std::numeric_limits<float>::quiet_NaN()
-      : (YGNodeLayoutGetHeight(w->GetLayoutNode()) + ToolTipContentThemeFontSize
+      : (sliderSize.mHeight + ToolTipContentThemeFontSize
          + (2 * ArbitraryPadding));
     const auto windowOffset = isHorizontal
       ? Point {ToolTipMaxWidth / 2, 56}

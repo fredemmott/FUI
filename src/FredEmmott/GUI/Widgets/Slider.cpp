@@ -4,8 +4,6 @@
 
 #include "Slider.hpp"
 
-#include <Yoga.h>
-
 #include <FredEmmott/GUI/StaticTheme/Slider.hpp>
 #include <FredEmmott/GUI/events/KeyCode.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
@@ -232,38 +230,33 @@ float Slider::GetSnappedDraggingValue() const {
 }
 
 Point Slider::GetTrackOriginOffset() const {
-  const auto yoga = GetLayoutNode();
+  const auto [width, height] = this->GetSize();
   if (mOrientation == Orientation::Horizontal) {
-    const auto layout = GetLayout(YGNodeLayoutGetWidth(yoga));
+    const auto layout = GetLayout(width);
     return Point {
       layout.mTrackStart,
-      (YGNodeLayoutGetHeight(yoga) - *SliderTrackThemeHeight->Resolve()) / 2};
+      (height - *SliderTrackThemeHeight->Resolve()) / 2,
+    };
   }
 
-  const auto layout = GetLayout(YGNodeLayoutGetHeight(yoga));
+  const auto layout = GetLayout(height);
   return Point {
-    (YGNodeLayoutGetWidth(yoga) - *SliderTrackThemeHeight->Resolve()) / 2,
+    (width - *SliderTrackThemeHeight->Resolve()) / 2,
     layout.mTrackStart,
   };
 }
 
 float Slider::GetThumbCenterOffsetWithinTrack() const {
-  const auto yoga = GetLayoutNode();
-  if (mOrientation == Orientation::Horizontal) {
-    const auto layout = GetLayout(YGNodeLayoutGetWidth(yoga));
-    return layout.mThumbPoint - layout.mTrackStart;
-  }
-  const auto layout = GetLayout(YGNodeLayoutGetHeight(yoga));
+  const auto [width, height] = this->GetSize();
+  const auto length = mOrientation == Orientation::Horizontal ? width : height;
+  const auto layout = GetLayout(length);
   return layout.mThumbPoint - layout.mTrackStart;
 }
 
 float Slider::GetTrackLength() const {
-  const auto yoga = this->GetLayoutNode();
-  if (mOrientation == Orientation::Horizontal) {
-    const auto layout = GetLayout(YGNodeLayoutGetWidth(yoga));
-    return layout.mTrackEnd - layout.mTrackStart;
-  }
-  const auto layout = GetLayout(YGNodeLayoutGetHeight(yoga));
+  const auto [width, height] = this->GetSize();
+  const auto length = mOrientation == Orientation::Horizontal ? width : height;
+  const auto layout = GetLayout(length);
   return layout.mTrackEnd - layout.mTrackStart;
 }
 
@@ -272,17 +265,15 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
   const auto mouseOffset
     = isHorizontal ? event.GetPosition().mX : event.GetPosition().mY;
 
-  const auto fullLength = isHorizontal
-    ? YGNodeLayoutGetWidth(GetLayoutNode())
-    : YGNodeLayoutGetHeight(GetLayoutNode());
+  const auto [width, height] = this->GetSize();
+  const auto fullLength = isHorizontal ? width : height;
   const auto layout = GetLayout(fullLength);
-  const auto yoga = GetLayoutNode();
   const auto thumbCenter = isHorizontal ? Point {
     layout.mThumbPoint,
-    YGNodeLayoutGetHeight(yoga) / 2,
+    height / 2,
   } : Point {
-    YGNodeLayoutGetWidth(yoga) / 2,
-    YGNodeLayoutGetHeight(yoga) - layout.mThumbPoint,
+    width / 2,
+    height  - layout.mThumbPoint,
   };
   const auto thumb = Rect::FromCenterAndSize(
     thumbCenter, {SliderThumbLength, SliderThumbLength});
@@ -317,17 +308,15 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
 Widget::EventHandlerResult Slider::OnMouseHover(const MouseEvent& e) {
   const auto isHorizontal = mOrientation == Orientation::Horizontal;
 
-  const auto fullLength = isHorizontal
-    ? YGNodeLayoutGetWidth(GetLayoutNode())
-    : YGNodeLayoutGetHeight(GetLayoutNode());
+  const auto [width, height] = this->GetSize();
+  const auto fullLength = isHorizontal ? width : height;
   const auto layout = GetLayout(fullLength);
-  const auto yoga = GetLayoutNode();
   const auto thumbCenter = isHorizontal ? Point {
     layout.mThumbPoint,
-    YGNodeLayoutGetHeight(yoga) / 2,
+    height / 2,
   } : Point {
-    YGNodeLayoutGetWidth(yoga) / 2,
-    YGNodeLayoutGetHeight(yoga) - layout.mThumbPoint,
+    width / 2,
+    height - layout.mThumbPoint,
   };
   const auto thumb = Rect::FromCenterAndSize(
     thumbCenter, {SliderThumbLength, SliderThumbLength});
