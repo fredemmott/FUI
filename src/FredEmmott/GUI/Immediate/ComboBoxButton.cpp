@@ -13,7 +13,7 @@ namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
 namespace {
-constexpr LiteralStyleClass ComboBoxButtonClass {"ComboBoxButton"};
+constexpr LiteralStyleClass ComboBoxButtonStyleClass {"ComboBoxButton"};
 
 auto& ComboBoxButtonStyles() {
   using namespace StaticTheme::Common;
@@ -60,9 +60,8 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   bool* clicked,
   const ID id) {
   using Button = Widgets::Button;
-  using Widget = Widgets::Widget;
-  const auto button = BeginWidget<Button>(
-    id, ComboBoxButtonStyles(), StyleClasses {ComboBoxButtonClass});
+  const auto button
+    = BeginWidget<Button>(id, ComboBoxButtonStyleClass, ComboBoxButtonStyles());
 
   if (clicked) {
     *clicked = button->ConsumeWasActivated();

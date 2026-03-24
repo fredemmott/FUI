@@ -9,6 +9,11 @@
 
 namespace FredEmmott::GUI::Immediate {
 
+namespace {
+constexpr LiteralStyleClass TextBoxClearButtonStyleClass {
+  "TextBox/ClearButton"};
+}
+
 [[nodiscard]]
 TextBoxResult TextBox(std::string* text, const ID id) {
   using namespace StaticTheme::TextBox;
@@ -25,6 +30,7 @@ TextBoxResult TextBox(std::string* text, const ID id) {
   if (!w->GetText().empty()) {
     const auto clearButton = immediate_detail::BeginWidget<Widgets::Button>(
       ID {0},
+      TextBoxClearButtonStyleClass,
       DefaultTextBoxButtonStyle(),
       StyleClasses {TextBoxButtonInvisibleWhenInactiveStyleClass});
     Label("\ue894");

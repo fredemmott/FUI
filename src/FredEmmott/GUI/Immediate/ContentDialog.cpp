@@ -304,7 +304,7 @@ BeginContentDialogButtons() {
       Style().FlexGrow(1),
     };
     it.mButton = BeginWidget<Widgets::Button>(
-      id, ButtonStyles, StyleClasses {ContentDialogButtonClass});
+      id, ContentDialogButtonClass, ButtonStyles);
     it.mLabel = ChildlessWidget<Widgets::Label>(
       ID {0}, ContentDialogLabelStyleClass, LabelStyles);
     EndWidget<Widgets::Button>();

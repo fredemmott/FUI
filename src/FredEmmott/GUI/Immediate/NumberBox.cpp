@@ -19,6 +19,13 @@ namespace {
 using detail::uchar_cast;
 using unique_unum = felly::unique_ptr<UNumberFormat, &unum_close>;
 
+constexpr LiteralStyleClass NumberBoxClearButtonStyleClass {
+  "NumberBox/ClearButton"};
+constexpr LiteralStyleClass NumberBoxIncrementButtonStyleClass {
+  "NumberBox/IncrementButton"};
+constexpr LiteralStyleClass NumberBoxDecrementButtonStyleClass {
+  "NumberBox/DecrementButton"};
+
 struct NumberBoxContext : Widgets::Context {
   ~NumberBoxContext() override = default;
 
@@ -253,6 +260,7 @@ NumberBoxResult NumberBox(float* const value, const ID id) {
   if (!w->GetText().empty()) {
     const auto clearButton = immediate_detail::BeginWidget<Widgets::Button>(
       ID {0},
+      NumberBoxClearButtonStyleClass,
       DefaultTextBoxButtonStyle(),
       StyleClasses {TextBoxButtonInvisibleWhenInactiveStyleClass});
     Label("\ue894");
@@ -266,7 +274,10 @@ NumberBoxResult NumberBox(float* const value, const ID id) {
   BeginDisabled(std::isnan(ctx->mValue));
   BeginEnabled(std::isnan(ctx->mMaximum) || ctx->mValue < ctx->mMaximum);
   const auto incrementButton = immediate_detail::BeginWidget<Widgets::Button>(
-    ID {1}, DefaultTextBoxButtonStyle(), StyleClasses {});
+    ID {1},
+    NumberBoxIncrementButtonStyleClass,
+    DefaultTextBoxButtonStyle(),
+    StyleClasses {});
   Label("\ue70e");
   immediate_detail::EndWidget<Widgets::Button>();
   EndEnabled();
@@ -277,7 +288,10 @@ NumberBoxResult NumberBox(float* const value, const ID id) {
 
   BeginEnabled(std::isnan(ctx->mMinimum) || ctx->mValue > ctx->mMinimum);
   const auto decrementButton = immediate_detail::BeginWidget<Widgets::Button>(
-    ID {2}, DefaultTextBoxButtonStyle(), StyleClasses {});
+    ID {2},
+    NumberBoxDecrementButtonStyleClass,
+    DefaultTextBoxButtonStyle(),
+    StyleClasses {});
   Label("\ue70d");
   immediate_detail::EndWidget<Widgets::Button>();
   EndEnabled();
