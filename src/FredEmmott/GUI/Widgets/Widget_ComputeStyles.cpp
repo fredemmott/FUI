@@ -45,8 +45,20 @@ constexpr auto MakeYogaValue(const FlexDirection v) {
   static_assert(
     std::to_underlying(FlexDirection::ColumnReverse)
     == YGFlexDirectionColumnReverse);
-  FUI_ASSERT(static_cast<YGFlexDirection>(v) == std::to_underlying(v));
   return static_cast<YGFlexDirection>(v);
+}
+
+constexpr auto MakeYogaValue(const Align v) {
+  static_assert(std::to_underlying(Align::Auto) == YGAlignAuto);
+  static_assert(std::to_underlying(Align::FlexStart) == YGAlignFlexStart);
+  static_assert(std::to_underlying(Align::Center) == YGAlignCenter);
+  static_assert(std::to_underlying(Align::FlexEnd) == YGAlignFlexEnd);
+  static_assert(std::to_underlying(Align::Stretch) == YGAlignStretch);
+  static_assert(std::to_underlying(Align::Baseline) == YGAlignBaseline);
+  static_assert(std::to_underlying(Align::SpaceBetween) == YGAlignSpaceBetween);
+  static_assert(std::to_underlying(Align::SpaceAround) == YGAlignSpaceAround);
+  static_assert(std::to_underlying(Align::SpaceEvenly) == YGAlignSpaceEvenly);
+  return static_cast<YGAlign>(v);
 }
 
 }// namespace

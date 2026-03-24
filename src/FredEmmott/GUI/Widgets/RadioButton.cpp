@@ -13,7 +13,7 @@ constexpr LiteralStyleClass RadioButtonStyleClass {"RadioButton"};
 auto& RadioButtonStyles() {
   static const ImmutableStyle ret {
     Style()
-      .AlignContent(YGAlignCenter)
+      .AlignContent(Align::Center)
       .Height(32)
       .OutlineLeftOffset(7)
       .OutlineTopOffset(3)
@@ -26,7 +26,7 @@ auto& RadioButtonStyles() {
 auto& FosterParentStyles() {
   static const ImmutableStyle ret {
     Style()
-      .AlignItems(YGAlignCenter)
+      .AlignItems(Align::Center)
       .PaddingLeft(8)
       .PaddingTop(6)
       .TranslateY(-2),
@@ -39,9 +39,9 @@ auto MakeOuterStyles() {
   using namespace PseudoClasses;
   const Style BaseStyle
     = Style()
-        .AlignContent(YGAlignCenter)
-        .AlignItems(YGAlignCenter)
-        .AlignSelf(YGAlignCenter)
+        .AlignContent(Align::Center)
+        .AlignItems(Align::Center)
+        .AlignSelf(Align::Center)
         .BorderRadius(10)
         .BorderWidth(RadioButtonBorderThemeThickness)
         .BoxSizing(YGBoxSizingBorderBox)
@@ -113,9 +113,9 @@ auto& InnerStyles() {
 
   static const ImmutableStyle ret {
     Style()
-      .AlignContent(YGAlignCenter)
-      .AlignItems(YGAlignCenter)
-      .AlignSelf(YGAlignCenter)
+      .AlignContent(Align::Center)
+      .AlignItems(Align::Center)
+      .AlignSelf(Align::Center)
       .BackgroundColor(RadioButtonCheckGlyphFill)
       .BorderColor(RadioButtonCheckGlyphStroke)
       .BorderRadius(7)

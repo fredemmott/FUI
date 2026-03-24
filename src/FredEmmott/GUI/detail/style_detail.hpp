@@ -18,7 +18,7 @@ class StyleProperty;
   X(GUI::Cursor, Cursor) \
   X(GUI::Font, Font) \
   X(float, Float) \
-  X(YGAlign, YGAlign) \
+  X(GUI::Align, Align) \
   X(YGBoxSizing, YGBoxSizing) \
   X(GUI::Display, Display) \
   X(GUI::FlexDirection, FlexDirection) \
@@ -59,9 +59,9 @@ class StyleProperty;
   X(PREFIX##BottomLeft##SUFFIX, float, Self)
 
 #define FUI_ENUM_STYLE_PROPERTIES(X) \
-  X(AlignContent, YGAlign, Self) \
-  X(AlignItems, YGAlign, Self) \
-  X(AlignSelf, YGAlign, Self) \
+  X(AlignContent, GUI::Align, Self) \
+  X(AlignItems, GUI::Align, Self) \
+  X(AlignSelf, GUI::Align, Self) \
   X(AspectRatio, float, Self) \
   X(BackgroundColor, Brush, Self) \
   X(BorderColor, Brush, Self) \
@@ -104,6 +104,12 @@ class StyleProperty;
   FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_EXPAND_CORNERS, X)
 
 namespace FredEmmott::GUI::style_detail {
+
+// This will show up in compiler error messages, giving a clearer hint at the
+// problem
+template <class T>
+struct this_style_property_type_must_be_specialized_by_style_property_key {};
+
 template <class T>
 struct default_value_by_type_t {
   static constexpr auto value = std::nullopt;
@@ -140,6 +146,13 @@ struct default_value_by_type_t<FlexDirection> {
   static constexpr auto value {FlexDirection::Row};
 };
 
+template <>
+struct default_value_by_type_t<Align> {
+  static constexpr auto value
+    = this_style_property_type_must_be_specialized_by_style_property_key<
+      Align> {};
+};
+
 enum class StylePropertyKey {
 #define FUI_DECLARE_STYLE_PROPERTY(NAME, ...) NAME,
   FUI_ENUM_STYLE_PROPERTIES(FUI_DECLARE_STYLE_PROPERTY)
@@ -165,6 +178,21 @@ template <StylePropertyKey K>
 struct default_property_value_t {
   using type = property_type_t<K>::type;
   static constexpr auto value = default_value_by_type_t<type>::value;
+};
+
+template <>
+struct default_property_value_t<StylePropertyKey::AlignContent> {
+  static constexpr auto value = Align::Stretch;
+};
+
+template <>
+struct default_property_value_t<StylePropertyKey::AlignItems> {
+  static constexpr auto value = Align::Stretch;
+};
+
+template <>
+struct default_property_value_t<StylePropertyKey::AlignSelf> {
+  static constexpr auto value = Align::Auto;
 };
 
 template <StylePropertyKey K>

@@ -21,7 +21,7 @@ auto& ComboBoxButtonStyles() {
   using namespace PseudoClasses;
   static const ImmutableStyle ret {
     Style()
-      .AlignSelf(YGAlignFlexStart)
+      .AlignSelf(Align::FlexStart)
       .BackgroundColor(ComboBoxBackground)
       .BorderColor(ComboBoxBorderBrush)
       .BorderRadius(ControlCornerRadius)
@@ -72,7 +72,7 @@ ComboBoxButtonResult<&EndComboBoxButton, void> BeginComboBoxButton(
   using namespace PseudoClasses;
 
   static const ImmutableStyle OuterStyles {
-    Style().AlignSelf(YGAlignCenter).FlexGrow(1),
+    Style().AlignSelf(Align::Center).FlexGrow(1),
   };
   static const ImmutableStyle InnerStyles {
     Style().Display(Display::Contents),
@@ -101,7 +101,7 @@ void EndComboBoxButton() {
   // is not set in the XAML at all.
   GetCurrentNode()->SetMutableStyles(
     Style()
-      .AlignSelf(YGAlignCenter)
+      .AlignSelf(Align::Center)
       .FlexGrow(0)
       .MarginLeft(14)
       .MarginRight(14)

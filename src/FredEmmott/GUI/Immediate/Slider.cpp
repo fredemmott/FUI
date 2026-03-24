@@ -123,8 +123,8 @@ SliderResult SliderImpl(
         .MarginTop(
           isHorizontal ? 0 : (w->GetTrackLength() - (ArbitraryHeight / 2)))
         .Width(ToolTipMaxWidth)
-        .AlignItems(YGAlignFlexEnd)
-        .AlignContent(YGAlignFlexEnd)
+        .AlignItems(Align::FlexEnd)
+        .AlignContent(Align::FlexEnd)
         .JustifyContent(YGJustifyCenter)
         .FlexDirection(
           isHorizontal ? FlexDirection::Row : FlexDirection::Column)

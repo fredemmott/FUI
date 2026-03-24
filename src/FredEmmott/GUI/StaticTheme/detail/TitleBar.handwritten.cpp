@@ -31,8 +31,8 @@ const ImmutableStyle& WindowMinimizeMaximizeButtonStyle() {
 
   static const ImmutableStyle ret {
     Style()
-      .AlignSelf(YGAlignStretch)
-      .AlignItems(YGAlignCenter)
+      .AlignSelf(Align::Stretch)
+      .AlignItems(Align::Center)
       .AspectRatio(1.0f)
       .JustifyContent(YGJustifyCenter)
       .BackgroundColor(WindowCaptionButtonBackground, BackgroundColorAnimation)
@@ -80,7 +80,7 @@ const ImmutableStyle& WindowCloseButtonStyle() {
 const ImmutableStyle& TitleBarContentContainerStyle() {
   static const ImmutableStyle ret {
     Style()
-      .AlignItems(YGAlignCenter)
+      .AlignItems(Align::Center)
       .FlexDirection(FlexDirection::Row)
       .FlexGrow(1)
       .PaddingLeft(TitleBarLeftPaddingWidth)

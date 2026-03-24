@@ -12,8 +12,8 @@ const ImmutableStyle& NavigationViewStyle() {
   static const ImmutableStyle ret {
     Style()
       .FlexDirection(FlexDirection::Row)
-      .AlignItems(YGAlignStretch)
-      .AlignSelf(YGAlignStretch)
+      .AlignItems(Align::Stretch)
+      .AlignSelf(Align::Stretch)
       .FlexGrow(1)
       .FlexShrink(1),
   };
@@ -38,13 +38,13 @@ const ImmutableStyle& NavigationViewPaneStyle() {
     Style()
       // TODO: set this when *not* bleeding into title bar
       // .BackgroundColor(NavigationViewDefaultPaneBackground)
-      .AlignItems(YGAlignCenter)
+      .AlignItems(Align::Center)
       .FlexDirection(FlexDirection::Column)
       .Width(NavigationViewCompactPaneLength, CollapseAnimation)
       .And(
         NavigationViewPaneExpandedStyleClass,
         Style()
-          .AlignItems(YGAlignFlexStart)
+          .AlignItems(Align::FlexStart)
           .BackgroundColor(NavigationViewExpandedPaneBackground)
           .Width(SplitViewOpenPaneThemeLength, ExpandAnimation)
           .Descendants(
@@ -56,8 +56,8 @@ const ImmutableStyle& NavigationViewPaneStyle() {
 const ImmutableStyle& NavigationViewPaneHeaderStyle() {
   static const ImmutableStyle ret {
     Style()
-      .AlignItems(YGAlignFlexStart)
-      .AlignSelf(YGAlignStretch)
+      .AlignItems(Align::FlexStart)
+      .AlignSelf(Align::Stretch)
       .FlexDirection(FlexDirection::Row)
       .Height(NavigationViewPaneHeaderRowMinHeight)
       .Margin(NavigationViewButtonHolderGridMargin)};
@@ -67,10 +67,10 @@ const ImmutableStyle& NavigationViewPaneHeaderStyle() {
 const ImmutableStyle& NavigationViewItemsRootStyle() {
   static const ImmutableStyle ret {
     Style()
-      .AlignSelf(YGAlignStretch)
+      .AlignSelf(Align::Stretch)
       .FlexDirection(FlexDirection::Column)
       .FlexGrow(1)
-      .AlignItems(YGAlignFlexStart),
+      .AlignItems(Align::FlexStart),
   };
   return ret;
 }
@@ -134,8 +134,8 @@ const ImmutableStyle& NavigationViewItemStyle() {
     Style()
       .Height(NavigationViewItemOnLeftMinHeight)
       .FlexDirection(FlexDirection::Row)
-      .AlignItems(YGAlignCenter)
-      .AlignSelf(YGAlignStretch)
+      .AlignItems(Align::Center)
+      .AlignSelf(Align::Stretch)
       .Margin(NavigationViewItemButtonMargin)
       .BorderRadius(ControlCornerRadius)
       .BorderColor(NavigationViewItemBorderBrush)
@@ -188,9 +188,9 @@ const ImmutableStyle& NavigationViewItemIconHolderStyle() {
     Style()
       .Width(PaneToggleButtonWidth)
       .FlexDirection(FlexDirection::Row)
-      .AlignContent(YGAlignCenter)
-      .AlignItems(YGAlignCenter)
-      .AlignSelf(YGAlignCenter)
+      .AlignContent(Align::Center)
+      .AlignItems(Align::Center)
+      .AlignSelf(Align::Center)
       .JustifyContent(YGJustifyCenter)
       .TranslateX(-1),
   };

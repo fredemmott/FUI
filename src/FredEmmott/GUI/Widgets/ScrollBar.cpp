@@ -31,8 +31,8 @@ auto BaseStyles() {
   // themselves compose it into an ImmutableStyle; save a little memory
   using namespace PseudoClasses;
   return Style()
-    .AlignItems(YGAlignCenter)
-    .AlignContent(YGAlignCenter)
+    .AlignItems(Align::Center)
+    .AlignContent(Align::Center)
     .BackgroundColor(ScrollBarBackground)
     .Descendants(
       ScrollBarSmallChangeButtonStyleClass,

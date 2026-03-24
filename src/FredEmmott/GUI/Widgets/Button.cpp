@@ -36,7 +36,7 @@ ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
   return ImmutableStyle {
     StaticTheme::Button::DefaultButtonStyle()
       + Style()
-          .AlignSelf(YGAlignFlexStart)
+          .AlignSelf(Align::FlexStart)
           .Descendants({}, Style().PointerEvents(PointerEvents::None))
       + mixin,
   };

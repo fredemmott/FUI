@@ -53,4 +53,16 @@ enum class FlexDirection {
   RowReverse,
 };
 
+enum class Align {
+  Auto,
+  FlexStart,
+  Center,
+  FlexEnd,
+  Stretch,
+  Baseline,
+  SpaceBetween,
+  SpaceAround,
+  SpaceEvenly,
+};
+
 }// namespace FredEmmott::GUI

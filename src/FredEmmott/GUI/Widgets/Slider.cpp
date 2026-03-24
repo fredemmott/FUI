@@ -36,7 +36,7 @@ constexpr auto SliderInnerThumbScalePressed = 0.71f;
 constexpr auto SliderInnerThumbScaleDisabled = 1.167f;
 
 auto& SliderBaseStyle() {
-  static const ImmutableStyle ret {Style().AlignItems(YGAlignCenter)};
+  static const ImmutableStyle ret {Style().AlignItems(Align::Center)};
   return ret;
 }
 

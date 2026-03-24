@@ -24,7 +24,7 @@ auto& ToggleSwitchStyle() {
   using namespace PseudoClasses;
   static const ImmutableStyle ret {
     Style()
-      .AlignSelf(YGAlignFlexStart)
+      .AlignSelf(Align::FlexStart)
       .Color(ToggleSwitchContentForeground)
       .FlexDirection(FlexDirection::Row)
       .MarginRight(ToggleSwitchPostContentMargin)
