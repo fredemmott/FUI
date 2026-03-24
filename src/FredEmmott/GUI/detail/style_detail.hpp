@@ -22,7 +22,7 @@ class StyleProperty;
   X(GUI::BoxSizing, BoxSizing) \
   X(GUI::Display, Display) \
   X(GUI::FlexDirection, FlexDirection) \
-  X(YGJustify, YGJustify) \
+  X(GUI::Justify, Justify) \
   X(GUI::Overflow, Overflow) \
   X(YGPositionType, YGPositionType) \
   X(YGWrap, YGWrap) \
@@ -77,7 +77,7 @@ class StyleProperty;
   X(Font, GUI::Font, SelfAndDescendants) \
   X(Gap, float, Self) \
   X(Height, float, Self) \
-  X(JustifyContent, YGJustify, Self) \
+  X(JustifyContent, GUI::Justify, Self) \
   X(Left, float, Self) \
   X(MaxHeight, float, Self) \
   X(MaxWidth, float, Self) \

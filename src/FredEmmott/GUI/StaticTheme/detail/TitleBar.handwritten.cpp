@@ -9,7 +9,7 @@ const ImmutableStyle& DefaultTitleBarStyle() {
   static const ImmutableStyle ret {
     Style()
       .FlexDirection(FlexDirection::Row)
-      .JustifyContent(YGJustifyFlexEnd)
+      .JustifyContent(Justify::FlexEnd)
       .MinHeight(TitleBarCompactHeight)
       .MaxHeight(TitleBarExpandedHeight)
       .And(
@@ -34,7 +34,7 @@ const ImmutableStyle& WindowMinimizeMaximizeButtonStyle() {
       .AlignSelf(Align::Stretch)
       .AlignItems(Align::Center)
       .AspectRatio(1.0f)
-      .JustifyContent(YGJustifyCenter)
+      .JustifyContent(Justify::Center)
       .BackgroundColor(WindowCaptionButtonBackground, BackgroundColorAnimation)
       .Color(WindowCaptionButtonStroke, ForegroundColorAnimation)
       .Font(

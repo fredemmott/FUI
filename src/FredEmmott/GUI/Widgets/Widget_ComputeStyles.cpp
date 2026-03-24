@@ -69,6 +69,19 @@ constexpr auto MakeYogaValue(const BoxSizing v) {
   return static_cast<YGBoxSizing>(v);
 }
 
+constexpr auto MakeYogaValue(const Justify v) {
+  static_assert(std::to_underlying(Justify::FlexStart) == YGJustifyFlexStart);
+  static_assert(std::to_underlying(Justify::Center) == YGJustifyCenter);
+  static_assert(std::to_underlying(Justify::FlexEnd) == YGJustifyFlexEnd);
+  static_assert(
+    std::to_underlying(Justify::SpaceBetween) == YGJustifySpaceBetween);
+  static_assert(
+    std::to_underlying(Justify::SpaceAround) == YGJustifySpaceAround);
+  static_assert(
+    std::to_underlying(Justify::SpaceEvenly) == YGJustifySpaceEvenly);
+  return static_cast<YGJustify>(v);
+}
+
 }// namespace
 
 void Widget::ComputeStyles(const Style& inherited) {

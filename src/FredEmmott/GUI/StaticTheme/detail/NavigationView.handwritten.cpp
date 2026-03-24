@@ -191,7 +191,7 @@ const ImmutableStyle& NavigationViewItemIconHolderStyle() {
       .AlignContent(Align::Center)
       .AlignItems(Align::Center)
       .AlignSelf(Align::Center)
-      .JustifyContent(YGJustifyCenter)
+      .JustifyContent(Justify::Center)
       .TranslateX(-1),
   };
   return ret;

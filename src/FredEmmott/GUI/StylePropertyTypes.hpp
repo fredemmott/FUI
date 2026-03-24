@@ -70,4 +70,13 @@ enum class BoxSizing {
   ContentBox,
 };
 
+enum class Justify {
+  FlexStart,
+  Center,
+  FlexEnd,
+  SpaceBetween,
+  SpaceAround,
+  SpaceEvenly
+};
+
 }// namespace FredEmmott::GUI

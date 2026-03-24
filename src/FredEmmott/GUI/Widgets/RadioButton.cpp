@@ -46,7 +46,7 @@ auto MakeOuterStyles() {
         .BorderWidth(RadioButtonBorderThemeThickness)
         .BoxSizing(BoxSizing::BorderBox)
         .Height(20)
-        .JustifyContent(YGJustifyCenter)
+        .JustifyContent(Justify::Center)
         .Width(20);
 
   const Style UncheckedStyle

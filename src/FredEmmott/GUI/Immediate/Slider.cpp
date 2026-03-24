@@ -125,7 +125,7 @@ SliderResult SliderImpl(
         .Width(ToolTipMaxWidth)
         .AlignItems(Align::FlexEnd)
         .AlignContent(Align::FlexEnd)
-        .JustifyContent(YGJustifyCenter)
+        .JustifyContent(Justify::Center)
         .FlexDirection(
           isHorizontal ? FlexDirection::Row : FlexDirection::Column)
       //.BackgroundColor(Color::Constant::FromRGBA32(0x5500FF00))
