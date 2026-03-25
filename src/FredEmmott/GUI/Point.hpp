@@ -54,9 +54,14 @@ struct BasicPoint {
     }
   }
 
-  template <class Self>
-  constexpr auto operator+(this const Self& self, const BasicPoint& other) {
-    return Self {self.mX + other.mX, self.mY + other.mY};
+  constexpr BasicPoint operator+(const BasicPoint& other) const noexcept {
+    return BasicPoint {mX + other.mX, mY + other.mY};
+  }
+
+  template <class U>
+    requires is_size_type_v<U>
+  constexpr BasicPoint operator+(const BasicSize<U>& other) const noexcept {
+    return {mX + other.mWidth, mY + other.mHeight};
   }
 
   constexpr auto& operator+=(const BasicPoint& other) {
@@ -73,17 +78,8 @@ struct BasicPoint {
     return *this;
   }
 
-  template <class Self, class U>
-    requires is_size_type_v<U>
-  constexpr auto operator+(this const Self& self, const BasicSize<U>& other) {
-    auto ret = self;
-    ret += other;
-    return ret;
-  }
-
-  template <class Self>
-  constexpr auto operator-(this const Self& self, const BasicPoint& other) {
-    return Self {self.mX - other.mX, self.mY - other.mY};
+  constexpr BasicPoint operator-(const BasicPoint& other) const {
+    return BasicPoint {mX - other.mX, mY - other.mY};
   }
 
   constexpr auto& operator-=(const BasicPoint& other) {
@@ -92,9 +88,12 @@ struct BasicPoint {
     return *this;
   }
 
-  template <class Self>
-  constexpr auto operator*(this const Self& self, const T mult) {
-    return Self {self.mX * mult, self.mY * mult};
+  constexpr BasicPoint operator-() const {
+    return BasicPoint {-mX, -mY};
+  }
+
+  constexpr BasicPoint operator*(const T mult) const noexcept {
+    return {mX * mult, mY * mult};
   }
 
   constexpr bool operator==(const BasicPoint&) const noexcept = default;
