@@ -201,8 +201,14 @@ void RadioButton::Select() {
   }
 }
 
-Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent&) {
-  this->Select();
+Widget::EventHandlerResult RadioButton::OnClick(const MouseEvent& e) {
+  if (
+    e.Get<MouseEvent::ButtonReleaseEvent>().mReleasedButtons
+    == MouseButton::Left) {
+    this->Select();
+  }
+  std::ignore = Widget::OnClick(e);
+
   return EventHandlerResult::StopPropagation;
 }
 

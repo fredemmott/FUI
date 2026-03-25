@@ -17,7 +17,11 @@ using PillState = detail::SelectionPill::State;
 }// namespace
 
 NavigationViewItem::NavigationViewItem(Window* const window)
-  : Widget(window, NavigationViewItemStyleClass, NavigationViewItemStyle()),
+  : Widget(
+      window,
+      NavigationViewItemStyleClass,
+      NavigationViewItemStyle(),
+      {PseudoClasses::ExplicitMouseButtonSink}),
     ISelectionItem(this),
     mIconHolder(new Widget(
       window,
@@ -38,6 +42,7 @@ NavigationViewItem::NavigationViewItem(Window* const window)
 NavigationViewItem::~NavigationViewItem() = default;
 
 void NavigationViewItem::Select() {
+  this->MarkActivated();
   mWasSelected = true;
   this->SetIsChecked(true);
 
@@ -82,8 +87,13 @@ void NavigationViewItem::Tick(
   Widget::Tick(now);
 }
 
-Widget::EventHandlerResult NavigationViewItem::OnClick(const MouseEvent&) {
-  this->Select();
+Widget::EventHandlerResult NavigationViewItem::OnClick(const MouseEvent& e) {
+  if (
+    e.Get<MouseEvent::ButtonReleaseEvent>().mReleasedButtons
+    == MouseButton::Left) {
+    this->Select();
+  }
+  std::ignore = Widget::OnClick(e);
   return EventHandlerResult::StopPropagation;
 }
 

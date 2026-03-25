@@ -10,5 +10,8 @@ const StyleClass Disabled = StyleClass::Make(":disabled");
 const StyleClass Focus = StyleClass::Make(":focus");
 const StyleClass FocusVisible = StyleClass::Make(":focus-visible");
 const StyleClass Hover = StyleClass::Make(":hover");
+
 const StyleClass LayoutOrphan = StyleClass::Make(":layout-orphan");
+const StyleClass ExplicitMouseButtonSink
+  = StyleClass::Make(":explicit-mouse-button-sink");
 }// namespace FredEmmott::GUI::PseudoClasses

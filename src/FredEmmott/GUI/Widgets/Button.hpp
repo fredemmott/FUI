@@ -21,20 +21,9 @@ class Button : public Widget, public IInvocable {
 
   void Invoke() override;
 
-  [[nodiscard]]
-  bool ConsumeWasActivated() noexcept {
-    return std::exchange(mWasActivated, false);
-  }
-
  protected:
-  EventHandlerResult OnMouseButtonPress(const MouseEvent& e) override;
-  EventHandlerResult OnMouseButtonRelease(const MouseEvent& e) override;
-  EventHandlerResult OnClick(const MouseEvent& e) override;
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
-
- private:
-  bool mWasActivated {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

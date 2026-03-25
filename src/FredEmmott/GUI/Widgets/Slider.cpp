@@ -138,7 +138,8 @@ Slider::Slider(Window* const window, const Orientation orientation)
       window,
       LiteralStyleClass("Slider"),
       ((orientation == Orientation::Horizontal) ? HorizontalSliderStyle()
-                                                : VerticalSliderStyle())),
+                                                : VerticalSliderStyle()),
+      {PseudoClasses::ExplicitMouseButtonSink}),
     IFocusable(this),
     mOrientation(orientation) {
   SetThumbState(std::to_underlying(SliderState::Normal));

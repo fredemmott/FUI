@@ -13,18 +13,13 @@ HyperlinkButton::HyperlinkButton(
       window,
       LiteralStyleClass {"HyperlinkButton"},
       StaticTheme::HyperlinkButton::DefaultHyperlinkButtonStyle(),
-      classes),
+      classes + PseudoClasses::ExplicitMouseButtonSink),
     IInvocable(this) {}
 
 HyperlinkButton::~HyperlinkButton() = default;
 
 void HyperlinkButton::Invoke() {
-  mWasActivated = true;
-}
-
-Widget::EventHandlerResult HyperlinkButton::OnClick(const MouseEvent&) {
-  this->Invoke();
-  return EventHandlerResult::StopPropagation;
+  this->MarkActivated();
 }
 
 Widget::ComputedStyleFlags HyperlinkButton::OnComputedStyleChange(

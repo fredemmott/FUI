@@ -197,6 +197,12 @@ void PaintBorder(
 }
 }// namespace
 
+inline bool Widget::IsMouseButtonSink() const noexcept {
+  static constexpr auto TestBits
+    = StateFlags::ExplicitMouseButtonSink | StateFlags::ImplicitMouseButtonSink;
+  return (mDirectStateFlags & TestBits) != StateFlags::None;
+}
+
 Widget::Widget(
   Window* const ownerWindow,
   const StyleClass primaryClass,
@@ -210,6 +216,9 @@ Widget::Widget(
   AddStyleClass(primaryClass);
   YGNodeSetContext(mYoga.get(), this);
   mStyleTransitions.reset(new StyleTransitions());
+  if (classes.contains(PseudoClasses::ExplicitMouseButtonSink)) {
+    mDirectStateFlags |= StateFlags::ExplicitMouseButtonSink;
+  }
 }
 
 Widget* Widget::FromYogaNode(const YGNode* const node) {
@@ -308,6 +317,25 @@ bool Widget::IsHovered() const {
 bool Widget::IsActive() const {
   return ((mDirectStateFlags | mInheritedStateFlags) & StateFlags::Active)
     == StateFlags::Active;
+}
+
+bool Widget::ConsumeWasActivated() noexcept {
+  mDirectStateFlags |= StateFlags::ImplicitMouseButtonSink;
+
+  const auto wasActivated = (mDirectStateFlags & StateFlags::WasActivated)
+    == StateFlags::WasActivated;
+  mDirectStateFlags &= ~StateFlags::WasActivated;
+  return wasActivated;
+}
+
+bool Widget::ConsumeWasContextActivated() noexcept {
+  mDirectStateFlags |= StateFlags::ImplicitMouseButtonSink;
+
+  const auto wasContextActivated
+    = (mDirectStateFlags & StateFlags::WasContextActivated)
+    == StateFlags::WasContextActivated;
+  mDirectStateFlags &= ~StateFlags::WasContextActivated;
+  return wasContextActivated;
 }
 
 void Widget::SetMutableStyles(const Style& styles) {
@@ -428,6 +456,19 @@ void Widget::PaintChildren(Renderer* renderer) const {
   for (auto&& child: mRawStructuralChildren) {
     child->Paint(renderer);
   }
+}
+
+Widget::EventHandlerResult Widget::OnClick(const MouseEvent& e) {
+  if (!IsMouseButtonSink()) {
+    return EventHandlerResult::Default;
+  }
+  const auto it = e.Get<MouseEvent::ButtonReleaseEvent>();
+  if (it.mReleasedButtons == MouseButtons::Left) {
+    this->MarkActivated();
+  } else if (it.mReleasedButtons == MouseButtons::Right) {
+    this->MarkContextActivated();
+  }
+  return EventHandlerResult::StopPropagation;
 }
 
 void Widget::OnMouseEnter(const MouseEvent&) {}
@@ -711,7 +752,8 @@ Widget::EventHandlerResult Widget::OnTextInput(const TextInputEvent&) {
 }
 
 Widget::EventHandlerResult Widget::OnMouseButtonPress(const MouseEvent&) {
-  return EventHandlerResult::Default;
+  return IsMouseButtonSink() ? EventHandlerResult::StopPropagation
+                             : EventHandlerResult::Default;
 }
 
 Widget::EventHandlerResult Widget::OnMouseButtonRelease(
@@ -750,6 +792,14 @@ void Widget::SetIsChecked(const bool value) {
   } else {
     mDirectStateFlags &= ~Checked;
   }
+}
+
+void Widget::MarkActivated() {
+  mDirectStateFlags |= StateFlags::WasActivated;
+}
+
+void Widget::MarkContextActivated() {
+  mDirectStateFlags |= StateFlags::WasContextActivated;
 }
 
 Point Widget::GetTopLeftCanvasPoint(const Widget* const relativeTo) const {

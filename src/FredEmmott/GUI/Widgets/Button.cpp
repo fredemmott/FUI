@@ -20,14 +20,22 @@ auto& ButtonStyles() {
 }// namespace
 
 Button::Button(Window* const window)
-  : Button(window, ButtonStyleClass, ButtonStyles(), {}) {}
+  : Button(
+      window,
+      ButtonStyleClass,
+      ButtonStyles(),
+      {PseudoClasses::ExplicitMouseButtonSink}) {}
 
 Button::Button(
   Window* const window,
   const StyleClass primaryStyleClass,
   const ImmutableStyle& style,
   const StyleClasses& classes)
-  : Widget(window, primaryStyleClass, style, classes),
+  : Widget(
+      window,
+      primaryStyleClass,
+      style,
+      classes + PseudoClasses::ExplicitMouseButtonSink),
     IInvocable(this) {}
 
 Button::~Button() = default;
@@ -43,21 +51,7 @@ ImmutableStyle Button::MakeImmutableStyle(const Style& mixin) {
 }
 
 void Button::Invoke() {
-  mWasActivated = true;
-}
-Widget::EventHandlerResult Button::OnMouseButtonPress(const MouseEvent& e) {
-  std::ignore = Widget::OnMouseButtonPress(e);
-  return EventHandlerResult::StopPropagation;
-}
-
-Widget::EventHandlerResult Button::OnMouseButtonRelease(const MouseEvent& e) {
-  std::ignore = Widget::OnMouseButtonRelease(e);
-  return EventHandlerResult::StopPropagation;
-}
-
-Widget::EventHandlerResult Button::OnClick(const MouseEvent&) {
-  this->Invoke();
-  return EventHandlerResult::StopPropagation;
+  this->MarkActivated();
 }
 
 Widget::ComputedStyleFlags Button::OnComputedStyleChange(

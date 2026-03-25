@@ -408,7 +408,7 @@ CheckBox::CheckBox(Window* const window)
       window,
       LiteralStyleClass {"CheckBox"},
       CheckBoxStyles(),
-      {*CheckBoxStyleClass}),
+      {*CheckBoxStyleClass, PseudoClasses::ExplicitMouseButtonSink}),
     IToggleable(this) {
   this->SetStructuralChildren({
     mGlyph = new CheckBoxGlyph(window),
@@ -425,8 +425,13 @@ void CheckBox::Toggle() {
   mWasChanged = true;
 }
 
-Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent&) {
-  this->Toggle();
+Widget::EventHandlerResult CheckBox::OnClick(const MouseEvent& e) {
+  if (
+    e.Get<MouseEvent::ButtonReleaseEvent>().mReleasedButtons
+    == MouseButton::Left) {
+    this->Toggle();
+  }
+  std::ignore = Widget::OnClick(e);
   return EventHandlerResult::StopPropagation;
 }
 

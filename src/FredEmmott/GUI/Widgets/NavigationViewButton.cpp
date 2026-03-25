@@ -44,7 +44,11 @@ const auto& NavigationViewButtonStyle() {
 NavigationViewButton::NavigationViewButton(
   Window* const window,
   const std::string_view glyph)
-  : Widget(window, NavigationViewButtonStyleClass, NavigationViewButtonStyle()),
+  : Widget(
+      window,
+      NavigationViewButtonStyleClass,
+      NavigationViewButtonStyle(),
+      {PseudoClasses::ExplicitMouseButtonSink}),
     IInvocable(this),
     mGlyph(glyph) {
   FUI_ASSERT(!mGlyph.empty());
@@ -126,8 +130,13 @@ Widget::EventHandlerResult NavigationViewButton::OnMouseButtonRelease(
   return Widget::OnMouseButtonRelease(e);
 }
 
-Widget::EventHandlerResult NavigationViewButton::OnClick(const MouseEvent&) {
-  this->Invoke();
+Widget::EventHandlerResult NavigationViewButton::OnClick(const MouseEvent& e) {
+  if (
+    e.Get<MouseEvent::ButtonReleaseEvent>().mReleasedButtons
+    == MouseButton::Left) {
+    this->Invoke();
+  }
+  std::ignore = Widget::OnClick(e);
   return EventHandlerResult::StopPropagation;
 }
 

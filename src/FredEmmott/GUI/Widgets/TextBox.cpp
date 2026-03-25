@@ -70,7 +70,7 @@ TextBox::TextBox(Window* const window)
       window,
       TextBoxStyleClass,
       StaticTheme::TextBox::DefaultTextBoxStyle(),
-      {}),
+      {PseudoClasses::ExplicitMouseButtonSink}),
     IFocusable(this),
     mAutomation(std::make_unique<Automation>()) {
   mTextContainer

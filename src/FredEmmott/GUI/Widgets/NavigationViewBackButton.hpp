@@ -12,14 +12,6 @@ class NavigationViewBackButton final : public NavigationViewButton {
   ~NavigationViewBackButton() override;
 
   void Invoke() override;
-
-  [[nodiscard]]
-  bool ConsumeWasActivated() noexcept {
-    return std::exchange(mWasActivated, false);
-  }
-
- private:
-  bool mWasActivated {false};
 };
 
 }// namespace FredEmmott::GUI::Widgets

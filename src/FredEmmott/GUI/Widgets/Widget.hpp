@@ -172,6 +172,12 @@ class Widget {
   [[nodiscard]]
   bool IsActive() const;
 
+  [[nodiscard]]
+  bool ConsumeWasActivated() noexcept;
+
+  [[nodiscard]]
+  bool ConsumeWasContextActivated() noexcept;
+
   // A periodic event at an undefined interval; use for animations etc
   virtual void Tick(const std::chrono::steady_clock::time_point& now);
   void ComputeStyles(const Style& inherited);
@@ -242,6 +248,7 @@ class Widget {
  protected:
   enum class StateFlags {
     Default = 0,
+    None = 0,
     Disabled = 1 << 1,
     Hovered = 1 << 2,
     Active = 1 << 3,
@@ -249,6 +256,10 @@ class Widget {
     Checked = 1 << 5,
     HaveFocus = 1 << 6,
     HaveVisibleFocus = 1 << 7,
+    WasActivated = 1 << 8,// Left-click
+    WasContextActivated = 1 << 9,// Right-click
+    ExplicitMouseButtonSink = 1 << 10,// e.g. a button
+    ImplicitMouseButtonSink = 1 << 11,// user called ConsumeWas*Activated()
   };
   friend consteval bool is_bitflag_enum(std::type_identity<StateFlags>);
 
@@ -273,9 +284,7 @@ class Widget {
   virtual void PaintChildren(Renderer* canvas) const;
 
   [[nodiscard]]
-  virtual EventHandlerResult OnClick(const MouseEvent&) {
-    return EventHandlerResult::Default;
-  }
+  virtual EventHandlerResult OnClick(const MouseEvent& e);
 
   // These are 'fire-and-forget' events which are separately dispatched for
   // each widget; as such, there's no propagation behavior to consider, so it
@@ -321,6 +330,9 @@ class Widget {
   [[nodiscard]]
   bool IsChecked() const noexcept;
   void SetIsChecked(bool checked = true);
+
+  void MarkActivated();
+  void MarkContextActivated();
 
  private:
   struct MouseEventResult {
@@ -403,6 +415,9 @@ class Widget {
       return static_cast<T*>(p);
     }
   }
+
+  [[nodiscard]]
+  bool IsMouseButtonSink() const noexcept;
 };
 
 consteval bool is_bitflag_enum(std::type_identity<Widget::StateFlags>) {

@@ -18,7 +18,7 @@ NavigationViewBackButton::NavigationViewBackButton(Window* const window)
 NavigationViewBackButton::~NavigationViewBackButton() = default;
 
 void NavigationViewBackButton::Invoke() {
-  mWasActivated = true;
+  this->MarkActivated();
 }
 
 }// namespace FredEmmott::GUI::Widgets

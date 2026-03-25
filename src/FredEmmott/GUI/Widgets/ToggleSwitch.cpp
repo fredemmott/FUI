@@ -49,7 +49,11 @@ using namespace StaticTheme;
 using namespace widget_detail;
 
 ToggleSwitch::ToggleSwitch(Window* const window)
-  : Widget(window, ToggleSwitchStyleClass, ToggleSwitchStyle()),
+  : Widget(
+      window,
+      ToggleSwitchStyleClass,
+      ToggleSwitchStyle(),
+      {PseudoClasses::ExplicitMouseButtonSink}),
     IToggleable(this) {
   this->SetStructuralChildren({
     new ToggleSwitchKnob(window),
@@ -86,8 +90,13 @@ void ToggleSwitch::Toggle() {
   mWasChanged = true;
 }
 
-Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent&) {
-  this->Toggle();
+Widget::EventHandlerResult ToggleSwitch::OnClick(const MouseEvent& e) {
+  if (
+    e.Get<MouseEvent::ButtonReleaseEvent>().mReleasedButtons
+    == MouseButtons::Left) {
+    this->Toggle();
+    std::ignore = Widget::OnClick(e);
+  }
   return EventHandlerResult::StopPropagation;
 }
 

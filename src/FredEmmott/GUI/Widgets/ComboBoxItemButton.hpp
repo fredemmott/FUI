@@ -32,6 +32,7 @@ class ComboBoxItemButton : public Button, public ISelectionItem {
     return mSelectionContainer;
   }
 
+  [[nodiscard]]
   bool ConsumeWasSelected() noexcept override {
     return ConsumeWasActivated();
   }

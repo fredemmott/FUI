@@ -20,6 +20,7 @@ NavigationViewTogglePaneButton::NavigationViewTogglePaneButton(
 NavigationViewTogglePaneButton::~NavigationViewTogglePaneButton() = default;
 
 void NavigationViewTogglePaneButton::Invoke() {
+  this->MarkActivated();
   mNavigationView->TogglePaneIsExpanded();
 }
 

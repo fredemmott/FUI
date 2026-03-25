@@ -11,5 +11,7 @@ extern const StyleClass Disabled;
 extern const StyleClass Focus;
 extern const StyleClass FocusVisible;
 extern const StyleClass Hover;
+
 extern const StyleClass LayoutOrphan;
+extern const StyleClass ExplicitMouseButtonSink;
 }// namespace FredEmmott::GUI::PseudoClasses
