@@ -9,16 +9,6 @@ $<IF:$<BOOL:@ENABLE_SKIA@>,#define,// #undef> FUI_ENABLE_SKIA
 $<IF:$<BOOL:@ENABLE_DIRECT2D@>,#define,// #undef> FUI_ENABLE_DIRECT2D
 $<IF:$<BOOL:@ENABLE_ICU@>,#define,// #undef> FUI_ENABLE_ICU
 
-// See notes on no_unique_address here:
-// https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/
-#if __has_cpp_attribute(msvc::no_unique_address)
-#define FUI_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#elif __has_cpp_attribute(no_unique_address)
-#define FUI_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#else
-#error "Don't know how to set [[no_unique_address]] on this compiler; ABI incompatibility."
-#endif
-
 namespace FredEmmott::GUI::Config {
 #ifdef FUI_DEBUG
 constexpr bool Debug = true;
