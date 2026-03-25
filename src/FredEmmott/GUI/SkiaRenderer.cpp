@@ -66,7 +66,11 @@ SkiaRenderer::SkiaRenderer(
 }
 
 SkiaRenderer::~SkiaRenderer() {
-  FUI_ASSERT(mStackDepth == 0);
+  // `FUI_ASSERT` uses `if constexpr`, which refers to an undefined variable in
+  // release builds
+#ifdef FUI_DEBUG
+  FUI_ALWAYS_ASSERT(mStackDepth == 0);
+#endif
 }
 
 void SkiaRenderer::PushLayer(const float alpha) {
