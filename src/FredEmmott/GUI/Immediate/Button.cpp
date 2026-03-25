@@ -6,19 +6,13 @@
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
 
-ButtonResult<&EndButton> BeginButton(bool* clicked, const ID id) {
+ButtonResult<&EndButton> BeginButton(bool* const clicked, const ID id) {
   using Button = Widgets::Button;
   const auto button = BeginWidget<Button>(id);
   if (clicked) {
     *clicked = button->ConsumeWasActivated();
   }
   return button;
-}
-
-ButtonResult<&EndButton, bool, UnscopeableResultMixin> BeginButton(
-  const ID id) {
-  bool clicked {};
-  return {BeginButton(&clicked, id), clicked};
 }
 
 ButtonResult<nullptr, bool> Button(const std::string_view label, const ID id) {

@@ -63,31 +63,22 @@ using ButtonResult = Result<
  *
  * Usage:
  *
- *   BeginButton(&clicked, [style[, id]]);
+ *   BeginButton(&clicked);
+ *   ...
+ *   EndButton();
+ *
+ * Or:
+ *
+ *   {
+ *     const auto button = BeginButton(&clicked).Scoped();
+ *     ...
+ *   }
  *
  * @see `Button(...)` if you just want text
  */
 ButtonResult<&EndButton> BeginButton(
   bool* clicked,
   ID id = ID {std::source_location::current()});
-
-/** Start a button containing a child widget.
- *
- * Returns truthy result if the button was clicked.
- *
- * The result can not be `Scoped()`, to prevent the following bug:
- *
- * ```
- * if (BeginButton.Scoped()) {
- *   Label("ButtonText");
- * }
- * ```
- *
- * This would be a bug because the if block is a click handler, i.e. the button
- * would not have a label except for the frame in which it is clicked.
- */
-ButtonResult<&EndButton, bool, immediate_detail::UnscopeableResultMixin>
-BeginButton(ID id = ID {std::source_location::current()});
 
 /// Create a button with a text label
 [[nodiscard]]

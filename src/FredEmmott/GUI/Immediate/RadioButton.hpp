@@ -25,13 +25,15 @@ using RadioButtonResult
   = Result<TEndWidget, TValue, immediate_detail::ToolTipResultMixin>;
 
 template <selectable_key T>
-RadioButtonResult<&EndRadioButton, bool> BeginRadioButton(
+RadioButtonResult<&EndRadioButton, void> BeginRadioButton(
+  bool* clicked,
   const T key,
   const ID id = ID {std::source_location::current()}) {
+  FUI_ASSERT(clicked);
   using namespace immediate_detail;
   const auto widget = BeginWidget<Widgets::RadioButton>(id);
-  const auto activated = SelectionManager<T>::BeginItem(key, widget);
-  return {widget, activated};
+  *clicked = SelectionManager<T>::BeginItem(key, widget);
+  return widget;
 }
 
 template <selectable_key T>
@@ -39,10 +41,11 @@ RadioButtonResult<nullptr, bool> RadioButton(
   const T key,
   const std::string_view label,
   const ID id = ID {std::source_location::current()}) {
-  const auto result = BeginRadioButton(key, id);
+  bool clicked {};
+  const auto result = BeginRadioButton(&clicked, key, id);
   Label(label);
   EndRadioButton();
-  return result;
+  return {result, clicked};
 }
 
 template <selectable_key T, class... Args>
