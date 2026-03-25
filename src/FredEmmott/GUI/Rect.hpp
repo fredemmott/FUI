@@ -104,6 +104,13 @@ struct BasicRect {
       && point.mY >= GetTop() && point.mY < GetBottom();
   }
 
+  constexpr void Inset(const T diff) noexcept {
+    mTopLeft.mX += diff;
+    mTopLeft.mY += diff;
+    mSize.mWidth -= diff * 2;
+    mSize.mHeight -= diff * 2;
+  }
+
   constexpr void Inset(T dx, T dy) noexcept {
     mTopLeft.mX += dx;
     mTopLeft.mY += dy;
@@ -118,30 +125,42 @@ struct BasicRect {
     mSize.mHeight -= top + bottom;
   }
 
-  template <class Self>
-  constexpr Self WithInset(this const Self& self, T dx, T dy) noexcept {
-    Self result = self;
-    result.Inset(dx, dy);
-    return result;
+  constexpr BasicRect WithInset(const T diff) const noexcept {
+    auto ret = *this;
+    ret.Inset(diff);
+    return ret;
   }
 
-  template <class Self>
-  constexpr Self
-  WithInset(this const Self& self, T left, T top, T right, T bottom) noexcept {
-    Self result = self;
-    result.Inset(left, top, right, bottom);
-    return result;
+  constexpr BasicRect WithInset(T dx, T dy) const noexcept {
+    auto ret = *this;
+    ret.Inset(dx, dy);
+    return ret;
   }
 
-  template <class Self>
-  constexpr Self WithOutset(this const Self& self, T dx, T dy) noexcept {
-    return self.WithInset(-dx, -dy);
+  constexpr BasicRect WithInset(T left, T top, T right, T bottom)
+    const noexcept {
+    auto ret = *this;
+    ret.Inset(left, top, right, bottom);
+    return ret;
   }
 
-  template <class Self>
-  constexpr Self
-  WithOutset(this const Self& self, T left, T top, T right, T bottom) noexcept {
-    return self.WithInset(-left, -top, -right, -bottom);
+  constexpr BasicRect WithOutset(const T diff) const noexcept {
+    return this->WithInset(-diff);
+  }
+
+  constexpr BasicRect WithOutset(T dx, T dy) const noexcept {
+    return this->WithInset(-dx, -dy);
+  }
+
+  constexpr BasicRect WithOutset(T left, T top, T right, T bottom)
+    const noexcept {
+    return this->WithInset(-left, -top, -right, -bottom);
+  }
+
+  constexpr BasicRect WithOffset(const BasicPoint<T>& offset) const noexcept {
+    auto ret = *this;
+    ret.mTopLeft += offset;
+    return ret;
   }
 
 #ifdef FUI_ENABLE_SKIA
