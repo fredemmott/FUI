@@ -91,7 +91,7 @@ Win32Direct2DWindow::GetSharedResources(IDXGIFactory4* dxgiFactory) {
 
   // Create D3D11 device
   UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -124,7 +124,7 @@ Win32Direct2DWindow::GetSharedResources(IDXGIFactory4* dxgiFactory) {
 
   // Create D2D factory
   D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
 

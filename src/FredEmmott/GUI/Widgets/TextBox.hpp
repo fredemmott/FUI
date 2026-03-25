@@ -80,7 +80,7 @@ class TextBox : public Widget, public IFocusable {
   struct Automation;
   std::unique_ptr<Automation> mAutomation;
   detail::AutomationActivityFlag mAutomationFlag;
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   std::thread::id mOwnerThread {std::this_thread::get_id()};
   void AssertOwnerThread() const {
     FUI_ASSERT(mOwnerThread == std::this_thread::get_id());

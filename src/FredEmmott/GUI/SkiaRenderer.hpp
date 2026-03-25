@@ -137,7 +137,7 @@ class SkiaRenderer final : public Renderer {
   NativeDevice mNativeDevice {};
   SkCanvas* mCanvas {nullptr};
   std::shared_ptr<GPUCompletionFlag> mFrameCompletionFlag;
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   std::size_t mStackDepth {};
 #endif
 };

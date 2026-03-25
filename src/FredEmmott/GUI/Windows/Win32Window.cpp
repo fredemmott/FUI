@@ -221,7 +221,7 @@ Win32Window::Win32Window(
     mDXGIFactory = wil::com_query<IDXGIFactory4>(options.mDXGIFactory);
   } else {
     UINT flags = 0;
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
     flags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
     CheckHResult(CreateDXGIFactory2(flags, IID_PPV_ARGS(mDXGIFactory.put())));
@@ -424,7 +424,7 @@ void Win32Window::CreateNativeWindow() {
 
   if (mOffsetToChild) {
     const auto yogaRoot = this->GetRoot()->GetLayoutNode();
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
     // We've needed `YGNodeSwapChild(yogaRoot, yogaChild, 1)` in the past,
     // but as the yoga functions now do that implicitly when operating on a
     // cloned node, this shouldn't be needed.

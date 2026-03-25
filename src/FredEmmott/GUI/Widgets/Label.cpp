@@ -62,7 +62,7 @@ void Label::PaintOwnContent(
   Renderer* renderer,
   const Rect& outerRect,
   const Style& style) const {
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   if (style.Font() != mFont) [[unlikely]] {
     throw std::logic_error(
       "Stylesheet font does not match mFont; computed style not updated");

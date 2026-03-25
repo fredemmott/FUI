@@ -66,7 +66,7 @@ SkiaRenderer::SkiaRenderer(
 }
 
 SkiaRenderer::~SkiaRenderer() {
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   FUI_ASSERT(mStackDepth == 0);
 #endif
 }
@@ -77,14 +77,14 @@ void SkiaRenderer::PushLayer(const float alpha) {
   } else {
     mCanvas->saveLayerAlphaf(nullptr, alpha);
   }
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   ++mStackDepth;
 #endif
 }
 
 void SkiaRenderer::PopLayer() {
   mCanvas->restore();
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   --mStackDepth;
 #endif
 }
@@ -96,14 +96,14 @@ void SkiaRenderer::Clear(const Color& color) {
 void SkiaRenderer::PushClipRect(const Rect& rect) {
   mCanvas->save();
   mCanvas->clipRect(rect);
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   ++mStackDepth;
 #endif
 }
 
 void SkiaRenderer::PopClipRect() {
   mCanvas->restore();
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   --mStackDepth;
 #endif
 }
@@ -455,7 +455,7 @@ void SkiaRenderer::DrawTexture(
   ImportedFence* const rawFence,
   const uint64_t fenceValue) {
   FUI_ASSERT(rawTexture);
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
 #define IMPL_CAST dynamic_cast
 #else
 #define IMPL_CAST static_cast

@@ -63,7 +63,7 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
 
 void ConfigureD3DDebugLayer(
   [[maybe_unused]] const wil::com_ptr<ID3D12Device>& device) {
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   auto infoQueue = device.try_query<ID3D12InfoQueue1>();
   if (!infoQueue) {
     return;
@@ -188,7 +188,7 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
 
   auto ret = std::shared_ptr<SharedResources>(new SharedResources());
 
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
   wil::com_ptr<ID3D12Debug5> d3d12Debug;
   D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
   if (d3d12Debug) {

@@ -363,7 +363,7 @@ void Direct2DRenderer::DrawTexture(
   ImportedTexture* const rawTexture,
   ImportedFence* const rawFence,
   uint64_t fenceValue) {
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
 #define IMPL_CAST dynamic_cast
 #else
 #define IMPL_CAST static_cast

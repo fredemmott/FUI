@@ -4,6 +4,7 @@
 
 #include <string_view>
 
+$<IF:$<CONFIG:Debug>,#define,// #undef> FUI_DEBUG
 $<IF:$<BOOL:@ENABLE_SKIA@>,#define,// #undef> FUI_ENABLE_SKIA
 $<IF:$<BOOL:@ENABLE_DIRECT2D@>,#define,// #undef> FUI_ENABLE_DIRECT2D
 $<IF:$<BOOL:@ENABLE_ICU@>,#define,// #undef> FUI_ENABLE_ICU
@@ -19,7 +20,7 @@ $<IF:$<BOOL:@ENABLE_ICU@>,#define,// #undef> FUI_ENABLE_ICU
 #endif
 
 namespace FredEmmott::GUI::Config {
-#ifndef NDEBUG
+#ifdef FUI_DEBUG
 constexpr bool Debug = true;
 #else
 constexpr bool Debug = false;
