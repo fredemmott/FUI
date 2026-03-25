@@ -66,7 +66,7 @@ void FocusManager::FocusNextWidget() {
   }
 
   const auto selectItem
-    = wil::scope_exit([this] { this->FocusFirstSelectedItem(); });
+    = felly::scope_exit([this] { this->FocusFirstSelectedItem(); });
 
   auto child = std::exchange(mFocusedWidget, nullptr);
 
@@ -126,7 +126,7 @@ void FocusManager::FocusPreviousWidget() {
   }
 
   const auto selectItem
-    = wil::scope_exit([this] { this->FocusFirstSelectedItem(); });
+    = felly::scope_exit([this] { this->FocusFirstSelectedItem(); });
 
   auto child = std::exchange(mFocusedWidget, nullptr);
   if (const auto item = dynamic_cast<Widgets::ISelectionItem*>(child)) {

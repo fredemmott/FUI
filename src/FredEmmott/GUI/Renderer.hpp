@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <wil/com.h>
-
 #include <FredEmmott/utility/almost_equal.hpp>
 #include <FredEmmott/utility/bitflag_enums.hpp>
+#include <felly/scope_exit.hpp>
 
 #include "Brush.hpp"
 #include "Color.hpp"
@@ -92,7 +91,7 @@ class Renderer {
   virtual void PopLayer() = 0;
   auto ScopedLayer(float alpha = 1.0f) {
     PushLayer(alpha);
-    return wil::scope_exit([this] { PopLayer(); });
+    return felly::scope_exit([this] { PopLayer(); });
   }
 
   virtual void Clear(const Color&) = 0;
@@ -101,7 +100,7 @@ class Renderer {
   virtual void PopClipRect() = 0;
   auto ScopedClipRect(const Rect& rect) {
     PushClipRect(rect);
-    return wil::scope_exit([this] { PopClipRect(); });
+    return felly::scope_exit([this] { PopClipRect(); });
   }
 
   [[nodiscard]]

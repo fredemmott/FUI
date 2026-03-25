@@ -271,7 +271,7 @@ int Win32Window::WinMain(
   std::ignore = AttachConsole(ATTACH_PARENT_PROCESS);
 
   void (*comCleanupFun)() {nullptr};
-  const auto cleanupCOM = wil::scope_exit([options, &comCleanupFun]() {
+  const auto cleanupCOM = felly::scope_exit([options, &comCleanupFun]() {
     if (
       comCleanupFun
       && options.mCOMCleanupMode
@@ -494,7 +494,7 @@ std::optional<std::string> Win32Window::GetClipboardText() const {
   if (!OpenClipboard(mHwnd.get())) {
     return {};
   }
-  const auto closeClipboard = wil::scope_exit([] { CloseClipboard(); });
+  const auto closeClipboard = felly::scope_exit([] { CloseClipboard(); });
 
   const auto handle = GetClipboardData(CF_UNICODETEXT);
   if (!handle) {
@@ -505,7 +505,7 @@ std::optional<std::string> Win32Window::GetClipboardText() const {
   if (!ptr) {
     return {};
   }
-  const auto unlock = wil::scope_exit([handle] { GlobalUnlock(handle); });
+  const auto unlock = felly::scope_exit([handle] { GlobalUnlock(handle); });
 
   return WideToUtf8(ptr);
 }
@@ -514,7 +514,7 @@ void Win32Window::SetClipboardText(const std::string_view utf8) const {
   if (!OpenClipboard(mHwnd.get())) {
     return;
   }
-  const auto closeClipboard = wil::scope_exit([] { CloseClipboard(); });
+  const auto closeClipboard = felly::scope_exit([] { CloseClipboard(); });
   EmptyClipboard();
 
   const auto wide = Utf8ToWide(utf8);
@@ -1031,7 +1031,7 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         return 0;
       }
       const auto clearSurrogate
-        = wil::scope_exit([this] { mHighSurrogate.reset(); });
+        = felly::scope_exit([this] { mHighSurrogate.reset(); });
       if (IS_LOW_SURROGATE(wParam)) {
         if (!mHighSurrogate) {
           __debugbreak();

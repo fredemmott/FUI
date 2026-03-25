@@ -168,7 +168,7 @@ void SingleButton(ButtonsContext::LogicalButton& b) {
 void EndContentDialogButtons() {
   FUI_ASSERT(tButtonsContext);
   const auto clearOnScopeExit
-    = wil::scope_exit([&ctx = tButtonsContext] { ctx = nullptr; });
+    = felly::scope_exit([&ctx = tButtonsContext] { ctx = nullptr; });
   auto ctx = tButtonsContext;
 
   unsigned int visibleButtons = 0;

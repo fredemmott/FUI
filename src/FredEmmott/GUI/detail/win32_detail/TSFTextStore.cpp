@@ -71,7 +71,7 @@ HRESULT TextStoreACP::RequestLock(DWORD dwLockFlags, HRESULT* phrSession) {
     if ((lockedMode & wantMode) == wantMode) {
       const auto oldFlags = std::exchange(mLockFlags, dwLockFlags);
       const auto restore
-        = wil::scope_exit([this, oldFlags] { mLockFlags = oldFlags; });
+        = felly::scope_exit([this, oldFlags] { mLockFlags = oldFlags; });
       *phrSession = mSink->OnLockGranted(dwLockFlags);
       return S_OK;
     }
@@ -91,8 +91,9 @@ HRESULT TextStoreACP::RequestLock(DWORD dwLockFlags, HRESULT* phrSession) {
     return S_OK;
   }
 
-  const auto restore
-    = wil::scope_exit([this, oldFlags = mLockFlags] { mLockFlags = oldFlags; });
+  const auto restore = felly::scope_exit([this, oldFlags = mLockFlags] {
+    mLockFlags = oldFlags;
+  });
 
   mPendingLocks.push(dwLockFlags);
   bool isFirst {true};

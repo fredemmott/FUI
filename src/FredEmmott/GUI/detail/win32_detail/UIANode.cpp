@@ -130,7 +130,7 @@ HRESULT STDMETHODCALLTYPE UIANode::Navigate(
   NavigateDirection direction,
   IRawElementProviderFragment** pRetVal) {
   *pRetVal = nullptr;
-  const auto addRef = wil::scope_exit([&]() {
+  const auto addRef = felly::scope_exit([&]() {
     if (*pRetVal) {
       (*pRetVal)->AddRef();
     }
