@@ -245,6 +245,9 @@ class Widget {
   [[nodiscard]]
   Size GetSize() const noexcept;
 
+  void EnsureVisible();
+  virtual void EnsureVisible(const Rect&);
+
  protected:
   enum class StateFlags {
     Default = 0,

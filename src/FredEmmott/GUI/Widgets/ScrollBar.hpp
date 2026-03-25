@@ -34,6 +34,16 @@ class ScrollBar final : public Widget {
   [[nodiscard]] float GetThumbSize() const;
   void OnValueChanged(ValueChangedCallback);
 
+  /** Attempt to put the provided region entirely within the thumb.
+   *
+   * If the region is larger than the thumb size, it might not be possible to
+   * fully fit it, and `GetValue()` may be less than `start` after calling this
+   * function.
+   *
+   * If (start, end) are within the thumb, this function does nothing.
+   */
+  void ScrollToRegion(float start, float end);
+
  private:
   Orientation mOrientation;
 

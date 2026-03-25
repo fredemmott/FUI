@@ -433,6 +433,33 @@ void ScrollBar::OnValueChanged(ValueChangedCallback cb) {
   mValueChangedCallback = std::move(cb);
 }
 
+void ScrollBar::ScrollToRegion(const float rawStart, const float rawEnd) {
+  const auto visibleLength = mThumbSize;
+  const auto currentStart = mValue;
+  const auto currentEnd = currentStart + visibleLength;
+
+  const auto start = std::clamp(rawStart, mMinimum, mMaximum);
+  const auto end = std::clamp(rawEnd, mMinimum, mMaximum + visibleLength);
+
+  if ((end - start) > visibleLength) {
+    this->SetValue(start);
+    return;
+  }
+
+  if (end > currentEnd) {
+    this->SetValue(end - visibleLength);
+    return;
+  }
+
+  if (start < currentStart) {
+    this->SetValue(start);
+    return;
+  }
+
+  // If we reach here, start >= currentStart && end <= currentEnd,
+  // so nothing to do.
+}
+
 void ScrollBar::SetThumbSize(const float value) {
   if (utility::almost_equal(value, mThumbSize)) {
     return;

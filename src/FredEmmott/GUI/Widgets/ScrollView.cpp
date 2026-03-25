@@ -125,6 +125,49 @@ ScrollView& ScrollView::SetVerticalScrollBarVisibility(
   return *this;
 }
 
+void ScrollView::EnsureVisible(const Rect& scrolled) {
+  // The region we receive will have already been adjusted for the scroll
+  // offsets, so we need to undo that
+  const Point initialOffset {
+    mHorizontalScrollBar->GetValue(),
+    mVerticalScrollBar->GetValue(),
+  };
+  const auto unscrolled = scrolled.WithOffset(initialOffset);
+
+  if constexpr (Config::Debug) {
+    const auto [scrollX, scrollY] = -mContentInner->GetTopLeftCanvasPoint(this);
+    FUI_ALWAYS_ASSERT(utility::almost_equal(initialOffset.mX, scrollX));
+    FUI_ALWAYS_ASSERT(utility::almost_equal(initialOffset.mY, scrollY));
+  }
+
+  if (
+    YGNodeStyleGetDisplay(mVerticalScrollBar->GetLayoutNode())
+    != YGDisplayNone) {
+    mVerticalScrollBar->ScrollToRegion(
+      unscrolled.GetTop(), unscrolled.GetBottom());
+  }
+  if (
+    YGNodeStyleGetDisplay(mHorizontalScrollBar->GetLayoutNode())
+    != YGDisplayNone) {
+    mHorizontalScrollBar->ScrollToRegion(
+      unscrolled.GetLeft(), unscrolled.GetRight());
+  }
+
+  const auto parent = this->GetStructuralParent();
+  if (!parent) {
+    return;
+  }
+
+  const Point finalOffset {
+    mHorizontalScrollBar->GetValue(),
+    mVerticalScrollBar->GetValue(),
+  };
+  // Call this unconditionally, even if finalOffset == initialOffset; while
+  // *this* scrollview may have already been showing it, if we have nested
+  // scrollviews, perhaps an ancestor one wasn't showing it.
+  parent->EnsureVisible(unscrolled.WithOffset(-finalOffset));
+}
+
 void ScrollView::UpdateScrollBars(const Size& containerSize) const {
   const auto [w, h] = containerSize;
 

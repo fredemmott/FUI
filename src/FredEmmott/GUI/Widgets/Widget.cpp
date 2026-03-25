@@ -827,4 +827,42 @@ Size Widget::GetSize() const noexcept {
   };
 }
 
+void Widget::EnsureVisible() {
+  static constexpr auto ArbitraryMargin = 4.0f;
+
+  if (!mStructuralParent) {
+    return;
+  }
+
+  if (
+    (mDirectStateFlags & StateFlags::HaveFocus) == StateFlags::None
+    && this->GetOwnerWindow()->GetFocusManager()->IsWidgetFocused(this)) {
+    // We need to compute the outline styles so we can compute the rect
+    // correctly below
+    this->ComputeStyles(mInheritedStyles);
+  }
+  const auto& style = mComputedStyle;
+
+  // Ensure the focus frame is visible too
+
+  const auto thickness = style.OutlineWidth().value_or(0);
+  const auto rect = Rect {
+    this->GetTopLeftCanvasPoint(mStructuralParent),
+    this->GetSize(),
+  }.WithOutset(
+    style.OutlineLeftOffset().value_or(0) + thickness + ArbitraryMargin,
+    style.OutlineTopOffset().value_or(0) + thickness + ArbitraryMargin,
+    style.OutlineRightOffset().value_or(0) + thickness + ArbitraryMargin,
+    style.OutlineBottomOffset().value_or(0) + thickness + ArbitraryMargin);
+  mStructuralParent->EnsureVisible(rect);
+}
+
+void Widget::EnsureVisible(const Rect& rect) {
+  if (!mStructuralParent) {
+    return;
+  }
+  const auto offset = this->GetTopLeftCanvasPoint(mStructuralParent);
+  mStructuralParent->EnsureVisible(rect.WithOffset(offset));
+}
+
 }// namespace FredEmmott::GUI::Widgets

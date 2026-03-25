@@ -200,9 +200,11 @@ bool FocusManager::OnKeyPress(const KeyPressEvent& e) {
       switch (e.mModifiers) {
         case Modifier_None:
           this->FocusNextWidget();
+          this->EnsureFocusedWidgetIsVisible();
           return true;
         case Modifier_Shift:
           this->FocusPreviousWidget();
+          this->EnsureFocusedWidgetIsVisible();
           return true;
         default:
           break;
@@ -233,10 +235,12 @@ bool FocusManager::OnKeyPress(const KeyPressEvent& e) {
     case Key_LeftArrow:
     case Key_UpArrow:
       this->FocusPreviousSelectionItem();
+      this->EnsureFocusedWidgetIsVisible();
       return true;
     case Key_RightArrow:
     case Key_DownArrow:
       this->FocusNextSelectionItem();
+      this->EnsureFocusedWidgetIsVisible();
       return true;
     default:
       break;
@@ -332,6 +336,13 @@ Widgets::Widget* FocusManager::LastFocusableWidget(Widgets::Widget* parent) {
   }
 
   return nullptr;
+}
+
+void FocusManager::EnsureFocusedWidgetIsVisible() {
+  if (!mFocusedWidget) {
+    return;
+  }
+  mFocusedWidget->EnsureVisible();
 }
 
 }// namespace FredEmmott::GUI

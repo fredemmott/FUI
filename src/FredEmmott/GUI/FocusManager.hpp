@@ -82,6 +82,8 @@ class FocusManager final {
 
   static Widgets::Widget* FirstFocusableWidget(Widgets::Widget* parent);
   static Widgets::Widget* LastFocusableWidget(Widgets::Widget* parent);
+
+  void EnsureFocusedWidgetIsVisible();
 };
 
 }// namespace FredEmmott::GUI
