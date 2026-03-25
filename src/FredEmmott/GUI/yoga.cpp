@@ -134,14 +134,14 @@ ScopedYogaParentCheck::ScopedYogaParentCheck(
     if (childCount > 0) {
       FUI_ALWAYS_ASSERT(
         YGNodeGetParent(YGNodeGetChild(const_cast<YGNode*>(node), 0)) == node);
-      mInput = {node, childCount};
+      reinterpret_cast<input_t&>(mInput) = {node, childCount};
     }
   }
 }
 
 ScopedYogaParentCheck::~ScopedYogaParentCheck() {
   if constexpr (Config::Debug) {
-    const auto [node, childCount] = mInput;
+    const auto [node, childCount] = reinterpret_cast<input_t&>(mInput);
     FUI_ALWAYS_ASSERT(YGNodeGetChildCount(node) == childCount);
     if (childCount > 0) {
       FUI_ALWAYS_ASSERT(

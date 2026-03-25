@@ -53,7 +53,7 @@ ScopedYogaParentCheck final {
  private:
   struct dummy_t {};
   struct input_t {
-    const YGNode* mNode;
+    const YGNode* mNode {};
     size_t mChildCount {};
   };
   FELLY_NO_UNIQUE_ADDRESS
