@@ -63,44 +63,44 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
 
 void ConfigureD3DDebugLayer(
   [[maybe_unused]] const wil::com_ptr<ID3D12Device>& device) {
-#ifdef FUI_DEBUG
-  auto infoQueue = device.try_query<ID3D12InfoQueue1>();
-  if (!infoQueue) {
-    return;
+  if constexpr (Config::Debug) {
+    const auto infoQueue = device.try_query<ID3D12InfoQueue1>();
+    if (!infoQueue) {
+      return;
+    }
+
+    infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+    infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+    infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+
+    // Skia internally triggers this; explicitly suppress it so we can
+    // keep breaking on everything WARNING or above
+    D3D12_MESSAGE_ID skiaIssues[] = {
+      D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
+      D3D12_MESSAGE_ID_CREATE_SAMPLER_COMPARISON_FUNC_IGNORED,
+    };
+    for (const auto id: skiaIssues) {
+      infoQueue->SetBreakOnID(id, false);
+    }
+
+    D3D12_MESSAGE_SEVERITY allowSeverities[] = {
+      D3D12_MESSAGE_SEVERITY_WARNING,
+      D3D12_MESSAGE_SEVERITY_ERROR,
+      D3D12_MESSAGE_SEVERITY_CORRUPTION,
+    };
+
+    D3D12_INFO_QUEUE_FILTER filter {
+      .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
+        .NumSeverities = std::size(allowSeverities),
+        .pSeverityList = allowSeverities,
+      },
+      .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
+        .NumIDs = std::size(skiaIssues),
+        .pIDList = skiaIssues,
+      },
+    };
+    CheckHResult(infoQueue->PushStorageFilter(&filter));
   }
-
-  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-  infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
-
-  // Skia internally triggers this; explicitly suppress it so we can
-  // keep breaking on everything WARNING or above
-  D3D12_MESSAGE_ID skiaIssues[] = {
-    D3D12_MESSAGE_ID_DESCRIPTOR_HEAP_NOT_SHADER_VISIBLE,
-    D3D12_MESSAGE_ID_CREATE_SAMPLER_COMPARISON_FUNC_IGNORED,
-  };
-  for (const auto id: skiaIssues) {
-    infoQueue->SetBreakOnID(id, false);
-  }
-
-  D3D12_MESSAGE_SEVERITY allowSeverities[] = {
-    D3D12_MESSAGE_SEVERITY_WARNING,
-    D3D12_MESSAGE_SEVERITY_ERROR,
-    D3D12_MESSAGE_SEVERITY_CORRUPTION,
-  };
-
-  D3D12_INFO_QUEUE_FILTER filter {
-    .AllowList = D3D12_INFO_QUEUE_FILTER_DESC {
-      .NumSeverities = std::size(allowSeverities),
-      .pSeverityList = allowSeverities,
-    },
-    .DenyList = D3D12_INFO_QUEUE_FILTER_DESC {
-      .NumIDs = std::size(skiaIssues),
-      .pIDList = skiaIssues,
-    },
-  };
-  CheckHResult(infoQueue->PushStorageFilter(&filter));
-#endif
 }
 
 struct D3D12CompletionFlag : GPUCompletionFlag {
@@ -188,14 +188,14 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
 
   auto ret = std::shared_ptr<SharedResources>(new SharedResources());
 
-#ifdef FUI_DEBUG
-  wil::com_ptr<ID3D12Debug5> d3d12Debug;
-  D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
-  if (d3d12Debug) {
-    d3d12Debug->EnableDebugLayer();
-    d3d12Debug->SetEnableAutoName(true);
+  if constexpr (Config::Debug) {
+    wil::com_ptr<ID3D12Debug5> d3d12Debug;
+    D3D12GetDebugInterface(IID_PPV_ARGS(d3d12Debug.put()));
+    if (d3d12Debug) {
+      d3d12Debug->EnableDebugLayer();
+      d3d12Debug->SetEnableAutoName(true);
+    }
   }
-#endif
 
   CheckHResult(dxgiFactory->EnumAdapters1(0, ret->mDXGIAdapter.put()));
 

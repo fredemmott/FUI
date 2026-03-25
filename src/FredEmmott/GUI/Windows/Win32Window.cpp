@@ -221,9 +221,9 @@ Win32Window::Win32Window(
     mDXGIFactory = wil::com_query<IDXGIFactory4>(options.mDXGIFactory);
   } else {
     UINT flags = 0;
-#ifdef FUI_DEBUG
-    flags |= DXGI_CREATE_FACTORY_DEBUG;
-#endif
+    if constexpr (Config::Debug) {
+      flags |= DXGI_CREATE_FACTORY_DEBUG;
+    }
     CheckHResult(CreateDXGIFactory2(flags, IID_PPV_ARGS(mDXGIFactory.put())));
     mOptions.mDXGIFactory = mDXGIFactory.get();
   }
@@ -424,17 +424,17 @@ void Win32Window::CreateNativeWindow() {
 
   if (mOffsetToChild) {
     const auto yogaRoot = this->GetRoot()->GetLayoutNode();
-#ifdef FUI_DEBUG
-    // We've needed `YGNodeSwapChild(yogaRoot, yogaChild, 1)` in the past,
-    // but as the yoga functions now do that implicitly when operating on a
-    // cloned node, this shouldn't be needed.
-    //
-    // e.g. past bug: https://github.com/fredemmott/FUI/issues/73
-    FUI_ALWAYS_ASSERT(YGNodeGetChildCount(yogaRoot) == 1);
-    const auto yogaChild = mActualRoot->GetLayoutNode();
-    FUI_ALWAYS_ASSERT(YGNodeGetChild(yogaRoot, 0) == yogaChild);
-    FUI_ASSERT(YGNodeGetParent(yogaChild) == yogaRoot);
-#endif
+    if constexpr (Config::Debug) {
+      // We've needed `YGNodeSwapChild(yogaRoot, yogaChild, 1)` in the past,
+      // but as the yoga functions now do that implicitly when operating on a
+      // cloned node, this shouldn't be needed.
+      //
+      // e.g. past bug: https://github.com/fredemmott/FUI/issues/73
+      FUI_ALWAYS_ASSERT(YGNodeGetChildCount(yogaRoot) == 1);
+      const auto yogaChild = mActualRoot->GetLayoutNode();
+      FUI_ALWAYS_ASSERT(YGNodeGetChild(yogaRoot, 0) == yogaChild);
+      FUI_ALWAYS_ASSERT(YGNodeGetParent(yogaChild) == yogaRoot);
+    }
 
     YGNodeCalculateLayout(
       yogaRoot, mGeometry->mCanvasSize.mWidth, YGUndefined, YGDirectionLTR);

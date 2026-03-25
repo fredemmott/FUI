@@ -91,9 +91,9 @@ Win32Direct2DWindow::GetSharedResources(IDXGIFactory4* dxgiFactory) {
 
   // Create D3D11 device
   UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#ifdef FUI_DEBUG
-  creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+  if constexpr (Config::Debug) {
+    creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+  }
 
   D3D_FEATURE_LEVEL featureLevels[] = {
     D3D_FEATURE_LEVEL_11_1,
@@ -124,9 +124,9 @@ Win32Direct2DWindow::GetSharedResources(IDXGIFactory4* dxgiFactory) {
 
   // Create D2D factory
   D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
-#ifdef FUI_DEBUG
-  d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
-#endif
+  if constexpr (Config::Debug) {
+    d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+  }
 
   CheckHResult(D2D1CreateFactory(
     D2D1_FACTORY_TYPE_SINGLE_THREADED,

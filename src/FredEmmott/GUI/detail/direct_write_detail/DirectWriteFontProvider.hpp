@@ -28,11 +28,11 @@ struct DirectWriteFontProvider final : renderer_detail::FontMetricsProvider {
   static DirectWriteFontProvider* Get() {
     using namespace renderer_detail;
     FUI_ASSERT(GetRenderAPI() == RenderAPI::Direct2D);
-#ifdef FUI_DEBUG
-    return dynamic_cast<DirectWriteFontProvider*>(GetFontMetricsProvider());
-#else
-    return static_cast<DirectWriteFontProvider*>(GetFontMetricsProvider());
-#endif
+    if constexpr (Config::Debug) {
+      return dynamic_cast<DirectWriteFontProvider*>(GetFontMetricsProvider());
+    } else {
+      return static_cast<DirectWriteFontProvider*>(GetFontMetricsProvider());
+    }
   }
 };
 }// namespace FredEmmott::GUI::direct_write_detail

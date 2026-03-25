@@ -66,9 +66,7 @@ SkiaRenderer::SkiaRenderer(
 }
 
 SkiaRenderer::~SkiaRenderer() {
-#ifdef FUI_DEBUG
   FUI_ASSERT(mStackDepth == 0);
-#endif
 }
 
 void SkiaRenderer::PushLayer(const float alpha) {
