@@ -56,6 +56,8 @@ add_library(
   FredEmmott/GUI/Immediate/ToggleSwitch.cpp FredEmmott/GUI/Immediate/ToggleSwitch.hpp
   FredEmmott/GUI/Immediate/ToolTip.cpp
   FredEmmott/GUI/Immediate/ToolTip.hpp
+  FredEmmott/GUI/Immediate/WasActivated.cpp
+  FredEmmott/GUI/Immediate/WasActivated.hpp
   FredEmmott/GUI/Immediate/selectable_key.hpp
   FredEmmott/GUI/Interpolation/CubicBezier.hpp
   FredEmmott/GUI/Interpolation/Linear.cpp FredEmmott/GUI/Interpolation/Linear.hpp

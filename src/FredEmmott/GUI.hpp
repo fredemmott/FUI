@@ -32,6 +32,7 @@
 #include <FredEmmott/GUI/Immediate/TitleBar.hpp>
 #include <FredEmmott/GUI/Immediate/ToggleSwitch.hpp>
 #include <FredEmmott/GUI/Immediate/ToolTip.hpp>
+#include <FredEmmott/GUI/Immediate/WasActivated.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <string_view>
 

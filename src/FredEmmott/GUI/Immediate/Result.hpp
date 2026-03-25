@@ -11,11 +11,12 @@
 
 namespace FredEmmott::GUI::Immediate {
 template <void (*TEndWidget)() = nullptr, class TValue = void, class... TMixins>
-class Result final : public immediate_detail::StyledResultMixin<TMixins...>,
-                     public immediate_detail::ValueResultMixin<TValue>,
-                     public immediate_detail::
-                       ScopeableResultMixin<TEndWidget, TValue, TMixins...>,
-                     public TMixins... {
+class Result final
+  : public immediate_detail::StyledResultMixin<TMixins...>,
+    public immediate_detail::ValueResultMixin<TValue>,
+    public immediate_detail::
+      ScopeableResultMixin<TEndWidget, TValue, TMixins...>,
+    public TMixins... {
  public:
   using value_type = TValue;
   template <class... TExtraMixins>
@@ -77,7 +78,20 @@ class Result final : public immediate_detail::StyledResultMixin<TMixins...>,
     this->mValue = std::forward<T>(result);
   }
 
+  [[nodiscard]] bool WasActivated() noexcept
+    requires HasWidget
+  {
+    return widget_from_result(this)->WasActivated();
+  }
+
+  [[nodiscard]] bool WasContextActivated() noexcept
+    requires HasWidget
+  {
+    return widget_from_result(this)->WasContextActivated();
+  }
+
  private:
+  FELLY_NO_UNIQUE_ADDRESS
   std::conditional_t<HasWidget, Widgets::Widget*, std::monostate> mWidget {};
 };
 }// namespace FredEmmott::GUI::Immediate

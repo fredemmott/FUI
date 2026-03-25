@@ -95,6 +95,9 @@ void demo_buttons() {
   if (fuii::Button("Button()")) {
     std::println(stderr, "Button clicked");
   }
+  if (fuii::WasContextActivated()) {
+    std::println(stderr, "Button was right-clicked");
+  }
 
   if (fuii::Button("Button().Accent()").Accent()) {
     std::println(stderr, "Accent button clicked");
