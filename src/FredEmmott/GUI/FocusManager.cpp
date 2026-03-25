@@ -69,9 +69,11 @@ void FocusManager::FocusNextWidget() {
     = wil::scope_exit([this] { this->FocusFirstSelectedItem(); });
 
   auto child = std::exchange(mFocusedWidget, nullptr);
-  if (const auto item = dynamic_cast<Widgets::ISelectionItem const*>(child)) {
-    child = item->GetSelectionContainer()->GetWidget();
+
+  if (dynamic_cast<Widgets::ISelectionItem const*>(child)) {
+    child = child->GetLogicalParent();
   }
+
   while (const auto parent = child->GetLogicalParentOrNull()) {
     const auto children = parent->GetLogicalChildren();
     const auto it = std::ranges::find(children, child);
