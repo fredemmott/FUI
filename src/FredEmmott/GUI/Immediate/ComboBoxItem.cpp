@@ -29,6 +29,9 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   const bool isSelected = initiallySelected || activated;
   item->SetIsChecked(isSelected);
 
+  // We need this purely so that we can pass it to OffsetPositionToDescendant
+  // below; we want to account for any padding on the ComboBoxItem, so we don't
+  // want to anchor to its' raw topleft
   const auto content = BeginWidget<Widget>(
     ID {"content"}, LiteralStyleClass {"ComboBox/content"}, ImmutableStyle {});
 
