@@ -4,7 +4,6 @@
 #include "demo.hpp"
 
 #include <FredEmmott/GUI.hpp>
-#include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <map>
 #include <print>
 
@@ -337,6 +336,22 @@ static void demo_popups() {
                     .Caption("Button(); BeginTooltipForPreviousWidget();");
     if (auto tt = fuii::BeginToolTipForPreviousWidget().Scoped()) {
       fuii::Label("This is a tooltip");
+    }
+  }
+
+  {
+    fuii::Label("Menu Flyouts").Subtitle();
+    const auto card = BeginDemoCard().Scoped();
+
+    static bool visible = false;
+    if (fuii::Button("Click Me!").Caption("Button().MenuFlyout()")) {
+      visible = true;
+    }
+    if (const auto menu = fuii::BeginMenuFlyout(&visible).Scoped()) {
+      std::ignore = fuii::MenuFlyoutItem("\ue701", "Wifi");
+      std::ignore = fuii::MenuFlyoutItem("\ue839", "Ethernet");
+      fuii::MenuFlyoutSeparator();
+      std::ignore = fuii::MenuFlyoutItem("\ue705", "VPN");
     }
   }
 }

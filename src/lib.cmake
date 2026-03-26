@@ -34,6 +34,8 @@ add_library(
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
+  FredEmmott/GUI/Immediate/MenuFlyout.cpp
+  FredEmmott/GUI/Immediate/MenuFlyout.hpp
   FredEmmott/GUI/Immediate/NavigationView.hpp
   FredEmmott/GUI/Immediate/NumberBox.cpp
   FredEmmott/GUI/Immediate/NumberBox.hpp
@@ -87,6 +89,8 @@ add_library(
   FredEmmott/GUI/StaticTheme/detail/Generic.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/HyperlinkButton.handwritten.hpp
+  FredEmmott/GUI/StaticTheme/detail/MenuFlyout.handwritten.cpp
+  FredEmmott/GUI/StaticTheme/detail/MenuFlyout.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/NavigationView.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/NavigationView.handwritten.hpp
   FredEmmott/GUI/StaticTheme/detail/TextBox.handwritten.cpp
@@ -116,7 +120,10 @@ add_library(
   FredEmmott/GUI/Widgets/GPUTexture.cpp
   FredEmmott/GUI/Widgets/GPUTexture.hpp
   FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
-  FredEmmott/GUI/Widgets/Label.cpp FredEmmott/GUI/Widgets/Label.hpp
+  FredEmmott/GUI/Widgets/Label.cpp
+  FredEmmott/GUI/Widgets/Label.hpp
+  FredEmmott/GUI/Widgets/MenuFlyoutItem.cpp
+  FredEmmott/GUI/Widgets/MenuFlyoutItem.hpp
   FredEmmott/GUI/Widgets/NavigationView.cpp
   FredEmmott/GUI/Widgets/NavigationView.hpp
   FredEmmott/GUI/Widgets/NavigationViewItem.cpp

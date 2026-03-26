@@ -178,21 +178,29 @@ add_winui3_component_theme(
   PARENT Generic
 )
 
-add_winui3_component_theme(CheckBox PARENT Common)
-add_winui3_component_theme(ContentDialog PARENT Common)
-add_winui3_component_theme(HyperlinkButton PARENT Common)
-add_winui3_component_theme(NavigationView PARENT Common)
-add_winui3_component_theme(ProgressRing PARENT Common)
-add_winui3_component_theme(RadioButton PARENT Common)
-add_winui3_component_theme(RadioButtons PARENT Common)
-add_winui3_component_theme(RepeatButton PARENT Common)
-add_winui3_component_theme(ScrollBar PARENT Common)
-add_winui3_component_theme(ScrollView PARENT Common)
-add_winui3_component_theme(SplitView PARENT Common)
-add_winui3_component_theme(Slider PARENT Common)
-add_winui3_component_theme(TitleBar PARENT Common)
-add_winui3_component_theme(ToggleSwitch PARENT Common)
-add_winui3_component_theme(ToolTip PARENT Common)
+set(
+  DERIVED_FROM_COMMON
+  CheckBox
+  ContentDialog
+  HyperlinkButton
+  MenuFlyout
+  NavigationView
+  ProgressRing
+  RadioButton
+  RadioButtons
+  RepeatButton
+  ScrollBar
+  ScrollView
+  Slider
+  SplitView
+  TitleBar
+  ToggleSwitch
+  ToolTip
+)
+foreach (COMPONENT IN LISTS DERIVED_FROM_COMMON)
+  add_winui3_component_theme("${COMPONENT}" PARENT Common)
+endforeach ()
+
 
 add_winui3_component_theme(
   Deprecated

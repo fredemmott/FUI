@@ -28,6 +28,10 @@ Font Resolve(const Usage usage) {
   }
 }
 
+Font Resolve(const float dipSize) {
+  return Resolve(Usage::Body).WithSize(dipSize);
+}
+
 Font ResolveGlyphFont(const Usage usage) {
   switch (GetRenderAPI()) {
 #ifdef FUI_ENABLE_SKIA

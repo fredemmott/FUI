@@ -405,6 +405,13 @@ void Win32Window::CreateNativeWindow() {
     CheckHResult(DwmExtendFrameIntoClientArea(mHwnd.get(), &margins));
   }
 
+  if (mOptions.mSystemBackdrop != DWMSBT_NONE) {
+    const auto corners
+      = static_cast<DWORD>(mIsToolTip ? DWMWCP_ROUNDSMALL : DWMWCP_ROUND);
+    CheckHResult(DwmSetWindowAttribute(
+      mHwnd.get(), DWMWA_WINDOW_CORNER_PREFERENCE, &corners, sizeof(corners)));
+  }
+
   if (mParentHwnd) {
     FUI_ASSERT(GetWindowLongPtrW(mParentHwnd, GWLP_USERDATA));
     Get(mParentHwnd).mChildren.push_back(mHwnd.get());
@@ -1022,7 +1029,14 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       break;
     case WM_ACTIVATE:
       if (mTitleBar) {
-        mTitleBar->SetIsActiveWindow(LOWORD(wParam) != WA_INACTIVE);
+        if (LOWORD(wParam) != WA_INACTIVE) {
+          mTitleBar->SetIsActiveWindow(true);
+        } else if (
+          mIsDisabled
+          || GetAncestor(reinterpret_cast<HWND>(lParam), GA_ROOTOWNER)
+            != mHwnd.get()) {
+          mTitleBar->SetIsActiveWindow(false);
+        }
       }
       break;
     case WM_KEYDOWN: {

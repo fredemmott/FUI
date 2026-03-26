@@ -28,7 +28,16 @@ enum class Usage {
 using enum Usage;
 
 Font Resolve(Usage);
+/** *Strongly* prefer to use `Usage` instead.
+ *
+ * This only exists to support XAML constants.
+ */
+Font Resolve(float dipSize);
 Font ResolveGlyphFont(Usage);
+/** *Strongly* prefer to use `Usage` instead.
+ *
+ * This only exists to support XAML constants.
+ */
 Font ResolveGlyphFont(float dipSize);
 
 #ifdef FUI_ENABLE_SKIA
