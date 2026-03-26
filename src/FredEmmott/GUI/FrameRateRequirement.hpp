@@ -73,6 +73,14 @@ struct FrameRateRequirement {
     return {};
   }
 
+  [[nodiscard]]
+  FrameRateRequirement operator+(const FrameRateRequirement& other) const {
+    FrameRateRequirement result {};
+    result.Merge(*this);
+    result.Merge(other);
+    return result;
+  }
+
  private:
   bool mSmoothAnimation {false};
   std::optional<std::chrono::steady_clock::time_point> mAfter;

@@ -99,10 +99,8 @@ Widget::EventHandlerResult NavigationViewItem::OnClick(const MouseEvent& e) {
 
 FrameRateRequirement NavigationViewItem::GetFrameRateRequirement()
   const noexcept {
-  if (mSelectionPill.IsAnimating()) {
-    return FrameRateRequirement::SmoothAnimation {};
-  }
-  return Widget::GetFrameRateRequirement();
+  return Widget::GetFrameRateRequirement()
+    + mSelectionPill.GetFrameRateRequirement();
 }
 
 void NavigationViewItem::PaintOwnContent(

@@ -4,6 +4,7 @@
 
 #include "Button.hpp"
 #include "Focusable.hpp"
+#include "FredEmmott/GUI/detail/SelectionPill.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 
@@ -37,8 +38,20 @@ class ComboBoxItemButton : public Button, public ISelectionItem {
     return ConsumeWasActivated();
   }
 
+  void Tick(const std::chrono::steady_clock::time_point& now) override;
+
+ protected:
+  void PaintOwnContent(Renderer*, const Rect&, const Style&) const override;
+  EventHandlerResult OnMouseButtonPress(const MouseEvent&) override;
+  void OnMouseEnter(const MouseEvent&) override;
+  void OnMouseLeave(const MouseEvent&) override;
+  [[nodiscard]]
+  FrameRateRequirement GetFrameRateRequirement() const noexcept override;
+
  private:
+  using SelectionPill = detail::SelectionPill;
   mutable ISelectionContainer* mSelectionContainer {};
+  SelectionPill mSelectionPill {SelectionPill::State::NotSelected};
 };
 
 }// namespace FredEmmott::GUI::Widgets

@@ -8,68 +8,33 @@
 
 #include "Button.hpp"
 #include "Label.hpp"
+#include "PopupWindow.hpp"
 #include "StackPanel.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 
 namespace {
 using Widgets::ComboBoxItemButton;
-
-auto& ComboBoxItemPillStyles() {
-  using namespace PseudoClasses;
-  using namespace StaticTheme::Common;
-  using namespace StaticTheme::ComboBox;
-
-  constexpr auto PillHeightAnimation = CubicBezierStyleTransition(
-    ComboBoxItemScaleAnimationDuration, ControlFastOutSlowInKeySpline);
-  static const ImmutableStyle ret {
-    Style()
-      .BackgroundColor(ComboBoxItemPillFillBrush)
-      .BorderRadius(ComboBoxItemPillCornerRadius)
-      .Height(ComboBoxItemPillHeight)
-      .ScaleY(0, PillHeightAnimation)
-      .MarginLeft(0.5)
-      .MarginRight(6)
-      .MarginTop(2.5)
-      .TranslateY(0, PillHeightAnimation)
-      .Width(ComboBoxItemPillWidth)
-      .And(
-        Checked,
-        Style().ScaleY(1.0f).And(
-          Active,
-          Style()
-            .ScaleY(ComboBoxItemPillMinScale)
-            .TranslateY(
-              (ComboBoxItemPillHeight
-               - (ComboBoxItemPillHeight * ComboBoxItemPillMinScale))
-              / 2))),
-  };
-  return ret;
 }
-
-}// namespace
 
 ComboBoxItemResult<&EndComboBoxItem, void>
 BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   using namespace immediate_detail;
   const auto item = BeginWidget<ComboBoxItemButton>(id);
-  if (clicked) {
-    *clicked = item->ConsumeWasActivated();
+  const bool activated = item->ConsumeWasActivated();
+  if (activated) {
+    ClosePopupWindow();
   }
 
-  const bool isSelected = initiallySelected || (clicked && *clicked);
+  if (clicked) {
+    *clicked = activated;
+  }
+
+  const bool isSelected = initiallySelected || activated;
   item->SetIsChecked(isSelected);
 
-  ChildlessWidget<Widget>(
-    ID {"pill"}, LiteralStyleClass {"ComboBox/pill"}, ComboBoxItemPillStyles());
-  static const ImmutableStyle ContentStyles {
-    Style().MinHeight(
-      StaticTheme::ComboBox::ComboBoxItemPillHeight
-      + ComboBoxItemPillStyles()->MarginTop().value_or(0)
-      + ComboBoxItemPillStyles()->MarginBottom().value_or(0)),
-  };
   BeginWidget<Widget>(
-    ID {"content"}, LiteralStyleClass {"ComboBox/content"}, ContentStyles);
+    ID {"content"}, LiteralStyleClass {"ComboBox/content"}, ImmutableStyle {});
 
   if (isSelected) {
     FUI_ASSERT(tWindow);

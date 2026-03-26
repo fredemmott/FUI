@@ -83,8 +83,74 @@ auto& ComboBoxItemStyles() {
 
 ComboBoxItemButton::ComboBoxItemButton(Window* const window)
   : Button(window, ComboBoxItemButtonStyleClass, ComboBoxItemStyles()),
-    ISelectionItem(this) {}
+    ISelectionItem(this) {
+  using namespace StaticTheme::ComboBox;
+  mSelectionPill.SetSelectedPressedAnimation(
+    ComboBoxItemPillMinScale, ComboBoxItemScaleAnimationDuration);
+}
 
 ComboBoxItemButton::~ComboBoxItemButton() = default;
+
+void ComboBoxItemButton::Tick(
+  const std::chrono::steady_clock::time_point& now) {
+  Button::Tick(now);
+  mSelectionPill.Tick(now);
+
+  if (
+    IsChecked()
+    && mSelectionPill.GetState() == SelectionPill::State::NotSelected) {
+    mSelectionPill.Transition(SelectionPill::State::Selected);
+  }
+}
+void ComboBoxItemButton::PaintOwnContent(
+  Renderer* renderer,
+  const Rect& rect,
+  const Style& style) const {
+  using namespace StaticTheme::ComboBox;
+
+  Button::PaintOwnContent(renderer, rect, style);
+
+  const Rect pillRect {
+    rect.GetTopLeft(),
+    Size {
+      ComboBoxItemPillWidth,
+      rect.GetHeight(),
+    },
+  };
+
+  mSelectionPill.Paint(
+    renderer, pillRect, ComboBoxItemPillFillBrush, ComboBoxItemPillHeight);
+}
+
+Widget::EventHandlerResult ComboBoxItemButton::OnMouseButtonPress(
+  const MouseEvent& e) {
+  if (IsChecked()) {
+    mSelectionPill.Transition(SelectionPill::State::SelectedPressed);
+  }
+  return Button::OnMouseButtonPress(e);
+}
+
+void ComboBoxItemButton::OnMouseEnter(const MouseEvent& e) {
+  Button::OnMouseEnter(e);
+  if (
+    mSelectionPill.GetState() == SelectionPill::State::SelectedReleased
+    && (e.mButtons == MouseButton::Left)) {
+    // WinUI3 doesn't do this, but it feels better like this :)
+    mSelectionPill.Transition(SelectionPill::State::SelectedPressed);
+  }
+}
+
+void ComboBoxItemButton::OnMouseLeave(const MouseEvent& e) {
+  Button::OnMouseLeave(e);
+  if (mSelectionPill.GetState() == SelectionPill::State::SelectedPressed) {
+    mSelectionPill.Transition(SelectionPill::State::SelectedReleased);
+  }
+}
+
+FrameRateRequirement ComboBoxItemButton::GetFrameRateRequirement()
+  const noexcept {
+  return Button::GetFrameRateRequirement()
+    + mSelectionPill.GetFrameRateRequirement();
+}
 
 }// namespace FredEmmott::GUI::Widgets

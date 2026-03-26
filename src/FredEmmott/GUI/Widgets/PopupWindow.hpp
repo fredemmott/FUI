@@ -21,6 +21,7 @@ class PopupWindow final : public Widget {
  protected:
   ComputedStyleFlags OnComputedStyleChange(const Style& style, StateFlags state)
     override;
+  FrameRateRequirement GetFrameRateRequirement() const noexcept override;
 
  private:
   std::unique_ptr<Widget> mRootWidget;

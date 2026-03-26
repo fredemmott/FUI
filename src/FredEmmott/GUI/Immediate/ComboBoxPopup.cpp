@@ -41,12 +41,8 @@ auto& InnerStyles() {
       .FlexDirection(FlexDirection::Column)
       .FlexGrow(1.0)
       .Gap(0.0)
-      .MarginBottom(-1.0)
-      .MarginLeft(0.0)
-      .MarginRight(0)
-      .MarginTop(-0.5)
-      .MinWidth(ComboBoxPopupThemeMinWidth)
-      .Padding(ComboBoxDropdownContentMargin),
+      .Margin(ComboBoxDropdownContentMargin)
+      .MinWidth(ComboBoxPopupThemeMinWidth),
   };
   return ret;
 }

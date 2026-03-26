@@ -37,5 +37,8 @@ Widget::ComputedStyleFlags PopupWindow::OnComputedStyleChange(
   }
   return ret;
 }
+FrameRateRequirement PopupWindow::GetFrameRateRequirement() const noexcept {
+  return Widget::GetFrameRateRequirement() + mWindow->GetFrameRateRequirement();
+}
 
 }// namespace FredEmmott::GUI::Widgets
