@@ -5,7 +5,7 @@
 #include "ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/Common.hpp"
-#include "FredEmmott/GUI/Widgets/ComboBoxItemButton.hpp"
+#include "FredEmmott/GUI/Widgets/ComboBoxItem.hpp"
 #include "FredEmmott/GUI/Widgets/Focusable.hpp"
 #include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
@@ -14,7 +14,7 @@
 
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;
-using Widgets::ComboBoxItemButton;
+using Widgets::ComboBoxItem;
 
 namespace {
 auto& OuterStyles() {
@@ -58,7 +58,7 @@ class ComboBoxList final : public Widgets::Widget,
   std::vector<Widgets::ISelectionItem*> GetSelectionItems()
     const noexcept override {
     return GetLogicalChildren()
-      | std::views::transform(&CastToSelectionItem<ComboBoxItemButton>)
+      | std::views::transform(&CastToSelectionItem<ComboBoxItem>)
       | std::ranges::to<std::vector>();
   }
 };

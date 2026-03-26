@@ -8,10 +8,10 @@
 
 namespace FredEmmott::GUI::Widgets {
 
-class ComboBoxItemButton : public Button, public ISelectionItem {
+class ComboBoxItem : public Button, public ISelectionItem {
  public:
-  explicit ComboBoxItemButton(Window*);
-  ~ComboBoxItemButton() override;
+  explicit ComboBoxItem(Window*);
+  ~ComboBoxItem() override;
 
   using Widget::IsChecked;
   using Widget::SetIsChecked;

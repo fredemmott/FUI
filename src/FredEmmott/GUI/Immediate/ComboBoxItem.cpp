@@ -3,7 +3,7 @@
 #include "ComboBoxItem.hpp"
 
 #include <FredEmmott/GUI/StaticTheme/ComboBox.hpp>
-#include <FredEmmott/GUI/Widgets/ComboBoxItemButton.hpp>
+#include <FredEmmott/GUI/Widgets/ComboBoxItem.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 
 #include "Button.hpp"
@@ -13,14 +13,10 @@
 
 namespace FredEmmott::GUI::Immediate {
 
-namespace {
-using Widgets::ComboBoxItemButton;
-}
-
 ComboBoxItemResult<&EndComboBoxItem, void>
 BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   using namespace immediate_detail;
-  const auto item = BeginWidget<ComboBoxItemButton>(id);
+  const auto item = BeginWidget<Widgets::ComboBoxItem>(id);
   const bool activated = item->ConsumeWasActivated();
   if (activated) {
     ClosePopupWindow();
@@ -33,12 +29,12 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
   const bool isSelected = initiallySelected || activated;
   item->SetIsChecked(isSelected);
 
-  BeginWidget<Widget>(
+  const auto content = BeginWidget<Widget>(
     ID {"content"}, LiteralStyleClass {"ComboBox/content"}, ImmutableStyle {});
 
   if (isSelected) {
     FUI_ASSERT(tWindow);
-    tWindow->OffsetPositionToDescendant(GetCurrentParentNode());
+    tWindow->OffsetPositionToDescendant(content);
   }
 
   return {item};
@@ -47,7 +43,7 @@ BeginComboBoxItem(bool* clicked, bool initiallySelected, const ID id) {
 void EndComboBoxItem() {
   using namespace immediate_detail;
   EndWidget<Widget>();// content
-  EndWidget<ComboBoxItemButton>();
+  EndWidget<Widgets::ComboBoxItem>();
 }
 
 ComboBoxItemResult<nullptr, bool>

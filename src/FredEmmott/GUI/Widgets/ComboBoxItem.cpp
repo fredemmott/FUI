@@ -1,6 +1,6 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
-#include "ComboBoxItemButton.hpp"
+#include "ComboBoxItem.hpp"
 
 #include "FredEmmott/GUI/StaticTheme/ComboBox.hpp"
 #include "FredEmmott/GUI/StaticTheme/Common.hpp"
@@ -81,7 +81,7 @@ auto& ComboBoxItemStyles() {
 
 }// namespace
 
-ComboBoxItemButton::ComboBoxItemButton(Window* const window)
+ComboBoxItem::ComboBoxItem(Window* const window)
   : Button(window, ComboBoxItemButtonStyleClass, ComboBoxItemStyles()),
     ISelectionItem(this) {
   using namespace StaticTheme::ComboBox;
@@ -89,10 +89,9 @@ ComboBoxItemButton::ComboBoxItemButton(Window* const window)
     ComboBoxItemPillMinScale, ComboBoxItemScaleAnimationDuration);
 }
 
-ComboBoxItemButton::~ComboBoxItemButton() = default;
+ComboBoxItem::~ComboBoxItem() = default;
 
-void ComboBoxItemButton::Tick(
-  const std::chrono::steady_clock::time_point& now) {
+void ComboBoxItem::Tick(const std::chrono::steady_clock::time_point& now) {
   Button::Tick(now);
   mSelectionPill.Tick(now);
 
@@ -102,7 +101,7 @@ void ComboBoxItemButton::Tick(
     mSelectionPill.Transition(SelectionPill::State::Selected);
   }
 }
-void ComboBoxItemButton::PaintOwnContent(
+void ComboBoxItem::PaintOwnContent(
   Renderer* renderer,
   const Rect& rect,
   const Style& style) const {
@@ -122,7 +121,7 @@ void ComboBoxItemButton::PaintOwnContent(
     renderer, pillRect, ComboBoxItemPillFillBrush, ComboBoxItemPillHeight);
 }
 
-Widget::EventHandlerResult ComboBoxItemButton::OnMouseButtonPress(
+Widget::EventHandlerResult ComboBoxItem::OnMouseButtonPress(
   const MouseEvent& e) {
   if (IsChecked()) {
     mSelectionPill.Transition(SelectionPill::State::SelectedPressed);
@@ -130,7 +129,7 @@ Widget::EventHandlerResult ComboBoxItemButton::OnMouseButtonPress(
   return Button::OnMouseButtonPress(e);
 }
 
-void ComboBoxItemButton::OnMouseEnter(const MouseEvent& e) {
+void ComboBoxItem::OnMouseEnter(const MouseEvent& e) {
   Button::OnMouseEnter(e);
   if (
     mSelectionPill.GetState() == SelectionPill::State::SelectedReleased
@@ -140,15 +139,14 @@ void ComboBoxItemButton::OnMouseEnter(const MouseEvent& e) {
   }
 }
 
-void ComboBoxItemButton::OnMouseLeave(const MouseEvent& e) {
+void ComboBoxItem::OnMouseLeave(const MouseEvent& e) {
   Button::OnMouseLeave(e);
   if (mSelectionPill.GetState() == SelectionPill::State::SelectedPressed) {
     mSelectionPill.Transition(SelectionPill::State::SelectedReleased);
   }
 }
 
-FrameRateRequirement ComboBoxItemButton::GetFrameRateRequirement()
-  const noexcept {
+FrameRateRequirement ComboBoxItem::GetFrameRateRequirement() const noexcept {
   return Button::GetFrameRateRequirement()
     + mSelectionPill.GetFrameRateRequirement();
 }

@@ -108,8 +108,8 @@ add_library(
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
   FredEmmott/GUI/Widgets/CheckBox.cpp FredEmmott/GUI/Widgets/CheckBox.hpp
-  FredEmmott/GUI/Widgets/ComboBoxItemButton.cpp
-  FredEmmott/GUI/Widgets/ComboBoxItemButton.hpp
+  FredEmmott/GUI/Widgets/ComboBoxItem.cpp
+  FredEmmott/GUI/Widgets/ComboBoxItem.hpp
   FredEmmott/GUI/Widgets/Focusable.hpp
   FredEmmott/GUI/Widgets/GPUTexture.cpp
   FredEmmott/GUI/Widgets/GPUTexture.hpp
