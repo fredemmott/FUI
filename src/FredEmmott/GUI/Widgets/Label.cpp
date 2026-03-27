@@ -82,7 +82,7 @@ void Label::PaintOwnContent(
   const auto metrics = mFont.GetMetrics();
   Point baseline {
     rect.GetLeft(),
-    rect.GetBottom() - metrics.mDescent,
+    rect.GetTop() - metrics.mAscent,
   };
 
   switch (style.TextAlign().value_or(TextAlign::Left)) {
@@ -134,8 +134,9 @@ YGSize Label::Measure(
   const auto& text = self.mText;
 
   const auto tw = font.MeasureTextWidth(text);
+  const auto metrics = font.GetMetrics();
 
-  self.mCachedMeasurement.emplace(tw, -font.GetMetrics().mAscent);
+  self.mCachedMeasurement.emplace(tw, metrics.mDescent - metrics.mAscent);
   return std::bit_cast<YGSize>(*self.mCachedMeasurement);
 }
 
