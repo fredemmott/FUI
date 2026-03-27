@@ -76,7 +76,7 @@ ComboBoxPopupResult BeginComboBoxPopup(const ID id) {
   using namespace StaticTheme::Common;
   using namespace StaticTheme::ComboBox;
   auto button = GetCurrentNode();
-  if (!BeginBasicPopupWindow(id).Transparent()) {
+  if (!BeginBasicPopupWindow(id)) {
     return false;
   }
 

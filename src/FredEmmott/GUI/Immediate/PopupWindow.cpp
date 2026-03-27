@@ -77,9 +77,11 @@ BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
 }
 
 BasicPopupWindowResult BeginBasicPopupWindow(bool* open, ID id) {
-  if (!(open && *open)) {
+  FUI_ASSERT(open);
+  if (!*open) {
     return false;
   }
+
   *open = BeginBasicPopupWindow(id);
   return *open;
 }
@@ -101,7 +103,7 @@ void EndPopup() {
 }
 
 PopupResult BeginPopup(const ID id) {
-  if (!BeginBasicPopupWindow(id).Transparent()) {
+  if (!BeginBasicPopupWindow(id)) {
     return false;
   }
 
