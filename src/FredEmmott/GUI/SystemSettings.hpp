@@ -57,8 +57,11 @@ class SystemSettings {
   FUI_ENUM_SYSTEM_SETTINGS(FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER);
 #undef FUI_DECLARE_WINDOWS_SYSTEM_SETTING_GETTER
 
+  [[nodiscard]]
   std::optional<std::chrono::steady_clock::duration> GetCaretBlinkInterval()
     const;
+
+  [[nodiscard]] bool IsTransparencyEnabled() const;
 
   void ClearWin32(UINT key);
 
@@ -71,6 +74,7 @@ class SystemSettings {
   mutable std::optional<RETURN_TYPE> m##NAME;
   FUI_ENUM_SYSTEM_SETTINGS(FUI_DECLARE_WINDOWS_SYSTEM_SETTING_STORAGE);
 #undef FUI_DECLARE_WINDOWS_SYSTEM_SETTING_STORAGE
+  mutable std::optional<bool> mIsTransparencyEnabled;
 };
 
 }// namespace FredEmmott::GUI

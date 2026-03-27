@@ -13,4 +13,14 @@ Brush::Brush(Brush&& other) noexcept = default;
 Brush& Brush::operator=(const Brush&) = default;
 Brush& Brush::operator=(Brush&& other) noexcept = default;
 
+std::optional<Color> Brush::GetSolidColor() const {
+  using T = std::optional<Color>;
+  return std::visit(
+    felly::overload {
+      [](const SolidColorBrush& brush) -> T { return brush; },
+      [](const AcrylicBrush& brush) -> T { return brush.Resolve(); },
+      [](const LinearGradientBrush&) -> T { return std::nullopt; }},
+    mBrush);
+}
+
 }// namespace FredEmmott::GUI

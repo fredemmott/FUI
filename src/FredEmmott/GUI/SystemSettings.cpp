@@ -3,6 +3,11 @@
 
 #include "SystemSettings.hpp"
 
+#include <wil/winrt.h>
+#include <windows.ui.viewmanagement.h>
+
+#include "detail/win32_detail.hpp"
+
 namespace FredEmmott::GUI {
 namespace {
 
@@ -86,7 +91,9 @@ void SystemSettings::ClearWin32(const UINT key) {
     FUI_ENUM_SYSTEM_SETTINGS(F);
 #undef F
     default:
-      // not an SPI setting - but need a statement here
+      // Something changed which is not an SPI setting. Don't know what, so
+      // let's nuke them all.
+      mIsTransparencyEnabled.reset();
       break;
   }
 }
@@ -105,6 +112,20 @@ SystemSettings::GetCaretBlinkInterval() const {
     return std::nullopt;
   }
   return std::chrono::milliseconds(millis);
-};
+}
+
+bool SystemSettings::IsTransparencyEnabled() const {
+  if (mIsTransparencyEnabled.has_value()) {
+    return mIsTransparencyEnabled.value();
+  }
+
+  using namespace ABI::Windows::UI::ViewManagement;
+  const auto settings = wil::ActivateInstance<IUISettings4>(
+    RuntimeClass_Windows_UI_ViewManagement_UISettings);
+  boolean enabled {};
+  win32_detail::CheckHResult(settings->get_AdvancedEffectsEnabled(&enabled));
+  mIsTransparencyEnabled = enabled;
+  return enabled;
+}
 
 }// namespace FredEmmott::GUI

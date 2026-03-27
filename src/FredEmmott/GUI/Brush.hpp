@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <variant>
 
+#include "AcrylicBrush.hpp"
 #include "Color.hpp"
 #include "LinearGradientBrush.hpp"
 #include "Rect.hpp"
@@ -48,6 +49,7 @@ class Brush final {
   constexpr Brush(const std::convertible_to<Color> auto& color)
     : mBrush(SolidColorBrush {Color {color}}) {}
 
+  Brush(const AcrylicBrush& brush) : mBrush(brush) {}
   Brush(const LinearGradientBrush& brush) : mBrush(brush) {}
   Brush(const Brush&);
   Brush(Brush&&) noexcept;
@@ -56,12 +58,7 @@ class Brush final {
 
   /** If this is a SolidColorBrush, returns the backing color.
    */
-  [[nodiscard]] std::optional<Color> GetSolidColor() const {
-    if (const auto it = get_if<SolidColorBrush>(&mBrush)) {
-      return *it;
-    }
-    return std::nullopt;
-  }
+  [[nodiscard]] std::optional<Color> GetSolidColor() const;
 
   constexpr bool operator==(const Brush&) const noexcept = default;
 
@@ -72,7 +69,7 @@ class Brush final {
   // Probably change to SolidColorBrush, unique_ptr<BaseBrush> if we end up
   // wanting more than just LinearGradientBrush, but it's worth special-casing
   // SolidColorBrush
-  std::variant<SolidColorBrush, LinearGradientBrush> mBrush;
+  std::variant<SolidColorBrush, LinearGradientBrush, AcrylicBrush> mBrush;
 #ifdef FUI_ENABLE_DIRECT2D
   // TODO: make SolidColorBrush a class and put this there
   // This is optional to allow constexpr construction

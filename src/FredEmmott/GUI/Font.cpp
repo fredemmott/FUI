@@ -45,7 +45,10 @@ Font::Font(const DirectWriteFont& font) : mFont(font) {
 }
 #endif
 
-Font Font::WithSize(float pixels) const noexcept {
+Font Font::WithSize(const float pixels) const noexcept {
+  if (utility::almost_equal(pixels, mMetrics.mSize)) {
+    return *this;
+  }
 #ifdef FUI_ENABLE_SKIA
   if (const auto it = std::get_if<SkFont>(&mFont)) {
     auto ret = *it;

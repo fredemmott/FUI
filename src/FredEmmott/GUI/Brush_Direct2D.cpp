@@ -9,6 +9,11 @@ namespace FredEmmott::GUI {
 
 using namespace win32_detail;
 
+namespace {
+template <class T>
+concept as_color = requires(T& t) { t.template as<D2D1_COLOR_F>(); };
+}// namespace
+
 template <>
 ID2D1Brush* Brush::as<ID2D1Brush*>(Renderer* renderer, const Rect& rect) const {
   if (mD2DBrush && *mD2DBrush) {
@@ -20,10 +25,10 @@ ID2D1Brush* Brush::as<ID2D1Brush*>(Renderer* renderer, const Rect& rect) const {
   mD2DBrush.reset();
   std::visit(
     felly::overload {
-      [rt, this](const SolidColorBrush& brush) {
+      [rt, this](const as_color auto& brush) {
         wil::com_ptr<ID2D1SolidColorBrush> solidColorBrush;
         CheckHResult(rt->CreateSolidColorBrush(
-          brush.as<D2D1_COLOR_F>(), solidColorBrush.put()));
+          brush.template as<D2D1_COLOR_F>(), solidColorBrush.put()));
         mD2DBrush.emplace(std::move(solidColorBrush));
       },
       [rt, rect, this](const LinearGradientBrush& brush) {

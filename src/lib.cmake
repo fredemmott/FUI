@@ -4,6 +4,8 @@ add_library(
   fredemmott-gui
   STATIC
   FredEmmott/GUI.hpp
+  FredEmmott/GUI/AcrylicBrush.cpp
+  FredEmmott/GUI/AcrylicBrush.hpp
   FredEmmott/GUI/Brush.cpp
   FredEmmott/GUI/Brush.hpp
   FredEmmott/GUI/Color.hpp
