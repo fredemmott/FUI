@@ -983,6 +983,18 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   }
 
   switch (uMsg) {
+    case WM_NCACTIVATE:
+      // Modal children (e.g. ContentDialog) will disable this window
+      // Things like combobox menus or tooltips won't
+      //
+      // If we have a descendant that is a combobox menu or similar, replacing
+      // wParam with TRUE stops the DWM from dimming this window
+      if (
+        wParam == FALSE && lParam && (!mIsDisabled)
+        && GetAncestor(reinterpret_cast<HWND>(lParam), GA_ROOTOWNER) == hwnd) {
+        return DefWindowProcW(hwnd, uMsg, TRUE, 0);
+      }
+      return DefWindowProcW(hwnd, uMsg, wParam, lParam);
     case WM_NCDESTROY:
       // `wil::unique_hwnd::reset()` calls `DestroyWindow()`, but while we're
       // re-entrant in the message handler, the unique_hwnd should still be
@@ -1525,8 +1537,8 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
     GetModuleHandleW(nullptr),
     SW_SHOWDEFAULT,
     {
-      .mWindowStyle = WS_POPUP | WS_BORDER,
-      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP | WS_EX_NOACTIVATE,
+      .mWindowStyle = WS_POPUP,
+      .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP,
       .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
       .mDXGIFactory = mDXGIFactory.get(),
     });
