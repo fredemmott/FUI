@@ -191,20 +191,11 @@ class Color final {
 
   template <StaticTheme::Theme TTheme>
   constexpr Constant ResolveForStaticTheme() const {
-    return std::visit(
-      felly::overload {
-        [](const Constant& v) -> Constant { return v; },
-        [](const StaticThemeColor c) -> Constant {
-          return c->Resolve(TTheme)->Resolve();
-        },
-        [](const SystemTheme::ColorType c) -> Constant {
-          return SystemTheme::Resolve(c).ResolveForStaticTheme<TTheme>();
-        },
-      },
-      mVariant);
+    return Resolve(TTheme);
   }
 
   template <native_color T>
+  [[nodiscard]]
   T as() const noexcept {
     return Resolve().as<T>();
   }
@@ -213,7 +204,7 @@ class Color final {
     return Resolve().GetRGBAFTuple();
   }
 
-  constexpr Color WithAlphaMultipliedBy(float alpha) const noexcept {
+  constexpr Color WithAlphaMultipliedBy(const float alpha) const noexcept {
     auto dup = *this;
     dup.mAlpha *= std::clamp(alpha, 0.f, 1.f);
     return dup;
@@ -224,20 +215,20 @@ class Color final {
     mVariant;
   float mAlpha {1.f};
 
-  constexpr Constant Resolve() const noexcept {
-    const auto alpha = mAlpha;
+  constexpr Constant Resolve(
+    const StaticTheme::Theme theme = StaticTheme::GetCurrent()) const noexcept {
     return std::visit(
-      felly::overload {
-        [=](const Constant& it) { return it.WithAlphaMultipliedBy(alpha); },
-        [=](const StaticThemeColor& it) {
-          return it->Resolve()->Resolve().WithAlphaMultipliedBy(alpha);
-        },
-        [=](const SystemTheme::ColorType& it) {
-          return SystemTheme::Resolve(it).Resolve().WithAlphaMultipliedBy(
-            alpha);
-        },
-      },
-      mVariant);
+             felly::overload {
+               [](const Constant& v) -> Constant { return v; },
+               [theme](const StaticThemeColor c) -> Constant {
+                 return c->Resolve(theme)->Resolve();
+               },
+               [theme](const SystemTheme::ColorType c) -> Constant {
+                 return SystemTheme::Resolve(c).Resolve(theme);
+               },
+             },
+             mVariant)
+      .WithAlphaMultipliedBy(mAlpha);
   }
 };
 
