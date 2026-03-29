@@ -1,18 +1,19 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 #pragma once
+#include <Windows.ApplicationModel.Activation.h>
 #include <Windows.h>
+#include <d3d11.h>
 #include <dcomp.h>
 #include <dwmapi.h>
 #include <uiautomationcore.h>
 #include <wil/com.h>
 
 #include <FredEmmott/GUI/Immediate/Root.hpp>
+#include <FredEmmott/GUI/Point.hpp>
 #include <FredEmmott/GUI/Window.hpp>
 #include <chrono>
 #include <optional>
-
-#include "FredEmmott/GUI/Point.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 class Widget;
@@ -20,6 +21,9 @@ class TitleBar;
 }// namespace FredEmmott::GUI::Widgets
 
 namespace FredEmmott::GUI {
+class MicaController;
+class DirectCompositionController;
+class AcrylicController;
 
 struct WindowOptions {
   std::string mTitle;
@@ -36,8 +40,6 @@ struct WindowOptions {
   DWORD mWindowExStyle {WS_EX_APPWINDOW | WS_EX_NOREDIRECTIONBITMAP};
 
   bool mAllowModernTitleBar = true;
-
-  DWM_SYSTEMBACKDROP_TYPE mSystemBackdrop {DWMSBT_MAINWINDOW};
 
   IDXGIFactory* mDXGIFactory {nullptr};
 };
@@ -101,8 +103,6 @@ class Win32Window : public Window {
 
   ~Win32Window() override;
 
-  void SetSystemBackdropType(DWM_SYSTEMBACKDROP_TYPE);
-
   [[nodiscard]]
   NativeHandle GetNativeHandle() const noexcept final {
     return {mHwnd ? mHwnd.get() : nullptr};
@@ -146,6 +146,8 @@ class Win32Window : public Window {
 
   Win32Window(HINSTANCE instance, int showCommand, const Options& options);
 
+  void SetBackdrop(const WindowBackdrop&) override;
+
   void DestroyWindow();
 
   void ProcessNativeEvents() override;
@@ -161,10 +163,27 @@ class Win32Window : public Window {
     HINSTANCE instance,
     int showCommand,
     const Options& options) const = 0;
-  virtual IUnknown* GetDirectCompositionTargetDevice() const = 0;
+  /** Get the device we use to create the swapchain and manage the backdrop.
+   *
+   * As of Windows 11 25H2, this needs to be an ID3D11Device for full
+   * compatibility. It should be on the same adapter as your actual rendering,
+   * e.g. via shared IDXGIAdapater, or LUID match.
+   *
+   * While DirectComposition also supports an ID3D12CommandQueue,
+   * Windows::UI::Composition does not, and the Acrylic backdrops require
+   * Windows::UI::Composition
+   */
+  virtual IUnknown* GetGPUDeviceForComposition() const = 0;
   virtual void CreateRenderTargets() = 0;
   virtual void CleanupFrameContexts() = 0;
   virtual void OnDestroy();
+
+  virtual void CopySoftwareBitmap(
+    IDXGISurface* dest,
+    const BasicPoint<uint32_t>& destOffset,
+    const void* inputData,
+    const BasicSize<uint32_t>& inputSize,
+    uint32_t inputStride) = 0;
 
   auto GetDXGIFactory() const noexcept {
     return mDXGIFactory.get();
@@ -304,10 +323,11 @@ class Win32Window : public Window {
   wil::com_ptr<IDXGIFactory4> mDXGIFactory;
   wil::com_ptr<IDXGISwapChain1> mSwapChain;
 
-  wil::com_ptr<IDCompositionDevice> mCompositionDevice;
-  wil::com_ptr<IDCompositionTarget> mCompositionTarget;
-  wil::com_ptr<IDCompositionVisual> mCompositionVisual;
-  bool mHaveSystemBackdrop {false};
+  wil::com_ptr<ABI::Windows::System::IDispatcherQueue> mDispatcherQueue;
+  wil::com_ptr<ABI::Windows::System::IDispatcherQueueController>
+    mDispatcherQueueController;
+
+  bool mHaveComposition {false};
   bool mIsDisabled {false};
 
   const wil::unique_hcursor mDefaultCursor {LoadCursorW(nullptr, IDC_ARROW)};
@@ -317,6 +337,13 @@ class Win32Window : public Window {
 
   wil::unique_hicon mIcon;
   wil::unique_hicon mSmallIcon;
+
+  struct CompositionControllers {
+    std::unique_ptr<AcrylicController> mAcrylicController;
+    std::unique_ptr<DirectCompositionController> mDirectCompositionController;
+    std::unique_ptr<MicaController> mMicaController;
+  };
+  CompositionControllers mCompositionControllers;
 
   Win32Window(
     std::unique_ptr<Widgets::Widget> actualRoot,

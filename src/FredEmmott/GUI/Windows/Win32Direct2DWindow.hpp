@@ -24,9 +24,15 @@ class Win32Direct2DWindow final : public Win32Window {
 
  protected:
   void InitializeGraphicsAPI() override;
-  IUnknown* GetDirectCompositionTargetDevice() const override;
+  IUnknown* GetGPUDeviceForComposition() const override;
   void CreateRenderTargets() override;
   void CleanupFrameContexts() override;
+  void CopySoftwareBitmap(
+    IDXGISurface* dest,
+    const BasicPoint<uint32_t>& destOffset,
+    const void* inputData,
+    const BasicSize<uint32_t>& inputSize,
+    uint32_t inputStride) override;
   std::unique_ptr<Win32Window> CreatePopup(
     HINSTANCE instance,
     int showCommand,

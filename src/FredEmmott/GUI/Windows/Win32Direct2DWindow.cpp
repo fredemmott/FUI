@@ -13,6 +13,7 @@
 #include <FredEmmott/GUI/detail/direct_write_detail/DirectWriteFontProvider.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 #include <FredEmmott/GUI/detail/win32_detail.hpp>
+#include <FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp>
 #include <felly/numeric_cast.hpp>
 #include <format>
 
@@ -214,7 +215,7 @@ Win32Direct2DWindow::~Win32Direct2DWindow() {
   this->DestroyWindow();
 }
 
-IUnknown* Win32Direct2DWindow::GetDirectCompositionTargetDevice() const {
+IUnknown* Win32Direct2DWindow::GetGPUDeviceForComposition() const {
   return mDeviceResources.mD3DDevice.get();
 }
 
@@ -240,6 +241,22 @@ void Win32Direct2DWindow::AfterPaintFrame([[maybe_unused]] uint8_t frameIndex) {
 void Win32Direct2DWindow::CleanupFrameContexts() {
   mDeviceResources.mD2DDeviceContext->SetTarget(nullptr);
   mFrame = {};
+}
+
+void Win32Direct2DWindow::CopySoftwareBitmap(
+  IDXGISurface* dest,
+  const BasicPoint<uint32_t>& destOffset,
+  const void* inputData,
+  const BasicSize<uint32_t>& inputSize,
+  const uint32_t inputStride) {
+  win32_detail::CopySoftwareBitmap(
+    mDeviceResources.mD3DDevice.get(),
+    mDeviceResources.mD3DDeviceContext.get(),
+    dest,
+    destOffset,
+    inputData,
+    inputSize,
+    inputStride);
 }
 
 std::unique_ptr<Win32Window> Win32Direct2DWindow::CreatePopup(

@@ -3,16 +3,19 @@
 
 #include "Win32Window.hpp"
 
+#include <DispatcherQueue.h>
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 #include <Windows.h>
 #include <Windowsx.h>
-#include <roapi.h>
+#include <d2d1.h>
 #include <wil/resource.h>
 #include <wil/win32_helpers.h>
+#include <wil/winrt.h>
 #include <yoga/yoga.h>
 
 #include <FredEmmott/GUI/ExitException.hpp>
+#include <FredEmmott/GUI/IconProvider.hpp>
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <FredEmmott/GUI/SystemSettings.hpp>
@@ -24,16 +27,18 @@
 #include <FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp>
 #include <FredEmmott/GUI/detail/win32_detail/UIANode.hpp>
 #include <FredEmmott/GUI/detail/win32_detail/UIARoot.hpp>
+#include <FredEmmott/GUI/events/HitTestEvent.hpp>
 #include <FredEmmott/GUI/events/KeyEvent.hpp>
 #include <FredEmmott/GUI/events/MouseEvent.hpp>
 #include <FredEmmott/GUI/events/TextInputEvent.hpp>
 #include <boost/container/static_vector.hpp>
 #include <felly/numeric_cast.hpp>
 #include <filesystem>
-#include <print>
+#include <random>
 
-#include "FredEmmott/GUI/IconProvider.hpp"
-#include "FredEmmott/GUI/events/HitTestEvent.hpp"
+#include "AcrylicController.hpp"
+#include "DirectCompositionController.hpp"
+#include "MicaController.hpp"
 
 #ifdef FUI_ENABLE_SKIA
 #include <FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp>
@@ -132,12 +137,8 @@ void Win32Window::AdjustToWindowsTheme() {
   DwmSetWindowAttribute(
     mHwnd.get(), DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
 
-  DWM_SYSTEMBACKDROP_TYPE backdropType {mOptions.mSystemBackdrop};
-  mHaveSystemBackdrop = SUCCEEDED(DwmSetWindowAttribute(
-    mHwnd.get(),
-    DWMWA_SYSTEMBACKDROP_TYPE,
-    &backdropType,
-    sizeof(backdropType)));
+  // TODO: update acrylic brush
+  // TOOD: update fallback colors
 }
 
 void Win32Window::InitializeWidgetTree() {
@@ -197,7 +198,23 @@ Win32Window::Win32Window(
       new Widgets::Widget(this, ImmediateRootStyleClass, ImmediateRootStyles()),
       hInstance,
       nCmdShow,
-      options) {}
+      options) {
+  using namespace ABI::Windows::System;
+  const auto dqStatics = wil::GetActivationFactory<IDispatcherQueueStatics>(
+    RuntimeClass_Windows_System_DispatcherQueue);
+  dqStatics->GetForCurrentThread(mDispatcherQueue.put());
+  if (mDispatcherQueue) {
+    return;
+  }
+  const DispatcherQueueOptions dqOptions {
+    .dwSize = sizeof(dqOptions),
+    .threadType = DQTYPE_THREAD_CURRENT,
+  };
+  CheckHResult(CreateDispatcherQueueController(
+    dqOptions, mDispatcherQueueController.put()));
+  CheckHResult(
+    mDispatcherQueueController->get_DispatcherQueue(mDispatcherQueue.put()));
+}
 
 Win32Window::Win32Window(
   std::unique_ptr<Widgets::Widget> actualRoot,
@@ -231,6 +248,7 @@ Win32Window::Win32Window(
 
 void Win32Window::DestroyWindow() {
   FUI_ASSERT(mHwnd);
+  mCompositionControllers = {};
   mHwnd.reset();
 }
 
@@ -405,12 +423,10 @@ void Win32Window::CreateNativeWindow() {
     CheckHResult(DwmExtendFrameIntoClientArea(mHwnd.get(), &margins));
   }
 
-  if (mOptions.mSystemBackdrop != DWMSBT_NONE) {
-    const auto corners
-      = static_cast<DWORD>(mIsToolTip ? DWMWCP_ROUNDSMALL : DWMWCP_ROUND);
-    CheckHResult(DwmSetWindowAttribute(
-      mHwnd.get(), DWMWA_WINDOW_CORNER_PREFERENCE, &corners, sizeof(corners)));
-  }
+  const auto corners
+    = static_cast<DWORD>(mIsToolTip ? DWMWCP_ROUNDSMALL : DWMWCP_ROUND);
+  CheckHResult(DwmSetWindowAttribute(
+    mHwnd.get(), DWMWA_WINDOW_CORNER_PREFERENCE, &corners, sizeof(corners)));
 
   if (mParentHwnd) {
     FUI_ASSERT(GetWindowLongPtrW(mParentHwnd, GWLP_USERDATA));
@@ -477,22 +493,6 @@ Win32Window::~Win32Window() {
     "subclass destructor");
 }
 
-void Win32Window::SetSystemBackdropType(const DWM_SYSTEMBACKDROP_TYPE type) {
-  if (mOptions.mSystemBackdrop == type) {
-    return;
-  }
-  mOptions.mSystemBackdrop = type;
-
-  if (!mHwnd) {
-    return;
-  }
-  mHaveSystemBackdrop = SUCCEEDED(DwmSetWindowAttribute(
-    mHwnd.get(),
-    DWMWA_SYSTEMBACKDROP_TYPE,
-    &mOptions.mSystemBackdrop,
-    sizeof(mOptions.mSystemBackdrop)));
-}
-
 std::optional<std::string> Win32Window::GetClipboardText() const {
   if (!IsClipboardFormatAvailable(CF_UNICODETEXT)) {
     return {};
@@ -545,10 +545,23 @@ void Win32Window::SetClipboardText(const std::string_view utf8) const {
 }
 
 void Win32Window::InitializeDirectComposition() {
-  const bool haveDComp = SUCCEEDED(
-    DCompositionCreateDevice(nullptr, IID_PPV_ARGS(mCompositionDevice.put())));
+  static constexpr BOOL DwmEnable = TRUE;
+  static constexpr BOOL DwmDisable = FALSE;
 
-  DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
+  const auto hwnd = mHwnd.get();
+
+  // Prevent a moment of fully-transparent background due to DWM vs
+  // Windows::UI::Composition sync lag
+  DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &DwmEnable, sizeof(DwmEnable));
+  ShowWindow(hwnd, SW_SHOW);
+  const auto reset = felly::scope_exit([hwnd] {
+    ShowWindow(hwnd, SW_HIDE);
+    DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &DwmDisable, sizeof(DwmDisable));
+  });
+
+  mHaveComposition = DirectCompositionController::IsSupported();
+
+  const DXGI_SWAP_CHAIN_DESC1 swapChainDesc {
     .Width = static_cast<UINT>(
       mGeometry->mWindowRect.right - mGeometry->mWindowRect.left),
     .Height = static_cast<UINT>(
@@ -559,45 +572,98 @@ void Win32Window::InitializeDirectComposition() {
     .BufferCount = SwapChainLength,
     .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
     .AlphaMode
-    = haveDComp ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE,
+    = mHaveComposition ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE,
     .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
   };
 
-  if (haveDComp) {
-    CheckHResult(mCompositionDevice->CreateTargetForHwnd(
-      mHwnd.get(), true, mCompositionTarget.put()));
-    CheckHResult(mCompositionDevice->CreateVisual(mCompositionVisual.put()));
+  const auto device = this->GetGPUDeviceForComposition();
 
-    CheckHResult(mDXGIFactory->CreateSwapChainForComposition(
-      this->GetDirectCompositionTargetDevice(),
-      &swapChainDesc,
-      nullptr,
-      mSwapChain.put()));
-    CheckHResult(mCompositionVisual->SetContent(mSwapChain.get()));
-    CheckHResult(mCompositionTarget->SetRoot(mCompositionVisual.get()));
-    CheckHResult(mCompositionDevice->Commit());
+  if (!mHaveComposition) {
+    CheckHResult(mDXGIFactory->CreateSwapChainForHwnd(
+      device, mHwnd.get(), &swapChainDesc, nullptr, nullptr, mSwapChain.put()));
     return;
   }
 
-  CheckHResult(mDXGIFactory->CreateSwapChainForHwnd(
-    this->GetDirectCompositionTargetDevice(),
-    mHwnd.get(),
+  CheckHResult(mDXGIFactory->CreateSwapChainForComposition(
+    this->GetGPUDeviceForComposition(),
     &swapChainDesc,
-    nullptr,
     nullptr,
     mSwapChain.put()));
 }
 
+void Win32Window::SetBackdrop(const WindowBackdrop& backdrop) {
+  using namespace WindowBackdrops;
+  if (!DirectCompositionController::IsSupported()) {
+    return;
+  }
+  if (!mHwnd) {
+    return;
+  }
+
+  std::visit(
+    felly::overload {
+      [this](const Transparent&) {
+        if (mCompositionControllers.mDirectCompositionController) {
+          return;
+        }
+        mCompositionControllers = {};
+        mCompositionControllers.mDirectCompositionController
+          = std::make_unique<DirectCompositionController>(
+            mHwnd.get(), mSwapChain.get());
+      },
+      [this]<Win32::Mica::Kind T>(const Win32::Mica::WindowBackdrop<T>&) {
+        auto& mc = mCompositionControllers.mMicaController;
+        if (mc) {
+          mc->SetKind(T);
+          return;
+        }
+        mCompositionControllers = {};
+        mc = std::make_unique<MicaController>(mHwnd.get(), mSwapChain.get(), T);
+      },
+      [this]<Win32::Acrylic::Kind T>(
+        const Win32::Acrylic::WindowBackdrop<T>& acrylic) {
+        auto& ac = mCompositionControllers.mAcrylicController;
+        if (ac) {
+          ac->SetBrush(acrylic.GetBrush());
+          return;
+        }
+        mCompositionControllers = {};
+        DXGI_SWAP_CHAIN_DESC1 desc {};
+        CheckHResult(mSwapChain->GetDesc1(&desc));
+        ac.reset(new AcrylicController(
+          T,
+          [this](
+            IDXGISurface* dest,
+            const BasicPoint<uint32_t>& destOffset,
+            const void* inputData,
+            const BasicSize<uint32_t>& inputSize,
+            const uint32_t inputStride) {
+            this->CopySoftwareBitmap(
+              dest, destOffset, inputData, inputSize, inputStride);
+          },
+          this->GetGPUDeviceForComposition(),
+          mHwnd.get(),
+          mSwapChain.get(),
+          {desc.Width, desc.Height},
+          acrylic.GetBrush()));
+      },
+    },
+    backdrop);
+}
+
 void Win32Window::ResizeSwapchain() {
   this->CleanupFrameContexts();
+  const auto width = mGeometry->mWindowRect.right - mGeometry->mWindowRect.left;
+  const auto height
+    = mGeometry->mWindowRect.bottom - mGeometry->mWindowRect.top;
   CheckHResult(mSwapChain->ResizeBuffers(
-    0,
-    mGeometry->mWindowRect.right - mGeometry->mWindowRect.left,
-    mGeometry->mWindowRect.bottom - mGeometry->mWindowRect.top,
-    DXGI_FORMAT_UNKNOWN,
-    DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+    0, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
   this->CreateRenderTargets();
   this->ResetToFirstBackBuffer();
+
+  if (const auto& ac = mCompositionControllers.mAcrylicController) {
+    ac->Resize(width, height);
+  }
 }
 
 void Win32Window::ResizeIfNeeded() {
@@ -657,7 +723,7 @@ float Win32Window::GetDPIScale() const {
 }
 
 Color Win32Window::GetClearColor() const {
-  return mHaveSystemBackdrop
+  return mHaveComposition
     ? Colors::Transparent
     : Color {StaticTheme::Common::SolidBackgroundFillColorBase.Resolve(
         StaticTheme::GetCurrent())};
@@ -1162,6 +1228,9 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       }
       break;
     }
+    case WM_MOVING: {
+      break;
+    }
     case WM_MOUSEMOVE: {
       TrackMouseEvent(MouseTrackingArea::Client);
       const auto e = MakeMouseEventFromClient(wParam, lParam);
@@ -1547,7 +1616,6 @@ std::unique_ptr<Window> Win32Window::CreatePopup() const {
     {
       .mWindowStyle = WS_POPUP,
       .mWindowExStyle = WS_EX_NOREDIRECTIONBITMAP,
-      .mSystemBackdrop = DWMSBT_TRANSIENTWINDOW,
       .mDXGIFactory = mDXGIFactory.get(),
     });
 }

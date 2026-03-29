@@ -16,6 +16,8 @@ add_executable(
   GetColor.cpp GetColor.hpp
   GetCornerRadius.cpp GetCornerRadius.hpp
   GetCpp.cpp GetCpp.hpp
+  GetDesktopAcrylicBackdrop.cpp
+  GetDesktopAcrylicBackdrop.hpp
   GetHexColorValue.cpp GetHexColorValue.hpp
   GetHpp.cpp GetHpp.hpp
   GetLinearGradientBrush.cpp GetLinearGradientBrush.hpp

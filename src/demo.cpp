@@ -465,8 +465,9 @@ int WINAPI wWinMain(
     nCmdShow,
     [](fui::Win32Window& window) { AppTick(window); },
     {
-      "Initial Window Title",
-      fui::Window::ResizeMode::AllowGrow,
-      fui::Window::ResizeMode::Allow,
+      .mTitle = "Initial Window Title",
+      .mHorizontalResizeMode = fui::Window::ResizeMode::AllowGrow,
+      .mVerticalResizeMode = fui::Window::ResizeMode::Allow,
+      .mAllowModernTitleBar = true,
     });
 }

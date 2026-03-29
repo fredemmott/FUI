@@ -3,6 +3,8 @@
 
 #include "win32_detail.hpp"
 
+#include <d2d1effects.h>
+
 #include <bit>
 #include <format>
 #include <functional>

@@ -38,7 +38,7 @@ ID2D1Brush* Brush::as<ID2D1Brush*>(Renderer* renderer, const Rect& rect) const {
         return GetSolidColorBrush(rt, brush.Resolve());
       },
       [rt](const AcrylicBrush& brush) {
-        return GetSolidColorBrush(rt, brush.Resolve());
+        return GetSolidColorBrush(rt, brush.GetTintColor());
       },
       [rt, rect](const LinearGradientBrush& brush) {
         return brush.GetDirect2DBrush(rt, rect);

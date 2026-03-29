@@ -4,9 +4,8 @@
 
 #include <FredEmmott/GUI/StaticTheme/Theme.hpp>
 #include <FredEmmott/GUI/StylePropertyTypes.hpp>
+#include <FredEmmott/GUI/WindowBackdrop.hpp>
 #include <type_traits>
-
-#include "FredEmmott/GUI/StylePropertyTypes.hpp"
 
 namespace FredEmmott::GUI {
 template <class T>
@@ -14,20 +13,20 @@ class StyleProperty;
 }
 
 #define FUI_ENUM_STYLE_PROPERTY_TYPES(X) \
-  X(Brush, Brush) \
-  X(GUI::Cursor, Cursor) \
-  X(GUI::Font, Font) \
-  X(float, Float) \
   X(GUI::Align, Align) \
   X(GUI::BoxSizing, BoxSizing) \
+  X(GUI::Brush, Brush) \
+  X(GUI::Cursor, Cursor) \
   X(GUI::Display, Display) \
   X(GUI::FlexDirection, FlexDirection) \
+  X(GUI::Font, Font) \
   X(GUI::Justify, Justify) \
   X(GUI::Overflow, Overflow) \
-  X(GUI::PositionType, PositionType) \
   X(GUI::PointerEvents, PointerEvents) \
-  X(GUI::TextAlign, TextAlign) \
+  X(GUI::PositionType, PositionType) \
   X(GUI::StaticTheme::Theme, Theme) \
+  X(GUI::TextAlign, TextAlign) \
+  X(GUI::WindowBackdrop, WindowBackdrop) \
   X(float, Float)
 
 /** Properties of the form `mPrefixSuffix`, `mPrefixEdgeSuffix`
@@ -101,6 +100,7 @@ class StyleProperty;
   X(TranslateX, float, Self) \
   X(TranslateY, float, Self) \
   X(Width, float, Self) \
+  X(WindowBackdrop, GUI::WindowBackdrop, Self) \
   X(WindowTheme, GUI::StaticTheme::Theme, Self) \
   FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_EXPAND_EDGES, X) \
   FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_EXPAND_CORNERS, X)

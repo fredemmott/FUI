@@ -12,7 +12,7 @@ const ImmutableStyle& DefaultToolTipStyle() {
   using namespace StaticTheme::Common;
   static const ImmutableStyle ret {
     Style()
-      .BackgroundColor(ToolTipBackground)
+      .BackgroundColor(ToolTipBackgroundBrush)
       .BorderColor(ToolTipBorderBrush)
       .BorderRadius(ControlCornerRadius)
       .BorderWidth(ToolTipBorderThemeThickness)

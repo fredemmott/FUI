@@ -115,6 +115,17 @@ void Window::EndFrame() {
   const auto popTheme
     = felly::scope_exit(&StaticTheme::static_theme_detail::PopOverride);
 
+  if (const auto backdrop = styles.WindowBackdrop()) {
+    this->SetBackdrop(*backdrop);
+  } else if (const auto background = styles.BackgroundColor();
+             background && background.value().IsAcrylicBrush()) {
+    this->SetBackdrop(
+      WindowBackdrops::Win32_InAppAcrylic {
+        *background.value().GetAcrylicBrush()});
+  } else {
+    this->SetBackdrop(WindowBackdrops::AppWindow {});
+  }
+
   this->Paint();
 }
 

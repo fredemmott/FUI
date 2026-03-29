@@ -35,6 +35,10 @@ void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
   }
 
   const auto brush = *style.BackgroundColor();
+  if (brush.IsAcrylicBrush()) {
+    // Painted by Window
+    return;
+  }
 
   const CornerRadius radii {
     style.BorderTopLeftRadius().value_or(0),

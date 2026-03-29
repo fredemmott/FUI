@@ -159,8 +159,17 @@ add_library(
   FredEmmott/GUI/Widgets/WidgetList.hpp
   FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
-  FredEmmott/GUI/Windows/Win32Window.cpp FredEmmott/GUI/Windows/Win32Window.hpp
-  FredEmmott/GUI/Window.cpp FredEmmott/GUI/Window.hpp
+  FredEmmott/GUI/Windows/AcrylicController.cpp
+  FredEmmott/GUI/Windows/AcrylicController.hpp
+  FredEmmott/GUI/Windows/DirectCompositionController.cpp
+  FredEmmott/GUI/Windows/DirectCompositionController.hpp
+  FredEmmott/GUI/Windows/MicaController.cpp
+  FredEmmott/GUI/Windows/MicaController.hpp
+  FredEmmott/GUI/Windows/Win32Window.cpp
+  FredEmmott/GUI/Windows/Win32Window.hpp
+  FredEmmott/GUI/Window.cpp
+  FredEmmott/GUI/Window.hpp
+  FredEmmott/GUI/WindowBackdrop.hpp
   FredEmmott/GUI/assert.hpp
   FredEmmott/GUI/detail/AutomationActivityFlag.hpp
   FredEmmott/GUI/detail/SelectionPill.cpp
@@ -186,6 +195,8 @@ add_library(
   FredEmmott/GUI/detail/widget_detail.hpp
   FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
   FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
+  FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.cpp
+  FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp
   FredEmmott/GUI/detail/win32_detail/TSFTextStore.cpp FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp
   FredEmmott/GUI/detail/win32_detail/UIANode.cpp FredEmmott/GUI/detail/win32_detail/UIANode.hpp
   FredEmmott/GUI/detail/win32_detail/UIARoot.cpp FredEmmott/GUI/detail/win32_detail/UIARoot.hpp
@@ -238,7 +249,7 @@ target_link_libraries(
   yoga::yogacore
   Boost::container
 )
-set(WINDOWS_SDK_LIBRARIES Comctl32 Dcomp Dwmapi User32 runtimeobject Uiautomationcore)
+set(WINDOWS_SDK_LIBRARIES Comctl32 dxguid Dcomp Dwmapi User32 runtimeobject Uiautomationcore CoreMessaging)
 target_compile_definitions(
   fredemmott-gui
   PUBLIC

@@ -38,11 +38,7 @@ void PopParentContext() {
 
 }// namespace
 
-void BasicPopupWindowResultMixin::MakeTransparent(const bool transparent) {
-  static_cast<Win32Window*>(tWindow)->SetSystemBackdropType(
-    transparent ? DWMSBT_NONE : DWMSBT_TRANSIENTWINDOW);
-}
-void BasicPopupWindowResultMixin::MakeModal(bool modal) {
+void BasicPopupWindowResultMixin::MakeModal(const bool modal) {
   static_cast<Win32Window*>(tWindow)->SetIsModal(modal);
 }
 

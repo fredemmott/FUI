@@ -13,11 +13,13 @@
 #include "GetBoolean.hpp"
 #include "GetColor.hpp"
 #include "GetCornerRadius.hpp"
+#include "GetDesktopAcrylicBackdrop.hpp"
 #include "GetLinearGradientBrush.hpp"
 #include "GetNumber.hpp"
 #include "GetSolidColorBrush.hpp"
 #include "GetString.hpp"
 #include "GetThickness.hpp"
+#include "Theme.hpp"
 
 void GetResources(
   std::back_insert_iterator<std::vector<Resource>>,
@@ -35,11 +37,16 @@ void GetResources(
 }
 
 void GetResource(
+  const Theme theme,
   std::back_insert_iterator<std::vector<Resource>> back,
   const TiXmlElement& it) {
   const std::string_view tagType {it.Value()};
   if (tagType == "StaticResource") {
-    // We call this an 'alias'; handled separately
+    // We call this an 'alias'; these are handled separately
+    return;
+  }
+  if (tagType == "DesktopAcrylicBackdrop") {
+    GetDesktopAcrylicBackdrop(back, it);
     return;
   }
   if (tagType == "Color") {
@@ -55,7 +62,7 @@ void GetResource(
     return;
   }
   if (tagType == "AcrylicBrush") {
-    GetAcrylicBrush(back, it);
+    GetAcrylicBrush(theme, back, it);
     return;
   }
   if (tagType == "x:Double") {
@@ -105,11 +112,12 @@ void GetResource(
 }
 
 void GetThemeResources(
+  const Theme theme,
   std::back_insert_iterator<std::vector<Resource>> back,
-  const TiXmlElement& theme) {
-  for (auto child = theme.FirstChildElement(); child;
+  const TiXmlElement& xml) {
+  for (auto child = xml.FirstChildElement(); child;
        child = child->NextSiblingElement()) {
-    GetResource(back, *child);
+    GetResource(theme, back, *child);
   }
 }
 
@@ -131,27 +139,48 @@ void GetResources(
   std::vector<Resource> defaultResources;
   std::vector<Resource> lightResources;
   std::vector<Resource> highContrastResources;
-  for (auto theme = themes->FirstChildElement("ResourceDictionary"); theme;
-       theme = theme->NextSiblingElement("ResourceDictionary")) {
-    const std::string_view themeName = {theme->Attribute("x:Key")};
+  for (auto themeXml = themes->FirstChildElement("ResourceDictionary");
+       themeXml;
+       themeXml = themeXml->NextSiblingElement("ResourceDictionary")) {
+    const std::string_view themeName = {themeXml->Attribute("x:Key")};
 
     std::vector<Resource>* resources {nullptr};
+    Theme theme {};
     if (themeName == "Default") {
       resources = &defaultResources;
+      theme = Theme::Dark;
     } else if (themeName == "Light") {
       resources = &lightResources;
+      theme = Theme::Light;
     } else if (themeName == "HighContrast") {
       resources = &highContrastResources;
+      theme = Theme::HighContrast;
     } else {
       throw std::runtime_error {
         std::format("Unrecognized theme name `{}`", themeName)};
     }
 
-    GetThemeResources(std::back_inserter(*resources), *theme);
+    GetThemeResources(theme, std::back_inserter(*resources), *themeXml);
   }
+  // Unthemed resources within the top-level <ResourceDictionary>, but not
+  // inside the <ResourceDictionary.ThemeDictionaries>
   for (auto child = root->FirstChildElement(); child;
        child = child->NextSiblingElement()) {
     const auto& tag = child->ValueStr();
+    if (tag == "StaticResource") {
+      const auto target = child->Attribute("ResourceKey");
+      back = {
+        .mName = child->Attribute("x:Key"),
+        .mValue = std::format("Theme::Get{0}()", target),
+        .mType = std::format(
+          "Resource<std::remove_cvref_t<decltype(Theme::Get{0}())>::value_"
+          "type>",
+          target),
+        .mDependencies = {target},
+        .mKind = Resource::Kind::Alias,
+      };
+      continue;
+    }
     if (!(tag.starts_with("x:") || tag == "Thickness"
           || tag == "CornerRadius")) {
       continue;
@@ -159,7 +188,8 @@ void GetResources(
     auto it = std::ranges::find(
       defaultResources, child->Attribute("x:Key"), &Resource::mName);
     if (it == defaultResources.end()) {
-      GetResource(std::back_inserter(defaultResources), *child);
+      GetResource(
+        Theme::Unthemed, std::back_inserter(defaultResources), *child);
     }
   }
 

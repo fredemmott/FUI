@@ -56,9 +56,11 @@ class StaticThemedAcrylicBrush {
   constexpr StaticThemedAcrylicBrush(
     const TTint& tint,
     const float opacity,
+    const std::optional<float> luminosityOpacity,
     const TFallback& fallback)
     : mTint(MakeResource<Color>(tint)),
       mOpacity(opacity),
+      mLuminosityOpacity(luminosityOpacity),
       mFallback(MakeResource<Color>(fallback)) {}
 
   [[nodiscard]]
@@ -66,6 +68,7 @@ class StaticThemedAcrylicBrush {
     return AcrylicBrush {
       mTint.Resolve(theme).Resolve(),
       mOpacity,
+      mLuminosityOpacity,
       mFallback.Resolve(theme).Resolve(),
     };
   }
@@ -73,6 +76,7 @@ class StaticThemedAcrylicBrush {
  private:
   Resource<Color> mTint;
   float mOpacity;
+  std::optional<float> mLuminosityOpacity;
   Resource<Color> mFallback;
 };
 

@@ -17,7 +17,7 @@ SkPaint Brush::as<SkPaint>(Renderer*, const Rect& rect) const {
       },
       [](const AcrylicBrush& brush) {
         SkPaint paint;
-        paint.setColor(brush.Resolve().as<SkColor>());
+        paint.setColor(brush.GetTintColor().as<SkColor>());
         return paint;
       },
       [rect](const LinearGradientBrush& brush) {

@@ -18,6 +18,9 @@
 #include <print>
 #include <thread>
 
+#include "FredEmmott/GUI/detail/renderer_detail.hpp"
+#include "FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp"
+
 #if __has_include(<skia/gpu/ganesh/GrDirectContext.h>)
 #include <skia/gpu/ganesh/GrBackendSemaphore.h>
 #include <skia/gpu/ganesh/GrBackendSurface.h>
@@ -314,9 +317,8 @@ Win32Direct3D12GaneshWindow::~Win32Direct3D12GaneshWindow() {
   this->DestroyWindow();
 }
 
-IUnknown* Win32Direct3D12GaneshWindow::GetDirectCompositionTargetDevice()
-  const {
-  return mD3DCommandQueue.get();
+IUnknown* Win32Direct3D12GaneshWindow::GetGPUDeviceForComposition() const {
+  return mSharedResources->mD3D11Device.get();
 }
 
 void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
@@ -438,13 +440,6 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
   CheckHResult(mD3DFence->SetEventOnCompletion(fenceValue, mFenceEvent.get()));
   WaitForSingleObject(mFenceEvent.get(), INFINITE);
 
-  for (auto&& frame: mFrames) {
-    frame.mSkSurface = {};
-    frame.mRenderTarget = nullptr;
-    frame.mRenderTargetView = {};
-    frame.mFenceValue = {};
-  }
-}
   mFrame = {};
 }
 
@@ -454,6 +449,22 @@ std::unique_ptr<Win32Window> Win32Direct3D12GaneshWindow::CreatePopup(
   const Options& options) const {
   return std::make_unique<Win32Direct3D12GaneshWindow>(
     instance, showCommand, options);
+}
+
+void Win32Direct3D12GaneshWindow::CopySoftwareBitmap(
+  IDXGISurface* dest,
+  const BasicPoint<uint32_t>& destOffset,
+  const void* inputData,
+  const BasicSize<uint32_t>& inputSize,
+  const uint32_t inputStride) {
+  win32_detail::CopySoftwareBitmap(
+    mSharedResources->mD3D11Device.get(),
+    mSharedResources->mD3D11DeviceContext.get(),
+    dest,
+    destOffset,
+    inputData,
+    inputSize,
+    inputStride);
 }
 
 std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>

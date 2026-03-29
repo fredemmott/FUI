@@ -48,7 +48,8 @@ const ImmutableStyle& MenuFlyoutItemStyle() {
 const ImmutableStyle& MenuFlyoutStyle() {
   static ImmutableStyle ret {
     Style()
-      .BackgroundColor(Common::AcrylicBackgroundFillColorDefaultBrush)
+      .WindowBackdrop(MenuFlyoutSystemBackdrop)
+      .BackgroundColor(MenuFlyoutPresenterBackground)
       .BorderColor(MenuFlyoutPresenterBorderBrush)
       .BorderWidth(MenuFlyoutPresenterBorderThemeThickness)
       .BorderRadius(Common::OverlayCornerRadius)

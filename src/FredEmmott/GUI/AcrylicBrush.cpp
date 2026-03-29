@@ -7,11 +7,18 @@
 
 namespace FredEmmott::GUI {
 
-Color::Constant AcrylicBrush::Resolve() const {
-  if (!SystemSettings::Get().IsTransparencyEnabled()) {
-    return mFallback;
+Color::Constant AcrylicBrush::GetTintColor() const {
+  if (SystemSettings::Get().IsTransparencyEnabled()) {
+    return mTint;
   }
-  return mTint.WithAlphaMultipliedBy(mOpacity);
+  return mFallback;
+}
+
+float AcrylicBrush::GetTintOpacity() const {
+  if (SystemSettings::Get().IsTransparencyEnabled()) {
+    return mOpacity;
+  }
+  return 1.0f;
 }
 
 }// namespace FredEmmott::GUI

@@ -4,13 +4,13 @@
 
 #include <Windows.h>
 
-#include <FredEmmott/GUI/Point.hpp>
-#include <FredEmmott/GUI/detail/renderer_detail.hpp>
 #include <chrono>
 #include <expected>
 #include <memory>
 
 #include "Immediate/Root.hpp"
+#include "Point.hpp"
+#include "WindowBackdrop.hpp"
 
 namespace FredEmmott::GUI::Widgets {
 class Widget;
@@ -101,6 +101,7 @@ class Window {
   FocusManager* GetFocusManager() const noexcept;
 
  protected:
+  virtual void SetBackdrop(const WindowBackdrop&) = 0;
   virtual void ProcessNativeEvents() = 0;
   virtual void InitializeWindow() = 0;
   virtual void HideWindow() = 0;

@@ -59,6 +59,11 @@ class Brush final {
   /** If this is a SolidColorBrush, returns the backing color.
    */
   [[nodiscard]] std::optional<Color> GetSolidColor() const;
+  [[nodiscard]] std::optional<AcrylicBrush> GetAcrylicBrush() const;
+
+  [[nodiscard]] bool IsAcrylicBrush() const noexcept {
+    return holds_alternative<AcrylicBrush>(mBrush);
+  }
 
   constexpr bool operator==(const Brush&) const noexcept = default;
 

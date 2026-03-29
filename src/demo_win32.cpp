@@ -256,11 +256,108 @@ struct SwapChainPusher {
     }
   }
 };
+
+enum class BackdropKind {
+  Mica,
+  MicaAlt,
+  Acrylic,
+};
+enum class BackdropTheme {
+  Default,
+  Dark,
+  Light,
+};
+
 }// namespace
 
 void demo_win32() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
   const auto page = BeginDemoPage().Scoped();
+
+  {
+    fuii::Label("Window Backdrops").Subtitle();
+    const auto card = BeginDemoCard().Scoped();
+
+    static bool popupIsVisible = false;
+    static BackdropKind backdropKind {};
+    static BackdropTheme backdropTheme {};
+    if (fuii::Button("Show Popup")) {
+      popupIsVisible = true;
+      backdropKind = BackdropKind::Mica;
+      backdropTheme = BackdropTheme::Default;
+    }
+
+    if (
+      const auto popup
+      = fuii::BeginBasicPopupWindow(&popupIsVisible).Scoped()) {
+      auto popupRoot = fuii::BeginVStackPanel().Scoped();
+      {
+        const auto group
+          = fuii::BeginRadioButtons(&backdropKind, "Backdrop Kind").Scoped();
+
+        std::ignore = fuii::RadioButton(BackdropKind::Mica, "Mica");
+        std::ignore = fuii::RadioButton(BackdropKind::MicaAlt, "MicaAlt");
+        // Given we use a true popup window, we can't see the difference between
+        // 'desktop acrylic' and 'in-app acrylic'
+        std::ignore = fuii::RadioButton(BackdropKind::Acrylic, "Acrylic");
+      }
+      {
+        const auto group
+          = fuii::BeginRadioButtons(&backdropTheme, "Backdrop Theme").Scoped();
+        std::ignore = fuii::RadioButton(BackdropTheme::Default, "Default");
+        std::ignore = fuii::RadioButton(BackdropTheme::Dark, "Dark");
+        std::ignore = fuii::RadioButton(BackdropTheme::Light, "Light");
+      }
+      if (fuii::Button("Close")) {
+        fuii::ClosePopupWindow();
+      }
+
+      const auto effectiveTheme = [](const BackdropTheme theme) {
+        switch (theme) {
+          case BackdropTheme::Default:
+            return fui::StaticTheme::GetCurrent();
+          case BackdropTheme::Dark:
+            return fui::StaticTheme::Theme::Dark;
+          case BackdropTheme::Light:
+            return fui::StaticTheme::Theme::Light;
+        }
+        std::unreachable();
+      }(backdropTheme);
+
+      if (
+        const auto hwnd
+        = fuii::immediate_detail::tWindow->GetNativeHandle().mValue) {
+        // TODO: make the Window* accessible from the BasicPopupWindowResult
+        const BOOL isDarkMode
+          = (effectiveTheme == fui::StaticTheme::Theme::Dark) ? TRUE : FALSE;
+        fui::win32_detail::CheckHResult(DwmSetWindowAttribute(
+          hwnd,
+          DWMWA_USE_IMMERSIVE_DARK_MODE,
+          &isDarkMode,
+          sizeof(isDarkMode)));
+      }
+
+      const auto backdrop = [](const BackdropKind kind) -> fui::WindowBackdrop {
+        using enum BackdropKind;
+        switch (kind) {
+          case Mica:
+            return fui::WindowBackdrops::Win32_Mica {};
+          case MicaAlt:
+            return fui::WindowBackdrops::Win32_MicaAlt {};
+          case Acrylic:
+            return fui::WindowBackdrops::Win32_InAppAcrylic {
+              fui::StaticTheme::AcrylicInAppFillColorDefaultBrush};
+        }
+        std::unreachable();
+      }(backdropKind);
+      popupRoot.Styled(
+        fui::Style()
+          .WindowBackdrop(backdrop)
+          .WindowTheme(effectiveTheme)
+          .BackgroundColor(fui::Colors::Transparent)
+          .Padding(256));
+    }
+  }
 
   {
     fuii::Label("GPUTexture() - pull from D3D11").Subtitle();

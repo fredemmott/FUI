@@ -107,7 +107,9 @@ void NavigationView::IntegrateWithTitleBar() {
 
   const auto window = static_cast<Win32Window*>(this->GetOwnerWindow());
   const auto titleBar = window->GetTitleBar();
-  FUI_ASSERT(titleBar);
+  if (!titleBar) {
+    return;
+  }
 
   const auto backDisabled = mBackButton->IsDisabled();
 

@@ -6,6 +6,7 @@
 #include "Immediate/TextBlock.hpp"
 #include "assert.hpp"
 #include "detail/font_detail.hpp"
+#include "detail/renderer_detail.hpp"
 #include "detail/win32_detail.hpp"
 
 #ifdef FUI_ENABLE_SKIA

@@ -18,9 +18,15 @@ std::optional<Color> Brush::GetSolidColor() const {
   return std::visit(
     felly::overload {
       [](const SolidColorBrush& brush) -> T { return brush; },
-      [](const AcrylicBrush& brush) -> T { return brush.Resolve(); },
+      [](const AcrylicBrush&) -> T { return std::nullopt; },
       [](const LinearGradientBrush&) -> T { return std::nullopt; }},
     mBrush);
+}
+std::optional<AcrylicBrush> Brush::GetAcrylicBrush() const {
+  if (const auto p = get_if<AcrylicBrush>(&mBrush)) {
+    return *p;
+  }
+  return std::nullopt;
 }
 
 }// namespace FredEmmott::GUI

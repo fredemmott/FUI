@@ -36,10 +36,11 @@ void EndToolTip() {
                      ->mAnchor->GetContext<ToolTipAnchorContext>();
   if (const auto cursorPoint = std::exchange(ctx->mAnchorTo, std::nullopt)) {
     p->ComputeStyles({});
-    const auto [w, h] = GetMinimumWidthAndIdealHeight(p->GetLayoutNode());
+    const auto [width, height]
+      = GetMinimumWidthAndIdealHeight(p->GetLayoutNode());
 
     static constexpr Point FixedOffset {0, -12};
-    const Point contentOffset {-w / 2, -h};
+    const Point contentOffset {-width / 2, -height};
     const auto point = *cursorPoint + FixedOffset + contentOffset;
     const auto nativePoint
       = ctx->mParentWindow->CanvasPointToNativePoint(point);
@@ -82,7 +83,7 @@ ToolTipResult BeginToolTipForWidget(Widgets::Widget* w, const ID id) {
     return false;
   }
 
-  ctx->mVisible = BeginBasicPopupWindow(id).Transparent();
+  ctx->mVisible = BeginBasicPopupWindow(id);
   if (!ctx->mVisible) {
     return false;
   }

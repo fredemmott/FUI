@@ -37,13 +37,20 @@ class Win32Direct3D12GaneshWindow final : public Win32Window {
 
  protected:
   void InitializeGraphicsAPI() override;
-  IUnknown* GetDirectCompositionTargetDevice() const override;
+  IUnknown* GetGPUDeviceForComposition() const override;
   void CreateRenderTargets() override;
   void CleanupFrameContexts() override;
   std::unique_ptr<Win32Window> CreatePopup(
     HINSTANCE instance,
     int showCommand,
     const Options& options) const override;
+
+  void CopySoftwareBitmap(
+    IDXGISurface* dest,
+    const BasicPoint<uint32_t>& destOffset,
+    const void* inputData,
+    const BasicSize<uint32_t>& inputSize,
+    uint32_t inputStride) override;
 
  private:
   struct SharedResources;

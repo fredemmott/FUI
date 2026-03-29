@@ -89,7 +89,7 @@ SliderResult SliderImpl(
   const auto parentWindow = tWindow;
   const bool isHorizontal = (orientation == Orientation::Horizontal);
 
-  if (!BeginBasicPopupWindow(ID("{}/Popup", id.GetValue())).Transparent()) {
+  if (!BeginBasicPopupWindow(ID("{}/Popup", id.GetValue()))) {
     ctx->mToolTipReason.reset();
     return {w, changed};
   }
@@ -111,8 +111,11 @@ SliderResult SliderImpl(
     tWindow->SetInitialPositionInNativeCoords(
       parentWindow->CanvasPointToNativePoint(windowOrigin));
     ctx->mRootStyle = ImmutableStyle {
-      Style().Height(height).Width(width).PaddingTop(
-        isHorizontal ? 0 : windowOffset.mY)
+      Style()
+        .WindowBackdrop(WindowBackdrops::Transparent {})
+        .Height(height)
+        .Width(width)
+        .PaddingTop(isHorizontal ? 0 : windowOffset.mY)
       //.BackgroundColor(Color::Constant::FromRGBA32(0x550000FF))
     };
     ctx->mCenteringContainerStyle = ImmutableStyle {

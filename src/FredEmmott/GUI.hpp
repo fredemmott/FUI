@@ -35,6 +35,7 @@
 #include <FredEmmott/GUI/Immediate/ToolTip.hpp>
 #include <FredEmmott/GUI/Immediate/WasActivated.hpp>
 #include <FredEmmott/GUI/Window.hpp>
+#include <FredEmmott/GUI/detail/renderer_detail.hpp>
 #include <string_view>
 
 #if __has_include(<FredEmmott/GUI/Windows/Win32Window.hpp>)

@@ -146,6 +146,25 @@ class ColorConstant final {
     return FromRGBA128F(r, g, b, a);
   }
 
+  constexpr std::tuple<uint8_t, uint8_t, uint8_t, uint8_t> GetRGBA32Tuple()
+    const noexcept {
+#ifdef FUI_ENABLE_SKIA
+    return std::tuple {
+      SkColorGetR(mSkia),
+      SkColorGetG(mSkia),
+      SkColorGetB(mSkia),
+      SkColorGetA(mSkia),
+    };
+#elifdef FUI_ENABLE_DIRECT2D
+    return std::tuple {
+      static_cast<uint8_t>((mD2D.r * 255.0f) + 0.5f),
+      static_cast<uint8_t>((mD2D.g * 255.0f) + 0.5f),
+      static_cast<uint8_t>((mD2D.b * 255.0f) + 0.5f),
+      static_cast<uint8_t>((mD2D.a * 255.0f) + 0.5f),
+    };
+#endif
+  }
+
   constexpr bool operator==(const ColorConstant& other) const noexcept {
 #ifdef FUI_ENABLE_SKIA
     return mSkia == other.mSkia;
