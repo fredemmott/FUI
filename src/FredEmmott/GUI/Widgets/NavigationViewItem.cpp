@@ -42,19 +42,25 @@ NavigationViewItem::NavigationViewItem(Window* const window)
 NavigationViewItem::~NavigationViewItem() = default;
 
 void NavigationViewItem::Select() {
+  if (this->IsSelected()) {
+    return;
+  }
+
+  const auto peers = this->GetSelectionContainer()->GetSelectionItems();
+  const auto selectedPeer = std::ranges::find_if(
+    peers, [this](auto peer) { return (peer != this) && peer->IsSelected(); });
+
   this->MarkActivated();
   mWasSelected = true;
   this->SetIsChecked(true);
 
-  const auto peers = this->GetSelectionContainer()->GetSelectionItems();
-  const auto it = std::ranges::find_if(
-    peers, [this](auto peer) { return (peer != this) && peer->IsSelected(); });
-  if (it == peers.end()) {
+  if (selectedPeer == peers.end()) {
     mSelectionPill.Transition(PillState::Selected);
     return;
   }
 
-  for (const auto item: std::ranges::subrange(it, std::ranges::end(peers))) {
+  for (const auto item:
+       std::ranges::subrange(selectedPeer, std::ranges::end(peers))) {
     if (item != this) {
       CastSelectionSibling<NavigationViewItem>(item)->SetIsChecked(false);
     }
@@ -62,14 +68,14 @@ void NavigationViewItem::Select() {
 
   const auto selfIt = std::ranges::find(peers, this);
   FUI_ASSERT(selfIt != peers.end());
-  if (selfIt < it) {
+  if (selfIt < selectedPeer) {
     mSelectionPill.Transition(PillState::GainingSelectionFromBelow);
-    CastSelectionSibling<NavigationViewItem>(*it)->mSelectionPill.Transition(
-      PillState::LosingSelectionToAbove);
+    CastSelectionSibling<NavigationViewItem>(*selectedPeer)
+      ->mSelectionPill.Transition(PillState::LosingSelectionToAbove);
   } else {
     mSelectionPill.Transition(PillState::GainingSelectionFromAbove);
-    CastSelectionSibling<NavigationViewItem>(*it)->mSelectionPill.Transition(
-      PillState::LosingSelectionToBelow);
+    CastSelectionSibling<NavigationViewItem>(*selectedPeer)
+      ->mSelectionPill.Transition(PillState::LosingSelectionToBelow);
   }
 }
 
