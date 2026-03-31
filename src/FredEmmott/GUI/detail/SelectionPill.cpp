@@ -194,7 +194,6 @@ void SelectionPill::Paint(
 }
 
 FrameRateRequirement SelectionPill::GetFrameRateRequirement() const noexcept {
-  return FrameRateRequirement::SmoothAnimation {};
   const auto now = std::chrono::steady_clock::now();
   if (now >= mFinishAnimationAt) {
     return {};

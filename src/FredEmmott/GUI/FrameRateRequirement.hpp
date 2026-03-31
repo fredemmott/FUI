@@ -81,6 +81,9 @@ struct FrameRateRequirement {
     return result;
   }
 
+  constexpr bool operator==(const FrameRateRequirement&) const noexcept
+    = default;
+
  private:
   bool mSmoothAnimation {false};
   std::optional<std::chrono::steady_clock::time_point> mAfter;
