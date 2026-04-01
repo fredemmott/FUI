@@ -3,6 +3,7 @@
 #include "Win32Direct3D12GaneshWindow.hpp"
 
 #include <Windowsx.h>
+#include <d3d11_4.h>
 #include <dwmapi.h>
 #include <skia/core/SkColorSpace.h>
 #include <wil/win32_helpers.h>
@@ -148,10 +149,10 @@ class Win32Direct3D12GaneshWindow::FramePainter final
           window->mD3DDevice.get(),
           window->mD3DCommandQueue.get(),
           window->mSkContext.get()},
-        window->mFrames.at(frameIndex).mSkSurface->getCanvas(),
+        window->mFrame.mSkSurface->getCanvas(),
         std::make_shared<D3D12CompletionFlag>(
           window->mD3DFence.get(),
-          window->mFrames.at(frameIndex).mFenceValue)) {
+          window->mFrame.mFenceValue)) {
     mWindow->BeforePaintFrame(frameIndex);
   }
 
@@ -174,6 +175,9 @@ struct Win32Direct3D12GaneshWindow::SharedResources {
   wil::com_ptr<ID3D12Device> mD3DDevice;
   wil::com_ptr<ID3D12CommandQueue> mD3DCommandQueue;
   sk_sp<GrDirectContext> mSkContext;
+
+  wil::com_ptr<ID3D11Device5> mD3D11Device;
+  wil::com_ptr<ID3D11DeviceContext4> mD3D11DeviceContext;
 
   static std::shared_ptr<SharedResources> Get(IDXGIFactory4* dxgiFactory);
 };
@@ -220,6 +224,29 @@ Win32Direct3D12GaneshWindow::SharedResources::Get(IDXGIFactory4* dxgiFactory) {
   skiaD3DContext.fDevice.retain(ret->mD3DDevice.get());
   skiaD3DContext.fQueue.retain(ret->mD3DCommandQueue.get());
   ret->mSkContext = GrDirectContext::MakeDirect3D(skiaD3DContext);
+
+  UINT d3d11Flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+  if constexpr (Config::Debug) {
+    d3d11Flags |= D3D11_CREATE_DEVICE_DEBUG;
+  }
+
+  {
+    wil::com_ptr<ID3D11Device> device;
+    wil::com_ptr<ID3D11DeviceContext> context;
+    CheckHResult(D3D11CreateDevice(
+      ret->mDXGIAdapter.get(),
+      D3D_DRIVER_TYPE_UNKNOWN,
+      nullptr,
+      d3d11Flags,
+      nullptr,
+      0,
+      D3D11_SDK_VERSION,
+      device.put(),
+      nullptr,
+      context.put()));
+    device.query_to(ret->mD3D11Device.put());
+    context.query_to(ret->mD3D11DeviceContext.put());
+  }
 
   sShared = ret;
   return ret;
@@ -293,66 +320,111 @@ IUnknown* Win32Direct3D12GaneshWindow::GetDirectCompositionTargetDevice()
 }
 
 void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
+  // We now only have a single buffer that D3D12 writes to, but let's keep the
+  // math here just in case The multi-item swapchain is now used by d3d11
+  static constexpr auto d3d12FrameIndex = 0;
   const auto rtvStart = mD3DRTVHeap->GetCPUDescriptorHandleForHeapStart();
   const auto rtvStep = mD3DDevice->GetDescriptorHandleIncrementSize(
     D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
   const auto swapchain = GetSwapChain();
-  for (UINT i = 0; i < SwapChainLength; ++i) {
-    auto& frame = mFrames[i];
-    CheckHResult(
-      swapchain->GetBuffer(i, IID_PPV_ARGS(frame.mRenderTarget.put())));
-    frame.mRenderTarget->SetName(L"FredEmmott::GUI Skia RenderTarget");
-    frame.mRenderTargetView = rtvStart;
-    frame.mRenderTargetView.ptr += i * rtvStep;
-    mD3DDevice->CreateRenderTargetView(
-      frame.mRenderTarget.get(), nullptr, frame.mRenderTargetView);
 
-    DXGI_SWAP_CHAIN_DESC1 desc;
-    swapchain->GetDesc1(&desc);
-
-    frame.mRenderTarget->AddRef();
-    GrD3DTextureResourceInfo backBufferInfo(
-      frame.mRenderTarget.get(),
-      {},
-      D3D12_RESOURCE_STATE_COMMON,
-      DXGI_FORMAT_R8G8B8A8_UNORM,
-      1,
-      1,
-      0);
-    GrBackendRenderTarget backBufferRT(
-      static_cast<int>(desc.Width),
-      static_cast<int>(desc.Height),
-      backBufferInfo);
-    frame.mSkSurface = SkSurfaces::WrapBackendRenderTarget(
-      mSkContext.get(),
-      backBufferRT,
-      {},
-      kRGBA_8888_SkColorType,
-      nullptr,
-      nullptr);
+  CheckHResult(
+    swapchain->GetBuffer(0, IID_PPV_ARGS(mFrame.mD3D11SwapChainTexture.put())));
+  {
+    D3D11_TEXTURE2D_DESC desc {};
+    mFrame.mD3D11SwapChainTexture->GetDesc(&desc);
+    desc.MiscFlags &= ~D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+    desc.MiscFlags
+      |= D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    CheckHResult(mSharedResources->mD3D11Device->CreateTexture2D(
+      &desc, nullptr, mFrame.mD3D11InteropTexture.put()));
   }
+
+  CheckHResult(
+    mFrame.mD3D11InteropTexture.query<IDXGIResource1>()->CreateSharedHandle(
+      nullptr,
+      DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
+      nullptr,
+      mFrame.mInteropHandle.put()));
+
+  CheckHResult(mSharedResources->mD3D11Device->CreateFence(
+    0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(mInteropFence.mD3D11Fence.put())));
+  CheckHResult(mInteropFence.mD3D11Fence->CreateSharedHandle(
+    nullptr, GENERIC_ALL, nullptr, mInteropFence.mHandle.put()));
+
+  CheckHResult(mD3DDevice->OpenSharedHandle(
+    mFrame.mInteropHandle.get(), IID_PPV_ARGS(mFrame.mRenderTarget.put())));
+  CheckHResult(mD3DDevice->OpenSharedHandle(
+    mInteropFence.mHandle.get(),
+    IID_PPV_ARGS(mInteropFence.mD3D12Fence.put())));
+
+  mFrame.mRenderTarget->SetName(L"FredEmmott::GUI Skia RenderTarget");
+  mFrame.mRenderTargetView = rtvStart;
+  mFrame.mRenderTargetView.ptr += d3d12FrameIndex * rtvStep;
+  mD3DDevice->CreateRenderTargetView(
+    mFrame.mRenderTarget.get(), nullptr, mFrame.mRenderTargetView);
+
+  DXGI_SWAP_CHAIN_DESC1 desc;
+  swapchain->GetDesc1(&desc);
+
+  const GrD3DTextureResourceInfo backBufferInfo(
+    mFrame.mRenderTarget.get(),
+    {},
+    D3D12_RESOURCE_STATE_COMMON,
+    DXGI_FORMAT_R8G8B8A8_UNORM,
+    1,
+    1,
+    0);
+  GrBackendRenderTarget backBufferRT(
+    static_cast<int>(desc.Width),
+    static_cast<int>(desc.Height),
+    backBufferInfo);
+  mFrame.mSkSurface = SkSurfaces::WrapBackendRenderTarget(
+    mSkContext.get(),
+    backBufferRT,
+    {},
+    kRGBA_8888_SkColorType,
+    nullptr,
+    nullptr);
 }
 
-void Win32Direct3D12GaneshWindow::AfterPaintFrame(uint8_t frameIndex) {
-  auto& frame = mFrames.at(frameIndex);
-  FUI_ASSERT(frame.mFenceValue > 0);
-  FUI_ASSERT(frame.mFenceValue == mFenceValue);
+void Win32Direct3D12GaneshWindow::AfterPaintFrame(
+  [[maybe_unused]] const uint8_t frameIndex) {
+  FUI_ASSERT(mFrame.mFenceValue > 0);
+  FUI_ASSERT(mFrame.mFenceValue == mFenceValue);
 
   GrD3DFenceInfo fenceInfo {};
   fenceInfo.fFence.retain(mD3DFence.get());
-  fenceInfo.fValue = frame.mFenceValue;
+  fenceInfo.fValue = mFrame.mFenceValue;
   GrBackendSemaphore flushSemaphore;
   flushSemaphore.initDirect3D(fenceInfo);
 
   mSkContext->flush(
-    frame.mSkSurface.get(),
+    mFrame.mSkSurface.get(),
     SkSurfaces::BackendSurfaceAccess::kPresent,
     GrFlushInfo {
       .fNumSemaphores = 1,
       .fSignalSemaphores = &flushSemaphore,
     });
   mSkContext->submit(GrSyncCpu::kNo);
+
+  const auto interopFenceValue = ++mInteropFence.mValue;
+  CheckHResult(mD3DCommandQueue->Signal(
+    mInteropFence.mD3D12Fence.get(), interopFenceValue));
+
+  const auto d3d11 = mSharedResources->mD3D11DeviceContext.get();
+  CheckHResult(d3d11->Wait(mInteropFence.mD3D11Fence.get(), interopFenceValue));
+  d3d11->CopySubresourceRegion(
+    mFrame.mD3D11SwapChainTexture.get(),
+    0,
+    0,
+    0,
+    0,
+    mFrame.mD3D11InteropTexture.get(),
+    0,
+    nullptr);
 
   CheckHResult(GetSwapChain()->Present(0, 0));
 }
@@ -373,6 +445,9 @@ void Win32Direct3D12GaneshWindow::CleanupFrameContexts() {
     frame.mFenceValue = {};
   }
 }
+  mFrame = {};
+}
+
 std::unique_ptr<Win32Window> Win32Direct3D12GaneshWindow::CreatePopup(
   HINSTANCE instance,
   int showCommand,
@@ -383,10 +458,9 @@ std::unique_ptr<Win32Window> Win32Direct3D12GaneshWindow::CreatePopup(
 
 std::unique_ptr<Win32Direct3D12GaneshWindow::BasicFramePainter>
 Win32Direct3D12GaneshWindow::GetFramePainter(uint8_t frameIndex) {
-  auto& frame = mFrames.at(frameIndex);
+  auto& frame = mFrame;
 
   if (frame.mFenceValue) {
-    FUI_ASSERT(frame.mFenceValue > 0);
     CheckHResult(
       mD3DFence->SetEventOnCompletion(frame.mFenceValue, mFenceEvent.get()));
     WaitForSingleObject(mFenceEvent.get(), INFINITE);

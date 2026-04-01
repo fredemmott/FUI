@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <d3d11_3.h>
 #include <d3d12.h>
 #include <skia/core/SkSurface.h>
 
@@ -15,6 +16,17 @@
 #include "Win32Window.hpp"
 
 namespace FredEmmott::GUI {
+
+/** Skia-based drawing, using Skia's old rendering infrastructure (Ganesh),
+ * backed by D3D12.
+ *
+ * Because Windows::UI::Composition only supports D3D12, we also create
+ * a D3D11 device on the same DXGI adapter, and use that to submit frames.
+ *
+ * We create a shared texture that D3D12 can write to and D3D11 can read from,
+ * along with a fence. From D3D12, we render to this texture then signal the
+ * fence. Then, with D3D11, we wait on the fence and copy to the swapchain.
+ */
 class Win32Direct3D12GaneshWindow final : public Win32Window {
  public:
   Win32Direct3D12GaneshWindow(
@@ -50,14 +62,25 @@ class Win32Direct3D12GaneshWindow final : public Win32Window {
   sk_sp<GrDirectContext> mSkContext;
 
   struct FrameContext {
+    wil::com_ptr<ID3D11Texture2D> mD3D11SwapChainTexture;
+    wil::com_ptr<ID3D11Texture2D> mD3D11InteropTexture;
+    wil::unique_handle mInteropHandle;
+
     wil::com_ptr<ID3D12Resource> mRenderTarget;
     D3D12_CPU_DESCRIPTOR_HANDLE mRenderTargetView {};
     sk_sp<SkSurface> mSkSurface;
 
     uint64_t mFenceValue {};
   };
+  FrameContext mFrame;
 
-  std::array<FrameContext, SwapChainLength> mFrames;
+  struct InteropFence {
+    wil::com_ptr<ID3D11Fence> mD3D11Fence;
+    wil::com_ptr<ID3D12Fence> mD3D12Fence;
+    wil::unique_handle mHandle;
+    uint64_t mValue {};
+  };
+  InteropFence mInteropFence;
 
   void InitializeD3D();
   void InitializeSkia();
