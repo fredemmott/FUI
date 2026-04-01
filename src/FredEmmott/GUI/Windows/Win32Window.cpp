@@ -866,11 +866,6 @@ void Win32Window::UpdateGeometry(const DWORD dpi) {
       reinterpret_cast<LPARAM>(smallIcon.get()));
     mSmallIcon = std::move(smallIcon);
   }
-
-  if (mTitleBar) {
-    // Keep min/max/close visible, even if the content overflows horizontally
-    mTitleBar->SetMutableStyles(Style().Width(mGeometry->mCanvasSize.mWidth));
-  }
 }
 
 std::optional<LRESULT> Win32Window::WMSizingProc(WPARAM wParam, LPARAM lParam) {
@@ -1126,12 +1121,11 @@ Win32Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     case WM_PAINT:
       this->Paint();
       break;
-    case WM_SIZING: {
+    case WM_SIZING:
       if (const auto ret = WMSizingProc(wParam, lParam)) {
         return *ret;
       }
       break;
-    }
     case WM_DPICHANGED: {
       // TODO: lParam is a RECT that we *should* use
       FUI_ASSERT(
@@ -1480,7 +1474,6 @@ std::optional<LRESULT> Win32Window::TitleBarWindowProc(
     }
     case WM_NCCALCSIZE: {
       if (wParam) {
-        this->UpdateGeometry();
         auto params = reinterpret_cast<LPNCCALCSIZE_PARAMS>(lParam);
         //  In:
         //
