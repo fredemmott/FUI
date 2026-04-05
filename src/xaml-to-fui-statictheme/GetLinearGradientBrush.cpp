@@ -11,6 +11,7 @@
 void GetLinearGradientBrush(
   std::back_insert_iterator<std::vector<Resource>> back,
   const TiXmlElement& it) {
+  const auto name = it.Attribute("x:Key");
   std::unordered_set<std::string> dependencies;
   std::vector<std::string> stops;
 
@@ -22,10 +23,12 @@ void GetLinearGradientBrush(
     dependencies.emplace(value);
 
     stops.push_back(
-      std::format("{{ {}, {} }}", stop->Attribute("Offset"), value));
+      std::format(
+        "{{ {}, MakeResource<Color>({}) }}", stop->Attribute("Offset"), value));
   }
 
   std::vector<std::string> args {
+    std::format("\"{}\"", name),
     std::format(
       "LinearGradientBrush::MappingMode::{}", it.Attribute("MappingMode")),
     std::format("/* start = */ Point {{ {} }}", it.Attribute("StartPoint")),
@@ -58,7 +61,7 @@ void GetLinearGradientBrush(
   }
 
   back = {
-    .mName = it.Attribute("x:Key"),
+    .mName = name,
     .mValue = std::format(
       "StaticThemedLinearGradientBrush {{ {} }}",
       std::ranges::to<std::string>(std::views::join_with(args, ','))),

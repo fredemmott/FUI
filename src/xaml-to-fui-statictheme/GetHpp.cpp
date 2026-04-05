@@ -56,7 +56,7 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
       continue;
     }
     members.push_back(
-      fmt::format("static const {}* Get{}();", type, resource.mName));
+      fmt::format("static const {}& Get{}();", type, resource.mName));
 
     constants.emplace_back(
       resource.mName,
@@ -68,13 +68,14 @@ HppData GetHppData(const Metadata& meta, const std::span<Resource>& resources) {
       fmt::format(
         R"EOF(
 struct {NAME}_t {{
-  using type = decltype(Theme::Get{NAME}());
+  using type = std::remove_cvref_t<decltype(Theme::Get{NAME}())>;
   using value_type = std::remove_pointer_t<type>::value_type;
 
-  operator type() const {{ return Theme::Get{NAME}(); }}
-  operator const value_type&() const {{ return *Theme::Get{NAME}()->Resolve(); }}
-  type operator->() const {{
-    return Theme::Get{NAME}();
+  operator type () const {{ return Theme::Get{NAME}(); }}
+  operator const type* () const {{ return &Theme::Get{NAME}(); }}
+
+  static const value_type& Resolve(const StaticTheme::Theme theme) {{
+    return Theme::Get{NAME}().Resolve(theme);
   }}
 }};
 )EOF",

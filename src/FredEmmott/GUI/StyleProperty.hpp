@@ -7,6 +7,8 @@
 #include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/style_detail.hpp>
 
+#include "StaticTheme/Resource.hpp"
+#include "StaticTheme/detail/ResolveColor.hpp"
 #include "StyleTransition.hpp"
 
 namespace FredEmmott::GUI {
@@ -25,7 +27,7 @@ template <class T>
 class StyleProperty {
  public:
   using value_type = T;
-  using resource_type = const StaticTheme::Resource<T>*;
+  using resource_type = T (*)(StaticTheme::Theme);
 
   static constexpr bool SupportsTransitions = Interpolation::lerpable<T>;
 
@@ -44,17 +46,19 @@ class StyleProperty {
   explicit(!std::is_convertible_v<U, T>) constexpr StyleProperty(
     U&& v) noexcept(std::is_nothrow_constructible_v<T, U>)
     : mValue(std::in_place_type<T>, std::forward<U>(v)) {}
-  template <std::convertible_to<resource_type> U>
-    requires(!std::same_as<std::nullptr_t, std::decay_t<U>>)
-  StyleProperty(U&& r)
-    : mValue(std::in_place_type<resource_type>, std::forward<U>(r)) {}
 
-  constexpr const T& value() const {
+  template <class U>
+    requires requires(StaticTheme::Theme t) { StaticTheme::ResolveAs<T, U>(t); }
+  constexpr StyleProperty(const U)
+    : mValue(std::in_place_type<resource_type>, &StaticTheme::ResolveAs<T, U>) {
+  }
+
+  constexpr T value() const {
     if (const auto it = get_if<T>(&mValue)) {
       return *it;
     }
     if (const auto it = get_if<resource_type>(&mValue)) {
-      return *(*it)->Resolve();
+      return (*it)(StaticTheme::GetCurrent());
     }
     throw std::bad_variant_access();
   }
@@ -63,11 +67,12 @@ class StyleProperty {
     return !holds_alternative<std::monostate>(mValue);
   }
 
-  const T* operator->() const {
-    return &value();
+  T operator->() const {
+    return value();
   }
 
-  const T& operator*() const {
+  [[nodiscard]]
+  T operator*() const {
     return value();
   }
 
@@ -79,30 +84,15 @@ class StyleProperty {
     return std::forward<U>(v);
   }
 
+  template <class U>
   StyleProperty(
-    const T& value,
+    U&& u,
     const std::convertible_to<std::optional<StyleTransition>> auto& transition)
     requires SupportsTransitions
-    : mValue(std::in_place_type<T>, value),
-      mTransition(transition) {
-    if constexpr (std::same_as<T, float>) {
-      if (YGFloatIsUndefined(value)) {
-        mValue = {};
-      }
-    }
+    && requires { StyleProperty(std::forward<U>(u)); }
+    : StyleProperty(std::forward<U>(u)) {
+    mTransition = transition;
   }
-
-  StyleProperty(
-    std::nullopt_t,
-    const std::convertible_to<std::optional<StyleTransition>> auto& transition)
-    requires SupportsTransitions && std::same_as<T, float>
-    : mTransition(transition) {}
-
-  StyleProperty(
-    std::nullopt_t,
-    const std::convertible_to<std::optional<StyleTransition>> auto& transition)
-    requires SupportsTransitions && (!std::same_as<T, float>)
-    : mTransition(transition) {}
 
   template <class U>
   StyleProperty(U&& u, important_style_property_t)

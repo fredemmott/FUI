@@ -659,7 +659,8 @@ float Win32Window::GetDPIScale() const {
 Color Win32Window::GetClearColor() const {
   return mHaveSystemBackdrop
     ? Colors::Transparent
-    : Color {StaticTheme::Common::SolidBackgroundFillColorBase};
+    : Color {StaticTheme::Common::SolidBackgroundFillColorBase.Resolve(
+        StaticTheme::GetCurrent())};
 }
 
 void Win32Window::OffsetPositionToDescendant(Widgets::Widget* child) {

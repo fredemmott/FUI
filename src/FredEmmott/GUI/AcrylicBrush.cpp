@@ -7,18 +7,7 @@
 
 namespace FredEmmott::GUI {
 
-AcrylicBrush::AcrylicBrush(
-  const Color& tint,
-  const float opacity,
-  const Color& fallback)
-  : mTint(tint),
-    mOpacity(opacity),
-    mFallback(fallback) {
-  // Don't pre-compute mTint * opacity, as the color may be a a system theme
-  // color
-}
-
-Color AcrylicBrush::Resolve() const {
+Color::Constant AcrylicBrush::Resolve() const {
   if (!SystemSettings::Get().IsTransparencyEnabled()) {
     return mFallback;
   }

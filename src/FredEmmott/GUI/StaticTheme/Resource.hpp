@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
-#include <optional>
+#include <FredEmmott/GUI/Color.hpp>
 
 #include "Theme.hpp"
 
@@ -17,18 +17,29 @@ struct Resource {
   T mHighContrast {};
 
   [[nodiscard]]
-  constexpr const T* Resolve(const Theme theme = GetCurrent()) const noexcept {
+  constexpr const T& Resolve(const Theme theme = GetCurrent()) const noexcept {
     using enum Theme;
     switch (theme) {
       case Light:
-        return &mLight;
+        return mLight;
       case Dark:
-        return &mDefault;
+        return mDefault;
       case HighContrast:
-        return &mHighContrast;
+        return mHighContrast;
     }
     std::unreachable();
-  };
+  }
+
+  constexpr Resource<Color> WithAlphaMultipliedBy(
+    const float alpha) const noexcept
+    requires std::same_as<T, Color>
+  {
+    return {
+      .mDefault = mDefault.WithAlphaMultipliedBy(alpha),
+      .mLight = mLight.WithAlphaMultipliedBy(alpha),
+      .mHighContrast = mHighContrast.WithAlphaMultipliedBy(alpha),
+    };
+  }
 
   constexpr bool operator==(const Resource& other) const noexcept = default;
 };

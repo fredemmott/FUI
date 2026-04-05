@@ -6,18 +6,18 @@
 
 namespace FredEmmott::GUI {
 
-namespace {
-template <class T>
-concept as_color = requires(T& t) { t.template as<SkColor>(); };
-}// namespace
-
 template <>
 SkPaint Brush::as<SkPaint>(Renderer*, const Rect& rect) const {
   return std::visit(
     felly::overload {
-      [](const as_color auto& brush) {
+      [](const SolidColorBrush& brush) {
         SkPaint paint;
-        paint.setColor(brush.template as<SkColor>());
+        paint.setColor(brush.as<SkColor>());
+        return paint;
+      },
+      [](const AcrylicBrush& brush) {
+        SkPaint paint;
+        paint.setColor(brush.Resolve().as<SkColor>());
         return paint;
       },
       [rect](const LinearGradientBrush& brush) {

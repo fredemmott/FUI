@@ -37,10 +37,10 @@ class LinearGradientBrush final {
   };
   struct Stop {
     float mOffset {};
-    Color mColor;
+    Color::Constant mColor;
 
     Stop() = delete;
-    constexpr Stop(float offset, const Color& color)
+    constexpr Stop(const float offset, const Color::Constant& color)
       : mOffset(offset),
         mColor(color) {}
     constexpr bool operator==(const Stop&) const noexcept = default;
@@ -50,12 +50,14 @@ class LinearGradientBrush final {
   LinearGradientBrush() = delete;
 
   constexpr LinearGradientBrush(
+    const std::string_view cacheKey,
     const MappingMode mode,
     const Point& start,
     const Point& end,
     const std::vector<Stop>& stops,
     const ScaleTransform scaleTransform = {})
-    : mMappingMode(mode),
+    : mCacheKey(cacheKey),
+      mMappingMode(mode),
       mStart(start),
       mEnd(end),
       mStops(stops),
@@ -73,11 +75,11 @@ class LinearGradientBrush final {
   [[nodiscard]] SkPaint GetSkiaPaint(const SkRect&) const;
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-  [[nodiscard]] wil::com_ptr<ID2D1Brush> GetDirect2DBrush(
-    ID2D1RenderTarget*,
-    const Rect&) const;
+  [[nodiscard]] ID2D1Brush* GetDirect2DBrush(ID2D1RenderTarget*, const Rect&)
+    const;
 #endif
  private:
+  std::string_view mCacheKey;
   MappingMode mMappingMode;
   Point mStart;
   Point mEnd;
@@ -96,13 +98,11 @@ class LinearGradientBrush final {
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
   struct Direct2DCache {
-    wil::com_ptr<ID2D1GradientStopCollection> mDirect2DGradientStops;
-    wil::com_ptr<ID2D1LinearGradientBrush> mDirect2DBrush;
+    wil::com_ptr<ID2D1LinearGradientBrush> mBrush;
     D2D1::Matrix3x2F mScaleMatrix {};
   };
-  std::shared_ptr<Direct2DCache> mDirect2DCache;
 
-  void InitializeDirect2DBrush(ID2D1RenderTarget*);
+  Direct2DCache* GetDirect2DCache(ID2D1RenderTarget*) const;
 #endif
 };
 

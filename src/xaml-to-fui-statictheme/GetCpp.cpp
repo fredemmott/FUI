@@ -22,9 +22,9 @@ std::string GetCpp(const Metadata& meta, const std::span<Resource> resources) {
     resourceGetters.push_back(
       fmt::format(
         R"EOF(
-const {TYPE}* Theme::Get{NAME}() {{
+const {TYPE}& Theme::Get{NAME}() {{
   static const {TYPE} sValue = {VALUE};
-  return &sValue;
+  return sValue;
 }}
 
 )EOF",

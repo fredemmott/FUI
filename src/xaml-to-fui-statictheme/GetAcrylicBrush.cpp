@@ -12,8 +12,8 @@ void GetAcrylicBrush(
   const auto fallback = ResolveColorReference(it.Attribute("FallbackColor"));
   back = {
     .mName = it.Attribute("x:Key"),
-    .mValue
-    = std::format("AcrylicBrush {{ {}, {}f, {} }}", tint, opacity, fallback),
+    .mValue = std::format(
+      "StaticThemedAcrylicBrush {{ {}, {}f, {} }}", tint, opacity, fallback),
     .mType = "Brush",
     .mDependencies = {fallback},
   };

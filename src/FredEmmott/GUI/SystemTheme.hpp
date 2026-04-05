@@ -32,8 +32,8 @@
   X(SystemAccentColorLight3, UIColorType_AccentLight3)
 
 namespace FredEmmott::GUI {
-class Color;
-}// namespace FredEmmott::GUI
+class ColorConstant;
+}
 
 /** The 'System Theme' is the currently selected Windows theme.
  *
@@ -53,7 +53,7 @@ enum class ColorType {
 };
 using enum ColorType;
 
-Color Resolve(ColorType usage) noexcept;
+ColorConstant Resolve(ColorType usage) noexcept;
 
 /** Purge caches and update to the current Windows theme.
  *

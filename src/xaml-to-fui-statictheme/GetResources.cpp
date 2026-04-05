@@ -118,7 +118,7 @@ std::string ResolveValue(std::string_view theme, const Resource& resource) {
     return resource.mValue;
   }
   return std::format(
-    "ResolveBrush<StaticTheme::Theme::{}>({})", theme, resource.mValue);
+    "ResolveThemedValue<StaticTheme::Theme::{}>({})", theme, resource.mValue);
 }
 
 void GetResources(

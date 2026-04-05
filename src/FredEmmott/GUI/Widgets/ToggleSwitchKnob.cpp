@@ -165,7 +165,7 @@ void ToggleSwitchKnob::PaintOwnContent(
 
   const auto centerLine = rect.GetTop() + (rect.GetHeight() / 2.0f);
   renderer->FillRoundedRect(
-    *brush->Resolve(),
+    brush->Resolve(),
     Rect {
       Point {
         rect.GetLeft() + left,

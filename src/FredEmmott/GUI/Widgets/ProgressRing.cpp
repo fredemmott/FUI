@@ -61,13 +61,17 @@ void ProgressRing::PaintOwnContent(
   const auto strokeRect = rect.WithInset(
     ProgressRingStrokeThickness / 2, ProgressRingStrokeThickness / 2);
 
+  const auto theme = StaticTheme::GetCurrent();
+
   if (mKind == Kind::Determinate) {
     renderer->StrokeEllipse(
-      ControlStrongStrokeColorDefault, strokeRect, ProgressRingStrokeThickness);
+      ControlStrongStrokeColorDefault.Resolve(theme),
+      strokeRect,
+      ProgressRingStrokeThickness);
     // TODO (?): WinUI3 animates large changes here
     const auto sweepAngle = (mValue - mMinimum) * 360.f / (mMaximum - mMinimum);
     renderer->StrokeArc(
-      ProgressRingForegroundThemeBrush,
+      ProgressRingForegroundThemeBrush.Resolve(theme),
       strokeRect,
       // E -> N
       270.0f,
@@ -107,7 +111,7 @@ void ProgressRing::PaintOwnContent(
   const float startAngle = 270.0f + baseRotation + (startT * 360.0f);
   const float sweepAngle = (endT - startT) * 360.0f;
   renderer->StrokeArc(
-    ProgressRingForegroundThemeBrush,
+    ProgressRingForegroundThemeBrush.Resolve(theme),
     strokeRect,
     startAngle,
     sweepAngle,

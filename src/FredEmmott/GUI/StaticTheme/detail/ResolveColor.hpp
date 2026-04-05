@@ -5,16 +5,41 @@
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/StaticTheme/Theme.hpp>
 
-#include "StaticThemedLinearGradientBrush.hpp"
-
 namespace FredEmmott::GUI::StaticTheme {
+struct StaticThemedLinearGradientBrush;
 
-template <Theme TTheme>
-constexpr auto ResolveBrush(auto brush) {
-  return brush;
+template <class T>
+concept resolvable
+  = requires(StaticTheme::Theme theme, T value) { value.Resolve(theme); };
+
+template <Theme TTheme, class T>
+constexpr auto ResolveThemedValue(const T& value) {
+  if constexpr (resolvable<T>) {
+    return value.Resolve(TTheme);
+  } else {
+    return value;
+  }
 }
-template <Theme TTheme>
-constexpr auto ResolveBrush(const StaticThemedLinearGradientBrush& brush) {
-  return brush.Resolve<TTheme>();
+
+template <class T>
+  requires(!resolvable<T>)
+constexpr auto MakeResource(const T& x) {
+  return Resource<T> {x, x, x};
 }
+
+template <class T>
+constexpr auto MakeResource(const Resource<T>& x) {
+  return x;
+}
+
+template <class T, class U>
+static T ResolveAs(const Theme theme)
+  requires requires {
+    U::Resolve(theme);
+    T {U::Resolve(theme)};
+  }
+{
+  return T {U::Resolve(theme)};
+}
+
 }// namespace FredEmmott::GUI::StaticTheme

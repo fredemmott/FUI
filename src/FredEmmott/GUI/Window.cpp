@@ -137,8 +137,9 @@ void Window::Paint() {
     renderer->Scale(this->GetDPIScale());
     mFUIRoot.Paint(renderer, this->GetCanvasSize());
     if (IsDisabled()) {
+      const auto theme = StaticTheme::GetCurrent();
       renderer->FillRect(
-        *StaticTheme::Common::SmokeFillColorDefaultBrush->Resolve(),
+        StaticTheme::Common::SmokeFillColorDefaultBrush.Resolve(theme),
         this->GetCanvasSize());
     }
   }

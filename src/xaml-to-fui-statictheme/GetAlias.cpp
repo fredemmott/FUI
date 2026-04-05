@@ -10,20 +10,17 @@ std::string GetAliasTargetType(std::string_view value) {
     return "Color";
   }
   return std::format(
-    "std::decay_t<decltype(*Theme::Get{}())>::value_type", value);
+    "std::remove_cvref_t<decltype(Theme::Get{}())>::value_type", value);
 }
 
-std::string GetAliasValue(
-  const std::string_view theme,
-  const std::string_view value) {
+std::string GetAliasValue(const std::string_view value) {
   if (
     value.starts_with("System") && value.ends_with("Color")
     && value != "SystemControlTransparentColor"
     && value != "SystemControlDisabledTransparentColor") {
     return std::string {value};
   }
-  return std::format(
-    "*Theme::Get{}()->Resolve(StaticTheme::Theme::{})", value, theme);
+  return std::format("Theme::Get{}()", value);
 }
 
 void GetAlias(
@@ -37,18 +34,18 @@ void GetAlias(
     ? aliasMap.mHighContrast.at(key)
     : defaultIt;
 
-  const auto defaultValue = GetAliasValue("Dark", defaultIt);
-  const auto lightValue = GetAliasValue("Light", lightIt);
-  const auto highContrastValue = GetAliasValue("HighContrast", highContrastIt);
+  const auto defaultValue = GetAliasValue(defaultIt);
+  const auto lightValue = GetAliasValue(lightIt);
+  const auto highContrastValue = GetAliasValue(highContrastIt);
 
   Resource ret {
     .mName = key,
     .mValue = std::format(
       R"EOF(
 {{
-  .mDefault = {},
-  .mLight = {},
-  .mHighContrast = {},
+  .mDefault = ResolveThemedValue<StaticTheme::Theme::Dark>({}),
+  .mLight = ResolveThemedValue<StaticTheme::Theme::Light>({}),
+  .mHighContrast = ResolveThemedValue<StaticTheme::Theme::HighContrast>({}),
 }}
 )EOF",
       defaultValue,

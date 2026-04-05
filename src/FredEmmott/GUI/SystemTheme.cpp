@@ -16,6 +16,9 @@
   FUI_WINAPI_SYS_COLORS(X) \
   FUI_WINRT_UI_ACCENT_COLORS(X)
 
+namespace FredEmmott::GUI {
+class ColorConstant;
+}
 using namespace FredEmmott::GUI::win32_detail;
 using namespace ABI::Windows::UI::ViewManagement;
 
@@ -23,15 +26,15 @@ namespace FredEmmott::GUI::SystemTheme {
 struct Store {
   Store();
   void Populate();
-  void Populate(IUISettings3&, Color::Constant*, UIColorType) const;
-  void Populate(IUISettings3&, Color::Constant*, int) const;
+  void Populate(IUISettings3&, ColorConstant*, UIColorType) const;
+  void Populate(IUISettings3&, ColorConstant*, int) const;
 
   static Store& Get() {
     static Store ret;
     return ret;
   }
 
-#define DECLARE_USAGE_VARIABLE(X, IMPL) Color::Constant m##X {};
+#define DECLARE_USAGE_VARIABLE(X, IMPL) ColorConstant m##X {};
   FUI_SYSTEM_COLOR_USAGES(DECLARE_USAGE_VARIABLE)
 #undef DECLARE_USAGE_VARIABLE
 };
@@ -51,21 +54,21 @@ void Store::Populate() {
 
 void Store::Populate(
   IUISettings3& uiSettings,
-  Color::Constant* p,
+  ColorConstant* p,
   const UIColorType type) const {
   ABI::Windows::UI::Color ret;
   CheckHResult(uiSettings.GetColorValue(type, &ret));
   const auto [a, r, g, b] = ret;
-  *p = Color::Constant::FromARGB32(a, r, g, b);
+  *p = ColorConstant::FromARGB32(a, r, g, b);
 }
 
-void Store::Populate(IUISettings3&, Color::Constant* p, int sysColor) const {
+void Store::Populate(IUISettings3&, ColorConstant* p, int sysColor) const {
   const auto color = GetSysColor(sysColor);
-  *p = Color::Constant::FromARGB32(
+  *p = ColorConstant::FromARGB32(
     0xff, GetRValue(color), GetGValue(color), GetBValue(color));
 }
 
-Color Resolve(const ColorType usage) noexcept {
+ColorConstant Resolve(const ColorType usage) noexcept {
   switch (usage) {
 #define USAGE_CASE(X, IMPL) \
   case ColorType::X: \

@@ -60,12 +60,13 @@ auto& VerticalSliderStyle() {
 }
 
 struct SliderBrushes {
-  Brush mTrackFill;
-  Brush mTrackValueFill;
-  Brush mTickBarFill;
+  using type = StaticTheme::Resource<Brush>;
+  type mTrackFill;
+  type mTrackValueFill;
+  type mTickBarFill;
 
-  Brush mOuterThumbStroke;
-  Brush mOuterThumbFill;
+  type mOuterThumbStroke;
+  type mOuterThumbFill;
 };
 
 enum class SliderState : uint8_t {
@@ -75,7 +76,7 @@ enum class SliderState : uint8_t {
   Active,
 };
 
-Brush GetSliderInnerThumbBrush(const SliderState state) {
+StaticTheme::Resource<Brush> GetSliderInnerThumbBrush(const SliderState state) {
   // Thumb hover state is indepednent of slider pointer-hover
   switch (state) {
     case SliderState::Normal:
@@ -231,18 +232,19 @@ float Slider::GetSnappedDraggingValue() const {
 }
 
 Point Slider::GetTrackOriginOffset() const {
+  const auto theme = StaticTheme::GetCurrent();
   const auto [width, height] = this->GetSize();
   if (mOrientation == Orientation::Horizontal) {
     const auto layout = GetLayout(width);
     return Point {
       layout.mTrackStart,
-      (height - *SliderTrackThemeHeight->Resolve()) / 2,
+      (height - SliderTrackThemeHeight.Resolve(theme)) / 2,
     };
   }
 
   const auto layout = GetLayout(height);
   return Point {
-    (width - *SliderTrackThemeHeight->Resolve()) / 2,
+    (width - SliderTrackThemeHeight.Resolve(theme)) / 2,
     layout.mTrackStart,
   };
 }
@@ -452,7 +454,8 @@ void Slider::PaintOwnContent(
     return GetSliderBrushes(SliderState::Normal);
   }();
 
-  const auto trackThickness = *SliderTrackThemeHeight->Resolve();
+  const auto theme = StaticTheme::GetCurrent();
+  const auto trackThickness = SliderTrackThemeHeight.Resolve(theme);
   const auto thumbRange = layout.mThumbMax - layout.mThumbMin;
 
   // MIN_TICKMARK_GAP from WinUI3 TickBar_Partial.hpp
@@ -488,6 +491,7 @@ void Slider::PaintOwnContent(
       const auto singlePixel = isHorizontal ? Point {0, 1} : Point {1, 0};
 
       const auto firstTickPoint = makeCenteredPoint(layout.mThumbMin);
+      const auto tickBarFill = brushes.mTickBarFill.Resolve(theme);
       for (auto i = 0; i < tickCount; ++i) {
         const auto it = (i == (tickCount - 1))
           ? makeCenteredPoint(layout.mThumbMax)
@@ -495,7 +499,7 @@ void Slider::PaintOwnContent(
         {
           const auto begin = it + offsetFromCenter;
           const auto end = begin + vector;
-          renderer->DrawLine(brushes.mTickBarFill, begin, end);
+          renderer->DrawLine(tickBarFill, begin, end);
         }
         {
           // When the thumb is perfectly on top of the tick mark,
@@ -503,7 +507,7 @@ void Slider::PaintOwnContent(
           // *just* be visible, but the one below or to the right should not.
           const auto begin = it - (offsetFromCenter + singlePixel);
           const auto end = begin - vector;
-          renderer->DrawLine(brushes.mTickBarFill, begin, end);
+          renderer->DrawLine(tickBarFill, begin, end);
         }
       }
     }
@@ -523,7 +527,7 @@ void Slider::PaintOwnContent(
         Size {layout.mThumbPoint, rect.GetHeight()},
       });
       renderer->DrawLine(
-        brushes.mTrackValueFill,
+        brushes.mTrackValueFill.Resolve(theme),
         lineFrom,
         lineTo,
         trackThickness,
@@ -534,7 +538,11 @@ void Slider::PaintOwnContent(
         rect.GetBottomRight(),
       });
       renderer->DrawLine(
-        brushes.mTrackFill, lineFrom, lineTo, trackThickness, StrokeCap::Round);
+        brushes.mTrackFill.Resolve(theme),
+        lineFrom,
+        lineTo,
+        trackThickness,
+        StrokeCap::Round);
       renderer->PopClipRect();
     } else {
       std::swap(lineFrom, lineTo);
@@ -543,14 +551,18 @@ void Slider::PaintOwnContent(
         Size {rect.GetWidth(), length - layout.mThumbPoint},
       });
       renderer->DrawLine(
-        brushes.mTrackFill, lineFrom, lineTo, trackThickness, StrokeCap::Round);
+        brushes.mTrackFill.Resolve(theme),
+        lineFrom,
+        lineTo,
+        trackThickness,
+        StrokeCap::Round);
       renderer->PopClipRect();
       renderer->PushClipRect({
         rect.GetTopLeft() + Point {0, length - layout.mThumbPoint},
         rect.GetBottomRight(),
       });
       renderer->DrawLine(
-        brushes.mTrackValueFill,
+        brushes.mTrackValueFill.Resolve(theme),
         lineFrom,
         lineTo,
         trackThickness,
@@ -568,8 +580,8 @@ void Slider::PaintOwnContent(
   static constexpr auto OuterThumbRadius = SliderThumbLength + 3.0f;
   const auto outerThumb = Rect::FromCenterAndSize(
     thumbCenter, {OuterThumbRadius, OuterThumbRadius});
-  renderer->FillEllipse(brushes.mOuterThumbFill, outerThumb);
-  renderer->StrokeEllipse(brushes.mOuterThumbStroke, outerThumb);
+  renderer->FillEllipse(brushes.mOuterThumbFill.Resolve(theme), outerThumb);
+  renderer->StrokeEllipse(brushes.mOuterThumbStroke.Resolve(theme), outerThumb);
 
   const auto innerThumbScale = mInnerThumbScale.Evaluate(
     SliderInnerThumbScaleAnimationEasingFunction,
@@ -581,7 +593,7 @@ void Slider::PaintOwnContent(
       std::roundf(SliderInnerThumbHeight * innerThumbScale),
     });
   renderer->FillEllipse(
-    GetSliderInnerThumbBrush(static_cast<SliderState>(mThumbState)),
+    GetSliderInnerThumbBrush(static_cast<SliderState>(mThumbState)).Resolve(),
     innerThumb);
 }
 

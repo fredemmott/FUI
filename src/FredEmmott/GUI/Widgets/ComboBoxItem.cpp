@@ -117,8 +117,13 @@ void ComboBoxItem::PaintOwnContent(
     },
   };
 
+  const auto theme = StaticTheme::GetCurrent();
+
   mSelectionPill.Paint(
-    renderer, pillRect, ComboBoxItemPillFillBrush, ComboBoxItemPillHeight);
+    renderer,
+    pillRect,
+    ComboBoxItemPillFillBrush.Resolve(theme),
+    ComboBoxItemPillHeight);
 }
 
 Widget::EventHandlerResult ComboBoxItem::OnMouseButtonPress(

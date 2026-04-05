@@ -123,10 +123,11 @@ void NavigationViewItem::PaintOwnContent(
       rect.GetHeight(),
     },
   };
+  const auto theme = StaticTheme::GetCurrent();
   mSelectionPill.Paint(
     renderer,
     pillRect,
-    NavigationViewSelectionIndicatorForeground,
+    NavigationViewSelectionIndicatorForeground.Resolve(theme),
     NavigationViewSelectionIndicatorHeight);
 }
 

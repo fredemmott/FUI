@@ -69,19 +69,17 @@ struct Style final {
     constexpr auto key = StylePropertyKey::NAME; \
     return mStorage.contains(key); \
   }
-#define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, PARAM_TYPE) \
+#define FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE) \
   template <class... Args> \
   [[nodiscard]] \
-  Style NAME(this Style&& self, PARAM_TYPE value, Args&&... args) noexcept { \
+  Style NAME(this Style&& self, Args&&... args) noexcept { \
     constexpr auto key = StylePropertyKey::NAME; \
     self.mStorage.insert_or_assign( \
-      key, StyleProperty<TYPE>(value, std::forward<Args>(args)...)); \
+      key, StyleProperty<TYPE>(std::forward<Args>(args)...)); \
     return std::move(self); \
   }
 #define FUI_DECLARE_PROPERTY_SETTERS(NAME, TYPE, SCOPE) \
-  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const TYPE&); \
-  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, const StaticTheme::Resource<TYPE>&); \
-  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE, std::nullopt_t) \
+  FUI_DECLARE_PROPERTY_SETTER(NAME, TYPE); \
   void Unset##NAME() noexcept { \
     mStorage.erase(StylePropertyKey::NAME); \
   }
@@ -99,8 +97,9 @@ struct Style final {
       .PREFIX##Right##SUFFIX(value.GetRight()) \
       .PREFIX##Bottom##SUFFIX(value.GetBottom()); \
   } \
+  template <std::convertible_to<StyleProperty<float>> U> \
   [[nodiscard]] \
-  Style PREFIX##SUFFIX(this Style&& self, const float value) { \
+  Style PREFIX##SUFFIX(this Style&& self, const U& value) { \
     return std::move(self) \
       .PREFIX##Left##SUFFIX(value) \
       .PREFIX##Top##SUFFIX(value) \

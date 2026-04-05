@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <variant>
 
-#include "StaticTheme/Resource.hpp"
+#include "StaticTheme/Theme.hpp"
 #include "SystemTheme.hpp"
 
 #ifdef FUI_ENABLE_SKIA
@@ -45,141 +45,149 @@ struct is_native_color_t<D2D1_COLOR_F> : std::true_type {};
 template <class T>
 concept native_color = detail::is_native_color_t<T>::value;
 
-class Color final {
-  using StaticThemeColor = const StaticTheme::Resource<Color>*;
-
+class ColorConstant final {
  public:
-  struct Constant final {
-    static constexpr Constant
-    FromRGBA128F(const float r, const float g, const float b, const float a) {
-      Constant ret {};
+  static constexpr ColorConstant
+  FromRGBA128F(const float r, const float g, const float b, const float a) {
+    ColorConstant ret {};
 #ifdef FUI_ENABLE_SKIA
-      ret.mSkia = SkColorSetARGB(
-        static_cast<uint8_t>(std::round(a * 255)),
-        static_cast<uint8_t>(std::round(r * 255)),
-        static_cast<uint8_t>(std::round(g * 255)),
-        static_cast<uint8_t>(std::round(b * 255)));
+    ret.mSkia = SkColorSetARGB(
+      static_cast<uint8_t>(std::round(a * 255)),
+      static_cast<uint8_t>(std::round(r * 255)),
+      static_cast<uint8_t>(std::round(g * 255)),
+      static_cast<uint8_t>(std::round(b * 255)));
 #else
-      const auto r8 = std::clamp<uint8_t>(std::roundl(r * 0xff), 0, 0xff);
-      const auto g8 = std::clamp<uint8_t>(std::roundl(g * 0xff), 0, 0xff);
-      const auto b8 = std::clamp<uint8_t>(std::roundl(b * 0xff), 0, 0xff);
-      const auto a8 = std::clamp<uint8_t>(std::roundl(a * 0xff), 0, 0xff);
-      ret.mBGRA32
-        = std::bit_cast<uint32_t>(std::array<uint8_t, 4> {b8, g8, r8, a8});
+    const auto r8 = std::clamp<uint8_t>(std::roundl(r * 0xff), 0, 0xff);
+    const auto g8 = std::clamp<uint8_t>(std::roundl(g * 0xff), 0, 0xff);
+    const auto b8 = std::clamp<uint8_t>(std::roundl(b * 0xff), 0, 0xff);
+    const auto a8 = std::clamp<uint8_t>(std::roundl(a * 0xff), 0, 0xff);
+    ret.mBGRA32
+      = std::bit_cast<uint32_t>(std::array<uint8_t, 4> {b8, g8, r8, a8});
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-      ret.mD2D = {r, g, b, a};
+    ret.mD2D = {r, g, b, a};
 #endif
-      return ret;
-    }
+    return ret;
+  }
 
-    static constexpr Constant FromRGBA32(
-      const uint8_t r,
-      const uint8_t g,
-      const uint8_t b,
-      const uint8_t a) {
-      Constant ret {};
+  static constexpr ColorConstant FromRGBA32(
+    const uint8_t r,
+    const uint8_t g,
+    const uint8_t b,
+    const uint8_t a) {
+    ColorConstant ret {};
 #ifdef FUI_ENABLE_SKIA
-      ret.mSkia = SkColorSetARGB(a, r, g, b);
+    ret.mSkia = SkColorSetARGB(a, r, g, b);
 #else
-      ret.mBGRA32
-        = std::bit_cast<uint32_t>(std::array<uint8_t, 4> {b, g, r, a});
+    ret.mBGRA32 = std::bit_cast<uint32_t>(std::array<uint8_t, 4> {b, g, r, a});
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-      ret.mD2D = {
-        .r = static_cast<float>(r) / 255.0f,
-        .g = static_cast<float>(g) / 255.0f,
-        .b = static_cast<float>(b) / 255.0f,
-        .a = static_cast<float>(a) / 255.0f,
-      };
+    ret.mD2D = {
+      .r = static_cast<float>(r) / 255.0f,
+      .g = static_cast<float>(g) / 255.0f,
+      .b = static_cast<float>(b) / 255.0f,
+      .a = static_cast<float>(a) / 255.0f,
+    };
 #endif
-      return ret;
-    }
+    return ret;
+  }
 
-    static constexpr Constant FromBGRA32(const uint32_t bgra) {
-      const auto [b, g, r, a] = std::bit_cast<std::array<uint8_t, 4>>(bgra);
-      return FromRGBA32(r, g, b, a);
-    }
+  static constexpr ColorConstant FromBGRA32(const uint32_t bgra) {
+    const auto [b, g, r, a] = std::bit_cast<std::array<uint8_t, 4>>(bgra);
+    return FromRGBA32(r, g, b, a);
+  }
 
-    static constexpr Constant FromRGBA32(const uint32_t rgba) {
-      const auto [r, g, b, a] = std::bit_cast<std::array<uint8_t, 4>>(rgba);
-      return FromRGBA32(r, g, b, a);
-    }
+  static constexpr ColorConstant FromRGBA32(const uint32_t rgba) {
+    const auto [r, g, b, a] = std::bit_cast<std::array<uint8_t, 4>>(rgba);
+    return FromRGBA32(r, g, b, a);
+  }
 
-    static constexpr Constant FromARGB32(
-      const uint8_t a,
-      const uint8_t r,
-      const uint8_t g,
-      const uint8_t b) {
-      return FromRGBA32(r, g, b, a);
-    }
+  static constexpr ColorConstant FromARGB32(
+    const uint8_t a,
+    const uint8_t r,
+    const uint8_t g,
+    const uint8_t b) {
+    return FromRGBA32(r, g, b, a);
+  }
 
-    constexpr std::tuple<float, float, float, float> GetRGBAFTuple()
-      const noexcept {
+  uint32_t ToBGRA32() const noexcept {
+#ifdef FUI_ENABLE_SKIA
+    return std::bit_cast<uint32_t>(mSkia);
+#else
+    return mBGRA32;
+#endif
+  }
+
+  constexpr std::tuple<float, float, float, float> GetRGBAFTuple()
+    const noexcept {
 #ifdef FUI_ENABLE_DIRECT2D
-      return std::tuple {mD2D.r, mD2D.g, mD2D.b, mD2D.a};
+    return std::tuple {mD2D.r, mD2D.g, mD2D.b, mD2D.a};
 #elifdef FUI_ENABLE_SKIA
-      return std::tuple {
-        SkColorGetR(mSkia) / 255.0f,
-        SkColorGetG(mSkia) / 255.0f,
-        SkColorGetB(mSkia) / 255.0f,
-        SkColorGetA(mSkia) / 255.0f,
-      };
+    return std::tuple {
+      SkColorGetR(mSkia) / 255.0f,
+      SkColorGetG(mSkia) / 255.0f,
+      SkColorGetB(mSkia) / 255.0f,
+      SkColorGetA(mSkia) / 255.0f,
+    };
 #endif
+  }
+
+  [[nodiscard]] constexpr ColorConstant WithAlphaMultipliedBy(
+    const float mult) const noexcept {
+    if (mult < std::numeric_limits<float>::epsilon()) {
+      return FromRGBA128F(0, 0, 0, 0);
+    }
+    if (mult > 1.f - std::numeric_limits<float>::epsilon()) {
+      return *this;
     }
 
-    [[nodiscard]] constexpr Constant WithAlphaMultipliedBy(
-      const float mult) const noexcept {
-      if (mult < std::numeric_limits<float>::epsilon()) {
-        return FromRGBA128F(0, 0, 0, 0);
-      }
-      if (mult > 1.f - std::numeric_limits<float>::epsilon()) {
-        return *this;
-      }
+    auto [r, g, b, a] = GetRGBAFTuple();
+    a = std::clamp(a * mult, 0.0f, 1.0f);
+    return FromRGBA128F(r, g, b, a);
+  }
 
-      auto [r, g, b, a] = GetRGBAFTuple();
-      a = std::clamp(a * mult, 0.0f, 1.0f);
-      return FromRGBA128F(r, g, b, a);
-    }
-
-    constexpr bool operator==(const Constant& other) const noexcept {
+  constexpr bool operator==(const ColorConstant& other) const noexcept {
 #ifdef FUI_ENABLE_SKIA
-      return mSkia == other.mSkia;
+    return mSkia == other.mSkia;
 #else
-      return mBGRA32 == other.mBGRA32;
+    return mBGRA32 == other.mBGRA32;
 #endif
-    }
+  }
 
-    template <native_color T>
-    constexpr T as() const noexcept {
+  template <native_color T>
+  constexpr T as() const noexcept {
 #ifdef FUI_ENABLE_SKIA
-      if constexpr (std::same_as<T, SkColor>) {
-        return mSkia;
-      }
+    if constexpr (std::same_as<T, SkColor>) {
+      return mSkia;
+    }
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-      if constexpr (std::same_as<T, D2D1_COLOR_F>) {
-        return mD2D;
-      }
-#endif
-      std::unreachable();
+    if constexpr (std::same_as<T, D2D1_COLOR_F>) {
+      return mD2D;
     }
+#endif
+    std::unreachable();
+  }
 
-   private:
+ private:
 #ifdef FUI_ENABLE_SKIA
-    SkColor mSkia {};
-    static_assert(std::endian::native == std::endian::little);
-    // Equivalently...
-    static_assert(SkColorSetARGB(0, 0xff, 0, 0) == 0x00ff0000);
+  SkColor mSkia {};
+  static_assert(std::endian::native == std::endian::little);
+  // Equivalently...
+  static_assert(SkColorSetARGB(0, 0xff, 0, 0) == 0x00ff0000);
 #else
-    // Used for optimizations, especially equality when the native type has
-    // floats, to avoid the need to do 'almost equal' checks for every component
-    uint32_t mBGRA32 {};
+  // Used for optimizations, especially equality when the native type has
+  // floats, to avoid the need to do 'almost equal' checks for every component
+  uint32_t mBGRA32 {};
 #endif
 #ifdef FUI_ENABLE_DIRECT2D
-    D2D1_COLOR_F mD2D {};
+  D2D1_COLOR_F mD2D {};
 #endif
-  };
+};
+
+class Color final {
+ public:
+  using Constant = ColorConstant;
   Color() = delete;
   constexpr Color(const Constant& color) : mVariant(color) {}
   constexpr Color(nullptr_t) = delete;
@@ -189,9 +197,17 @@ class Color final {
     return Resolve() == other.Resolve();
   }
 
-  template <StaticTheme::Theme TTheme>
-  constexpr Constant ResolveForStaticTheme() const {
-    return Resolve(TTheme);
+  [[nodiscard]]
+  constexpr Constant Resolve() const {
+    return std::visit(
+             felly::overload {
+               [](const Constant& v) -> Constant { return v; },
+               [](const SystemTheme::ColorType c) -> Constant {
+                 return SystemTheme::Resolve(c);
+               },
+             },
+             mVariant)
+      .WithAlphaMultipliedBy(mAlpha);
   }
 
   template <native_color T>
@@ -211,25 +227,8 @@ class Color final {
   }
 
  private:
-  std::variant<Color::Constant, StaticThemeColor, SystemTheme::ColorType>
-    mVariant;
+  std::variant<Constant, SystemTheme::ColorType> mVariant;
   float mAlpha {1.f};
-
-  constexpr Constant Resolve(
-    const StaticTheme::Theme theme = StaticTheme::GetCurrent()) const noexcept {
-    return std::visit(
-             felly::overload {
-               [](const Constant& v) -> Constant { return v; },
-               [theme](const StaticThemeColor c) -> Constant {
-                 return c->Resolve(theme)->Resolve();
-               },
-               [theme](const SystemTheme::ColorType c) -> Constant {
-                 return SystemTheme::Resolve(c).Resolve(theme);
-               },
-             },
-             mVariant)
-      .WithAlphaMultipliedBy(mAlpha);
-  }
 };
 
 }// namespace FredEmmott::GUI
