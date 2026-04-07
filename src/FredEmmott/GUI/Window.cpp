@@ -105,6 +105,16 @@ void Window::EndFrame() {
     }
   }
 
+  const auto styles
+    = mFUIRoot.GetImmediateRoot()
+        ->GetStructuralChildren()
+        .front()
+        ->GetComputedStyle();
+
+  StaticTheme::static_theme_detail::PushOverride(styles.WindowTheme());
+  const auto popTheme
+    = felly::scope_exit(&StaticTheme::static_theme_detail::PopOverride);
+
   this->Paint();
 }
 

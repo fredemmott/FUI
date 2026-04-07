@@ -3,6 +3,7 @@
 #pragma once
 
 namespace FredEmmott::GUI::StaticTheme {
+
 enum class Theme {
   Light,
   Dark,
@@ -10,5 +11,10 @@ enum class Theme {
 };
 
 Theme GetCurrent();
+
+namespace static_theme_detail {
+void PushOverride(std::optional<Theme>);
+void PopOverride();
+}// namespace static_theme_detail
 
 }// namespace FredEmmott::GUI::StaticTheme

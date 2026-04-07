@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/StaticTheme/Theme.hpp>
+#include <FredEmmott/GUI/StylePropertyTypes.hpp>
 #include <type_traits>
 
 #include "FredEmmott/GUI/StylePropertyTypes.hpp"
@@ -24,7 +26,9 @@ class StyleProperty;
   X(GUI::Overflow, Overflow) \
   X(GUI::PositionType, PositionType) \
   X(GUI::PointerEvents, PointerEvents) \
-  X(GUI::TextAlign, TextAlign)
+  X(GUI::TextAlign, TextAlign) \
+  X(GUI::StaticTheme::Theme, Theme) \
+  X(float, Float)
 
 /** Properties of the form `mPrefixSuffix`, `mPrefixEdgeSuffix`
  *
@@ -97,6 +101,7 @@ class StyleProperty;
   X(TranslateX, float, Self) \
   X(TranslateY, float, Self) \
   X(Width, float, Self) \
+  X(WindowTheme, GUI::StaticTheme::Theme, Self) \
   FUI_STYLE_EDGE_PROPERTIES(FUI_IMPL_EXPAND_EDGES, X) \
   FUI_STYLE_CORNER_PROPERTIES(FUI_IMPL_EXPAND_CORNERS, X)
 

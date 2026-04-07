@@ -84,6 +84,13 @@ class StyleProperty {
     return std::forward<U>(v);
   }
 
+  constexpr operator std::optional<T>() const {
+    if (has_value()) {
+      return value();
+    }
+    return std::nullopt;
+  }
+
   template <class U>
   StyleProperty(
     U&& u,

@@ -7,6 +7,7 @@
 #include <windows.ui.viewmanagement.h>
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
+#include <stack>
 
 #include "Color.hpp"
 #include "SystemSettings.hpp"
@@ -18,16 +19,16 @@ using namespace FredEmmott::GUI::win32_detail;
 namespace FredEmmott::GUI::StaticTheme {
 namespace {
 
-std::optional<Theme> gThemeKind;
+thread_local std::optional<Theme> gSystemTheme;
+thread_local std::stack<std::optional<Theme>> gOverrideStack;
 
-}// namespace
-
-Theme GetCurrent() {
-  if (gThemeKind) {
-    return gThemeKind.value();
+[[nodiscard]]
+Theme GetSystemTheme() {
+  if (gSystemTheme) {
+    return *gSystemTheme;
   }
 
-  gThemeKind = []() {
+  gSystemTheme = []() {
     using enum Theme;
 
     if (SystemSettings::Get().GetHighContrast()) {
@@ -46,15 +47,38 @@ Theme GetCurrent() {
     return isForegroundLight ? Dark : Light;
   }();
 
-  return gThemeKind.value();
+  return gSystemTheme.value();
+}
+
+}// namespace
+
+namespace static_theme_detail {
+void PushOverride(const std::optional<Theme> theme) {
+  gOverrideStack.push(theme);
+}
+
+void PopOverride() {
+  gOverrideStack.pop();
+}
+
+}// namespace static_theme_detail
+
+Theme GetCurrent() {
+  const auto configuredTheme
+    = gOverrideStack.empty() ? gSystemTheme : gOverrideStack.top();
+  if (configuredTheme) {
+    return *configuredTheme;
+  }
+  return GetSystemTheme();
 }
 
 void Refresh() {
-  gThemeKind = std::nullopt;
-  SystemTheme::Refresh();
-
+  gSystemTheme = std::nullopt;
   // Re-populate gThemeKind
-  (void)GetCurrent();
+  std::ignore = GetSystemTheme();
+
+  // Load specific colors
+  SystemTheme::Refresh();
 }
 
 }// namespace FredEmmott::GUI::StaticTheme
