@@ -42,6 +42,7 @@ const {TYPE}& Theme::Get{NAME}() {{
 #include <FredEmmott/GUI/Brush.hpp>
 #include <FredEmmott/GUI/Color.hpp>
 #include <FredEmmott/GUI/SystemTheme.hpp>
+#include <FredEmmott/GUI/StaticTheme/detail/StaticThemedAcrylicBrush.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp>
 #include <FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp>
 

@@ -80,6 +80,7 @@ add_library(
   FredEmmott/GUI/StaticTheme/Theme.hpp
   FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp
   FredEmmott/GUI/StaticTheme/detail/ResourceSupertype.hpp
+  FredEmmott/GUI/StaticTheme/detail/StaticThemedAcrylicBrush.hpp
   FredEmmott/GUI/StaticTheme/detail/StaticThemedLinearGradientBrush.hpp
   FredEmmott/GUI/StaticTheme/detail/Button.handwritten.cpp
   FredEmmott/GUI/StaticTheme/detail/Button.handwritten.hpp
