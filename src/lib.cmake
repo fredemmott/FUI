@@ -112,6 +112,8 @@ add_library(
   FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
   FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
+  FredEmmott/GUI/Widgets/AppBarButton.cpp
+  FredEmmott/GUI/Widgets/AppBarButton.hpp
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
   FredEmmott/GUI/Widgets/CheckBox.cpp FredEmmott/GUI/Widgets/CheckBox.hpp

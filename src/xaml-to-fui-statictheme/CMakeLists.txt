@@ -182,6 +182,7 @@ add_winui3_component_theme(
 
 set(
   DERIVED_FROM_COMMON
+  AppBarButton
   CheckBox
   ContentDialog
   HyperlinkButton
