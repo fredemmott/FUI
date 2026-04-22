@@ -7,6 +7,8 @@
 #include <map>
 #include <print>
 
+#include "FredEmmott/GUI/Widgets/AppBarButton.hpp"
+
 constexpr auto LoremIpsum
   = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
     "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
@@ -89,6 +91,7 @@ static void demo_display() {
 void demo_buttons() {
   const auto scroll = fuii::BeginVScrollView().Scoped();
   const auto page = BeginDemoPage().Scoped();
+
   const auto card = BeginDemoCard().Scoped();
 
   if (fuii::Button("Button()")) {
@@ -104,6 +107,18 @@ void demo_buttons() {
 
   if (fuii::HyperlinkButton("HyperlinkButton()")) {
     std::println(stderr, "HyperlinkButton clicked");
+  }
+
+  {
+    const auto w
+      = fuii::immediate_detail::ChildlessWidget<fui::Widgets::AppBarButton>(
+        fuii::ID {std::source_location::current()});
+    w->SetLabel("Label");
+    w->SetGlyph("\ue701");
+    if (w->ConsumeWasActivated()) {
+      std::println(stderr, "AppBarButton clicked");
+    }
+    fuii::ButtonResult(w).Caption("AppBarButton");
   }
 }
 
