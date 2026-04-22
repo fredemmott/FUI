@@ -60,6 +60,10 @@ struct Edges {
     return mLeft;
   }
 
+  constexpr Edges operator-() const noexcept {
+    return {-mTop, -mRight, -mBottom, -mLeft};
+  }
+
   constexpr bool operator==(const Edges&) const noexcept = default;
 
  private:

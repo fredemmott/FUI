@@ -45,7 +45,15 @@ FocusManager::GetFocusedWidget() const {
 
 bool FocusManager::IsWidgetFocused(const Widgets::Widget* const widget) const {
   FUI_ASSERT(widget);
-  return mFocusedWidget == widget;
+  if (!mFocusedWidget) {
+    return false;
+  }
+  const auto delegate = mFocusedWidget->GetFocusDelegate();
+  FUI_ASSERT(
+    delegate,
+    "Widgets that implement IFocusable must return a non-null pointer from "
+    "GetFocusDelegate(), e.g. `this`");
+  return delegate == widget;
 }
 
 void FocusManager::GiveImplicitFocus(Widgets::Widget* widget) {

@@ -248,6 +248,11 @@ class Widget {
   void EnsureVisible();
   virtual void EnsureVisible(const Rect&);
 
+  [[nodiscard]]
+  virtual const Widget* GetFocusDelegate() const noexcept {
+    return this;
+  }
+
  protected:
   enum class StateFlags {
     Default = 0,
