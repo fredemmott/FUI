@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#include <FredEmmott/GUI/Immediate/AppBarButton.hpp>
 #include <FredEmmott/GUI/Immediate/Button.hpp>
 #include <FredEmmott/GUI/Immediate/Card.hpp>
 #include <FredEmmott/GUI/Immediate/CheckBox.hpp>

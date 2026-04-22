@@ -19,7 +19,10 @@ add_library(
   FredEmmott/GUI/FrameRateRequirement.hpp
   FredEmmott/GUI/IconProvider.cpp
   FredEmmott/GUI/IconProvider.hpp
-  FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
+  FredEmmott/GUI/Immediate/AppBarButton.cpp
+  FredEmmott/GUI/Immediate/AppBarButton.hpp
+  FredEmmott/GUI/Immediate/Button.cpp
+  FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
   FredEmmott/GUI/Immediate/CheckBox.cpp FredEmmott/GUI/Immediate/CheckBox.hpp
   FredEmmott/GUI/Immediate/ComboBox.cpp FredEmmott/GUI/Immediate/ComboBox.hpp

@@ -9,8 +9,6 @@
 #include <FredEmmott/GUI/detail/immediate/ToolTipResultMixin.hpp>
 #include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
-#include "Label.hpp"
-
 namespace FredEmmott::GUI::Immediate::immediate_detail {
 
 struct ButtonResultMixin : CaptionResultMixin {

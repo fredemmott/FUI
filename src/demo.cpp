@@ -109,16 +109,13 @@ void demo_buttons() {
     std::println(stderr, "HyperlinkButton clicked");
   }
 
-  {
-    const auto w
-      = fuii::immediate_detail::ChildlessWidget<fui::Widgets::AppBarButton>(
-        fuii::ID {std::source_location::current()});
-    w->SetLabel("Label");
-    w->SetGlyph("\ue701");
-    if (w->ConsumeWasActivated()) {
-      std::println(stderr, "AppBarButton clicked");
-    }
-    fuii::ButtonResult(w).Caption("AppBarButton");
+  // AppBarButton can't typically be captioned, so we reproduce the normal
+  // 'attach to widget' style here
+  fuii::TextBlock("AppBarButton")
+    .Caption()
+    .Styled(fui::Style().MarginBottom(-4));
+  if (fuii::AppBarButton("\ue701", "Label")) {
+    std::println(stderr, "AppBarButton clicked");
   }
 }
 
