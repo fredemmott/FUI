@@ -5,11 +5,14 @@
 
 #include <Yoga.h>
 
+#include <cmath>
 #include <mutex>
 #include <optional>
 
 #include "assert.hpp"
+#ifdef _WIN32
 #include "detail/win32_detail/UIANode.hpp"
+#endif
 
 namespace FredEmmott::GUI {
 YGConfig* GetYogaConfig() {

@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+// Win32-only 
+#ifdef _WIN32
+
 #include <FredEmmott/GUI/SwapChain.hpp>
 
 #include "Widget.hpp"
@@ -50,3 +53,5 @@ class SwapChainPanel final : public Widget {
 };
 
 }// namespace FredEmmott::GUI::Widgets
+
+#endif// _WIN32

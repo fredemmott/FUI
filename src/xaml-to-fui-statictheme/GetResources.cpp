@@ -4,6 +4,7 @@
 
 #include <tinyxml.h>
 
+#include <algorithm>
 #include <print>
 #include <ranges>
 

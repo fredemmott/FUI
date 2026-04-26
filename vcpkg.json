@@ -2,7 +2,6 @@
   "name": "fredemmott-gui",
   "version-string": "main",
   "license": "MIT",
-  "supports": "windows",
   "dependencies": [
     "boost-container",
     "felly",
@@ -19,18 +18,30 @@
     {
       "name": "pkgconf"
     },
-    "wil",
+    {
+      "name": "wil",
+      "platform": "windows"
+    },
+    {
+      "name": "sdl3",
+      "platform": "!windows",
+      "features": [ "vulkan" ]
+    },
     {
       "name": "yoga",
       "version>=": "3.2.1"
     }
   ],
   "default-features": [
-    "direct2d"
+    {
+      "name": "direct2d",
+      "platform": "windows"
+    }
   ],
   "features": {
     "direct2d": {
-      "description": "Enable support for Direct2D+DirectWrite+D3D11"
+      "description": "Enable support for Direct2D+DirectWrite+D3D11",
+      "supports": "windows"
     },
     "icu": {
       "description": "Use the ICU library; on Windows, increases the binary size but reduces the minimum version",
@@ -38,14 +49,29 @@
     },
     "skia": {
       "description": "Enable support for Skia",
-      "supports": "static",
+      "supports": "(windows & static) | !windows",
       "dependencies": [
         "icu",
         {
           "name": "skia",
           "default-features": false,
           "features": [
-            "direct3d",
+            {
+              "name": "direct3d",
+              "platform": "windows"
+            },
+            {
+              "name": "vulkan",
+              "platform": "!windows"
+            },
+            {
+              "name": "fontconfig",
+              "platform": "!windows"
+            },
+            {
+              "name": "freetype",
+              "platform": "!windows"
+            },
             "harfbuzz",
             "icu"
           ]

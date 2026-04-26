@@ -90,6 +90,57 @@
         "ENABLE_IMPLICIT_BACKENDS": "OFF",
         "ENABLE_SKIA": "ON"
       }
+    },
+    {
+      "name": "linux-default",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux",
+        "CMAKE_TOOLCHAIN_FILE": "third-party/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_C_COMPILER": "gcc-14",
+        "CMAKE_CXX_COMPILER": "g++-14",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_SCAN_FOR_MODULES": "OFF",
+        "CMAKE_BUILD_WITH_INSTALL_RPATH": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "Linux - Debug",
+      "inherits": "linux-default",
+      "description": "Debug Linux build: no rendering backend, just validates that the core library + headers parse and link on Linux.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_DEVELOPER_OPTIONS": "OFF"
+      }
+    },
+    {
+      "name": "Linux - Skia - Debug",
+      "inherits": "linux-default",
+      "description": "Linux build with Skia.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_SKIA": "ON",
+        "ENABLE_DEVELOPER_OPTIONS": "OFF"
+      }
+    },
+    {
+      "name": "Linux - Skia - Release",
+      "inherits": "linux-default",
+      "description": "Linux release build with Skia.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_IMPLICIT_BACKENDS": "OFF",
+        "ENABLE_SKIA": "ON",
+        "ENABLE_DEVELOPER_OPTIONS": "OFF"
+      }
     }
   ]
 }

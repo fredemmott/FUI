@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include <chrono>
 #include <expected>
@@ -29,10 +31,17 @@ class Window {
     virtual Renderer* GetRenderer() noexcept = 0;
   };
   struct NativeHandle {
+#ifdef _WIN32
     HWND mValue {};
     constexpr operator HWND() const noexcept {
       return mValue;
     }
+#else
+    // Platform-opaque placeholder. Linux backends will stash their
+    // native surface pointer here (SDL_Window*, wl_surface*, Window
+    // xid bit-cast, etc.) depending on what LinuxWindow picks.
+    void* mValue {};
+#endif
 
     constexpr operator bool() const noexcept {
       return mValue != nullptr;

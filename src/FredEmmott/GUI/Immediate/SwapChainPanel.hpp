@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#ifdef _WIN32
+
 #include <FredEmmott/GUI/Widgets/SwapChainPanel.hpp>
 
 #include "FredEmmott/GUI/detail/immediate/CaptionResultMixin.hpp"
@@ -63,3 +65,5 @@ inline SwapChainPanelResult SwapChainPanel(
 }
 
 }// namespace FredEmmott::GUI::Immediate
+
+#endif// _WIN32

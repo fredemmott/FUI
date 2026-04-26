@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+// See SwapChain.hpp
+#ifdef _WIN32
+
 #include <FredEmmott/GUI/config.hpp>
 #include <array>
 #include <atomic>
@@ -59,3 +62,5 @@ struct SwapChain::Resources final {
 };
 
 }// namespace FredEmmott::GUI
+
+#endif// _WIN32

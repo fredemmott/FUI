@@ -224,7 +224,18 @@ set(
   FredEmmott/GUI/SkiaRenderer.cpp FredEmmott/GUI/SkiaRenderer.hpp
   FredEmmott/GUI/SystemFont_Skia.cpp
   FredEmmott/GUI/Widgets/TextBlock_Skia.cpp
-  FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
+)
+# Skia sources that are platform-specific — one of these pairs is selected
+# based on WIN32.
+set(
+  SKIA_WIN32_SOURCES
+  FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.cpp
+  FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
+)
+set(
+  SKIA_LINUX_SOURCES
+  FredEmmott/GUI/Linux/LinuxSkiaVulkanWindow.cpp
+  FredEmmott/GUI/Linux/LinuxSkiaVulkanWindow.hpp
 )
 set(
   DIRECT2D_SOURCES
@@ -236,6 +247,89 @@ set(
   FredEmmott/GUI/Brush_Direct2D.cpp
   FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
 )
+
+# Files in the fredemmott-gui SOURCES list above that are only built on
+# Windows. 
+set(
+  WIN32_ONLY_SOURCES
+  # System*.cpp / IconProvider.cpp / StaticTheme.cpp / Font.cpp currently
+  # have Win32-only bodies (SPI_*, GetSysColor, wil::com_ptr<IUISettings3>,
+  # ExtractIconW, win32_detail::CheckHResult).
+  FredEmmott/GUI/Font.cpp
+  FredEmmott/GUI/IconProvider.cpp
+  FredEmmott/GUI/StaticTheme.cpp
+  FredEmmott/GUI/SystemSettings.cpp
+  FredEmmott/GUI/SystemTheme.cpp
+  # NumberBox.cpp assumes sizeof(wchar_t) == sizeof(UChar) (i.e., 16 bit).
+  # True on MSVC/Win32, false on Linux (wchar_t is 32-bit). Proper fix:
+  # switch to std::u16string / char16_t for ICU interop. 
+  FredEmmott/GUI/Immediate/NumberBox.cpp
+  # TextBox.cpp is ~781 lines built around the Win32 TSF IME stack
+  # (TSFTextStore, CheckHResult, etc.). Gating inline would be
+  # invasive; a Linux IME impl using SDL3 text-input events.
+  # Only the .cpp is excluded; the header stays visible so cross-platform
+  # widgets that reference TextBox types still compile.
+  FredEmmott/GUI/Widgets/TextBox.cpp
+  # SwapChain / GPUTexture / SwapChainPanel — Win32-shared-HANDLE IPC;
+  # Linux replacement uses dmabuf-fd in the §3.3 architectural pass.
+  FredEmmott/GUI/SwapChain.cpp
+  FredEmmott/GUI/SwapChain.hpp
+  FredEmmott/GUI/SwapChain_Resources.hpp
+  FredEmmott/GUI/Immediate/GPUTexture.cpp
+  FredEmmott/GUI/Immediate/GPUTexture.hpp
+  FredEmmott/GUI/Immediate/SwapChainPanel.hpp
+  FredEmmott/GUI/Widgets/GPUTexture.cpp
+  FredEmmott/GUI/Widgets/GPUTexture.hpp
+  FredEmmott/GUI/Widgets/SwapChainPanel.cpp
+  FredEmmott/GUI/Widgets/SwapChainPanel.hpp
+  # Windowing / compositor backdrops — Win32-only by nature.
+  FredEmmott/GUI/Windows/AcrylicController.cpp
+  FredEmmott/GUI/Windows/AcrylicController.hpp
+  FredEmmott/GUI/Windows/DirectCompositionController.cpp
+  FredEmmott/GUI/Windows/DirectCompositionController.hpp
+  FredEmmott/GUI/Windows/MicaController.cpp
+  FredEmmott/GUI/Windows/MicaController.hpp
+  FredEmmott/GUI/Windows/Win32Window.cpp
+  FredEmmott/GUI/Windows/Win32Window.hpp
+  # HRESULT / IME (TSF) / UI Automation helpers — all Win32.
+  FredEmmott/GUI/detail/win32_detail.cpp
+  FredEmmott/GUI/detail/win32_detail.hpp
+  FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
+  FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.cpp
+  FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp
+  FredEmmott/GUI/detail/win32_detail/TSFTextStore.cpp
+  FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp
+  FredEmmott/GUI/detail/win32_detail/UIANode.cpp
+  FredEmmott/GUI/detail/win32_detail/UIANode.hpp
+  FredEmmott/GUI/detail/win32_detail/UIARoot.cpp
+  FredEmmott/GUI/detail/win32_detail/UIARoot.hpp
+)
+
+# Linux replacements for the Win32-only bodies above. 
+set(
+  LINUX_ONLY_SOURCES
+  FredEmmott/GUI/Linux/Font.cpp
+  FredEmmott/GUI/Linux/IconProvider.cpp
+  FredEmmott/GUI/Linux/LinuxWindow.cpp
+  FredEmmott/GUI/Linux/LinuxWindow.hpp
+  FredEmmott/GUI/Linux/NumberBox.cpp
+  FredEmmott/GUI/Linux/StaticTheme.cpp
+  FredEmmott/GUI/Linux/SystemSettings.cpp
+  FredEmmott/GUI/Linux/SystemTheme.cpp
+  FredEmmott/GUI/Linux/TextBox.cpp
+)
+
+if (NOT WIN32)
+  get_target_property(_FUI_CURRENT_SOURCES fredemmott-gui SOURCES)
+  list(REMOVE_ITEM _FUI_CURRENT_SOURCES ${WIN32_ONLY_SOURCES})
+  set_target_properties(fredemmott-gui PROPERTIES SOURCES "${_FUI_CURRENT_SOURCES}")
+  unset(_FUI_CURRENT_SOURCES)
+  target_sources(fredemmott-gui PRIVATE ${LINUX_ONLY_SOURCES})
+
+  # SDL3 powers windowing / input / clipboard on Linux. 
+  find_package(SDL3 CONFIG REQUIRED)
+  target_link_libraries(fredemmott-gui PUBLIC SDL3::SDL3)
+endif ()
 
 find_package(Boost CONFIG REQUIRED COMPONENTS container)
 find_package(yoga CONFIG REQUIRED)
@@ -275,6 +369,16 @@ target_compile_features(
 if (ENABLE_SKIA)
   include(skia)
   target_sources(fredemmott-gui PRIVATE ${SKIA_SOURCES})
+  if (WIN32)
+    target_sources(fredemmott-gui PRIVATE ${SKIA_WIN32_SOURCES})
+  else ()
+    target_sources(fredemmott-gui PRIVATE ${SKIA_LINUX_SOURCES})
+    # LinuxSkiaVulkanWindow calls the Vulkan loader directly; Skia already
+    # uses vulkan-headers but vkCreateInstance & friends live
+    # in libvulkan. 
+    find_package(Vulkan REQUIRED)
+    target_link_libraries(fredemmott-gui PUBLIC Vulkan::Vulkan)
+  endif ()
   target_link_libraries(
     fredemmott-gui
     PUBLIC
@@ -305,10 +409,12 @@ elseif (WIN32)
   list(APPEND WINDOWS_SDK_LIBRARIES icuuc icuin)
 endif ()
 
-foreach (NAME IN LISTS WINDOWS_SDK_LIBRARIES)
-  find_library("${NAME}_PATH" "${NAME}" REQUIRED)
-  target_link_libraries(fredemmott-gui PRIVATE "${${NAME}_PATH}")
-endforeach ()
+if (WIN32)
+  foreach (NAME IN LISTS WINDOWS_SDK_LIBRARIES)
+    find_library("${NAME}_PATH" "${NAME}" REQUIRED)
+    target_link_libraries(fredemmott-gui PRIVATE "${${NAME}_PATH}")
+  endforeach ()
+endif ()
 
 get_target_property(HEADERS fredemmott-gui SOURCES)
 list(FILTER HEADERS INCLUDE REGEX "\\.hpp$")
@@ -317,7 +423,12 @@ if (ENABLE_DEVELOPER_OPTIONS)
   # Explicit listing is needed for CMake to fully work correctly - but we can at least do a safety check
   file(GLOB_RECURSE GLOBBED_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "FredEmmott/*.hpp")
   foreach (HEADER IN LISTS GLOBBED_HEADERS)
-    if (NOT HEADER IN_LIST HEADERS AND NOT HEADER IN_LIST SKIA_SOURCES AND NOT HEADER IN_LIST DIRECT2D_SOURCES)
+    if (
+      NOT HEADER IN_LIST HEADERS
+      AND NOT HEADER IN_LIST SKIA_SOURCES
+      AND NOT HEADER IN_LIST DIRECT2D_SOURCES
+      AND NOT HEADER IN_LIST WIN32_ONLY_SOURCES
+    )
       message(FATAL_ERROR "Header '${HEADER}' must be explicitly added to ${CMAKE_CURRENT_LIST_FILE}")
     endif ()
   endforeach ()

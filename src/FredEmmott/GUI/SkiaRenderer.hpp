@@ -7,9 +7,9 @@
 #include <FredEmmott/GUI/config.hpp>
 
 #include "Renderer.hpp"
-#include "Windows/Win32Direct3D12GaneshWindow.hpp"
 
 #ifdef _WIN32
+#include "Windows/Win32Direct3D12GaneshWindow.hpp"
 struct ID3D12Device;
 #endif
 
@@ -24,11 +24,14 @@ class SkiaRenderer final : public Renderer {
       uint64_t mActual {};
       uint64_t mNominal {};
     };
-#ifdef _WIN32
+    // DPI + GrDirectContext are platform-neutral; GetPhysicalLength() below
+    // reads them on both Windows and Linux. Only the D3D12 handles are
+    // Win32-only.
     DPI mDPI {};
+    GrDirectContext* mSkiaContext {nullptr};
+#ifdef _WIN32
     ID3D12Device* mD3DDevice {nullptr};
     ID3D12CommandQueue* mD3DCommandQueue {nullptr};
-    GrDirectContext* mSkiaContext {nullptr};
 #endif
   };
   SkiaRenderer() = delete;
@@ -98,6 +101,7 @@ class SkiaRenderer final : public Renderer {
     return mCanvas;
   }
 
+#ifdef _WIN32
   [[nodiscard]]
   std::unique_ptr<ImportedTexture> ImportTexture(
     ImportedTexture::HandleKind,
@@ -105,6 +109,7 @@ class SkiaRenderer final : public Renderer {
 
   [[nodiscard]]
   std::unique_ptr<ImportedFence> ImportFence(HANDLE) const override;
+#endif
 
   void DrawTexture(
     const Rect& sourceRect,

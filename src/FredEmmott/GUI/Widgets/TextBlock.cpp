@@ -3,7 +3,9 @@
 
 #include "TextBlock.hpp"
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <Yoga.h>
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
@@ -60,7 +62,11 @@ void TextBlock::UpdateTextLayout(const DirtyFlags flags) {
   }
 #endif
   if constexpr (Config::Debug) {
+#ifdef _WIN32
     __debugbreak();
+#else
+    __builtin_trap();
+#endif
   }
   std::unreachable();
 }
@@ -155,7 +161,11 @@ YGSize TextBlock::Measure(
   }
 #endif
   if constexpr (Config::Debug) {
+#ifdef _WIN32
     __debugbreak();
+#else
+    __builtin_trap();
+#endif
   }
   return {YGUndefined, YGUndefined};
 }

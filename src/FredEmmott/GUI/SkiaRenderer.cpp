@@ -5,6 +5,9 @@
 
 #include <skia/core/SkImage.h>
 #include <skia/core/SkRRect.h>
+#include <skia/gpu/ganesh/GrBackendSemaphore.h>
+#include <skia/gpu/ganesh/GrBackendSurface.h>
+#include <skia/gpu/ganesh/SkImageGanesh.h>
 
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
 
@@ -13,9 +16,6 @@
 
 #ifdef _WIN32
 #include <d3d12.h>
-#include <skia/gpu/ganesh/GrBackendSemaphore.h>
-#include <skia/gpu/ganesh/GrBackendSurface.h>
-#include <skia/gpu/ganesh/SkImageGanesh.h>
 #include <skia/gpu/ganesh/d3d/GrD3DTypes.h>
 #include <wil/com.h>
 
@@ -379,6 +379,7 @@ void SkiaRenderer::DrawText(
     SkString {text}, baseline.mX, baseline.mY, font.as<SkFont>(), paint);
 }
 
+#ifdef _WIN32
 std::unique_ptr<ImportedTexture> SkiaRenderer::ImportTexture(
   [[maybe_unused]] const ImportedTexture::HandleKind kind,
   HANDLE const handle) const {
@@ -449,6 +450,7 @@ std::unique_ptr<ImportedFence> SkiaRenderer::ImportFence(
     handle, IID_PPV_ARGS(&ret->mSkiaFence.fFence)));
   return std::move(ret);
 }
+#endif// _WIN32
 
 void SkiaRenderer::DrawTexture(
   const Rect& sourceRect,
@@ -468,14 +470,17 @@ void SkiaRenderer::DrawTexture(
   FUI_ASSERT(skiaImage);
   if (rawFence) {
     FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
+#ifdef _WIN32
+    // Linux's Vulkan equivalent goes through VK_EXT_external_semaphore_fd 
     const auto fence = &IMPL_CAST<ImportedSkiaFence*>(rawFence)->mSkiaFence;
     FUI_ASSERT(fence);
-
-#ifdef _WIN32
     fence->fValue = fenceValue;
     GrBackendSemaphore semaphore;
     semaphore.initDirect3D(*fence);
     mNativeDevice.mSkiaContext->wait(1, &semaphore, false);
+#else
+    (void)rawFence;
+    (void)fenceValue;
 #endif
   }
 

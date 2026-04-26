@@ -6,6 +6,7 @@
 
 #include <FredEmmott/utility/drop_last_t.hpp>
 #include <FredEmmott/utility/unordered_map.hpp>
+#include <list>
 #include <unordered_set>
 
 #include "Brush.hpp"
@@ -151,11 +152,26 @@ struct Style final {
   std::list<std::tuple<Selector, Style>> mAnd;
   utility::unordered_map<Selector, Style> mDescendants;
 
+  // On libstdc++-14 the defaulted std::list special members are not yet
+  // marked constexpr, so the whole Style special-member-set can't be
+  // either. MSVC's STL is ahead of the standard library spec here.
+  // Style contains heap-allocating members (std::list, unordered_map) so
+  // it is never actually constant-evaluated in practice — the constexpr
+  // markers are aspirational. Drop them on non-Windows until libstdc++
+  // catches up.
+#ifdef _WIN32
   constexpr Style() = default;
   constexpr Style(const Style& other) noexcept = default;
   constexpr Style(Style&& other) noexcept = default;
   constexpr Style& operator=(const Style& other) noexcept = default;
   constexpr Style& operator=(Style&& other) noexcept = default;
+#else
+  Style() = default;
+  Style(const Style& other) noexcept = default;
+  Style(Style&& other) noexcept = default;
+  Style& operator=(const Style& other) noexcept = default;
+  Style& operator=(Style&& other) noexcept = default;
+#endif
 
   [[nodiscard]] Style InheritableValues() const noexcept;
   [[nodiscard]]

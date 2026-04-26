@@ -369,11 +369,13 @@ static void demo_about() {
     "Windows"
 #endif
   );
+#ifdef _WIN32
   fuii::Label("_WIN32_WINNT: {:#010X}", _WIN32_WINNT);
   fuii::Label("NTDDI_VERSION: {:#010X}", NTDDI_VERSION);
+#endif
 }
 
-static void AppTick(fui::Window&) {
+void AppTick(fui::Window&) {
   fuii::WindowTitle("FUI Demo");
   std::ignore = fuii::WindowSubtitle("I like turtles");
 
@@ -453,6 +455,7 @@ static void AppTick(fui::Window&) {
   }
 }
 
+#ifdef _WIN32
 int WINAPI wWinMain(
   const HINSTANCE hInstance,
   const HINSTANCE hPrevInstance,
@@ -471,3 +474,7 @@ int WINAPI wWinMain(
       .mAllowModernTitleBar = true,
     });
 }
+#endif
+// Linux demo entry point lives in demo_linux.cpp so that demo.cpp
+// stays cross-platform: Windows gets wWinMain above; Linux gets plain
+// main() out of the sibling translation unit.

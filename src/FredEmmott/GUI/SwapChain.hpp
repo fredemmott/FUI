@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+// SwapChain today is built on Win32 shared-HANDLE texture/fence IPC.
+// The Linux replacement uses dmabuf-fd + VK_EXT_external_semaphore_fd
+// Header wrapped so that transitive includes (e.g. via 
+// FredEmmott/GUI.hpp) stay parseable on Linux, while the class itself
+// is unavailable there.
+#ifdef _WIN32
+
 #include <memory>
 
 #include "Renderer.hpp"
@@ -56,3 +63,5 @@ class SwapChain final {
 };
 
 }// namespace FredEmmott::GUI
+
+#endif// _WIN32

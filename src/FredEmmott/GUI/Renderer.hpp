@@ -175,16 +175,25 @@ class Renderer {
     std::string_view text,
     const Point& baseline) = 0;
 
+#ifdef _WIN32
+  // Win32-shared-handle import path. Linux will get a parallel
+  // `ImportTexture(..., int dmabuf_fd, ...)` / `ImportFence(int fd)`
+  // pair, using VK_EXT_external_memory_fd
+  // + VK_EXT_external_semaphore_fd. The Linux Vulkan renderer will
+  // provide those; cross-platform widgets (GPUTexture, SwapChainPanel)
+  // will dispatch via a new HandleKind variant.
   [[nodiscard]]
   virtual std::unique_ptr<ImportedTexture> ImportTexture(
     ImportedTexture::HandleKind,
     HANDLE) const = 0;
+
+  [[nodiscard]]
+  virtual std::unique_ptr<ImportedFence> ImportFence(HANDLE) const = 0;
+#endif
   [[nodiscard]]
   virtual std::unique_ptr<ImportedTexture> ImportSoftwareBitmap(
     const SoftwareBitmap& bitmap) const = 0;
 
-  [[nodiscard]]
-  virtual std::unique_ptr<ImportedFence> ImportFence(HANDLE) const = 0;
 
   virtual void DrawTexture(
     const Rect& sourceRect,

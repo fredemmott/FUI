@@ -2,35 +2,77 @@
 // SPDX-License-Identifier: MIT
 
 #include <skia/core/SkFontMgr.h>
+
+#ifdef _WIN32
 #include <skia/ports/SkTypeface_win.h>
+#else
+#include <skia/ports/SkFontMgr_fontconfig.h>
+#include <skia/ports/SkFontScanner_FreeType.h>
+#endif
 
 #include "Font.hpp"
 #include "SystemFont.hpp"
+#include "assert.hpp"// FUI_DEBUGBREAK
 #include "detail/font_detail.hpp"
 #include "detail/system_font_detail.hpp"
+
+#include <array>
+#include <cstdio>
 
 using namespace FredEmmott::GUI::font_detail;
 using namespace FredEmmott::GUI::SystemFont;
 
 namespace FredEmmott::GUI::SystemFont {
 sk_sp<SkFontMgr> GetFontManager() noexcept {
+#ifdef _WIN32
   static const auto ret = SkFontMgr_New_DirectWrite();
+#else
+  // nullptr FcConfig → Skia creates a default; FreeType is the scanner
+  // that reads font metrics/shapes. SkFontMgr takes ownership of the
+  // FcConfig and SkFontScanner.
+  static const auto ret = SkFontMgr_New_FontConfig(
+    /*fc=*/nullptr, SkFontScanner_Make_FreeType());
+#endif
   return ret;
 }
 
 namespace {
 
-auto LoadTypeface(const SkFontStyle& style, auto name, auto... fallbacks) {
-  const auto ret = GetFontManager()->matchFamilyStyle(name, style);
-  if (ret) {
-    return ret;
+// Walk a list of family names and return the first one Skia's font manager
+// finds. If none match, log the names that were tried and try "Helvetica"
+// (commonly aliased to a real sans-serif by fontconfig on Linux). If even
+// Helvetica isn't there, fall back to Skia's legacy default typeface so we
+// always return *something* drawable rather than null — null typefaces
+// produced silent rendering bugs (Skia's internal fallback typeface
+// renders glyphs at unexpected widths, which then trips style-system
+// invariants).
+template <class... Names>
+sk_sp<SkTypeface> LoadTypeface(const SkFontStyle& style, Names... names) {
+  const std::array<const char*, sizeof...(Names)> arr {
+    static_cast<const char*>(names)...,
+  };
+  for (const char* const n : arr) {
+    if (auto t = GetFontManager()->matchFamilyStyle(n, style); t) {
+      return t;
+    }
   }
 
-  if constexpr (sizeof...(fallbacks) == 0) {
-    return ret;
-  } else {
-    return LoadTypeface(style, fallbacks...);
+  std::fprintf(stderr, "[FUI] Font lookup failed; tried");
+  for (const char* const n : arr) {
+    std::fprintf(stderr, " \"%s\"", n);
   }
+  std::fprintf(stderr, ". Falling back to \"Helvetica\".\n");
+
+  if (auto t = GetFontManager()->matchFamilyStyle("Helvetica", style); t) {
+    return t;
+  }
+
+  std::fprintf(
+    stderr,
+    "[FUI] \"Helvetica\" also unavailable; using Skia's legacy default "
+    "typeface. Text will render but layout invariants tied to specific "
+    "fonts (FontIcon, etc.) may misbehave.\n");
+  return GetFontManager()->legacyMakeTypeface(nullptr, style);
 }
 
 namespace FontStyle {
@@ -95,7 +137,7 @@ Font ResolveSkiaFont(const Usage usage) noexcept {
 #undef USAGE_CASE
   }
   if constexpr (Config::Debug) {
-    __debugbreak();
+    FUI_DEBUGBREAK();
   }
   std::unreachable();
 }
@@ -109,7 +151,7 @@ Font ResolveGlyphSkiaFont(const Usage usage) noexcept {
 #undef USAGE_CASE
   }
   if constexpr (Config::Debug) {
-    __debugbreak();
+    FUI_DEBUGBREAK();
   }
   std::unreachable();
 }

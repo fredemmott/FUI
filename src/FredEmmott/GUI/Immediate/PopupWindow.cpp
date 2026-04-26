@@ -7,7 +7,9 @@
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
+#ifdef _WIN32
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
+#endif
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 
 namespace FredEmmott::GUI::Immediate {
@@ -39,7 +41,13 @@ void PopParentContext() {
 }// namespace
 
 void BasicPopupWindowResultMixin::MakeModal(const bool modal) {
+#ifdef _WIN32
   static_cast<Win32Window*>(tWindow)->SetIsModal(modal);
+#else
+  // Linux: modal popups will be wired through the SDL3 / libdecor
+  // window layer.
+  (void)modal;
+#endif
 }
 
 BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
@@ -47,6 +55,15 @@ BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
 
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
+  if (!window) {
+    // Treat as immediately-closed: undo the widget push and report
+    // "not active" so callers' if-blocks skip the popup body.
+    // Mirrors the BeginFrame-failed cleanup below, but at the earlier
+    // pre-emplace_back stage where only BeginWidget needs unwinding.
+    EndWidget<PopupWindow>();
+    tStack.back().mNewSiblings.pop_back();
+    return false;
+  }
   window->SetParent(tWindow->GetNativeHandle());
   if (anchor && !window->GetNativeHandle()) {
     if (const auto ctx = anchor->GetContext<PopupAnchorContext>()) {

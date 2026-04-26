@@ -12,11 +12,13 @@ struct NativeWaitable {
 #ifdef _WIN32
   // HANDLE
   void* mHandle {nullptr};
+  using value_type = decltype(mHandle);
 #else
+  // POSIX file descriptor (eventfd / pipe / timerfd / socket).
   int mFD {-1};
+  using value_type = decltype(mFD);
 #endif
 
-  using value_type = decltype(mHandle);
   constexpr auto operator<=>(const NativeWaitable&) const = default;
 
   NativeWaitable() = delete;

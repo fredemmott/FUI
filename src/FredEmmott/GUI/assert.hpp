@@ -6,6 +6,15 @@
 #include <format>
 #include <source_location>
 
+#if defined(_MSC_VER)
+  #define FUI_DEBUGBREAK() __debugbreak()
+#elif defined(__GNUC__) || defined(__clang__)
+  #define FUI_DEBUGBREAK() __builtin_trap()
+#else
+  #include <cstdlib>
+  #define FUI_DEBUGBREAK() std::abort()
+#endif
+
 namespace FredEmmott::GUI {
 template <class... Args>
 [[noreturn]]

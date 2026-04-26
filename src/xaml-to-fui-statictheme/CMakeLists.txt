@@ -129,9 +129,11 @@ function(add_winui3_theme_file COMPONENT)
     "${TARGET}"
     PRIVATE
     fredemmott-gui-config
-    WIL::WIL
     yoga::yogacore
   )
+  if (WIN32)
+    target_link_libraries("${TARGET}" PRIVATE WIL::WIL)
+  endif ()
   if (ENABLE_SKIA)
     target_link_libraries("${TARGET}" PRIVATE skia)
   endif ()

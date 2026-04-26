@@ -1,7 +1,6 @@
 // Copyright 2024 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
-#include <Windows.h>
 #include <Yoga.h>
 #include <skia/core/SkFont.h>
 #include <skia/core/SkFontMgr.h>

@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+// GPUTexture today uses the Win32-shared-HANDLE ImportTexture path.
+// Header Win32-gated to keep FredEmmott/GUI.hpp (which pulls in the
+// immediate variant) parseable on Linux. 
+#ifdef _WIN32
+
 #include <FredEmmott/GUI/Renderer.hpp>
 #include <optional>
 
@@ -50,3 +55,5 @@ class GPUTexture final : public Widget {
 };
 
 }// namespace FredEmmott::GUI::Widgets
+
+#endif// _WIN32

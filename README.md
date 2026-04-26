@@ -48,6 +48,98 @@ The easiest way to meet these requirements is to:
 
 The original Windows 10 version is currently targeted, but this is just because it's the oldest version that happens to provide all the features this library current uses. For my current needs, I only care about *consumer x64* versions of Windows 10 that *Microsoft currently support for all consumers* outside of extended service plans; if things work under any non-consumer versions - including LTSC - this is a happy accident. Future versions of this library may require a newer version of Windows, including v0.x and v1.x versions of this library.
 
+### Additional Linux requirements
+
+GCC 14+ (libstdc++-14 provides `std::ranges::to`).
+
+The dependency lists below are long because most distros don't yet ship SDL3,
+so vcpkg builds it from source. SDL3's `x11`, `wayland`, and `ibus` features
+each need a handful of `*-devel`/`-dev` headers at SDL build time, and the
+autoconf/automake/libtool chain comes in via SDL3 → dbus → libsystemd →
+libxcrypt's autotools chain.
+
+**Ubuntu 24.04 (Debian-family):**
+
+```bash
+sudo apt install \
+  build-essential g++-14 git curl zip unzip tar pkg-config ninja-build cmake \
+  autoconf autoconf-archive automake libtool-bin libltdl-dev \
+  libicu-dev \
+  libx11-dev libxft-dev libxext-dev libxkbcommon-dev libxrandr-dev libxi-dev libxcursor-dev libxtst-dev \
+  libwayland-dev wayland-protocols libdecor-0-dev libegl1-mesa-dev \
+  libibus-1.0-dev \
+  libvulkan-dev vulkan-tools \
+  libfontconfig1-dev libfreetype-dev \
+  libharfbuzz-dev libdbus-1-dev \
+  python3
+```
+
+**Fedora 43 (Red Hat-family):**
+
+```bash
+sudo dnf install \
+  gcc gcc-c++ git curl zip unzip tar pkgconf-pkg-config ninja-build cmake \
+  autoconf autoconf-archive automake libtool \
+  libicu-devel \
+  libX11-devel libXft-devel libXext-devel libxkbcommon-devel libXrandr-devel libXi-devel libXcursor-devel libXtst-devel \
+  wayland-devel wayland-protocols-devel libdecor-devel mesa-libEGL-devel \
+  ibus-devel \
+  vulkan-loader-devel vulkan-tools \
+  fontconfig-devel freetype-devel \
+  harfbuzz-devel dbus-devel \
+  python3
+```
+
+**Arch Linux:**
+
+```bash
+sudo pacman -S --needed \
+  base-devel git curl zip unzip tar pkgconf ninja cmake \
+  autoconf autoconf-archive automake libtool \
+  icu \
+  libx11 libxft libxext libxkbcommon libxrandr libxi libxcursor libxtst \
+  wayland wayland-protocols libdecor mesa \
+  ibus \
+  vulkan-headers vulkan-icd-loader vulkan-tools \
+  fontconfig freetype2 \
+  harfbuzz dbus \
+  python
+```
+
+#### Segoe UI fonts (recommended)
+
+FUI's stock theme expects "Segoe UI Variable Text" / "Segoe Fluent Icons".
+Without those installed, the runtime falls back to "Helvetica" → Skia's
+internal default, which renders as generic sans-serif and lacks the icon
+glyphs (FontIcon characters render as empty boxes; Debug builds also trip
+a `FUI_ASSERT` because the missing-glyph width doesn't match the font
+size). Install Microsoft's Segoe UI family on Linux via a community
+repackage:
+
+```bash
+git clone https://github.com/mrbvrz/segoe-ui-linux
+cd segoe-ui-linux
+chmod +x install.sh
+./install.sh
+```
+
+Then `fc-cache -fv` if `install.sh` doesn't already do it. Verify with
+`fc-match "Segoe UI Variable Text"`.
+
+#### Building the demo
+
+The repo ships a `build.sh` wrapper that bootstraps vcpkg, configures a
+CMake preset, and builds in parallel. The build directory is derived
+from the preset name so different presets do not stomp each other.
+
+```bash
+./build.sh                          # default preset: "Linux - Skia - Debug"
+./build.sh "Linux - Skia - Debug"   # -> build-linux-skia/
+./build.sh "Linux - Skia - Release" # -> build-linux-skia-release/
+```
+
+The demo binary lands at `<build-dir>/src/fui-demo`.
+
 ## AI Usage
 
 I've used LLMS (primarily Gemini 3 Flash) for:

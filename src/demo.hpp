@@ -14,3 +14,5 @@ fuii::CardResult BeginDemoCard(
 #ifdef _WIN32
 void demo_win32();
 #endif
+
+void AppTick(fui::Window&);

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #include "WidgetFont.hpp"
 
+#include <utility>
+
 #include "Font.hpp"
 #include "SystemFont.hpp"
 #include "detail/font_detail.hpp"

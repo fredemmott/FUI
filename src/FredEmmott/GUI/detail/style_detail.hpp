@@ -5,6 +5,7 @@
 #include <FredEmmott/GUI/StaticTheme/Theme.hpp>
 #include <FredEmmott/GUI/StylePropertyTypes.hpp>
 #include <FredEmmott/GUI/WindowBackdrop.hpp>
+#include <functional>
 #include <type_traits>
 
 namespace FredEmmott::GUI {

@@ -38,7 +38,10 @@
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
 #include <string_view>
 
-#if __has_include(<FredEmmott/GUI/Windows/Win32Window.hpp>)
+// The header file is always present in the source tree, but its body
+// pulls in Windows SDK headers. Gate on _WIN32 so non-Windows consumers
+// of the public umbrella don't pull it.
+#if defined(_WIN32) && __has_include(<FredEmmott/GUI/Windows/Win32Window.hpp>)
 #include <FredEmmott/GUI/Windows/Win32Window.hpp>
 #endif
 

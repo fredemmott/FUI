@@ -3,7 +3,9 @@
 #include "NavigationView.hpp"
 
 #include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
+#ifdef _WIN32
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
+#endif
 #include "Label.hpp"
 #include "NavigationViewBackButton.hpp"
 #include "NavigationViewTogglePaneButton.hpp"
@@ -105,6 +107,7 @@ void NavigationView::IntegrateWithTitleBar() {
     return;
   }
 
+#ifdef _WIN32
   const auto window = static_cast<Win32Window*>(this->GetOwnerWindow());
   const auto titleBar = window->GetTitleBar();
   if (!titleBar) {
@@ -127,6 +130,11 @@ void NavigationView::IntegrateWithTitleBar() {
 
   titleBar->SetLeftWidgets({mBackButton, mTogglePaneButton});
   mPaneHeader->SetMutableStyles(Style().Display(Display::None));
+#else
+  // Linux: no custom-title-bar integration. Phase 2 (SDL3 windowing)
+  // will decide whether to use CSD via libdecor and wire the back-
+  // button / toggle-pane controls into that surface.
+#endif
 }
 
 }// namespace FredEmmott::GUI::Widgets

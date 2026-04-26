@@ -307,7 +307,11 @@ void ScrollBar::ScrollBarButtonDown(ButtonTickKind kind, const Point& point) {
       rangeV = mMaximum - mValue;
       break;
     default:
+#ifdef _WIN32
       __debugbreak();
+#else
+      __builtin_trap();
+#endif
       return;
   }
 

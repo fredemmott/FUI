@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include <chrono>
 #include <cinttypes>
@@ -63,7 +65,9 @@ class SystemSettings {
 
   [[nodiscard]] bool IsTransparencyEnabled() const;
 
+#ifdef _WIN32
   void ClearWin32(UINT key);
+#endif
 
  protected:
   SystemSettings();

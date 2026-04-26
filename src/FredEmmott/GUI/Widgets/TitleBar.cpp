@@ -45,7 +45,7 @@ class TitleBarIconButton : public Button {
  private:
   ApplicationIconProvider mProvider;
   mutable std::unique_ptr<ImportedTexture> mTexture;
-  mutable uint64_t mPreviousPixelHeight {};
+  mutable uint32_t mPreviousPixelHeight {};
   mutable Rect mSourceRect {};
 };
 
@@ -54,7 +54,11 @@ void TitleBarIconButton::PaintOwnContent(
   const Rect& destRect,
   const Style&) const {
   FUI_ASSERT(destRect.GetHeight() > 0);
-  const auto pixelHeight = felly::numeric_cast<uint64_t>(
+  // numeric_cast<uint64_t>(float) trips a felly constexpr bug in GCC 14+
+  // (the TooHigh squaring loop overflows float on the last iteration when the
+  // destination has 64 digits). uint32_t avoids it and is plenty — this value
+  // ultimately feeds GetBestSoftwareBitmap(uint16_t).
+  const auto pixelHeight = felly::numeric_cast<uint32_t>(
     renderer->GetPhysicalLength(destRect.GetHeight()));
   FUI_ASSERT(pixelHeight > 0);
 
@@ -172,8 +176,11 @@ void TitleBar::SetLeftWidgets(const std::vector<Widget*>& prepend) {
     it->AddStyleClass(StaticTheme::TitleBar::TitleBarLeftButtonStyleClass);
   }
   auto widgets = prepend;
-  widgets.append_range(
-    std::array<Widget*, 3> {mIconButton, mTitleLabel, mSubtitleLabel});
+  // Was `widgets.append_range(std::array<Widget*,3>{…})` — libstdc++-14
+  // doesn't advertise `std::vector::append_range` via the feature-test
+  // macro that GCC 14 requires at this site. Equivalent initializer-list
+  // insert works everywhere and has no measurable cost for 3 pointers.
+  widgets.insert(widgets.end(), {mIconButton, mTitleLabel, mSubtitleLabel});
   mContent->SetStructuralChildren(widgets);
 }
 

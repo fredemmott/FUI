@@ -1,7 +1,9 @@
 // Copyright 2025 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <Yoga.h>
 
 #include <FredEmmott/GUI/StaticTheme/ScrollBar.hpp>

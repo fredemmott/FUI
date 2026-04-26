@@ -7,9 +7,11 @@
 #include <array>
 #include <bit>
 #include <cmath>
+#include <cstdint>
 #include <felly/overload.hpp>
 #include <source_location>
 #include <stdexcept>
+#include <utility>
 #include <variant>
 
 #include "StaticTheme/Theme.hpp"
@@ -129,6 +131,10 @@ class ColorConstant final {
       SkColorGetB(mSkia) / 255.0f,
       SkColorGetA(mSkia) / 255.0f,
     };
+#else
+    const auto [b, g, r, a]
+      = std::bit_cast<std::array<uint8_t, 4>>(mBGRA32);
+    return std::tuple {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};
 #endif
   }
 
@@ -162,6 +168,10 @@ class ColorConstant final {
       static_cast<uint8_t>((mD2D.b * 255.0f) + 0.5f),
       static_cast<uint8_t>((mD2D.a * 255.0f) + 0.5f),
     };
+#else
+    const auto [b, g, r, a]
+      = std::bit_cast<std::array<uint8_t, 4>>(mBGRA32);
+    return std::tuple {r, g, b, a};
 #endif
   }
 

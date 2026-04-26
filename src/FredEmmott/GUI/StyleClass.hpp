@@ -3,6 +3,7 @@
 #pragma once
 
 #include <bit>
+#include <cstdint>
 #include <optional>
 #include <string_view>
 #include <unordered_set>

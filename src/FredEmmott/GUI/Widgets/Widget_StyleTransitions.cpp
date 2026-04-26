@@ -117,7 +117,11 @@ Widget::StyleTransitions::ApplyResult Widget::StyleTransitions::Apply(
     if constexpr (DebugAnimations) {
       // Should be unreachable - we should always have a valid DefaultValue
       // for animatable properties
+#ifdef _WIN32
       __debugbreak();
+#else
+      __builtin_trap();
+#endif
     }
     mTransitions.erase(key);
     return NotAnimating;

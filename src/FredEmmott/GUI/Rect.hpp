@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include <FredEmmott/GUI/config.hpp>
 #include <concepts>
@@ -178,11 +180,13 @@ struct BasicRect {
     return {GetLeft(), GetTop(), GetRight(), GetBottom()};
   }
 #endif
+#ifdef _WIN32
   constexpr operator RECT() const noexcept
     requires std::same_as<LONG, T>
   {
     return {GetLeft(), GetTop(), GetRight(), GetBottom()};
   }
+#endif
 };
 
 using Rect = BasicRect<float>;

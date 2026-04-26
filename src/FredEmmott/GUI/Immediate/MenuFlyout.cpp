@@ -4,7 +4,9 @@
 
 #include "FredEmmott/GUI/StaticTheme/MenuFlyout.hpp"
 #include "FredEmmott/GUI/Widgets/MenuFlyoutItem.hpp"
+#ifdef _WIN32
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
+#endif
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 #include "PopupWindow.hpp"
 
@@ -31,6 +33,7 @@ MenuFlyoutResult BeginMenuFlyout(const ID id) {
 
 void EndMenuFlyout() {
   immediate_detail::EndWidget();
+#ifdef _WIN32
   const auto win32 = static_cast<Win32Window*>(immediate_detail::tWindow);
 
   EndBasicPopupWindow();
@@ -38,6 +41,12 @@ void EndMenuFlyout() {
   const auto hwnd = win32->GetNativeHandle().mValue;
   const MARGINS margins {-1};
   DwmExtendFrameIntoClientArea(hwnd, &margins);
+#else
+  // Linux: no DWM equivalent. The SDL3 popup window
+  // will handle its own decoration; no DwmExtendFrameIntoClientArea
+  // call is needed.
+  EndBasicPopupWindow();
+#endif
 }
 
 MenuFlyoutResult BeginMenuFlyout(bool* const open, const ID id) {

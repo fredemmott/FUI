@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <limits>
+#include <utility>
 
 #include "FredEmmott/GUI/FontWeight.hpp"
 

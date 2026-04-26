@@ -1,10 +1,18 @@
-add_executable(
-  fredemmott-gui-demo
-  WIN32
-  app.exe.manifest
-  demo.cpp
-  demo.hpp
-)
+if (WIN32)
+  add_executable(
+    fredemmott-gui-demo
+    WIN32
+    app.exe.manifest
+    demo.cpp
+    demo.hpp
+  )
+else ()
+  add_executable(
+    fredemmott-gui-demo
+    demo.cpp
+    demo.hpp
+  )
+endif ()
 target_link_libraries(
   fredemmott-gui-demo
   PRIVATE
@@ -27,6 +35,13 @@ if (WIN32)
     fredemmott-gui-demo
     PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+else ()
+  # Linux entry point — pulls in LinuxWindow via fredemmott-gui's public link.
+  target_sources(
+    fredemmott-gui-demo
+    PRIVATE
+    demo_linux.cpp
   )
 endif ()
 

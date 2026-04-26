@@ -50,8 +50,8 @@ if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
       "/NODEFAULTLIB:libucrt$<$<CONFIG:Debug>:d>.lib" # remove the static UCRT
     )
   endif ()
-elseif (ENABLE_SKIA)
-  message(FATAL_ERROR "Advanced text features require SkParagraph, which is only available with vcpkg static triplets}")
+elseif (WIN32 AND ENABLE_SKIA)
+  message(FATAL_ERROR "Advanced text features require SkParagraph, which is only available with vcpkg static triplets on Windows.")
 endif ()
 
 
@@ -106,23 +106,21 @@ option(ENABLE_DEVELOPER_OPTIONS "Enable lots of warnings, and warnings-as-errors
 if (${ENABLE_DEVELOPER_OPTIONS})
   set(CMAKE_LINK_LIBRARIES_ONLY_TARGETS ON)
 
-  if (MSVC)
-    add_compile_options(
-      # Lots of warnings
-      "/W4"
-      # Error on warning
-      "/WX"
-    )
-  endif ()
-
-  # clang-cl
   if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # clang-cl
     add_compile_options(
       "-Wno-missing-field-initializers"
       "-Wno-missing-designated-field-initializers"
       "-Wno-sign-compare"
     )
-  else ()
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(
+      "-Wno-missing-field-initializers"
+      "-Wno-sign-compare"
+      "-Wno-narrowing"           # roughly matches MSVC C4244
+      "-Wno-unused-but-set-variable"
+    )
+  elseif (MSVC)
     add_compile_options(
       "/wd4244" # using integer literals for floats
       "/wd4267" # converting from larger to smaller-sized integers
@@ -131,6 +129,7 @@ if (${ENABLE_DEVELOPER_OPTIONS})
       "/wd4702" # unreachable code. Usually complains about std::unreachable() after ifdefs
     )
   endif ()
+
 endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")

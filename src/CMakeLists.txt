@@ -2,7 +2,9 @@ if (ENABLE_SKIA)
   include(skia)
 endif ()
 
-find_package(wil CONFIG REQUIRED)
+if (WIN32)
+  find_package(wil CONFIG REQUIRED)
+endif ()
 
 set(CONFIG_HPP "${CMAKE_CURRENT_BINARY_DIR}/include/FredEmmott/GUI/config.hpp")
 block()

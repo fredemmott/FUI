@@ -21,7 +21,10 @@ constexpr bool HaveSkia = $<IF:$<BOOL:@ENABLE_SKIA@>,true,false>;
 constexpr bool HaveDirect2D = $<IF:$<BOOL:@ENABLE_DIRECT2D@>,true,false>;
 
 constexpr auto BackendCount = HaveSkia + HaveDirect2D;
+#ifdef _WIN32
+// On Windows a rendering backend is required. 
 static_assert(BackendCount > 0, "At least one backend must be enabled");
+#endif
 // Allows optimizations
 constexpr bool HaveSingleBackend = (BackendCount == 1);
 
