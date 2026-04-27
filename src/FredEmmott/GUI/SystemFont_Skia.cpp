@@ -39,13 +39,14 @@ sk_sp<SkFontMgr> GetFontManager() noexcept {
 namespace {
 
 // Walk a list of family names and return the first one Skia's font manager
-// finds. If none match, log the names that were tried and try "Helvetica"
-// (commonly aliased to a real sans-serif by fontconfig on Linux). If even
-// Helvetica isn't there, fall back to Skia's legacy default typeface so we
-// always return *something* drawable rather than null — null typefaces
-// produced silent rendering bugs (Skia's internal fallback typeface
-// renders glyphs at unexpected widths, which then trips style-system
-// invariants).
+// finds. If none match, log the names that were tried and try a generic
+// "sans-serif" alias (fontconfig substitutes whatever the system has
+// configured as its default sans-serif — DejaVu/Liberation/Cantarell
+// depending on distro). If even that's unavailable, fall back to Skia's
+// legacy default typeface so we always return *something* drawable rather
+// than null — null typefaces produced silent rendering bugs (Skia's
+// internal fallback typeface renders glyphs at unexpected widths, which
+// then trips style-system invariants).
 template <class... Names>
 sk_sp<SkTypeface> LoadTypeface(const SkFontStyle& style, Names... names) {
   const std::array<const char*, sizeof...(Names)> arr {
@@ -61,15 +62,15 @@ sk_sp<SkTypeface> LoadTypeface(const SkFontStyle& style, Names... names) {
   for (const char* const n : arr) {
     std::fprintf(stderr, " \"%s\"", n);
   }
-  std::fprintf(stderr, ". Falling back to \"Helvetica\".\n");
+  std::fprintf(stderr, ". Falling back to fontconfig \"sans-serif\".\n");
 
-  if (auto t = GetFontManager()->matchFamilyStyle("Helvetica", style); t) {
+  if (auto t = GetFontManager()->matchFamilyStyle("sans-serif", style); t) {
     return t;
   }
 
   std::fprintf(
     stderr,
-    "[FUI] \"Helvetica\" also unavailable; using Skia's legacy default "
+    "[FUI] \"sans-serif\" also unavailable; using Skia's legacy default "
     "typeface. Text will render but layout invariants tied to specific "
     "fonts (FontIcon, etc.) may misbehave.\n");
   return GetFontManager()->legacyMakeTypeface(nullptr, style);

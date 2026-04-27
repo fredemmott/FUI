@@ -475,6 +475,6 @@ int WINAPI wWinMain(
     });
 }
 #endif
-// Linux demo entry point lives in demo_linux.cpp so that demo.cpp
-// stays cross-platform: Windows gets wWinMain above; Linux gets plain
-// main() out of the sibling translation unit.
+// Linux demo entry point lives in demo_linux.cpp so demo.cpp stays
+// cross-platform: Windows gets wWinMain above; Linux gets plain main()
+// out of the sibling translation unit.

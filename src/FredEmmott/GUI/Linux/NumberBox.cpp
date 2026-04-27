@@ -1,15 +1,14 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Phase 2 Linux NumberBox: minimum viable two-way binding between the
-// underlying TextBox and a float* pValue. Real value parsing/formatting
-// (locale-aware, range-clamped, formatter callbacks) lives in the
-// cross-platform Immediate/NumberBox.cpp which is currently
-// wchar_t/UChar-coupled and not yet portable. For now we use plain
-// std::to_string / std::stof; the demo's float input round-trips and
-// the user can edit the value as text.
+// Linux NumberBox: minimum viable two-way binding between the underlying
+// TextBox and a float* pValue. Real value parsing/formatting (locale-aware,
+// range-clamped, formatter callbacks) lives in the cross-platform
+// Immediate/NumberBox.cpp which is currently wchar_t/UChar-coupled and not
+// yet portable. For now we use plain std::to_string / std::stof; the demo's
+// float input round-trips and the user can edit the value as text.
 
-#include "../Immediate/NumberBox.hpp"
+#include <FredEmmott/GUI/Immediate/NumberBox.hpp>
 
 #include <charconv>
 #include <cmath>
@@ -17,11 +16,11 @@
 #include <string>
 #include <unordered_map>
 
-#include "../FocusManager.hpp"
-#include "../Immediate/Result.hpp"
-#include "../Widgets/TextBox.hpp"
-#include "../Window.hpp"
-#include "../detail/immediate/Widget.hpp"
+#include <FredEmmott/GUI/FocusManager.hpp>
+#include <FredEmmott/GUI/Immediate/Result.hpp>
+#include <FredEmmott/GUI/Widgets/TextBox.hpp>
+#include <FredEmmott/GUI/Window.hpp>
+#include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
 namespace FredEmmott::GUI::Immediate {
 
@@ -93,7 +92,7 @@ NumberBoxResult NumberBox(float* pValue, const ID id) {
     // reformat *pValue and overwrite the user's still-incomplete text).
     // The map is keyed by the widget pointer, which is stable across
     // frames in immediate mode. Entries leak when widgets are destroyed;
-    // good enough for now, real lifetime is plan §4 phase 4 polish.
+    // good enough for now, real lifetime is a follow-up.
     static thread_local std::unordered_map<Widgets::Widget*, float> sLastSeen;
 
     const bool userEdited = w->ConsumeWasChanged();

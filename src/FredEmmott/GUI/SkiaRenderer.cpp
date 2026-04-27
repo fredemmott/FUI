@@ -9,7 +9,9 @@
 #include <skia/gpu/ganesh/GrBackendSurface.h>
 #include <skia/gpu/ganesh/SkImageGanesh.h>
 
+#include <FredEmmott/GUI/SystemFont.hpp>
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
+#include <FredEmmott/GUI/detail/skia_text_fallback.hpp>
 
 #include "SoftwareBitmap.hpp"
 #include "assert.hpp"
@@ -375,8 +377,22 @@ void SkiaRenderer::DrawText(
   const Point& baseline) {
   auto paint = brush.as<SkPaint>(this, brushRect);
   paint.setStyle(SkPaint::Style::kFill_Style);
-  mCanvas->drawString(
-    SkString {text}, baseline.mX, baseline.mY, font.as<SkFont>(), paint);
+
+  // Walk the text with per-codepoint typeface fallback so emoji and other
+  // glyphs the main typeface lacks render via fontconfig-discovered fonts
+  // (e.g. Noto Color Emoji) instead of .notdef tofu. Each run is drawn at
+  // the current x cursor and advances by its measured width.
+  using namespace skia_text_fallback_detail;
+  const auto& mainFont = font.as<SkFont>();
+  SkFontMgr* const fontMgr = SystemFont::GetFontManager().get();
+
+  float x = baseline.mX;
+  ForEachRun(mainFont, text, fontMgr, [&](const Run& run) {
+    mCanvas->drawString(
+      SkString {run.mText}, x, baseline.mY, run.mFont, paint);
+    x += run.mFont.measureText(
+      run.mText.data(), run.mText.size(), SkTextEncoding::kUTF8);
+  });
 }
 
 #ifdef _WIN32
@@ -471,7 +487,8 @@ void SkiaRenderer::DrawTexture(
   if (rawFence) {
     FUI_ASSERT(fenceValue > 0, "A wait for fence 0 always succeeds");
 #ifdef _WIN32
-    // Linux's Vulkan equivalent goes through VK_EXT_external_semaphore_fd 
+    // ImportedSkiaFence::mSkiaFence is D3D-only (GrD3DFenceInfo). Linux's
+    // Vulkan equivalent goes through VK_EXT_external_semaphore_fd (TODO).
     const auto fence = &IMPL_CAST<ImportedSkiaFence*>(rawFence)->mSkiaFence;
     FUI_ASSERT(fence);
     fence->fValue = fenceValue;

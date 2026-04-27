@@ -7,6 +7,11 @@ endif ()
 
 option(ENABLE_IMPLICIT_BACKENDS "Automatically enable available backends" ON)
 option(ENABLE_SKIA "Build with support for Skia" ${ENABLE_IMPLICIT_BACKENDS})
+if (NOT WIN32 AND NOT ENABLE_SKIA)
+  # Skia is the only supported backend on non-Windows platforms.
+  message(STATUS "ENABLE_SKIA forced ON: required on non-Windows.")
+  set(ENABLE_SKIA ON CACHE BOOL "Build with support for Skia" FORCE)
+endif ()
 if (ENABLE_SKIA)
   list(APPEND VCPKG_MANIFEST_FEATURES "skia")
 endif ()
@@ -51,7 +56,7 @@ if ("${VCPKG_TARGET_TRIPLET}" MATCHES "-static$")
     )
   endif ()
 elseif (WIN32 AND ENABLE_SKIA)
-  message(FATAL_ERROR "Advanced text features require SkParagraph, which is only available with vcpkg static triplets on Windows.")
+  message(FATAL_ERROR "On Windows, Skia requires a vcpkg *-static triplet (the dynamic Windows skia port omits SkParagraph). Use a *-static triplet, or build with -DENABLE_SKIA=OFF.")
 endif ()
 
 

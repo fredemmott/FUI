@@ -132,6 +132,8 @@ class ColorConstant final {
       SkColorGetA(mSkia) / 255.0f,
     };
 #else
+    // No rendering backend enabled. No renderer exists to call this;
+    // present to keep ColorConstant a complete type.
     const auto [b, g, r, a]
       = std::bit_cast<std::array<uint8_t, 4>>(mBGRA32);
     return std::tuple {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};

@@ -1,8 +1,11 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
+// Linux stub. Always reports invalid; `TitleBar` handles this by rendering
+// no icon. A real impl would hook into freedesktop icon themes via Gio /
+// xdg-icon-resource.
 
-#include "../IconProvider.hpp"
+#include <FredEmmott/GUI/IconProvider.hpp>
 
 namespace FredEmmott::GUI {
 namespace {

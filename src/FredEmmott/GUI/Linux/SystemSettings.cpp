@@ -1,11 +1,11 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Phase 1.4 Linux stub. Hard-coded defaults chosen to match Windows factory
-// settings so widgets behave predictably. A real impl (phase 4) will read
-// portal Settings / gsettings.
+// Linux stub. Hard-coded defaults chosen to match Windows factory settings
+// so widgets behave predictably. A real impl will read portal Settings /
+// gsettings.
 
-#include "../SystemSettings.hpp"
+#include <FredEmmott/GUI/SystemSettings.hpp>
 
 namespace FredEmmott::GUI {
 

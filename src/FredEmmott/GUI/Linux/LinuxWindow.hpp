@@ -1,21 +1,22 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// `Window` implementation: SDL3-backed windowing, event pump,
-// clipboard, cursor, interrupt.
-
+// Linux `Window` base class: SDL3-backed windowing, event pump, clipboard,
+// cursor, interrupt. Abstract — rendering is provided by a subclass
+// (currently LinuxSkiaVulkanWindow, Skia Ganesh on Vulkan), which fills
+// in the render-side pure virtuals: InitializeGraphicsAPI, GetFramePainter,
+// ResizeBackend, CreatePopup.
 #pragma once
 
 #include <array>
 #include <atomic>
-#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-#include "../StylePropertyTypes.hpp"
-#include "../Window.hpp"
-#include "../events/MouseEvent.hpp"
+#include <FredEmmott/GUI/StylePropertyTypes.hpp>
+#include <FredEmmott/GUI/Window.hpp>
+#include <FredEmmott/GUI/events/MouseEvent.hpp>
 
 // Forward-declare SDL types at the global namespace so the header doesn't
 // leak <SDL3/SDL.h> into the rest of FUI. Must stay at global scope —
@@ -39,15 +40,8 @@ class LinuxWindow : public Window {
   explicit LinuxWindow(Options options);
   ~LinuxWindow() override;
 
-  // Static convenience driver for simple demo-style apps. Runs the frame
-  // loop until `BeginFrame` returns an exit code.
-  static int Run(
-    const Options& options,
-    const std::function<void(LinuxWindow&)>& appTick);
-
   // -- Window overrides ------------------------------------------------------
 
-  [[nodiscard]] std::unique_ptr<Window> CreatePopup() const override;
   void SetParent(NativeHandle) override;
   void SetTitle(std::string_view) override;
   [[nodiscard]] bool SetSubtitle(std::string_view) override;
@@ -81,15 +75,18 @@ class LinuxWindow : public Window {
   void ProcessNativeEvents() override;
   void InitializeWindow() override;
   void HideWindow() override;
-  std::unique_ptr<BasicFramePainter> GetFramePainter(uint8_t frameIndex) override;
-  void ResizeIfNeeded() override;
+  void ResizeIfNeeded() final;
   [[nodiscard]] Size GetCanvasSize() const override;
   [[nodiscard]] float GetDPIScale() const override;
   [[nodiscard]] Color GetClearColor() const override;
-  void InitializeGraphicsAPI() override;
   void WaitFrameImpl(
     std::span<const NativeWaitable> waitables,
     std::chrono::steady_clock::time_point until) const override;
+
+  // Backend hook called by ResizeIfNeeded after popup auto-fit, to let
+  // the renderer recreate its swapchain / surfaces for the new SDL window
+  // size. Pure virtual so every backend explicitly opts in.
+  virtual void ResizeBackend() = 0;
 
  private:
   // Delegating ctor owns root widgets like Win32Window does, so the Window

@@ -67,6 +67,13 @@ class Slider final : public Widget, public IFocusable {
   bool ConsumeWasThumbStationaryHovered() noexcept {
     return std::exchange(mWasThumbStationaryHovered, false);
   }
+
+  // Live: is the cursor currently over the thumb. Used to dismiss the
+  // hover tooltip once the cursor moves off the thumb.
+  [[nodiscard]]
+  bool IsThumbHovered() const noexcept {
+    return mIsThumbHovered;
+  }
   [[nodiscard]]
   bool ConsumeWasChanged() noexcept {
     return std::exchange(mWasChanged, false);
@@ -116,6 +123,7 @@ class Slider final : public Widget, public IFocusable {
   uint8_t mThumbState {};
   widget_detail::TransitionState<float> mInnerThumbScale {};
   bool mWasThumbStationaryHovered {};
+  bool mIsThumbHovered {};
 
   [[nodiscard]]
   float GetSnappedValue(float) const noexcept;

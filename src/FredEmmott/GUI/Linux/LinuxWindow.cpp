@@ -1,9 +1,10 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Linux `Window` implementation — see LinuxWindow.hpp for details.
+// Linux `Window` base class — see LinuxWindow.hpp for scope.
 
 #include "LinuxWindow.hpp"
+#include "TooltipPassthrough.hpp"
 
 #include <SDL3/SDL.h>
 #include <Yoga.h>
@@ -14,17 +15,17 @@
 #include <cstdio>
 #include <stdexcept>
 
-#include "../Color.hpp"
-#include "../Renderer.hpp"
-#include "../Style.hpp"
-#include "../StyleClass.hpp"
-#include "../StylePropertyTypes.hpp"
-#include "../Widgets/Widget.hpp"
-#include "../events/KeyCode.hpp"
-#include "../events/KeyEvent.hpp"
-#include "../events/MouseButton.hpp"
-#include "../events/MouseEvent.hpp"
-#include "../events/TextInputEvent.hpp"
+#include <FredEmmott/GUI/Color.hpp>
+#include <FredEmmott/GUI/Renderer.hpp>
+#include <FredEmmott/GUI/Style.hpp>
+#include <FredEmmott/GUI/StyleClass.hpp>
+#include <FredEmmott/GUI/StylePropertyTypes.hpp>
+#include <FredEmmott/GUI/Widgets/Widget.hpp>
+#include <FredEmmott/GUI/events/KeyCode.hpp>
+#include <FredEmmott/GUI/events/KeyEvent.hpp>
+#include <FredEmmott/GUI/events/MouseButton.hpp>
+#include <FredEmmott/GUI/events/MouseEvent.hpp>
+#include <FredEmmott/GUI/events/TextInputEvent.hpp>
 
 namespace FredEmmott::GUI {
 
@@ -201,30 +202,6 @@ LinuxWindow::~LinuxWindow() {
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-int LinuxWindow::Run(
-  const Options& options,
-  const std::function<void(LinuxWindow&)>& appTick) {
-  // We open the window, pump events, and call appTick for each iteration. 
-  // Later refactor will drop this and use Window::BeginFrame / EndFrame instead.
-  LinuxWindow window(options);
-  // Window::DispatchEvent's default Key_Escape path only fires RequestStop
-  // for popups; wire Esc → quit explicitly for the top-level demo window.
-  window.SetCancelAction([&] { window.RequestStop(EXIT_SUCCESS); });
-  window.InitializeWindow();
-  if (!window.GetNativeHandle()) {
-    return EXIT_FAILURE;
-  }
-  while (true) {
-    window.ProcessNativeEvents();
-    if (const auto code = window.GetExitCode()) {
-      return *code;
-    }
-    appTick(window);
-    // Block until an event or 16ms passes (~60fps idle wake).
-    SDL_WaitEventTimeout(nullptr, 16);
-  }
-}
-
 // -- InitializeWindow: actually opens the SDL3 window ----------------------
 
 uint64_t LinuxWindow::GetSDLWindowFlags() const {
@@ -252,6 +229,13 @@ void LinuxWindow::InitializeWindow() {
     if (!mSDLWindow) {
       std::fprintf(
         stderr, "SDL_CreatePopupWindow failed: %s\n", SDL_GetError());
+      return;
+    }
+    if (mIsTooltip) {
+      // Tooltip popups must be mouse-passthrough so the parent widget keeps
+      // the cursor during a drag. Win32 uses WS_EX_TRANSPARENT; on Linux we
+      // clear the surface's input region directly (Wayland or X11 path).
+      Linux::MakePopupInputPassthrough(mSDLWindow);
     }
     return;
   }
@@ -486,7 +470,12 @@ void LinuxWindow::DispatchMouseButton(const SDL_Event& e, bool pressed) {
   float _x {}, _y {};
   me.mButtons = MapMouseButtonMask(SDL_GetMouseState(&_x, &_y));
   if (pressed) {
-    me.mDetail = MouseEvent::ButtonPressEvent {btn};
+    // SDL3's clicks counter is OS-tuned for double-click time and pixel
+    // drift; 1 = single, 2 = second of a double-click, 3 = third of a
+    // triple-click. Synthesised events report 0, so clamp to 1.
+    const auto clicks = static_cast<std::uint8_t>(
+      e.button.clicks > 0 ? e.button.clicks : 1);
+    me.mDetail = MouseEvent::ButtonPressEvent {btn, clicks};
   } else {
     me.mDetail = MouseEvent::ButtonReleaseEvent {btn};
   }
@@ -677,9 +666,9 @@ void LinuxWindow::InterruptWaitFrame() {
 void LinuxWindow::WaitFrameImpl(
   std::span<const NativeWaitable> waitables,
   std::chrono::steady_clock::time_point until) const {
-  // Waitables (FDs) are ignored. SDL_WaitEventTimeout blocks until
-  // an event or the timeout. Add a proper self-pipe + poll()
-  // that also handles the NativeWaitable FDs passed in.
+  // TODO: waitables (FDs) are ignored. SDL_WaitEventTimeout blocks until
+  // an event or the timeout. A proper self-pipe + poll() that also handles
+  // the NativeWaitable FDs passed in is a follow-up.
   (void)waitables;
   using namespace std::chrono;
   const auto now = steady_clock::now();
@@ -851,22 +840,23 @@ void LinuxWindow::ResizeIfNeeded() {
   if (mPopupParent) {
     this->ResizeToIdeal();
   }
- 
-  // SkiaVulkanWindow recreates the VkSwapchainKHR here when mNeedsResize
-  // is set.
+  // Tooltip popups must be mouse-passthrough (Win32's WS_EX_TRANSPARENT
+  // analogue). On Wayland the input region is double-buffered state that
+  // SDL3 may reset during its own surface bookkeeping, so re-stage the
+  // empty region every frame; SDL3's next commit delivers it. No-op on X11.
+  if (mIsTooltip && mSDLWindow) {
+    Linux::RestakeTooltipInputRegion(mSDLWindow);
+  }
+  // The popup-fit above may have called SDL_SetWindowSize, so the backend
+  // hook runs after it — that's where the swapchain reads the new SDL
+  // pixel size and rebuilds.
+  this->ResizeBackend();
   mNeedsResize.store(false, std::memory_order_release);
 }
 
 Color LinuxWindow::GetClearColor() const {
   return Color {StaticTheme::Common::SolidBackgroundFillColorBase.Resolve(
     StaticTheme::GetCurrent())};
-}
-
-std::unique_ptr<Window> LinuxWindow::CreatePopup() const {
-  // Base LinuxWindow has no rendering backend, so a popup wouldn't be
-  // visible. LinuxSkiaVulkanWindow overrides this to return a real
-  // popup with its own swapchain.
-  return {};
 }
 
 void LinuxWindow::SetParent(NativeHandle nh) {
@@ -877,7 +867,7 @@ void LinuxWindow::SetParent(NativeHandle nh) {
 }
 
 void LinuxWindow::OffsetPositionToDescendant(Widgets::Widget*) {
-  // Used to re-anchor a popup.
+  // Used to re-anchor a popup; not yet implemented.
 }
 
 void LinuxWindow::ResizeToIdeal() {
@@ -924,19 +914,6 @@ void LinuxWindow::SetIsToolTip() {
 
 void LinuxWindow::SetBackdrop(const WindowBackdrop&) {
   // Linux has no Mica/Acrylic; solid color is what we get. See plan.md §0.5.
-}
-
-void LinuxWindow::InitializeGraphicsAPI() {
-  // SkiaVulkanWindow override will create
-  // the VkInstance/VkDevice/GrDirectContext here.
-}
-
-std::unique_ptr<Window::BasicFramePainter> LinuxWindow::GetFramePainter(
-  uint8_t) {
-  // The demo bypasses Window::Paint, so this is not called. Throw
-  // so any accidental call fails loud.
-  throw std::logic_error(
-    "LinuxWindow::GetFramePainter call unimplemented (no renderer)");
 }
 
 }// namespace FredEmmott::GUI

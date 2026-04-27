@@ -42,9 +42,8 @@ void EndMenuFlyout() {
   const MARGINS margins {-1};
   DwmExtendFrameIntoClientArea(hwnd, &margins);
 #else
-  // Linux: no DWM equivalent. The SDL3 popup window
-  // will handle its own decoration; no DwmExtendFrameIntoClientArea
-  // call is needed.
+  // Linux: no DWM equivalent. The SDL3 popup window handles its own
+  // decoration; no DwmExtendFrameIntoClientArea call is needed.
   EndBasicPopupWindow();
 #endif
 }

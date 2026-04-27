@@ -6,11 +6,50 @@
 #include <FredEmmott/GUI/config.hpp>
 
 /// X(NAME, WEIGHT, ...typefaces)
+//
+// Body-text family lists prefer Segoe UI Variable / Segoe UI, then fall
+// through to common Linux UI fonts so the demo renders cleanly without a
+// Microsoft-font install. "Inter" is the closest modern visual match to
+// Segoe UI Variable; "Cantarell" is GNOME's default; "Noto Sans" is the
+// broadest universal fallback (ships in nearly every Linux distro and has
+// the widest Unicode coverage).
+//
+// Glyph (icon) family has no clean Linux equivalent — Segoe Fluent Icons
+// uses Microsoft-specific Private Use Area codepoints. NavigationView
+// chevrons, gear, etc. require the Segoe Fluent Icons install.
 #define FUI_ENUM_SYSTEM_FONT_TYPEFACES(X) \
-  X(Regular, Normal, "Segoe UI Variable Text", "Segoe UI") \
-  X(BodyStrong, SemiBold, "Segoe UI Variable Text Semibold", "Segoe UI") \
-  X(Caption, Normal, "Segoe UI Variable Small", "Segoe UI") \
-  X(Display, SemiBold, "Segoe UI Variable Display Semibold", "Segoe UI") \
+  X(Regular, \
+    Normal, \
+    "Segoe UI Variable Text", \
+    "Segoe UI", \
+    "Inter Variable", \
+    "Inter", \
+    "Cantarell", \
+    "Noto Sans") \
+  X(BodyStrong, \
+    SemiBold, \
+    "Segoe UI Variable Text Semibold", \
+    "Segoe UI", \
+    "Inter Variable", \
+    "Inter", \
+    "Cantarell", \
+    "Noto Sans") \
+  X(Caption, \
+    Normal, \
+    "Segoe UI Variable Small", \
+    "Segoe UI", \
+    "Inter Variable", \
+    "Inter", \
+    "Cantarell", \
+    "Noto Sans") \
+  X(Display, \
+    SemiBold, \
+    "Segoe UI Variable Display Semibold", \
+    "Segoe UI", \
+    "Inter Variable", \
+    "Inter", \
+    "Cantarell", \
+    "Noto Sans") \
   X(Glyph, Normal, "Segoe Fluent Icons", "Segoe MDL2 Assets")
 
 /** X(USAGE, TYPEFACE)

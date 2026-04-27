@@ -1,15 +1,14 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Linux `Window` implementation: Skia Ganesh backed by Vulkan.
-// Sits on top of LinuxWindow (SDL3 windowing/input) and fills in the
-// render-side pure virtuals: InitializeGraphicsAPI, GetFramePainter,
-// ResizeIfNeeded.
+// Linux `Window` implementation: Skia Ganesh backed by Vulkan. Sits on top
+// of LinuxWindow (SDL3 windowing/input) and fills in the render-side pure
+// virtuals: InitializeGraphicsAPI, GetFramePainter, ResizeBackend, CreatePopup.
 //
 // Parallel to Windows/Win32Direct3D12GaneshWindow (Skia Ganesh on D3D12).
 // Enables VK_EXT_external_memory_fd + VK_EXT_external_semaphore_fd on the
-// device at creation.
-
+// device at creation — prerequisites for the dmabuf import path
+// (OpenKneeboard's ink-layer texture lands via dmabuf-fd).
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -47,7 +46,7 @@ class LinuxSkiaVulkanWindow final : public LinuxWindow {
  protected:
   uint64_t GetSDLWindowFlags() const override;
   void InitializeGraphicsAPI() override;
-  void ResizeIfNeeded() override;
+  void ResizeBackend() override;
   std::unique_ptr<BasicFramePainter> GetFramePainter(uint8_t frameIndex) override;
 
  private:
@@ -84,7 +83,9 @@ class LinuxSkiaVulkanWindow final : public LinuxWindow {
   // --- Per-frame sync ---
   //
   // One pair per swapchain image. Back-pressure from VK_PRESENT_MODE_FIFO_KHR
-  // (via blocking vkAcquireNextImageKHR) throttles the frame rate
+  // (via blocking vkAcquireNextImageKHR) throttles the frame rate — no host
+  // fence needed for the current MVP. Proper in-flight fences (so the CPU
+  // can pipeline ahead of the GPU) are a follow-up.
   struct FrameSync {
     VkSemaphore mImageAvailable {VK_NULL_HANDLE};
     VkSemaphore mRenderFinished {VK_NULL_HANDLE};

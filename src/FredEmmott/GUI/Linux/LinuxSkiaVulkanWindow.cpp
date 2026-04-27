@@ -1,7 +1,9 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Simple Vulkan init: 1 graphics+present queue, BGRA8 SRGB
+// LinuxSkiaVulkanWindow — see LinuxSkiaVulkanWindow.hpp for scope.
+//
+// Deliberately simple Vulkan init: 1 graphics+present queue, BGRA8 SRGB
 // swapchain, FIFO present mode (v-synced, no tearing). No MSAA; Skia does
 // its own multisample inside Ganesh. The complexity sits in the swapchain
 // rebuild path (resize) and the per-frame Skia surface wrapping.
@@ -32,10 +34,12 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "../Font.hpp"
-#include "../Renderer.hpp"
-#include "../SkiaRenderer.hpp"
-#include "../detail/renderer_detail.hpp"
+#include <FredEmmott/GUI/Font.hpp>
+#include <FredEmmott/GUI/Renderer.hpp>
+#include <FredEmmott/GUI/SkiaRenderer.hpp>
+#include <FredEmmott/GUI/SystemFont.hpp>
+#include <FredEmmott/GUI/detail/renderer_detail.hpp>
+#include <FredEmmott/GUI/detail/skia_text_fallback.hpp>
 
 #include <skia/core/SkFont.h>
 #include <skia/core/SkFontMetrics.h>
@@ -81,8 +85,18 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
     if (!font) {
       return std::numeric_limits<float>::quiet_NaN();
     }
-    const auto it = font.as<SkFont>();
-    return it.measureText(text.data(), text.size(), SkTextEncoding::kUTF8);
+    const auto& sk = font.as<SkFont>();
+    // Sum widths per fallback run so the result matches what
+    // SkiaRenderer::DrawText actually paints when the typeface lacks
+    // glyphs (e.g. emoji served by Noto Color Emoji).
+    using namespace skia_text_fallback_detail;
+    SkFontMgr* const fontMgr = SystemFont::GetFontManager().get();
+    float width = 0.0f;
+    ForEachRun(sk, text, fontMgr, [&](const Run& run) {
+      width += run.mFont.measureText(
+        run.mText.data(), run.mText.size(), SkTextEncoding::kUTF8);
+    });
+    return width;
   }
 
   Font::Metrics GetFontMetrics(const Font& font) const override {
@@ -106,6 +120,11 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
   }
 };
 
+// Device extensions we *require*. VK_KHR_swapchain for presentation.
+// VK_EXT_external_memory_fd + VK_EXT_external_semaphore_fd are prerequisites
+// for the dmabuf import path (ImportedTexture::HandleKind::DmabufFD); they're
+// trivially supported on every Mesa / NVIDIA driver so we require them
+// upfront rather than make them optional.
 constexpr std::array kRequiredDeviceExtensions {
   VK_KHR_SWAPCHAIN_EXTENSION_NAME,
   VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
@@ -226,6 +245,10 @@ class LinuxSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
       .pImageIndices = &mImageIndex,
     };
     vkQueuePresentKHR(mWindow->mGraphicsQueue, &present);
+
+    // MVP: brute-force wait-idle so semaphore reuse next frame is trivially
+    // safe. Replace with per-frame-in-flight fences so the CPU can pipeline
+    // ahead of the GPU (follow-up).
     vkDeviceWaitIdle(mWindow->mDevice);
   }
 
@@ -319,7 +342,7 @@ void LinuxSkiaVulkanWindow::InitializeGraphicsAPI() {
 
 std::unique_ptr<Window> LinuxSkiaVulkanWindow::CreatePopup() const {
   // 240x80 is a placeholder — popups should be sized by their content
-  // after layout.
+  // after layout. Real auto-sizing is a follow-up.
   return std::make_unique<LinuxSkiaVulkanWindow>(
     Options {
       .mTitle = "FUI popup",
@@ -532,8 +555,8 @@ void LinuxSkiaVulkanWindow::CreateSwapchain() {
   // TODO: gamma is "wrong" in this configuration — colors written by Skia
   // are interpreted as if they were already sRGB-encoded, but Skia itself
   // produces linear values. The visual difference is small for the demo;
-  // fix later, rendering into an offscreen sRGB SkSurface and
-  // blitting to the swapchain.
+  // fix by rendering into an offscreen sRGB SkSurface and blitting to the
+  // swapchain.
   uint32_t fmtCount = 0;
   vkGetPhysicalDeviceSurfaceFormatsKHR(
     mPhysicalDevice, mSurface, &fmtCount, nullptr);
@@ -773,13 +796,10 @@ void LinuxSkiaVulkanWindow::WrapSwapchainImagesAsSkSurfaces() {
 
 // --- Resize ---------------------------------------------------------------
 
-void LinuxSkiaVulkanWindow::ResizeIfNeeded() {
-  // First let the base class run — among other things, it auto-fits
-  // popup windows by calling ResizeToIdeal, which SDL_SetWindowSizes
-  // the popup to its content. We then re-query SDL pixel size below
-  // and rebuild the swapchain at the new size in the same frame.
-  this->LinuxWindow::ResizeIfNeeded();
-
+void LinuxSkiaVulkanWindow::ResizeBackend() {
+  // Called by LinuxWindow::ResizeIfNeeded after popup auto-fit (which
+  // may have called SDL_SetWindowSize). Re-query SDL pixel size and
+  // rebuild the swapchain in the same frame if it changed.
   auto* const sdl = static_cast<SDL_Window*>(this->GetNativeHandle().mValue);
   if (!sdl || !mDevice) {
     return;

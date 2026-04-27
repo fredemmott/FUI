@@ -249,26 +249,27 @@ set(
 )
 
 # Files in the fredemmott-gui SOURCES list above that are only built on
-# Windows. 
+# Windows. Linux replacements live in FredEmmott/GUI/Linux/.
 set(
   WIN32_ONLY_SOURCES
-  # System*.cpp / IconProvider.cpp / StaticTheme.cpp / Font.cpp currently
-  # have Win32-only bodies (SPI_*, GetSysColor, wil::com_ptr<IUISettings3>,
-  # ExtractIconW, win32_detail::CheckHResult).
+  # System*.cpp / IconProvider.cpp / StaticTheme.cpp / Font.cpp have
+  # Win32-only bodies (SPI_*, GetSysColor, wil::com_ptr<IUISettings3>,
+  # ExtractIconW, win32_detail::CheckHResult). Linux replacements live
+  # under FredEmmott/GUI/Linux/.
   FredEmmott/GUI/Font.cpp
   FredEmmott/GUI/IconProvider.cpp
   FredEmmott/GUI/StaticTheme.cpp
   FredEmmott/GUI/SystemSettings.cpp
   FredEmmott/GUI/SystemTheme.cpp
   # NumberBox.cpp assumes sizeof(wchar_t) == sizeof(UChar) (i.e., 16 bit).
-  # True on MSVC/Win32, false on Linux (wchar_t is 32-bit). Proper fix:
-  # switch to std::u16string / char16_t for ICU interop. 
+  # True on MSVC/Win32, false on Linux (wchar_t is 32-bit). Linux uses
+  # FredEmmott/GUI/Linux/NumberBox.cpp instead.
   FredEmmott/GUI/Immediate/NumberBox.cpp
-  # TextBox.cpp is ~781 lines built around the Win32 TSF IME stack
-  # (TSFTextStore, CheckHResult, etc.). Gating inline would be
-  # invasive; a Linux IME impl using SDL3 text-input events.
-  # Only the .cpp is excluded; the header stays visible so cross-platform
-  # widgets that reference TextBox types still compile.
+  # TextBox.cpp is built around the Win32 TSF IME stack (TSFTextStore,
+  # CheckHResult, etc.). Gating inline would be invasive; the Linux IME
+  # impl uses SDL3 text-input events. Only the .cpp is excluded; the
+  # header stays visible so cross-platform widgets that reference
+  # TextBox types still compile.
   FredEmmott/GUI/Widgets/TextBox.cpp
   # SwapChain / GPUTexture / SwapChainPanel — Win32-shared-HANDLE IPC;
   # Linux replacement uses dmabuf-fd in the §3.3 architectural pass.
@@ -305,11 +306,13 @@ set(
   FredEmmott/GUI/detail/win32_detail/UIARoot.hpp
 )
 
-# Linux replacements for the Win32-only bodies above. 
+# Linux replacements for the Win32-only bodies above. SDL3 powers
+# windowing/input/IME; Skia-on-Vulkan handles rendering.
 set(
   LINUX_ONLY_SOURCES
   FredEmmott/GUI/Linux/Font.cpp
   FredEmmott/GUI/Linux/IconProvider.cpp
+  # SDL3-backed windowing. Pulls SDL3::SDL3 via vcpkg sdl3 port.
   FredEmmott/GUI/Linux/LinuxWindow.cpp
   FredEmmott/GUI/Linux/LinuxWindow.hpp
   FredEmmott/GUI/Linux/NumberBox.cpp
@@ -317,6 +320,10 @@ set(
   FredEmmott/GUI/Linux/SystemSettings.cpp
   FredEmmott/GUI/Linux/SystemTheme.cpp
   FredEmmott/GUI/Linux/TextBox.cpp
+  # Tooltip popup mouse-passthrough (Wayland + X11). Isolated TU because
+  # X11 headers pollute the global namespace with KeyCode/Window/etc.
+  FredEmmott/GUI/Linux/TooltipPassthrough.cpp
+  FredEmmott/GUI/Linux/TooltipPassthrough.hpp
 )
 
 if (NOT WIN32)
@@ -326,9 +333,24 @@ if (NOT WIN32)
   unset(_FUI_CURRENT_SOURCES)
   target_sources(fredemmott-gui PRIVATE ${LINUX_ONLY_SOURCES})
 
-  # SDL3 powers windowing / input / clipboard on Linux. 
+  # SDL3 powers windowing / input / clipboard on Linux.
   find_package(SDL3 CONFIG REQUIRED)
   target_link_libraries(fredemmott-gui PUBLIC SDL3::SDL3)
+
+  # Wayland + X11 used directly by TooltipPassthrough.cpp to set an empty
+  # input region on tooltip popups (Win32's WS_EX_TRANSPARENT analogue).
+  # SDL3 already pulls these in transitively at runtime; we just need the
+  # headers and explicit link for our own calls.
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
+  find_package(X11 REQUIRED COMPONENTS Xext)
+  target_link_libraries(
+    fredemmott-gui
+    PRIVATE
+    PkgConfig::WAYLAND_CLIENT
+    X11::X11
+    X11::Xext
+  )
 endif ()
 
 find_package(Boost CONFIG REQUIRED COMPONENTS container)
@@ -375,7 +397,7 @@ if (ENABLE_SKIA)
     target_sources(fredemmott-gui PRIVATE ${SKIA_LINUX_SOURCES})
     # LinuxSkiaVulkanWindow calls the Vulkan loader directly; Skia already
     # uses vulkan-headers but vkCreateInstance & friends live
-    # in libvulkan. 
+    # in libvulkan.
     find_package(Vulkan REQUIRED)
     target_link_libraries(fredemmott-gui PUBLIC Vulkan::Vulkan)
   endif ()

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <FredEmmott/GUI/Point.hpp>
+#include <cstdint>
 #include <optional>
 #include <variant>
 
@@ -59,6 +60,12 @@ struct MouseEvent final : Event {
   struct HoverEvent {};
   struct ButtonPressEvent {
     MouseButtons mPressedButtons {};
+    // 1 for a single click, 2 for the second click of a double-click, 3 for
+    // the third click of a triple-click, etc. The platform layer is
+    // responsible for the OS-defined click-time and pixel-drift thresholds —
+    // SDL3 surfaces this as SDL_MouseButtonEvent::clicks; Win32 has
+    // WM_LBUTTONDBLCLK + manual triple-click tracking.
+    std::uint8_t mClickCount {1};
   };
   struct ButtonReleaseEvent {
     MouseButtons mReleasedButtons {};

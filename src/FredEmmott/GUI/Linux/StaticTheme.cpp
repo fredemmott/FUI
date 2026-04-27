@@ -1,16 +1,16 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Phase 1.4 Linux stub. Always reports Light theme; no live switching. Phase 4
+// Linux stub. Always reports Light theme; no live switching. A real impl
 // will subscribe to xdg-desktop-portal's Settings signal for color-scheme.
 
-#include "../StaticTheme.hpp"
+#include <FredEmmott/GUI/StaticTheme.hpp>
 
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <optional>
 #include <stack>
 
-#include "../SystemTheme.hpp"
+#include <FredEmmott/GUI/SystemTheme.hpp>
 
 namespace FredEmmott::GUI::StaticTheme {
 namespace {

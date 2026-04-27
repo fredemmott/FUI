@@ -45,7 +45,7 @@ void BasicPopupWindowResultMixin::MakeModal(const bool modal) {
   static_cast<Win32Window*>(tWindow)->SetIsModal(modal);
 #else
   // Linux: modal popups will be wired through the SDL3 / libdecor
-  // window layer.
+  // window layer (TODO).
   (void)modal;
 #endif
 }
@@ -56,6 +56,8 @@ BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
   if (!window) {
+    // Window backend doesn't support popups (e.g. base LinuxWindow
+    // returns {} from CreatePopup; LinuxSkiaVulkanWindow overrides).
     // Treat as immediately-closed: undo the widget push and report
     // "not active" so callers' if-blocks skip the popup body.
     // Mirrors the BeginFrame-failed cleanup below, but at the earlier

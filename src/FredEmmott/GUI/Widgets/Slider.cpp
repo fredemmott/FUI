@@ -281,7 +281,9 @@ Widget::EventHandlerResult Slider::OnMouseMove(const MouseEvent& event) {
   const auto thumb = Rect::FromCenterAndSize(
     thumbCenter, {SliderThumbLength, SliderThumbLength});
 
-  if (thumb.ContainsPoint(event.GetPosition())) {
+  const bool onThumb = thumb.ContainsPoint(event.GetPosition());
+  mIsThumbHovered = onThumb;
+  if (onThumb) {
     if ((event.mButtons & MouseButton::Left) == MouseButton::Left) {
       SetThumbState(std::to_underlying(SliderState::Active));
     } else {
@@ -363,6 +365,7 @@ void Slider::SetThumbState(const uint8_t raw) {
 }
 
 void Slider::OnMouseLeave(const MouseEvent& e) {
+  mIsThumbHovered = false;
   if (!IsDisabled()) {
     SetThumbState(std::to_underlying(SliderState::Normal));
   }

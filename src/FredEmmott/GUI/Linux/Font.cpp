@@ -1,14 +1,17 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
+// Linux Font impl. Only supports the Skia variant — the DirectWrite path
+// is Windows-only. Skia is required on Linux (CMakeLists forces ENABLE_SKIA
+// on for non-Windows).
 
-#include "../Font.hpp"
+#include <FredEmmott/GUI/Font.hpp>
 
 #include <utility>
 
-#include "../assert.hpp"
-#include "../detail/font_detail.hpp"
-#include "../detail/renderer_detail.hpp"
+#include <FredEmmott/GUI/assert.hpp>
+#include <FredEmmott/GUI/detail/font_detail.hpp>
+#include <FredEmmott/GUI/detail/renderer_detail.hpp>
 #include "FredEmmott/utility/almost_equal.hpp"
 
 #ifdef FUI_ENABLE_SKIA

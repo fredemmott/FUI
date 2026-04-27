@@ -1,15 +1,15 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Phase 1.4 Linux stub. Returns a fixed Light-theme palette so widgets can
-// be styled at compile time. A real impl (phase 4) will read
-// xdg-desktop-portal's color-scheme and follow the system accent.
+// Linux stub. Returns a fixed Light-theme palette so widgets can be styled
+// at compile time. A real impl will read xdg-desktop-portal's color-scheme
+// and follow the system accent.
 
-#include "../SystemTheme.hpp"
+#include <FredEmmott/GUI/SystemTheme.hpp>
 
 #include <utility>
 
-#include "../Color.hpp"
+#include <FredEmmott/GUI/Color.hpp>
 
 namespace FredEmmott::GUI::SystemTheme {
 

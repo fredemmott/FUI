@@ -131,9 +131,9 @@ void NavigationView::IntegrateWithTitleBar() {
   titleBar->SetLeftWidgets({mBackButton, mTogglePaneButton});
   mPaneHeader->SetMutableStyles(Style().Display(Display::None));
 #else
-  // Linux: no custom-title-bar integration. Phase 2 (SDL3 windowing)
-  // will decide whether to use CSD via libdecor and wire the back-
-  // button / toggle-pane controls into that surface.
+  // Linux: no custom-title-bar integration yet. Decision pending on
+  // CSD via libdecor + wiring the back-button / toggle-pane controls
+  // into that surface.
 #endif
 }
 

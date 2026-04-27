@@ -113,17 +113,7 @@
     {
       "name": "Linux - Debug",
       "inherits": "linux-default",
-      "description": "Debug Linux build: no rendering backend, just validates that the core library + headers parse and link on Linux.",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_IMPLICIT_BACKENDS": "OFF",
-        "ENABLE_DEVELOPER_OPTIONS": "OFF"
-      }
-    },
-    {
-      "name": "Linux - Skia - Debug",
-      "inherits": "linux-default",
-      "description": "Linux build with Skia.",
+      "description": "Linux Debug build (Skia + Vulkan).",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "ENABLE_IMPLICIT_BACKENDS": "OFF",
@@ -132,9 +122,9 @@
       }
     },
     {
-      "name": "Linux - Skia - Release",
+      "name": "Linux - Release",
       "inherits": "linux-default",
-      "description": "Linux release build with Skia.",
+      "description": "Linux Release build (Skia + Vulkan).",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "ENABLE_IMPLICIT_BACKENDS": "OFF",
