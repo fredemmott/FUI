@@ -14,10 +14,9 @@ add_library(
   FredEmmott/GUI/Edges.hpp
   FredEmmott/GUI/ExitException.hpp
   FredEmmott/GUI/FocusManager.cpp FredEmmott/GUI/FocusManager.hpp
-  FredEmmott/GUI/Font.cpp FredEmmott/GUI/Font.hpp
+  FredEmmott/GUI/Font.hpp
   FredEmmott/GUI/FontWeight.hpp
   FredEmmott/GUI/FrameRateRequirement.hpp
-  FredEmmott/GUI/IconProvider.cpp
   FredEmmott/GUI/IconProvider.hpp
   FredEmmott/GUI/Immediate/Button.cpp FredEmmott/GUI/Immediate/Button.hpp
   FredEmmott/GUI/Immediate/Card.hpp
@@ -29,15 +28,12 @@ add_library(
   FredEmmott/GUI/Immediate/ContentDialog.cpp FredEmmott/GUI/Immediate/ContentDialog.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
-  FredEmmott/GUI/Immediate/GPUTexture.cpp
-  FredEmmott/GUI/Immediate/GPUTexture.hpp
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
   FredEmmott/GUI/Immediate/MenuFlyout.cpp
   FredEmmott/GUI/Immediate/MenuFlyout.hpp
   FredEmmott/GUI/Immediate/NavigationView.hpp
-  FredEmmott/GUI/Immediate/NumberBox.cpp
   FredEmmott/GUI/Immediate/NumberBox.hpp
   FredEmmott/GUI/Immediate/PopupWindow.cpp FredEmmott/GUI/Immediate/PopupWindow.hpp
   FredEmmott/GUI/Immediate/ProgressRing.hpp
@@ -51,7 +47,6 @@ add_library(
   FredEmmott/GUI/Immediate/Slider.cpp
   FredEmmott/GUI/Immediate/Slider.hpp
   FredEmmott/GUI/Immediate/StackPanel.hpp
-  FredEmmott/GUI/Immediate/SwapChainPanel.hpp
   FredEmmott/GUI/Immediate/TextBlock.cpp FredEmmott/GUI/Immediate/TextBlock.hpp
   FredEmmott/GUI/Immediate/TextBox.cpp
   FredEmmott/GUI/Immediate/TextBox.hpp
@@ -75,7 +70,7 @@ add_library(
   FredEmmott/GUI/Size.hpp
   FredEmmott/GUI/SoftwareBitmap.hpp
   FredEmmott/GUI/SolidColorBrush.hpp
-  FredEmmott/GUI/StaticTheme.cpp FredEmmott/GUI/StaticTheme.hpp
+  FredEmmott/GUI/StaticTheme.hpp
   FredEmmott/GUI/StaticTheme/Resource.hpp
   FredEmmott/GUI/StaticTheme/Theme.hpp
   FredEmmott/GUI/StaticTheme/detail/ResolveColor.hpp
@@ -105,12 +100,9 @@ add_library(
   FredEmmott/GUI/StyleProperty.hpp
   FredEmmott/GUI/StylePropertyTypes.hpp
   FredEmmott/GUI/StyleTransition.hpp
-  FredEmmott/GUI/SwapChain.cpp
-  FredEmmott/GUI/SwapChain.hpp
-  FredEmmott/GUI/SwapChain_Resources.hpp
   FredEmmott/GUI/SystemFont.cpp FredEmmott/GUI/SystemFont.hpp
-  FredEmmott/GUI/SystemSettings.cpp FredEmmott/GUI/SystemSettings.hpp
-  FredEmmott/GUI/SystemTheme.cpp FredEmmott/GUI/SystemTheme.hpp
+  FredEmmott/GUI/SystemSettings.hpp
+  FredEmmott/GUI/SystemTheme.hpp
   FredEmmott/GUI/WidgetFont.cpp FredEmmott/GUI/WidgetFont.hpp
   FredEmmott/GUI/Widgets/Button.cpp FredEmmott/GUI/Widgets/Button.hpp
   FredEmmott/GUI/Widgets/Card.cpp FredEmmott/GUI/Widgets/Card.hpp
@@ -118,8 +110,6 @@ add_library(
   FredEmmott/GUI/Widgets/ComboBoxItem.cpp
   FredEmmott/GUI/Widgets/ComboBoxItem.hpp
   FredEmmott/GUI/Widgets/Focusable.hpp
-  FredEmmott/GUI/Widgets/GPUTexture.cpp
-  FredEmmott/GUI/Widgets/GPUTexture.hpp
   FredEmmott/GUI/Widgets/HyperlinkButton.cpp FredEmmott/GUI/Widgets/HyperlinkButton.hpp
   FredEmmott/GUI/Widgets/Label.cpp
   FredEmmott/GUI/Widgets/Label.hpp
@@ -147,10 +137,8 @@ add_library(
   FredEmmott/GUI/Widgets/ScrollView.cpp FredEmmott/GUI/Widgets/ScrollView.hpp
   FredEmmott/GUI/Widgets/Slider.cpp FredEmmott/GUI/Widgets/Slider.hpp
   FredEmmott/GUI/Widgets/StackPanel.cpp FredEmmott/GUI/Widgets/StackPanel.hpp
-  FredEmmott/GUI/Widgets/SwapChainPanel.cpp
-  FredEmmott/GUI/Widgets/SwapChainPanel.hpp
   FredEmmott/GUI/Widgets/TextBlock.cpp FredEmmott/GUI/Widgets/TextBlock.hpp
-  FredEmmott/GUI/Widgets/TextBox.cpp FredEmmott/GUI/Widgets/TextBox.hpp
+  FredEmmott/GUI/Widgets/TextBox.hpp
   FredEmmott/GUI/Widgets/TitleBar.cpp
   FredEmmott/GUI/Widgets/TitleBar.hpp
   FredEmmott/GUI/Widgets/ToggleSwitch.cpp FredEmmott/GUI/Widgets/ToggleSwitch.hpp
@@ -160,14 +148,6 @@ add_library(
   FredEmmott/GUI/Widgets/WidgetList.hpp
   FredEmmott/GUI/Widgets/Widget_ComputeStyles.cpp
   FredEmmott/GUI/Widgets/Widget_StyleTransitions.cpp
-  FredEmmott/GUI/Windows/AcrylicController.cpp
-  FredEmmott/GUI/Windows/AcrylicController.hpp
-  FredEmmott/GUI/Windows/DirectCompositionController.cpp
-  FredEmmott/GUI/Windows/DirectCompositionController.hpp
-  FredEmmott/GUI/Windows/MicaController.cpp
-  FredEmmott/GUI/Windows/MicaController.hpp
-  FredEmmott/GUI/Windows/Win32Window.cpp
-  FredEmmott/GUI/Windows/Win32Window.hpp
   FredEmmott/GUI/Window.cpp
   FredEmmott/GUI/Window.hpp
   FredEmmott/GUI/WindowBackdrop.hpp
@@ -195,13 +175,6 @@ add_library(
   FredEmmott/GUI/detail/style_detail.hpp
   FredEmmott/GUI/detail/system_font_detail.hpp
   FredEmmott/GUI/detail/widget_detail.hpp
-  FredEmmott/GUI/detail/win32_detail.cpp FredEmmott/GUI/detail/win32_detail.hpp
-  FredEmmott/GUI/detail/win32_detail/COMImplementation.hpp
-  FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.cpp
-  FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp
-  FredEmmott/GUI/detail/win32_detail/TSFTextStore.cpp FredEmmott/GUI/detail/win32_detail/TSFTextStore.hpp
-  FredEmmott/GUI/detail/win32_detail/UIANode.cpp FredEmmott/GUI/detail/win32_detail/UIANode.hpp
-  FredEmmott/GUI/detail/win32_detail/UIARoot.cpp FredEmmott/GUI/detail/win32_detail/UIARoot.hpp
   FredEmmott/GUI/detail/Widget/ScrollBar.hpp
   FredEmmott/GUI/detail/Widget/transitions.hpp
   FredEmmott/GUI/events/Event.hpp
@@ -249,8 +222,9 @@ set(
   FredEmmott/GUI/Widgets/TextBlock_DirectWrite.cpp
 )
 
-# Files in the fredemmott-gui SOURCES list above that are only built on
-# Windows. Linux replacements live in FredEmmott/GUI/Linux/.
+# Files only built on Windows; added to fredemmott-gui via target_sources
+# in the if (WIN32) branch below. Linux replacements live in
+# FredEmmott/GUI/Linux/.
 set(
   WIN32_ONLY_SOURCES
   # System*.cpp / IconProvider.cpp / StaticTheme.cpp / Font.cpp have
@@ -337,11 +311,11 @@ set(
   FredEmmott/GUI/Linux/TooltipPassthrough.cpp
 )
 
-if (NOT WIN32)
-  get_target_property(_FUI_CURRENT_SOURCES fredemmott-gui SOURCES)
-  list(REMOVE_ITEM _FUI_CURRENT_SOURCES ${WIN32_ONLY_SOURCES})
-  set_target_properties(fredemmott-gui PROPERTIES SOURCES "${_FUI_CURRENT_SOURCES}")
-  unset(_FUI_CURRENT_SOURCES)
+if (WIN32)
+  target_sources(fredemmott-gui PRIVATE ${WIN32_ONLY_SOURCES})
+endif ()
+
+if (LINUX)
   target_sources(fredemmott-gui PRIVATE ${SDL_SOURCES} ${LINUX_ONLY_SOURCES})
 
   # SDL3 powers windowing / input / clipboard on Linux.
@@ -362,6 +336,10 @@ if (NOT WIN32)
     X11::X11
     X11::Xext
   )
+endif ()
+
+if (APPLE)
+  # macOS not yet implemented.
 endif ()
 
 find_package(Boost CONFIG REQUIRED COMPONENTS container)
