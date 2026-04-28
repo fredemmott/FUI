@@ -30,8 +30,9 @@
 #include <algorithm>
 #include <array>
 #include <cstdio>
-#include <cstring>
+#include <format>
 #include <stdexcept>
+#include <string_view>
 
 #include <FredEmmott/GUI/Renderer.hpp>
 #include <FredEmmott/GUI/SkiaRenderer.hpp>
@@ -81,45 +82,44 @@ constexpr std::array RequiredDeviceExtensions {
 
 constexpr bool EnableValidation = Config::Debug;
 
-void Check(VkResult r, const char* what) {
+inline void CheckVK(const VkResult r, const std::string_view what) {
   if (r != VK_SUCCESS) {
-    throw std::runtime_error(
-      std::string {"Vulkan "} + what + " failed: VkResult=" + std::to_string(r));
+    throw std::runtime_error(std::format(
+      "Vulkan {} failed: VkResult={}", what, static_cast<int>(r)));
   }
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-  VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+  const VkDebugUtilsMessageSeverityFlagBitsEXT severity,
   VkDebugUtilsMessageTypeFlagsEXT,
-  const VkDebugUtilsMessengerCallbackDataEXT* data,
+  const VkDebugUtilsMessengerCallbackDataEXT* const data,
   void*) {
-  if (severity
-      >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+  if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
     std::fprintf(stderr, "[Vulkan] %s\n", data->pMessage);
   }
   return VK_FALSE;
 }
 
-bool HasInstanceLayer(const char* layer) {
+bool HasInstanceLayer(const std::string_view layer) {
   uint32_t count = 0;
   vkEnumerateInstanceLayerProperties(&count, nullptr);
   std::vector<VkLayerProperties> layers(count);
   vkEnumerateInstanceLayerProperties(&count, layers.data());
   for (const auto& l : layers) {
-    if (std::strcmp(l.layerName, layer) == 0) {
+    if (layer == l.layerName) {
       return true;
     }
   }
   return false;
 }
 
-bool HasInstanceExtension(const char* ext) {
+bool HasInstanceExtension(const std::string_view ext) {
   uint32_t count = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
   std::vector<VkExtensionProperties> exts(count);
   vkEnumerateInstanceExtensionProperties(nullptr, &count, exts.data());
   for (const auto& e : exts) {
-    if (std::strcmp(e.extensionName, ext) == 0) {
+    if (ext == e.extensionName) {
       return true;
     }
   }
@@ -134,9 +134,9 @@ class SdlSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
  public:
   FramePainter() = delete;
   FramePainter(
-    SdlSkiaVulkanWindow* window,
-    uint32_t imageIndex,
-    VkSemaphore acquireSem,
+    SdlSkiaVulkanWindow* const window,
+    const uint32_t imageIndex,
+    const VkSemaphore acquireSem,
     sk_sp<SkSurface> surface)
     : mWindow(window),
       mImageIndex(imageIndex),
@@ -350,7 +350,7 @@ void SdlSkiaVulkanWindow::CreateInstance() {
     .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
     .ppEnabledExtensionNames = extensions.data(),
   };
-  Check(vkCreateInstance(&create, nullptr, &mInstance), "vkCreateInstance");
+  CheckVK(vkCreateInstance(&create, nullptr, &mInstance), "vkCreateInstance");
 
   if (validation) {
     const auto createMessenger =
@@ -472,7 +472,7 @@ void SdlSkiaVulkanWindow::CreateDevice() {
     .ppEnabledExtensionNames = RequiredDeviceExtensions.data(),
     .pEnabledFeatures = nullptr,
   };
-  Check(
+  CheckVK(
     vkCreateDevice(mPhysicalDevice, &create, nullptr, &mDevice),
     "vkCreateDevice");
   vkGetDeviceQueue(mDevice, mGraphicsQueueFamily, 0, &mGraphicsQueue);
@@ -482,7 +482,7 @@ void SdlSkiaVulkanWindow::CreateDevice() {
 
 void SdlSkiaVulkanWindow::CreateSwapchain() {
   VkSurfaceCapabilitiesKHR caps {};
-  Check(
+  CheckVK(
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
       mPhysicalDevice, mSurface, &caps),
     "vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
@@ -574,7 +574,7 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
     .presentMode = VK_PRESENT_MODE_FIFO_KHR,// v-sync, always supported
     .clipped = VK_TRUE,
   };
-  Check(
+  CheckVK(
     vkCreateSwapchainKHR(mDevice, &create, nullptr, &mSwapchain),
     "vkCreateSwapchainKHR");
 
@@ -589,10 +589,10 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
   };
   for (auto& s : mFrameSync) {
-    Check(
+    CheckVK(
       vkCreateSemaphore(mDevice, &semCI, nullptr, &s.mImageAvailable),
       "vkCreateSemaphore");
-    Check(
+    CheckVK(
       vkCreateSemaphore(mDevice, &semCI, nullptr, &s.mRenderFinished),
       "vkCreateSemaphore");
   }
@@ -763,7 +763,7 @@ void SdlSkiaVulkanWindow::ResizeBackend() {
 // --- GetFramePainter ------------------------------------------------------
 
 std::unique_ptr<Window::BasicFramePainter>
-SdlSkiaVulkanWindow::GetFramePainter(uint8_t frameIndex) {
+SdlSkiaVulkanWindow::GetFramePainter(const uint8_t frameIndex) {
   // Pick any semaphore as "will be signaled by acquire". Pass it to
   // vkAcquireNextImageKHR; the returned imageIndex tells us which image
   // that semaphore attaches to. We'll then use per-image mRenderFinished
@@ -784,7 +784,7 @@ SdlSkiaVulkanWindow::GetFramePainter(uint8_t frameIndex) {
     this->ResizeIfNeeded();
     return GetFramePainter(frameIndex);// single retry after rebuild
   }
-  Check(acq, "vkAcquireNextImageKHR");
+  CheckVK(acq, "vkAcquireNextImageKHR");
 
   mCurrentSwapchainImage = imageIndex;
   return std::unique_ptr<BasicFramePainter> {
