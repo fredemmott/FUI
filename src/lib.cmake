@@ -28,6 +28,7 @@ add_library(
   FredEmmott/GUI/Immediate/ContentDialog.cpp FredEmmott/GUI/Immediate/ContentDialog.hpp
   FredEmmott/GUI/Immediate/Disabled.cpp FredEmmott/GUI/Immediate/Disabled.hpp
   FredEmmott/GUI/Immediate/FontIcon.cpp FredEmmott/GUI/Immediate/FontIcon.hpp
+  FredEmmott/GUI/Immediate/GPUTexture.hpp
   FredEmmott/GUI/Immediate/ID.hpp
   FredEmmott/GUI/Immediate/HyperlinkButton.cpp FredEmmott/GUI/Immediate/HyperlinkButton.hpp
   FredEmmott/GUI/Immediate/Label.cpp FredEmmott/GUI/Immediate/Label.hpp
@@ -252,7 +253,7 @@ set(
   FredEmmott/GUI/SwapChain.hpp
   FredEmmott/GUI/SwapChain_Resources.hpp
   FredEmmott/GUI/Immediate/GPUTexture.cpp
-  FredEmmott/GUI/Immediate/GPUTexture.hpp
+  FredEmmott/GUI/Immediate/GPUTexture_win32.hpp
   FredEmmott/GUI/Immediate/SwapChainPanel.hpp
   FredEmmott/GUI/Widgets/GPUTexture.cpp
   FredEmmott/GUI/Widgets/GPUTexture.hpp
