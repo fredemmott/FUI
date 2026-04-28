@@ -191,6 +191,7 @@ add_library(
   FredEmmott/GUI/detail/immediate/widget_from_result.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/renderer_detail.cpp FredEmmott/GUI/detail/renderer_detail.hpp
+  FredEmmott/GUI/detail/skia_text_fallback.cpp FredEmmott/GUI/detail/skia_text_fallback.hpp
   FredEmmott/GUI/detail/style_detail.hpp
   FredEmmott/GUI/detail/system_font_detail.hpp
   FredEmmott/GUI/detail/widget_detail.hpp
@@ -233,9 +234,9 @@ set(
   FredEmmott/GUI/Windows/Win32Direct3D12GaneshWindow.hpp
 )
 set(
-  SKIA_LINUX_SOURCES
-  FredEmmott/GUI/Linux/LinuxSkiaVulkanWindow.cpp
-  FredEmmott/GUI/Linux/LinuxSkiaVulkanWindow.hpp
+  SKIA_SDL_SOURCES
+  FredEmmott/GUI/Sdl/SdlSkiaVulkanWindow.cpp
+  FredEmmott/GUI/Sdl/SdlSkiaVulkanWindow.hpp
 )
 set(
   DIRECT2D_SOURCES
@@ -306,24 +307,34 @@ set(
   FredEmmott/GUI/detail/win32_detail/UIARoot.hpp
 )
 
+# SDL3-backed windowing base. Cross-platform-eligible (Linux today; macOS
+# and an SDL3-on-Windows portability path are planned). Pulls SDL3::SDL3
+# via vcpkg sdl3 port.
+set(
+  SDL_SOURCES
+  FredEmmott/GUI/Sdl/SdlWindow.cpp
+  FredEmmott/GUI/Sdl/SdlWindow.hpp
+  # Generic SDL-layer interface for popup mouse-passthrough; per-platform
+  # implementation lives outside Sdl/ (Linux supplies it via
+  # Linux/TooltipPassthrough.cpp).
+  FredEmmott/GUI/detail/sdl_detail/PopupInputPassthrough.hpp
+)
+
 # Linux replacements for the Win32-only bodies above. SDL3 powers
 # windowing/input/IME; Skia-on-Vulkan handles rendering.
 set(
   LINUX_ONLY_SOURCES
   FredEmmott/GUI/Linux/Font.cpp
   FredEmmott/GUI/Linux/IconProvider.cpp
-  # SDL3-backed windowing. Pulls SDL3::SDL3 via vcpkg sdl3 port.
-  FredEmmott/GUI/Linux/LinuxWindow.cpp
-  FredEmmott/GUI/Linux/LinuxWindow.hpp
   FredEmmott/GUI/Linux/NumberBox.cpp
   FredEmmott/GUI/Linux/StaticTheme.cpp
   FredEmmott/GUI/Linux/SystemSettings.cpp
   FredEmmott/GUI/Linux/SystemTheme.cpp
   FredEmmott/GUI/Linux/TextBox.cpp
-  # Tooltip popup mouse-passthrough (Wayland + X11). Isolated TU because
-  # X11 headers pollute the global namespace with KeyCode/Window/etc.
+  # Linux implementation of sdl_detail::{MakePopupInputPassthrough,
+  # RestakeTooltipInputRegion} (Wayland + X11). Isolated TU because X11
+  # headers pollute the global namespace with KeyCode/Window/etc.
   FredEmmott/GUI/Linux/TooltipPassthrough.cpp
-  FredEmmott/GUI/Linux/TooltipPassthrough.hpp
 )
 
 if (NOT WIN32)
@@ -331,7 +342,7 @@ if (NOT WIN32)
   list(REMOVE_ITEM _FUI_CURRENT_SOURCES ${WIN32_ONLY_SOURCES})
   set_target_properties(fredemmott-gui PROPERTIES SOURCES "${_FUI_CURRENT_SOURCES}")
   unset(_FUI_CURRENT_SOURCES)
-  target_sources(fredemmott-gui PRIVATE ${LINUX_ONLY_SOURCES})
+  target_sources(fredemmott-gui PRIVATE ${SDL_SOURCES} ${LINUX_ONLY_SOURCES})
 
   # SDL3 powers windowing / input / clipboard on Linux.
   find_package(SDL3 CONFIG REQUIRED)
@@ -394,8 +405,8 @@ if (ENABLE_SKIA)
   if (WIN32)
     target_sources(fredemmott-gui PRIVATE ${SKIA_WIN32_SOURCES})
   else ()
-    target_sources(fredemmott-gui PRIVATE ${SKIA_LINUX_SOURCES})
-    # LinuxSkiaVulkanWindow calls the Vulkan loader directly; Skia already
+    target_sources(fredemmott-gui PRIVATE ${SKIA_SDL_SOURCES})
+    # SdlSkiaVulkanWindow calls the Vulkan loader directly; Skia already
     # uses vulkan-headers but vkCreateInstance & friends live
     # in libvulkan.
     find_package(Vulkan REQUIRED)
@@ -448,8 +459,12 @@ if (ENABLE_DEVELOPER_OPTIONS)
     if (
       NOT HEADER IN_LIST HEADERS
       AND NOT HEADER IN_LIST SKIA_SOURCES
+      AND NOT HEADER IN_LIST SKIA_WIN32_SOURCES
+      AND NOT HEADER IN_LIST SKIA_SDL_SOURCES
       AND NOT HEADER IN_LIST DIRECT2D_SOURCES
       AND NOT HEADER IN_LIST WIN32_ONLY_SOURCES
+      AND NOT HEADER IN_LIST SDL_SOURCES
+      AND NOT HEADER IN_LIST LINUX_ONLY_SOURCES
     )
       message(FATAL_ERROR "Header '${HEADER}' must be explicitly added to ${CMAKE_CURRENT_LIST_FILE}")
     endif ()

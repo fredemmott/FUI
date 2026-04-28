@@ -1,10 +1,9 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// Linux `Window` base class — see LinuxWindow.hpp for scope.
+// Linux `Window` base class — see SdlWindow.hpp for scope.
 
-#include "LinuxWindow.hpp"
-#include "TooltipPassthrough.hpp"
+#include "SdlWindow.hpp"
 
 #include <SDL3/SDL.h>
 #include <Yoga.h>
@@ -31,12 +30,12 @@ namespace FredEmmott::GUI {
 
 namespace {
 
-// Allocated once per process on first LinuxWindow construction.
+// Allocated once per process on first SdlWindow construction.
 uint32_t gInterruptEventType = 0;
 
-constexpr LiteralStyleClass ActualRootStyleClass {"LinuxWindow/Root"};
+constexpr LiteralStyleClass ActualRootStyleClass {"SdlWindow/Root"};
 constexpr LiteralStyleClass ImmediateRootStyleClass {
-  "LinuxWindow/ImmediateRoot"};
+  "SdlWindow/ImmediateRoot"};
 
 const auto& ActualRootStyles() {
   static const ImmutableStyle ret {
@@ -149,8 +148,8 @@ MouseButtons MapMouseButtonMask(uint32_t sdlMask) {
 
 }// namespace
 
-LinuxWindow::LinuxWindow(Options options)
-  : LinuxWindow(
+SdlWindow::SdlWindow(Options options)
+  : SdlWindow(
       std::make_unique<Widgets::Widget>(
         this,
         ActualRootStyleClass,
@@ -162,7 +161,7 @@ LinuxWindow::LinuxWindow(Options options)
       std::move(options)) {
 }
 
-LinuxWindow::LinuxWindow(
+SdlWindow::SdlWindow(
   std::unique_ptr<Widgets::Widget> actualRoot,
   Widgets::Widget* immediateRoot,
   Options options)
@@ -188,7 +187,7 @@ LinuxWindow::LinuxWindow(
   mInterruptEventType = gInterruptEventType;
 }
 
-LinuxWindow::~LinuxWindow() {
+SdlWindow::~SdlWindow() {
   for (auto*& cursor : mCursors) {
     if (cursor) {
       SDL_DestroyCursor(cursor);
@@ -204,11 +203,11 @@ LinuxWindow::~LinuxWindow() {
 
 // -- InitializeWindow: actually opens the SDL3 window ----------------------
 
-uint64_t LinuxWindow::GetSDLWindowFlags() const {
+uint64_t SdlWindow::GetSDLWindowFlags() const {
   return SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 }
 
-void LinuxWindow::InitializeWindow() {
+void SdlWindow::InitializeWindow() {
   if (mSDLWindow) {
     return;
   }
@@ -229,13 +228,6 @@ void LinuxWindow::InitializeWindow() {
     if (!mSDLWindow) {
       std::fprintf(
         stderr, "SDL_CreatePopupWindow failed: %s\n", SDL_GetError());
-      return;
-    }
-    if (mIsTooltip) {
-      // Tooltip popups must be mouse-passthrough so the parent widget keeps
-      // the cursor during a drag. Win32 uses WS_EX_TRANSPARENT; on Linux we
-      // clear the surface's input region directly (Wayland or X11 path).
-      Linux::MakePopupInputPassthrough(mSDLWindow);
     }
     return;
   }
@@ -253,7 +245,7 @@ void LinuxWindow::InitializeWindow() {
     mOptions.mHorizontalResizeMode, mOptions.mVerticalResizeMode);
 }
 
-void LinuxWindow::HideWindow() {
+void SdlWindow::HideWindow() {
   if (mSDLWindow) {
     SDL_HideWindow(mSDLWindow);
   }
@@ -304,7 +296,7 @@ static SDL_WindowID EventTargetWindowID(const SDL_Event& e) {
   }
 }
 
-void LinuxWindow::ProcessNativeEvents() {
+void SdlWindow::ProcessNativeEvents() {
   if (!mSDLWindow) {
     return;
   }
@@ -337,7 +329,7 @@ void LinuxWindow::ProcessNativeEvents() {
   this->MaybeDispatchHover();
 }
 
-void LinuxWindow::DispatchSDLEvent(const SDL_Event& e) {
+void SdlWindow::DispatchSDLEvent(const SDL_Event& e) {
   if (e.type == mInterruptEventType) {
     return;
   }
@@ -425,7 +417,7 @@ void LinuxWindow::DispatchSDLEvent(const SDL_Event& e) {
   }
 }
 
-void LinuxWindow::DispatchKeyEvent(const SDL_Event& e, bool pressed) {
+void SdlWindow::DispatchKeyEvent(const SDL_Event& e, bool pressed) {
   const auto keyCode = MapKeycode(e.key.key);
   if (!keyCode) {
     return;
@@ -440,7 +432,7 @@ void LinuxWindow::DispatchKeyEvent(const SDL_Event& e, bool pressed) {
   }
 }
 
-void LinuxWindow::DispatchMouseMotion(const SDL_Event& e) {
+void SdlWindow::DispatchMouseMotion(const SDL_Event& e) {
   MouseEvent me;
   me.mWindowPoint = Point {e.motion.x, e.motion.y};
   me.mButtons = MapMouseButtonMask(e.motion.state);
@@ -458,7 +450,7 @@ void LinuxWindow::DispatchMouseMotion(const SDL_Event& e) {
   mHoverPending = true;
 }
 
-void LinuxWindow::DispatchMouseButton(const SDL_Event& e, bool pressed) {
+void SdlWindow::DispatchMouseButton(const SDL_Event& e, bool pressed) {
   const auto btn = MapMouseButton(e.button.button);
   if (btn == MouseButton::None) {
     return;
@@ -470,12 +462,7 @@ void LinuxWindow::DispatchMouseButton(const SDL_Event& e, bool pressed) {
   float _x {}, _y {};
   me.mButtons = MapMouseButtonMask(SDL_GetMouseState(&_x, &_y));
   if (pressed) {
-    // SDL3's clicks counter is OS-tuned for double-click time and pixel
-    // drift; 1 = single, 2 = second of a double-click, 3 = third of a
-    // triple-click. Synthesised events report 0, so clamp to 1.
-    const auto clicks = static_cast<std::uint8_t>(
-      e.button.clicks > 0 ? e.button.clicks : 1);
-    me.mDetail = MouseEvent::ButtonPressEvent {btn, clicks};
+    me.mDetail = MouseEvent::ButtonPressEvent {btn};
   } else {
     me.mDetail = MouseEvent::ButtonReleaseEvent {btn};
   }
@@ -497,7 +484,7 @@ namespace {
 constexpr std::chrono::milliseconds kHoverDelay {400};
 }// namespace
 
-void LinuxWindow::MaybeDispatchHover() {
+void SdlWindow::MaybeDispatchHover() {
   if (!mHoverPending || !mMouseInside || mLastMousePos.mX < 0) {
     return;
   }
@@ -544,7 +531,7 @@ MouseButton MapPenBarrelButton(uint8_t sdlButtonIndex) {
 
 }// namespace
 
-void LinuxWindow::HandlePenProximity(const SDL_Event& e, bool entered) {
+void SdlWindow::HandlePenProximity(const SDL_Event& e, bool entered) {
   const auto id = static_cast<uint32_t>(e.pproximity.which);
   if (entered) {
     mPenAxes[id] = MouseEvent::PenAxes {};
@@ -553,7 +540,7 @@ void LinuxWindow::HandlePenProximity(const SDL_Event& e, bool entered) {
   }
 }
 
-void LinuxWindow::HandlePenAxis(const SDL_Event& e) {
+void SdlWindow::HandlePenAxis(const SDL_Event& e) {
   auto& axes = mPenAxes[static_cast<uint32_t>(e.paxis.which)];
   axes.mEraser = (e.paxis.pen_state & SDL_PEN_INPUT_ERASER_TIP) != 0;
   switch (e.paxis.axis) {
@@ -579,7 +566,7 @@ void LinuxWindow::HandlePenAxis(const SDL_Event& e) {
   }
 }
 
-void LinuxWindow::DispatchPenMotion(const SDL_Event& e) {
+void SdlWindow::DispatchPenMotion(const SDL_Event& e) {
   auto& axes = mPenAxes[static_cast<uint32_t>(e.pmotion.which)];
   axes.mEraser = (e.pmotion.pen_state & SDL_PEN_INPUT_ERASER_TIP) != 0;
   MouseEvent me;
@@ -597,7 +584,7 @@ void LinuxWindow::DispatchPenMotion(const SDL_Event& e) {
              : Cursor::Default);
 }
 
-void LinuxWindow::DispatchPenTouch(const SDL_Event& e, bool pressed) {
+void SdlWindow::DispatchPenTouch(const SDL_Event& e, bool pressed) {
   auto& axes = mPenAxes[static_cast<uint32_t>(e.ptouch.which)];
   axes.mEraser = e.ptouch.eraser;
   MouseEvent me;
@@ -614,7 +601,7 @@ void LinuxWindow::DispatchPenTouch(const SDL_Event& e, bool pressed) {
   this->DispatchEvent(me);
 }
 
-void LinuxWindow::DispatchPenButton(const SDL_Event& e, bool pressed) {
+void SdlWindow::DispatchPenButton(const SDL_Event& e, bool pressed) {
   const auto btn = MapPenBarrelButton(e.pbutton.button);
   if (btn == MouseButton::None) {
     return;
@@ -636,7 +623,7 @@ void LinuxWindow::DispatchPenButton(const SDL_Event& e, bool pressed) {
   this->DispatchEvent(me);
 }
 
-void LinuxWindow::DispatchMouseWheel(const SDL_Event& e) {
+void SdlWindow::DispatchMouseWheel(const SDL_Event& e) {
   MouseEvent me;
   me.mWindowPoint = Point {e.wheel.mouse_x, e.wheel.mouse_y};
   float _x {}, _y {};
@@ -654,7 +641,7 @@ void LinuxWindow::DispatchMouseWheel(const SDL_Event& e) {
 
 // -- Wait / interrupt ------------------------------------------------------
 
-void LinuxWindow::InterruptWaitFrame() {
+void SdlWindow::InterruptWaitFrame() {
   if (mInterruptEventType == 0) {
     return;
   }
@@ -663,7 +650,7 @@ void LinuxWindow::InterruptWaitFrame() {
   SDL_PushEvent(&e);
 }
 
-void LinuxWindow::WaitFrameImpl(
+void SdlWindow::WaitFrameImpl(
   std::span<const NativeWaitable> waitables,
   std::chrono::steady_clock::time_point until) const {
   // TODO: waitables (FDs) are ignored. SDL_WaitEventTimeout blocks until
@@ -714,7 +701,7 @@ SDL_SystemCursor MapCursor(Cursor c) {
 
 }// namespace
 
-void LinuxWindow::ApplyCursor(Cursor desired) {
+void SdlWindow::ApplyCursor(Cursor desired) {
   if (desired == mCurrentCursor && mCursors[static_cast<size_t>(desired)]) {
     return;
   }
@@ -733,7 +720,7 @@ void LinuxWindow::ApplyCursor(Cursor desired) {
 
 // -- Clipboard -------------------------------------------------------------
 
-std::optional<std::string> LinuxWindow::GetClipboardText() const {
+std::optional<std::string> SdlWindow::GetClipboardText() const {
   if (!SDL_HasClipboardText()) {
     return std::nullopt;
   }
@@ -746,14 +733,14 @@ std::optional<std::string> LinuxWindow::GetClipboardText() const {
   return ret;
 }
 
-void LinuxWindow::SetClipboardText(std::string_view text) const {
+void SdlWindow::SetClipboardText(std::string_view text) const {
   const std::string nul {text};// SDL needs null-terminated
   SDL_SetClipboardText(nul.c_str());
 }
 
 // -- Window-level getters / setters ----------------------------------------
 
-void LinuxWindow::SetTitle(std::string_view text) {
+void SdlWindow::SetTitle(std::string_view text) {
   const std::string nul {text};
   mOptions.mTitle = nul;
   if (mSDLWindow) {
@@ -761,18 +748,18 @@ void LinuxWindow::SetTitle(std::string_view text) {
   }
 }
 
-bool LinuxWindow::SetSubtitle(std::string_view) {
+bool SdlWindow::SetSubtitle(std::string_view) {
   return false;
 }
 
-Window::NativeHandle LinuxWindow::GetNativeHandle() const noexcept {
+Window::NativeHandle SdlWindow::GetNativeHandle() const noexcept {
   return NativeHandle {mSDLWindow};
 }
 
-void LinuxWindow::SetInitialPositionInNativeCoords(const NativePoint& native) {
+void SdlWindow::SetInitialPositionInNativeCoords(const NativePoint& native) {
   if (mPopupParent && !mSDLWindow) {
     // Popup-mode pre-creation: stash for SDL_CreatePopupWindow's
-    // offset_x/offset_y. LinuxWindow's CanvasPointToNativePoint returns
+    // offset_x/offset_y. SdlWindow's CanvasPointToNativePoint returns
     // window-local coords (just rounded), which is exactly what
     // SDL_CreatePopupWindow expects ("relative to the origin of the
     // parent").
@@ -785,7 +772,7 @@ void LinuxWindow::SetInitialPositionInNativeCoords(const NativePoint& native) {
   }
 }
 
-void LinuxWindow::SetResizeMode(ResizeMode horizontal, ResizeMode vertical) {
+void SdlWindow::SetResizeMode(ResizeMode horizontal, ResizeMode vertical) {
   if (!mSDLWindow) {
     return;
   }
@@ -794,7 +781,7 @@ void LinuxWindow::SetResizeMode(ResizeMode horizontal, ResizeMode vertical) {
   SDL_SetWindowResizable(mSDLWindow, anyAllow);
 }
 
-Size LinuxWindow::GetCanvasSize() const {
+Size SdlWindow::GetCanvasSize() const {
   if (!mSDLWindow) {
     return {};
   }
@@ -803,7 +790,7 @@ Size LinuxWindow::GetCanvasSize() const {
   return {static_cast<float>(w), static_cast<float>(h)};
 }
 
-float LinuxWindow::GetDPIScale() const {
+float SdlWindow::GetDPIScale() const {
   if (!mSDLWindow) {
     return 1.0f;
   }
@@ -811,21 +798,21 @@ float LinuxWindow::GetDPIScale() const {
   return scale > 0.0f ? scale : 1.0f;
 }
 
-NativePoint LinuxWindow::CanvasPointToNativePoint(const Point& canvas) const {
+NativePoint SdlWindow::CanvasPointToNativePoint(const Point& canvas) const {
   return NativePoint {
     static_cast<int32_t>(std::lround(canvas.mX)),
     static_cast<int32_t>(std::lround(canvas.mY)),
   };
 }
 
-Point LinuxWindow::NativePointToCanvasPoint(const NativePoint& native) const {
+Point SdlWindow::NativePointToCanvasPoint(const NativePoint& native) const {
   return Point {
     static_cast<float>(native.mX),
     static_cast<float>(native.mY),
   };
 }
 
-void LinuxWindow::ResizeIfNeeded() {
+void SdlWindow::ResizeIfNeeded() {
   // Auto-fit popups to their content. FUI's cross-platform popup flow
   // doesn't call ResizeToFit for tooltips/menus — Win32Window picks up
   // the right size at HWND creation via GetInitialWindowSize. We don't
@@ -840,13 +827,6 @@ void LinuxWindow::ResizeIfNeeded() {
   if (mPopupParent) {
     this->ResizeToIdeal();
   }
-  // Tooltip popups must be mouse-passthrough (Win32's WS_EX_TRANSPARENT
-  // analogue). On Wayland the input region is double-buffered state that
-  // SDL3 may reset during its own surface bookkeeping, so re-stage the
-  // empty region every frame; SDL3's next commit delivers it. No-op on X11.
-  if (mIsTooltip && mSDLWindow) {
-    Linux::RestakeTooltipInputRegion(mSDLWindow);
-  }
   // The popup-fit above may have called SDL_SetWindowSize, so the backend
   // hook runs after it — that's where the swapchain reads the new SDL
   // pixel size and rebuilds.
@@ -854,23 +834,23 @@ void LinuxWindow::ResizeIfNeeded() {
   mNeedsResize.store(false, std::memory_order_release);
 }
 
-Color LinuxWindow::GetClearColor() const {
+Color SdlWindow::GetClearColor() const {
   return Color {StaticTheme::Common::SolidBackgroundFillColorBase.Resolve(
     StaticTheme::GetCurrent())};
 }
 
-void LinuxWindow::SetParent(NativeHandle nh) {
+void SdlWindow::SetParent(NativeHandle nh) {
   // Stash the parent SDL_Window* for InitializeWindow to consume. SDL
   // popups must be created with their parent at creation time —
   // SDL_CreatePopupWindow has no equivalent of "reparent later".
   mPopupParent = static_cast<SDL_Window*>(nh.mValue);
 }
 
-void LinuxWindow::OffsetPositionToDescendant(Widgets::Widget*) {
+void SdlWindow::OffsetPositionToDescendant(Widgets::Widget*) {
   // Used to re-anchor a popup; not yet implemented.
 }
 
-void LinuxWindow::ResizeToIdeal() {
+void SdlWindow::ResizeToIdeal() {
   if (!mSDLWindow) {
     return;
   }
@@ -896,15 +876,15 @@ void LinuxWindow::ResizeToIdeal() {
     static_cast<int>(std::ceil(h)));
 }
 
-bool LinuxWindow::IsDisabled() const {
+bool SdlWindow::IsDisabled() const {
   return false;
 }
 
-bool LinuxWindow::IsPopup() const noexcept {
+bool SdlWindow::IsPopup() const noexcept {
   return mPopupParent != nullptr;
 }
 
-void LinuxWindow::SetIsToolTip() {
+void SdlWindow::SetIsToolTip() {
   // Must be called BEFORE InitializeWindow; SDL_CreatePopupWindow's
   // tooltip flag is fixed at creation. SetIsToolTip happens early in
   // FUI's tooltip widget setup, well before BeginFrame, so the
@@ -912,7 +892,7 @@ void LinuxWindow::SetIsToolTip() {
   mIsTooltip = true;
 }
 
-void LinuxWindow::SetBackdrop(const WindowBackdrop&) {
+void SdlWindow::SetBackdrop(const WindowBackdrop&) {
   // Linux has no Mica/Acrylic; solid color is what we get. See plan.md §0.5.
 }
 

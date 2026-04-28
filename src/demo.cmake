@@ -37,7 +37,7 @@ if (WIN32)
     "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 else ()
-  # Linux entry point — pulls in LinuxWindow via fredemmott-gui's public link.
+  # Linux entry point — pulls in SdlWindow via fredemmott-gui's public link.
   target_sources(
     fredemmott-gui-demo
     PRIVATE

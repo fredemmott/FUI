@@ -221,7 +221,7 @@ class Color final {
   using Constant = ColorConstant;
   Color() = delete;
   constexpr Color(const Constant& color) : mVariant(color) {}
-  constexpr Color(nullptr_t) = delete;
+  constexpr Color(std::nullptr_t) = delete;
   constexpr Color(SystemTheme::ColorType u) : mVariant(u) {}
 
   constexpr bool operator==(const Color& other) const noexcept {

@@ -39,7 +39,7 @@ class Window {
 #else
     // Platform-opaque placeholder. Linux backends will stash their
     // native surface pointer here (SDL_Window*, wl_surface*, Window
-    // xid bit-cast, etc.) depending on what LinuxWindow picks.
+    // xid bit-cast, etc.) depending on what SdlWindow picks.
     void* mValue {};
 #endif
 

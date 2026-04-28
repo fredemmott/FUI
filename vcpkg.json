@@ -36,6 +36,14 @@
     {
       "name": "direct2d",
       "platform": "windows"
+    },
+    {
+      "name": "skia",
+      "platform": "!windows"
+    },
+    {
+      "name": "icu",
+      "platform": "!windows"
     }
   ],
   "features": {

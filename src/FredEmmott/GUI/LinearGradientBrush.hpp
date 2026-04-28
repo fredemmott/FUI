@@ -45,7 +45,7 @@ class LinearGradientBrush final {
         mColor(color) {}
     constexpr bool operator==(const Stop&) const noexcept = default;
   };
-  using ScaleTransform = ScaleTransform;
+  using ScaleTransform = ::FredEmmott::GUI::ScaleTransform;
 
   LinearGradientBrush() = delete;
 
@@ -90,6 +90,12 @@ class LinearGradientBrush final {
   struct SkiaCache {
     sk_sp<SkShader> mShader;
     SkMatrix mScaleMatrix {};
+    // clang 21 + libstdc++ 15 quirk: `SkiaCache() = default;` combined with
+    // the in-class `{}` initializer above leaves SkiaCache reported as
+    // non-default-constructible by std::is_default_constructible_v, breaking
+    // std::optional<SkiaCache>::emplace(). An empty user-provided body
+    // sidesteps it; members still get the in-class initializers.
+    SkiaCache() {}
     bool operator==(const SkiaCache&) const noexcept = default;
   };
   std::optional<SkiaCache> mSkiaCache;

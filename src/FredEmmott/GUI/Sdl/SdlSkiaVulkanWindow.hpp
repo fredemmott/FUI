@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 //
 // Linux `Window` implementation: Skia Ganesh backed by Vulkan. Sits on top
-// of LinuxWindow (SDL3 windowing/input) and fills in the render-side pure
+// of SdlWindow (SDL3 windowing/input) and fills in the render-side pure
 // virtuals: InitializeGraphicsAPI, GetFramePainter, ResizeBackend, CreatePopup.
 //
 // Parallel to Windows/Win32Direct3D12GaneshWindow (Skia Ganesh on D3D12).
@@ -20,25 +20,25 @@
 #include <memory>
 #include <vector>
 
-#include "LinuxWindow.hpp"
+#include "SdlWindow.hpp"
 
 namespace FredEmmott::GUI {
 
-class LinuxSkiaVulkanWindow final : public LinuxWindow {
+class SdlSkiaVulkanWindow final : public SdlWindow {
  public:
-  explicit LinuxSkiaVulkanWindow(Options options);
-  ~LinuxSkiaVulkanWindow() override;
+  explicit SdlSkiaVulkanWindow(Options options);
+  ~SdlSkiaVulkanWindow() override;
 
   // Static driver: construct, run FUI frame loop with `appTick`, return
   // exit code. Parallels Win32Window::WinMain.
   static int Run(
     const Options& options,
-    const std::function<void(LinuxSkiaVulkanWindow&)>& appTick);
+    const std::function<void(SdlSkiaVulkanWindow&)>& appTick);
 
  public:
-  // Override of LinuxWindow::CreatePopup (which returns null because the
-  // base LinuxWindow has no renderer). Returns a fresh
-  // LinuxSkiaVulkanWindow with its own VkInstance/Device/Swapchain;
+  // Override of SdlWindow::CreatePopup (which returns null because the
+  // base SdlWindow has no renderer). Returns a fresh
+  // SdlSkiaVulkanWindow with its own VkInstance/Device/Swapchain;
   // SetParent + SetInitialPositionInNativeCoords + SetIsToolTip then
   // configure it as an SDL popup before its first BeginFrame.
   [[nodiscard]] std::unique_ptr<Window> CreatePopup() const override;

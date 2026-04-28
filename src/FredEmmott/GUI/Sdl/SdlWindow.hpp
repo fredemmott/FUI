@@ -3,7 +3,7 @@
 //
 // Linux `Window` base class: SDL3-backed windowing, event pump, clipboard,
 // cursor, interrupt. Abstract — rendering is provided by a subclass
-// (currently LinuxSkiaVulkanWindow, Skia Ganesh on Vulkan), which fills
+// (currently SdlSkiaVulkanWindow, Skia Ganesh on Vulkan), which fills
 // in the render-side pure virtuals: InitializeGraphicsAPI, GetFramePainter,
 // ResizeBackend, CreatePopup.
 #pragma once
@@ -28,7 +28,7 @@ union SDL_Event;
 
 namespace FredEmmott::GUI {
 
-class LinuxWindow : public Window {
+class SdlWindow : public Window {
  public:
   struct Options {
     std::string mTitle = "FUI";
@@ -37,8 +37,8 @@ class LinuxWindow : public Window {
     ResizeMode mVerticalResizeMode {ResizeMode::Allow};
   };
 
-  explicit LinuxWindow(Options options);
-  ~LinuxWindow() override;
+  explicit SdlWindow(Options options);
+  ~SdlWindow() override;
 
   // -- Window overrides ------------------------------------------------------
 
@@ -65,7 +65,7 @@ class LinuxWindow : public Window {
   void SetIsToolTip() override;
 
  protected:
-  // Subclasses (LinuxSkiaVulkanWindow) override to add flags like
+  // Subclasses (SdlSkiaVulkanWindow) override to add flags like
   // SDL_WINDOW_VULKAN. Base returns resizable + high-DPI flags.
   // Return type is uint64_t to avoid leaking SDL_WindowFlags into the
   // header — the .cpp casts it back to SDL_WindowFlags on use.
@@ -91,7 +91,7 @@ class LinuxWindow : public Window {
  private:
   // Delegating ctor owns root widgets like Win32Window does, so the Window
   // base has valid non-null roots by the time Immediate::Root constructs.
-  LinuxWindow(
+  SdlWindow(
     std::unique_ptr<Widgets::Widget> actualRoot,
     Widgets::Widget* immediateRoot,
     Options options);
@@ -106,7 +106,7 @@ class LinuxWindow : public Window {
   // runs; if non-null, InitializeWindow uses SDL_CreatePopupWindow with
   // SDL_WINDOW_POPUP_MENU (or SDL_WINDOW_TOOLTIP if SetIsToolTip was
   // called) instead of SDL_CreateWindow. The offset is parent-relative
-  // window coords (LinuxWindow's CanvasPointToNativePoint hands those back
+  // window coords (SdlWindow's CanvasPointToNativePoint hands those back
   // unchanged), which is exactly what SDL_CreatePopupWindow wants.
   SDL_Window* mPopupParent {nullptr};
   int mPopupOffsetX {0};

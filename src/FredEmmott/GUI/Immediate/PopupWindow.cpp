@@ -56,8 +56,8 @@ BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
   BeginWidget<PopupWindow>(id);
   auto window = GetCurrentParentNode<PopupWindow>()->GetWindow();
   if (!window) {
-    // Window backend doesn't support popups (e.g. base LinuxWindow
-    // returns {} from CreatePopup; LinuxSkiaVulkanWindow overrides).
+    // Window backend doesn't support popups (e.g. base SdlWindow
+    // returns {} from CreatePopup; SdlSkiaVulkanWindow overrides).
     // Treat as immediately-closed: undo the widget push and report
     // "not active" so callers' if-blocks skip the popup body.
     // Mirrors the BeginFrame-failed cleanup below, but at the earlier

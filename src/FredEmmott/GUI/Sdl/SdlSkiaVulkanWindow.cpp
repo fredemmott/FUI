@@ -1,14 +1,14 @@
 // Copyright 2026 Fred Emmott <fred@fredemmott.com>
 // SPDX-License-Identifier: MIT
 //
-// LinuxSkiaVulkanWindow — see LinuxSkiaVulkanWindow.hpp for scope.
+// SdlSkiaVulkanWindow — see SdlSkiaVulkanWindow.hpp for scope.
 //
 // Deliberately simple Vulkan init: 1 graphics+present queue, BGRA8 SRGB
 // swapchain, FIFO present mode (v-synced, no tearing). No MSAA; Skia does
 // its own multisample inside Ganesh. The complexity sits in the swapchain
 // rebuild path (resize) and the per-frame Skia surface wrapping.
 
-#include "LinuxSkiaVulkanWindow.hpp"
+#include "SdlSkiaVulkanWindow.hpp"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -187,11 +187,11 @@ bool HasInstanceExtension(const char* ext) {
 
 // --- FramePainter ---------------------------------------------------------
 
-class LinuxSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
+class SdlSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
  public:
   FramePainter() = delete;
   FramePainter(
-    LinuxSkiaVulkanWindow* window,
+    SdlSkiaVulkanWindow* window,
     uint32_t imageIndex,
     VkSemaphore acquireSem,
     sk_sp<SkSurface> surface)
@@ -257,7 +257,7 @@ class LinuxSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
   }
 
  private:
-  LinuxSkiaVulkanWindow* mWindow {nullptr};
+  SdlSkiaVulkanWindow* mWindow {nullptr};
   uint32_t mImageIndex {0};
   VkSemaphore mAcquireSem {VK_NULL_HANDLE};
   sk_sp<SkSurface> mSurface;
@@ -266,8 +266,8 @@ class LinuxSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
 
 // --- Lifecycle ------------------------------------------------------------
 
-LinuxSkiaVulkanWindow::LinuxSkiaVulkanWindow(Options options)
-  : LinuxWindow(std::move(options)) {
+SdlSkiaVulkanWindow::SdlSkiaVulkanWindow(Options options)
+  : SdlWindow(std::move(options)) {
   // Must run before SystemFont::GetFontManager() (called lazily on first
   // text-measure) so fontconfig sees the path on its first FcInit call.
   EnsureFontconfigConfig();
@@ -285,10 +285,10 @@ LinuxSkiaVulkanWindow::LinuxSkiaVulkanWindow(Options options)
   }
 }
 
-int LinuxSkiaVulkanWindow::Run(
+int SdlSkiaVulkanWindow::Run(
   const Options& options,
-  const std::function<void(LinuxSkiaVulkanWindow&)>& appTick) {
-  LinuxSkiaVulkanWindow window(options);
+  const std::function<void(SdlSkiaVulkanWindow&)>& appTick) {
+  SdlSkiaVulkanWindow window(options);
   window.SetCancelAction([&] { window.RequestStop(EXIT_SUCCESS); });
   // Pre-create the SDL window so InitializeGraphicsAPI's CreateSurface has
   // something to hand to SDL_Vulkan_CreateSurface on the first BeginFrame.
@@ -309,7 +309,7 @@ int LinuxSkiaVulkanWindow::Run(
   }
 }
 
-LinuxSkiaVulkanWindow::~LinuxSkiaVulkanWindow() {
+SdlSkiaVulkanWindow::~SdlSkiaVulkanWindow() {
   if (mDevice != VK_NULL_HANDLE) {
     vkDeviceWaitIdle(mDevice);
   }
@@ -317,13 +317,13 @@ LinuxSkiaVulkanWindow::~LinuxSkiaVulkanWindow() {
   this->DestroyVulkan();
 }
 
-uint64_t LinuxSkiaVulkanWindow::GetSDLWindowFlags() const {
+uint64_t SdlSkiaVulkanWindow::GetSDLWindowFlags() const {
   // Inherit base flags (resizable, HiDPI) and add SDL_WINDOW_VULKAN so
   // SDL_Vulkan_CreateSurface() works on the resulting window.
-  return LinuxWindow::GetSDLWindowFlags() | SDL_WINDOW_VULKAN;
+  return SdlWindow::GetSDLWindowFlags() | SDL_WINDOW_VULKAN;
 }
 
-void LinuxSkiaVulkanWindow::InitializeGraphicsAPI() {
+void SdlSkiaVulkanWindow::InitializeGraphicsAPI() {
   // Run() pre-creates the SDL window before the first BeginFrame, but
   // the popup path (BeginBasicPopupWindow → BeginFrame) doesn't — it
   // expects InitializeWindow to be called lazily. Do it here so
@@ -340,10 +340,10 @@ void LinuxSkiaVulkanWindow::InitializeGraphicsAPI() {
   this->WrapSwapchainImagesAsSkSurfaces();
 }
 
-std::unique_ptr<Window> LinuxSkiaVulkanWindow::CreatePopup() const {
+std::unique_ptr<Window> SdlSkiaVulkanWindow::CreatePopup() const {
   // 240x80 is a placeholder — popups should be sized by their content
   // after layout. Real auto-sizing is a follow-up.
-  return std::make_unique<LinuxSkiaVulkanWindow>(
+  return std::make_unique<SdlSkiaVulkanWindow>(
     Options {
       .mTitle = "FUI popup",
       .mInitialSize = Size {240, 80},
@@ -352,7 +352,7 @@ std::unique_ptr<Window> LinuxSkiaVulkanWindow::CreatePopup() const {
 
 // --- CreateInstance -------------------------------------------------------
 
-void LinuxSkiaVulkanWindow::CreateInstance() {
+void SdlSkiaVulkanWindow::CreateInstance() {
   // SDL tells us which instance extensions are needed to present on this
   // platform (VK_KHR_surface + one of VK_KHR_xlib_surface / _xcb_surface /
   // _wayland_surface, plus portability bits).
@@ -429,13 +429,13 @@ void LinuxSkiaVulkanWindow::CreateInstance() {
   }
 }
 
-void LinuxSkiaVulkanWindow::CreateSurface() {
+void SdlSkiaVulkanWindow::CreateSurface() {
   // Cast from Window::NativeHandle (void*) to SDL_Window* — see
-  // LinuxWindow::GetNativeHandle.
+  // SdlWindow::GetNativeHandle.
   auto* const sdl = static_cast<SDL_Window*>(this->GetNativeHandle().mValue);
   if (!sdl) {
     throw std::runtime_error(
-      "CreateSurface called before LinuxWindow::InitializeWindow");
+      "CreateSurface called before SdlWindow::InitializeWindow");
   }
   if (!SDL_Vulkan_CreateSurface(sdl, mInstance, nullptr, &mSurface)) {
     throw std::runtime_error(
@@ -445,7 +445,7 @@ void LinuxSkiaVulkanWindow::CreateSurface() {
 
 // --- PickPhysicalDevice ---------------------------------------------------
 
-void LinuxSkiaVulkanWindow::PickPhysicalDevice() {
+void SdlSkiaVulkanWindow::PickPhysicalDevice() {
   uint32_t count = 0;
   vkEnumeratePhysicalDevices(mInstance, &count, nullptr);
   if (count == 0) {
@@ -498,7 +498,7 @@ void LinuxSkiaVulkanWindow::PickPhysicalDevice() {
 
 // --- CreateDevice ---------------------------------------------------------
 
-void LinuxSkiaVulkanWindow::CreateDevice() {
+void SdlSkiaVulkanWindow::CreateDevice() {
   const float priority = 1.0f;
   const VkDeviceQueueCreateInfo queueCreate {
     .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -537,7 +537,7 @@ void LinuxSkiaVulkanWindow::CreateDevice() {
 
 // --- CreateSwapchain ------------------------------------------------------
 
-void LinuxSkiaVulkanWindow::CreateSwapchain() {
+void SdlSkiaVulkanWindow::CreateSwapchain() {
   VkSurfaceCapabilitiesKHR caps {};
   Check(
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -657,7 +657,7 @@ void LinuxSkiaVulkanWindow::CreateSwapchain() {
 
 // --- CreateSkiaContext ----------------------------------------------------
 
-void LinuxSkiaVulkanWindow::CreateSkiaContext() {
+void SdlSkiaVulkanWindow::CreateSkiaContext() {
   // Skia needs function pointers for the Vulkan entry points via its own
   // GrVkGetProc signature (a std::function that dispatches instance or
   // device procs depending on arguments). The small lambda wraps our
@@ -706,7 +706,7 @@ void LinuxSkiaVulkanWindow::CreateSkiaContext() {
 
 // --- WrapSwapchainImagesAsSkSurfaces --------------------------------------
 
-void LinuxSkiaVulkanWindow::WrapSwapchainImagesAsSkSurfaces() {
+void SdlSkiaVulkanWindow::WrapSwapchainImagesAsSkSurfaces() {
   // One-time self-test before we wrap anything. Logs Skia's preferred
   // VkFormat for kBGRA_8888 + renderable; if it differs from what the
   // swapchain handed us, we have a format mismatch that wrap silently
@@ -796,8 +796,8 @@ void LinuxSkiaVulkanWindow::WrapSwapchainImagesAsSkSurfaces() {
 
 // --- Resize ---------------------------------------------------------------
 
-void LinuxSkiaVulkanWindow::ResizeBackend() {
-  // Called by LinuxWindow::ResizeIfNeeded after popup auto-fit (which
+void SdlSkiaVulkanWindow::ResizeBackend() {
+  // Called by SdlWindow::ResizeIfNeeded after popup auto-fit (which
   // may have called SDL_SetWindowSize). Re-query SDL pixel size and
   // rebuild the swapchain in the same frame if it changed.
   auto* const sdl = static_cast<SDL_Window*>(this->GetNativeHandle().mValue);
@@ -820,7 +820,7 @@ void LinuxSkiaVulkanWindow::ResizeBackend() {
 // --- GetFramePainter ------------------------------------------------------
 
 std::unique_ptr<Window::BasicFramePainter>
-LinuxSkiaVulkanWindow::GetFramePainter(uint8_t frameIndex) {
+SdlSkiaVulkanWindow::GetFramePainter(uint8_t frameIndex) {
   // Pick any semaphore as "will be signaled by acquire". Pass it to
   // vkAcquireNextImageKHR; the returned imageIndex tells us which image
   // that semaphore attaches to. We'll then use per-image mRenderFinished
@@ -850,7 +850,7 @@ LinuxSkiaVulkanWindow::GetFramePainter(uint8_t frameIndex) {
 
 // --- Teardown -------------------------------------------------------------
 
-void LinuxSkiaVulkanWindow::DestroySwapchainResources() {
+void SdlSkiaVulkanWindow::DestroySwapchainResources() {
   if (mDevice == VK_NULL_HANDLE) {
     return;
   }
@@ -871,7 +871,7 @@ void LinuxSkiaVulkanWindow::DestroySwapchainResources() {
   }
 }
 
-void LinuxSkiaVulkanWindow::DestroyVulkan() {
+void SdlSkiaVulkanWindow::DestroyVulkan() {
   mSkContext.reset();
   if (mDevice) {
     vkDestroyDevice(mDevice, nullptr);

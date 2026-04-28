@@ -20,9 +20,17 @@ struct TransitionState<T> {
   using value_type = T;
   using time_point = std::chrono::steady_clock::time_point;
 
-  T mStartValue {};
+  // No in-class default-init for T-typed members: T may not be default-
+  // constructible (e.g. Brush has a deleted default ctor). Without `{}`
+  // here, the implicit default ctor of TransitionState<T> becomes
+  // SFINAE-friendly-deleted instead of hard-erroring when libstdc++'s
+  // `__is_implicitly_default_constructible_v` trait probes the variant
+  // alternatives via the unordered_map<> value_type. All call sites
+  // construct TransitionState via designated init, which sets these
+  // explicitly.
+  T mStartValue;
   time_point mStartTime;
-  T mEndValue {};
+  T mEndValue;
   time_point mEndTime;
 
   bool mFirstTransition {true};

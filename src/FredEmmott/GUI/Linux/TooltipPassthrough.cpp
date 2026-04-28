@@ -8,7 +8,7 @@
 //
 // Lives in its own translation unit because <X11/Xlib.h> typedefs `KeyCode`,
 // `Window`, `Status`, etc. into the global namespace and clashes with FUI's
-// types if included alongside the rest of the LinuxWindow code.
+// types if included alongside the rest of the SdlWindow code.
 //
 // Implementation strategy:
 //
@@ -23,7 +23,7 @@
 // * X11: XShape ShapeInput is one-shot — once set, the X server keeps it.
 //   So we apply once at popup creation.
 
-#include "TooltipPassthrough.hpp"
+#include <FredEmmott/GUI/detail/sdl_detail/PopupInputPassthrough.hpp>
 
 #include <SDL3/SDL.h>
 #include <wayland-client.h>
@@ -36,7 +36,7 @@
 #include <cstring>
 #include <string_view>
 
-namespace FredEmmott::GUI::Linux {
+namespace FredEmmott::GUI::sdl_detail {
 namespace {
 
 enum class Backend { Unknown, Wayland, X11, Other };
