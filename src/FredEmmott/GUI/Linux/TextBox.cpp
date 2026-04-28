@@ -525,46 +525,8 @@ Widget::EventHandlerResult TextBox::OnMouseButtonPress(const MouseEvent& e) {
     }
   }
 
-  std::uint8_t clicks = 1;
-  if (const auto* press = std::get_if<MouseEvent::ButtonPressEvent>(&e.mDetail)) {
-    clicks = press->mClickCount;
-  }
-
   const auto pos = e.GetPosition();
   const auto idx = this->IndexFromLocalX(pos.mX);
-
-  // Triple-click → select all. Double-click → select word at click. Single
-  // click → set caret + start drag-selection. WinUI3 / Win32 EditCtrl
-  // behavior; ICU's UBRK_WORD gives us the boundary set.
-  if (clicks >= 3) {
-    this->SelectAll();
-    mMouseSelectionAnchor.reset();
-    return StopPropagation;
-  }
-  if (clicks == 2 && !mActiveState.mText.empty()) {
-    // Probe one byte before end-of-text when the click lands past the
-    // last char, so the last word selects instead of collapsing to an
-    // empty range at .size().
-    const auto it = GetWordIterator();
-    const auto textLen = static_cast<int32_t>(mActiveState.mText.size());
-    const auto probe
-      = std::min(static_cast<int32_t>(idx), std::max(0, textLen - 1));
-    auto wordStart = ubrk_preceding(it, probe + 1);
-    auto wordEnd = ubrk_following(it, probe);
-    if (wordStart == UBRK_DONE) {
-      wordStart = 0;
-    }
-    if (wordEnd == UBRK_DONE) {
-      wordEnd = textLen;
-    }
-    this->SetSelection(
-      static_cast<std::size_t>(wordStart),
-      static_cast<std::size_t>(wordEnd));
-    mMouseSelectionAnchor.reset();
-    return StopPropagation;
-  }
-
-  // Single click → caret + start drag.
   mMouseSelectionAnchor = idx;
   this->SetSelection(idx, idx);
   this->StartMouseCapture();

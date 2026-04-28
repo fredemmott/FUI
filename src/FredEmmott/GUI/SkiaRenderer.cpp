@@ -11,7 +11,7 @@
 
 #include <FredEmmott/GUI/SystemFont.hpp>
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
-#include <FredEmmott/GUI/detail/skia_text_fallback.hpp>
+#include <FredEmmott/GUI/detail/skia_paragraph.hpp>
 
 #include "SoftwareBitmap.hpp"
 #include "assert.hpp"
@@ -378,21 +378,18 @@ void SkiaRenderer::DrawText(
   auto paint = brush.as<SkPaint>(this, brushRect);
   paint.setStyle(SkPaint::Style::kFill_Style);
 
-  // Walk the text with per-codepoint typeface fallback so emoji and other
-  // glyphs the main typeface lacks render via fontconfig-discovered fonts
-  // (e.g. Noto Color Emoji) instead of .notdef tofu. Each run is drawn at
-  // the current x cursor and advances by its measured width.
-  using namespace skia_text_fallback_detail;
-  const auto& mainFont = font.as<SkFont>();
-  SkFontMgr* const fontMgr = SystemFont::GetFontManager().get();
-
-  float x = baseline.mX;
-  ForEachRun(mainFont, text, fontMgr, [&](const Run& run) {
-    mCanvas->drawString(
-      SkString {run.mText}, x, baseline.mY, run.mFont, paint);
-    x += run.mFont.measureText(
-      run.mText.data(), run.mText.size(), SkTextEncoding::kUTF8);
-  });
+  // SkParagraph for layout + per-codepoint typeface fallback:
+  // emoji and other glyphs the main typeface lacks resolve through the
+  // FontCollection's font manager instead of rendering as .notdef tofu.
+  auto paragraph = skia_paragraph_detail::BuildSingleStyleParagraph(
+    font.as<SkFont>(), text);
+  paragraph->updateForegroundPaint(0, text.size(), paint);
+  paragraph->layout(std::numeric_limits<float>::infinity());
+  // SkParagraph::paint draws from the paragraph's top-left; baseline.mY is
+  // the alphabetic baseline. Shift up by the baseline-from-top offset so
+  // glyphs land at the same y as the old SkCanvas::drawString call.
+  paragraph->paint(
+    mCanvas, baseline.mX, baseline.mY - paragraph->getAlphabeticBaseline());
 }
 
 #ifdef _WIN32

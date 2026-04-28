@@ -39,7 +39,7 @@
 #include <FredEmmott/GUI/SkiaRenderer.hpp>
 #include <FredEmmott/GUI/SystemFont.hpp>
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
-#include <FredEmmott/GUI/detail/skia_text_fallback.hpp>
+#include <FredEmmott/GUI/detail/skia_paragraph.hpp>
 
 #include <skia/core/SkFont.h>
 #include <skia/core/SkFontMetrics.h>
@@ -85,18 +85,13 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
     if (!font) {
       return std::numeric_limits<float>::quiet_NaN();
     }
-    const auto& sk = font.as<SkFont>();
-    // Sum widths per fallback run so the result matches what
-    // SkiaRenderer::DrawText actually paints when the typeface lacks
-    // glyphs (e.g. emoji served by Noto Color Emoji).
-    using namespace skia_text_fallback_detail;
-    SkFontMgr* const fontMgr = SystemFont::GetFontManager().get();
-    float width = 0.0f;
-    ForEachRun(sk, text, fontMgr, [&](const Run& run) {
-      width += run.mFont.measureText(
-        run.mText.data(), run.mText.size(), SkTextEncoding::kUTF8);
-    });
-    return width;
+    // SkParagraph for per-codepoint typeface fallback (issue #76) so this
+    // matches what SkiaRenderer::DrawText actually paints when the
+    // typeface lacks glyphs (e.g. emoji served by Noto Color Emoji).
+    auto paragraph = skia_paragraph_detail::BuildSingleStyleParagraph(
+      font.as<SkFont>(), text);
+    paragraph->layout(std::numeric_limits<float>::infinity());
+    return paragraph->getMaxIntrinsicWidth();
   }
 
   Font::Metrics GetFontMetrics(const Font& font) const override {

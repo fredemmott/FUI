@@ -19,6 +19,7 @@
 #include <thread>
 
 #include "FredEmmott/GUI/detail/renderer_detail.hpp"
+#include "FredEmmott/GUI/detail/skia_paragraph.hpp"
 #include "FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp"
 
 #if __has_include(<skia/gpu/ganesh/GrDirectContext.h>)
@@ -47,8 +48,13 @@ struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
     if (!font) {
       return std::numeric_limits<float>::quiet_NaN();
     }
-    const auto it = font.as<SkFont>();
-    return it.measureText(text.data(), text.size(), SkTextEncoding::kUTF8);
+    // SkParagraph for per-codepoint typeface fallback so this
+    // matches what SkiaRenderer::DrawText actually paints when the typeface
+    // lacks glyphs.
+    auto paragraph = skia_paragraph_detail::BuildSingleStyleParagraph(
+      font.as<SkFont>(), text);
+    paragraph->layout(std::numeric_limits<float>::infinity());
+    return paragraph->getMaxIntrinsicWidth();
   }
 
   Font::Metrics GetFontMetrics(const Font& font) const override {
