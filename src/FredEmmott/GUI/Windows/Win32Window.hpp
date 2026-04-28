@@ -126,7 +126,7 @@ class Win32Window : public Window {
 
   std::unique_ptr<Window> CreatePopup() const final;
 
-  void SetIsModal(bool modal);
+  void SetIsModal(bool modal) override;
   void SetResizeMode(ResizeMode horizontal, ResizeMode vertical) override;
 
   void MutateStyles(void (*)(DWORD* styles, DWORD* extendedStyles));

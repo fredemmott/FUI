@@ -85,7 +85,17 @@ ToolTipResult BeginToolTipForWidget(Widgets::Widget* w, const ID id) {
     return false;
   }
 
-  ctx->mVisible = BeginBasicPopupWindow(id);
+  // The PopupWindow widget becomes a sibling of the anchor widget `w` in the
+  // parent's frame. If `id` defaulted to ID{source_location::current()} from
+  // a chained call like `Button("...").ToolTip("...")`, Clang collapses both
+  // current() captures to the start of the enclosing statement — Button and
+  // tooltip end up with the same id and the duplicate-sibling assertion in
+  // ChildlessWidget fires. Derive a /ToolTip-suffixed id off the anchor
+  // when the collision happens; transparent on GCC/MSVC, fixes Clang.
+  const ID popupId = (id.GetValue() == w->GetID())
+    ? ID("{}/ToolTip", w->GetID())
+    : id;
+  ctx->mVisible = BeginBasicPopupWindow(popupId);
   if (!ctx->mVisible) {
     return false;
   }

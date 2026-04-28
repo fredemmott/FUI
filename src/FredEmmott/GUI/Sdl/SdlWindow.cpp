@@ -733,6 +733,12 @@ void SdlWindow::SetIsToolTip() {
   mIsTooltip = true;
 }
 
+void SdlWindow::SetIsModal(bool) {
+  // TODO: SDL3 has SDL_SetWindowModal (>=3.0). Stubbed for now so the
+  // abstraction exists and the immediate-mode caller stays 
+  // platform-agnostic.
+}
+
 void SdlWindow::SetBackdrop(const WindowBackdrop&) {
   // Linux has no Mica/Acrylic; solid color is what we get. See plan.md §0.5.
 }

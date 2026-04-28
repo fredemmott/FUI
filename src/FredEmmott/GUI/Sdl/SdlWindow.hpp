@@ -62,6 +62,7 @@ class SdlWindow : public Window {
 
   [[nodiscard]] bool IsPopup() const noexcept override;
   void SetIsToolTip() override;
+  void SetIsModal(bool) override;
 
  protected:
   // Subclasses (SdlSkiaVulkanWindow) override to add flags like

@@ -7,9 +7,6 @@
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
 
-#ifdef _WIN32
-#include "FredEmmott/GUI/Windows/Win32Window.hpp"
-#endif
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 
 namespace FredEmmott::GUI::Immediate {
@@ -41,13 +38,7 @@ void PopParentContext() {
 }// namespace
 
 void BasicPopupWindowResultMixin::MakeModal(const bool modal) {
-#ifdef _WIN32
-  static_cast<Win32Window*>(tWindow)->SetIsModal(modal);
-#else
-  // Linux: modal popups will be wired through the SDL3 / libdecor
-  // window layer (TODO).
-  (void)modal;
-#endif
+  tWindow->SetIsModal(modal);
 }
 
 BasicPopupWindowResult BeginBasicPopupWindow(const ID id) {
