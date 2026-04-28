@@ -4,7 +4,6 @@
 
 #include <FredEmmott/GUI/StaticTheme/ToolTip.hpp>
 #include <FredEmmott/utility/almost_equal.hpp>
-#include <Yoga.h>
 #include <stdexcept>
 #include <utility>
 
@@ -100,25 +99,29 @@ SliderResult SliderImpl(
   const auto pixelOffset = w->GetThumbCenterOffsetWithinTrack();
   const auto trackOrigin = w->GetTrackOriginOffset();
 
-  // Slider's position and size relative to its parent (Yoga values are
-  // populated by the previous frame's layout pass, which is fine — the
-  // tooltip only appears after a stationary hover or during drag, well
-  // after layout).
-  const auto* sliderYoga = w->GetLayoutNode();
-  const auto sliderLeft = YGNodeLayoutGetLeft(sliderYoga);
-  const auto sliderTop = YGNodeLayoutGetTop(sliderYoga);
-  const auto sliderWidth = YGNodeLayoutGetWidth(sliderYoga);
-  const auto sliderHeight = YGNodeLayoutGetHeight(sliderYoga);
+  // Slider's position and size relative to its structural parent. 
+  // Stock behavior is odd.  Propose some workarounds for Linux, but revisit later.
+  // Note:
+  // The existing behavior needs to be kept for Windows.
+  // This may be useful as an optional fallback behavior, and it's fine to use 
+  // it for that for now, but the existing behavior is preferable except if doing
+  // 'render-to-texture' for a game integration or similar.
+  // Using this fallback on Linux only is fine for this PR, but if necessary, 
+  // X11 and Wayland calls may be needed to implement this, even when primarily 
+  // using SDL.
+
+  const auto sliderPos = w->GetTopLeftCanvasPoint(w->GetStructuralParentOrNull());
+  const auto sliderSize = w->GetSize();
 
   // Thumb centre in slider-parent coordinates. For vertical sliders,
   // pixelOffset is measured from the bottom (value=min is at the bottom,
-  // value=max at the top), so thumbY = sliderTop + sliderHeight - pixelOffset.
+  // value=max at the top), so thumbY = sliderPos.mY + height - pixelOffset.
   const auto thumbX = isHorizontal
-    ? sliderLeft + trackOrigin.mX + pixelOffset
-    : sliderLeft + sliderWidth / 2.0f;
+    ? sliderPos.mX + trackOrigin.mX + pixelOffset
+    : sliderPos.mX + sliderSize.mWidth / 2.0f;
   const auto thumbY = isHorizontal
-    ? sliderTop + trackOrigin.mY
-    : sliderTop + sliderHeight - pixelOffset;
+    ? sliderPos.mY + trackOrigin.mY
+    : sliderPos.mY + sliderSize.mHeight - pixelOffset;
 
   // Estimated tooltip extents — the tooltip auto-sizes around the label, but
   // PositionType::Absolute needs concrete Top/Left, so we fix the size and
@@ -132,7 +135,7 @@ SliderResult SliderImpl(
   // of their container, so a left-side tooltip would clip off-screen.
   const auto tooltipLeft = isHorizontal
     ? thumbX - TooltipWidth / 2.0f
-    : sliderLeft + sliderWidth + Gap;
+    : sliderPos.mX + sliderSize.mWidth + Gap;
   const auto tooltipTop = isHorizontal
     ? thumbY - TooltipHeight - Gap
     : thumbY - TooltipHeight / 2.0f;
