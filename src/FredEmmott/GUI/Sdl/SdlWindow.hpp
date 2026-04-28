@@ -12,7 +12,6 @@
 #include <atomic>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include <FredEmmott/GUI/StylePropertyTypes.hpp>
 #include <FredEmmott/GUI/Window.hpp>
@@ -133,17 +132,6 @@ class SdlWindow : public Window {
   void DispatchMouseMotion(const ::SDL_Event&);
   void DispatchMouseButton(const ::SDL_Event&, bool pressed);
   void DispatchMouseWheel(const ::SDL_Event&);
-  void DispatchPenMotion(const ::SDL_Event&);
-  void DispatchPenTouch(const ::SDL_Event&, bool pressed);
-  void DispatchPenButton(const ::SDL_Event&, bool pressed);
-  void HandlePenAxis(const ::SDL_Event&);
-  void HandlePenProximity(const ::SDL_Event&, bool entered);
-
-  // Latest known axis state per SDL_PenID. SDL3 sends pressure/tilt/etc. as
-  // separate SDL_EVENT_PEN_AXIS events that arrive *between* MOTION/TOUCH
-  // events; we cache them here so each dispatched MouseEvent carries the
-  // current state. Cleared on SDL_EVENT_PEN_PROXIMITY_OUT.
-  std::unordered_map<uint32_t, MouseEvent::PenAxes> mPenAxes;
 
   // Cursor state. Lazily-created SDL system cursors keyed by Cursor enum
   // (size = number of enumerators). mCurrentCursor avoids redundant

@@ -177,10 +177,6 @@ SdlWindow::SdlWindow(
     throw std::runtime_error(
       std::string {"SDL_InitSubSystem(VIDEO) failed: "} + SDL_GetError());
   }
-  // Stop SDL3 from synthesising mouse events for pen input — we handle the
-  // pen event stream ourselves below and re-emit MouseEvents with mPenAxes
-  // populated. Without this hint the same pen action would dispatch twice.
-  SDL_SetHint(SDL_HINT_PEN_MOUSE_EVENTS, "0");
   if (gInterruptEventType == 0) {
     gInterruptEventType = SDL_RegisterEvents(1);
   }
@@ -273,19 +269,6 @@ static SDL_WindowID EventTargetWindowID(const SDL_Event& e) {
       return e.button.windowID;
     case SDL_EVENT_MOUSE_WHEEL:
       return e.wheel.windowID;
-    case SDL_EVENT_PEN_PROXIMITY_IN:
-    case SDL_EVENT_PEN_PROXIMITY_OUT:
-      return e.pproximity.windowID;
-    case SDL_EVENT_PEN_AXIS:
-      return e.paxis.windowID;
-    case SDL_EVENT_PEN_MOTION:
-      return e.pmotion.windowID;
-    case SDL_EVENT_PEN_DOWN:
-    case SDL_EVENT_PEN_UP:
-      return e.ptouch.windowID;
-    case SDL_EVENT_PEN_BUTTON_DOWN:
-    case SDL_EVENT_PEN_BUTTON_UP:
-      return e.pbutton.windowID;
     default:
       // SDL_EVENT_WINDOW_* events all use e.window.windowID.
       if (
@@ -388,30 +371,6 @@ void SdlWindow::DispatchSDLEvent(const SDL_Event& e) {
     case SDL_EVENT_MOUSE_WHEEL:
       this->DispatchMouseWheel(e);
       return;
-    case SDL_EVENT_PEN_PROXIMITY_IN:
-      this->HandlePenProximity(e, /*entered=*/true);
-      return;
-    case SDL_EVENT_PEN_PROXIMITY_OUT:
-      this->HandlePenProximity(e, /*entered=*/false);
-      return;
-    case SDL_EVENT_PEN_AXIS:
-      this->HandlePenAxis(e);
-      return;
-    case SDL_EVENT_PEN_MOTION:
-      this->DispatchPenMotion(e);
-      return;
-    case SDL_EVENT_PEN_DOWN:
-      this->DispatchPenTouch(e, /*pressed=*/true);
-      return;
-    case SDL_EVENT_PEN_UP:
-      this->DispatchPenTouch(e, /*pressed=*/false);
-      return;
-    case SDL_EVENT_PEN_BUTTON_DOWN:
-      this->DispatchPenButton(e, /*pressed=*/true);
-      return;
-    case SDL_EVENT_PEN_BUTTON_UP:
-      this->DispatchPenButton(e, /*pressed=*/false);
-      return;
     default:
       break;
   }
@@ -503,124 +462,6 @@ void SdlWindow::MaybeDispatchHover() {
   me.mDetail = MouseEvent::HoverEvent {};
   this->DispatchEvent(me);
   mHoverPending = false;
-}
-
-// -- Pen events ------------------------------------------------------------
-//
-// SDL3's pen stream is decoupled from the mouse stream (we disabled the
-// synthetic mouse path via SDL_HINT_PEN_MOUSE_EVENTS in the ctor). Axis
-// values arrive in standalone SDL_EVENT_PEN_AXIS events between
-// MOTION/TOUCH events, so we cache the latest per-pen state in mPenAxes
-// and copy it into each dispatched MouseEvent.
-
-namespace {
-
-MouseButton MapPenBarrelButton(uint8_t sdlButtonIndex) {
-  // Wacom / Linux convention: lower barrel button = right click,
-  // upper barrel button = middle click. Higher indices have no widely
-  // accepted mapping; drop them.
-  switch (sdlButtonIndex) {
-    case 1:
-      return MouseButton::Right;
-    case 2:
-      return MouseButton::Middle;
-    default:
-      return MouseButton::None;
-  }
-}
-
-}// namespace
-
-void SdlWindow::HandlePenProximity(const SDL_Event& e, bool entered) {
-  const auto id = static_cast<uint32_t>(e.pproximity.which);
-  if (entered) {
-    mPenAxes[id] = MouseEvent::PenAxes {};
-  } else {
-    mPenAxes.erase(id);
-  }
-}
-
-void SdlWindow::HandlePenAxis(const SDL_Event& e) {
-  auto& axes = mPenAxes[static_cast<uint32_t>(e.paxis.which)];
-  axes.mEraser = (e.paxis.pen_state & SDL_PEN_INPUT_ERASER_TIP) != 0;
-  switch (e.paxis.axis) {
-    case SDL_PEN_AXIS_PRESSURE:
-      axes.mPressure = e.paxis.value;
-      return;
-    case SDL_PEN_AXIS_XTILT:
-      axes.mTiltX = e.paxis.value;
-      return;
-    case SDL_PEN_AXIS_YTILT:
-      axes.mTiltY = e.paxis.value;
-      return;
-    case SDL_PEN_AXIS_DISTANCE:
-      axes.mDistance = e.paxis.value;
-      return;
-    case SDL_PEN_AXIS_ROTATION:
-      axes.mRotation = e.paxis.value;
-      return;
-    default:
-      // Slider / tangential pressure / future axes — not surfaced via
-      // PenAxes yet. Drop silently rather than fail.
-      return;
-  }
-}
-
-void SdlWindow::DispatchPenMotion(const SDL_Event& e) {
-  auto& axes = mPenAxes[static_cast<uint32_t>(e.pmotion.which)];
-  axes.mEraser = (e.pmotion.pen_state & SDL_PEN_INPUT_ERASER_TIP) != 0;
-  MouseEvent me;
-  me.mWindowPoint = Point {e.pmotion.x, e.pmotion.y};
-  // Reflect "tip down" as a held Left button so existing widgets see drag
-  // as a left-button drag.
-  if (e.pmotion.pen_state & SDL_PEN_INPUT_DOWN) {
-    me.mButtons |= MouseButton::Left;
-  }
-  me.mPenAxes = axes;
-  me.mDetail = MouseEvent::MoveEvent {};
-  const auto* receiver = this->DispatchEvent(me);
-  this->ApplyCursor(
-    receiver ? receiver->GetComputedStyle().Cursor().value_or(Cursor::Default)
-             : Cursor::Default);
-}
-
-void SdlWindow::DispatchPenTouch(const SDL_Event& e, bool pressed) {
-  auto& axes = mPenAxes[static_cast<uint32_t>(e.ptouch.which)];
-  axes.mEraser = e.ptouch.eraser;
-  MouseEvent me;
-  me.mWindowPoint = Point {e.ptouch.x, e.ptouch.y};
-  if (e.ptouch.pen_state & SDL_PEN_INPUT_DOWN) {
-    me.mButtons |= MouseButton::Left;
-  }
-  me.mPenAxes = axes;
-  if (pressed) {
-    me.mDetail = MouseEvent::ButtonPressEvent {MouseButton::Left};
-  } else {
-    me.mDetail = MouseEvent::ButtonReleaseEvent {MouseButton::Left};
-  }
-  this->DispatchEvent(me);
-}
-
-void SdlWindow::DispatchPenButton(const SDL_Event& e, bool pressed) {
-  const auto btn = MapPenBarrelButton(e.pbutton.button);
-  if (btn == MouseButton::None) {
-    return;
-  }
-  auto& axes = mPenAxes[static_cast<uint32_t>(e.pbutton.which)];
-  axes.mEraser = (e.pbutton.pen_state & SDL_PEN_INPUT_ERASER_TIP) != 0;
-  MouseEvent me;
-  me.mWindowPoint = Point {e.pbutton.x, e.pbutton.y};
-  if (e.pbutton.pen_state & SDL_PEN_INPUT_DOWN) {
-    me.mButtons |= MouseButton::Left;
-  }
-  me.mButtons |= btn;
-  me.mPenAxes = axes;
-  if (pressed) {
-    me.mDetail = MouseEvent::ButtonPressEvent {btn};
-  } else {
-    me.mDetail = MouseEvent::ButtonReleaseEvent {btn};
-  }
-  this->DispatchEvent(me);
 }
 
 void SdlWindow::DispatchMouseWheel(const SDL_Event& e) {
