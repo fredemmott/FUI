@@ -56,11 +56,11 @@ namespace {
 // 0 as the third arg to setenv means "don't override an existing value"
 // so the user-set env var wins.
 void EnsureFontconfigConfig() {
-  static const char* const kCandidates[] = {
+  static const char* const Candidates[] = {
     "/etc/fonts/fonts.conf",
     "/usr/local/etc/fonts/fonts.conf",
   };
-  for (const char* const path : kCandidates) {
+  for (const char* const path : Candidates) {
     if (access(path, R_OK) == 0) {
       setenv("FONTCONFIG_FILE", path, /*overwrite=*/0);
       return;
@@ -73,18 +73,13 @@ void EnsureFontconfigConfig() {
 // for the dmabuf import path (ImportedTexture::HandleKind::DmabufFD); they're
 // trivially supported on every Mesa / NVIDIA driver so we require them
 // upfront rather than make them optional.
-constexpr std::array kRequiredDeviceExtensions {
+constexpr std::array RequiredDeviceExtensions {
   VK_KHR_SWAPCHAIN_EXTENSION_NAME,
   VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
   VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
 };
 
-constexpr bool kEnableValidation =
-#ifdef FUI_DEBUG
-  true;
-#else
-  false;
-#endif
+constexpr bool EnableValidation = Config::Debug;
 
 void Check(VkResult r, const char* what) {
   if (r != VK_SUCCESS) {
@@ -321,7 +316,7 @@ void SdlSkiaVulkanWindow::CreateInstance() {
   // vulkan-validationlayers package. Silent fall-through is fine in
   // release builds.
   bool validation = false;
-  if constexpr (kEnableValidation) {
+  if constexpr (EnableValidation) {
     if (
       HasInstanceLayer("VK_LAYER_KHRONOS_validation")
       && HasInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
@@ -473,8 +468,8 @@ void SdlSkiaVulkanWindow::CreateDevice() {
     .queueCreateInfoCount = 1,
     .pQueueCreateInfos = &queueCreate,
     .enabledExtensionCount
-    = static_cast<uint32_t>(kRequiredDeviceExtensions.size()),
-    .ppEnabledExtensionNames = kRequiredDeviceExtensions.data(),
+    = static_cast<uint32_t>(RequiredDeviceExtensions.size()),
+    .ppEnabledExtensionNames = RequiredDeviceExtensions.data(),
     .pEnabledFeatures = nullptr,
   };
   Check(
@@ -558,7 +553,7 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
   // VkSurfaceCapabilitiesKHR::supportedUsageFlags — which we don't check
   // here, but BGRA8_UNORM swapchains support all 4 on every Mesa/NVIDIA
   // driver in practice.
-  constexpr VkImageUsageFlags kSwapchainUsage =
+  constexpr VkImageUsageFlags SwapchainUsage =
     VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
     | VK_IMAGE_USAGE_TRANSFER_DST_BIT
     | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
@@ -572,7 +567,7 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
     .imageColorSpace = chosen.colorSpace,
     .imageExtent = mSwapchainExtent,
     .imageArrayLayers = 1,
-    .imageUsage = kSwapchainUsage,
+    .imageUsage = SwapchainUsage,
     .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
     .preTransform = caps.currentTransform,
     .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -628,8 +623,8 @@ void SdlSkiaVulkanWindow::CreateSkiaContext() {
     /*instanceExtCount=*/0,
     /*instanceExts=*/nullptr,
     /*deviceExtCount=*/
-    static_cast<uint32_t>(kRequiredDeviceExtensions.size()),
-    /*deviceExts=*/kRequiredDeviceExtensions.data());
+    static_cast<uint32_t>(RequiredDeviceExtensions.size()),
+    /*deviceExts=*/RequiredDeviceExtensions.data());
 
   skgpu::VulkanBackendContext vkCtx {};
   vkCtx.fInstance = mInstance;
