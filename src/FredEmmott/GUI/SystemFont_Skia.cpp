@@ -3,13 +3,6 @@
 
 #include <skia/core/SkFontMgr.h>
 
-#ifdef _WIN32
-#include <skia/ports/SkTypeface_win.h>
-#else
-#include <skia/ports/SkFontMgr_fontconfig.h>
-#include <skia/ports/SkFontScanner_FreeType.h>
-#endif
-
 #include "Font.hpp"
 #include "SystemFont.hpp"
 #include "assert.hpp"// FUI_DEBUGBREAK
@@ -18,6 +11,13 @@
 
 #include <array>
 #include <cstdio>
+
+#ifdef _WIN32
+#include <skia/ports/SkTypeface_win.h>
+#else
+#include <skia/ports/SkFontMgr_fontconfig.h>
+#include <skia/ports/SkFontScanner_FreeType.h>
+#endif
 
 using namespace FredEmmott::GUI::font_detail;
 using namespace FredEmmott::GUI::SystemFont;

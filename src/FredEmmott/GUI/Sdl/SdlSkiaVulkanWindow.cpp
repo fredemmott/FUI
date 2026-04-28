@@ -32,19 +32,12 @@
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>
-#include <string_view>
 
-#include <FredEmmott/GUI/Font.hpp>
 #include <FredEmmott/GUI/Renderer.hpp>
 #include <FredEmmott/GUI/SkiaRenderer.hpp>
 #include <FredEmmott/GUI/SystemFont.hpp>
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
-#include <FredEmmott/GUI/detail/skia_paragraph.hpp>
-
-#include <skia/core/SkFont.h>
-#include <skia/core/SkFontMetrics.h>
-
-#include <limits>
+#include <FredEmmott/GUI/detail/skia_font_metrics_provider.hpp>
 #include <unistd.h>
 
 namespace FredEmmott::GUI {
@@ -74,46 +67,6 @@ void EnsureFontconfigConfig() {
     }
   }
 }
-
-// Same shape as SkiaFontMetricsProvider in Win32Direct3D12GaneshWindow.cpp;
-// lift to a shared file later if a third Skia-backed window arrives.
-struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
-  ~SkiaFontMetricsProvider() override = default;
-
-  float MeasureTextWidth(const Font& font, const std::string_view text)
-    const override {
-    if (!font) {
-      return std::numeric_limits<float>::quiet_NaN();
-    }
-    // SkParagraph for per-codepoint typeface fallback (issue #76) so this
-    // matches what SkiaRenderer::DrawText actually paints when the
-    // typeface lacks glyphs (e.g. emoji served by Noto Color Emoji).
-    auto paragraph = skia_paragraph_detail::BuildSingleStyleParagraph(
-      font.as<SkFont>(), text);
-    paragraph->layout(std::numeric_limits<float>::infinity());
-    return paragraph->getMaxIntrinsicWidth();
-  }
-
-  Font::Metrics GetFontMetrics(const Font& font) const override {
-    // Empty Font (variant holds std::monostate) happens on Linux when the
-    // requested system font isn't installed — e.g. "Segoe Fluent Icons"
-    // for FontIcons. font.as<SkFont>() does an unchecked std::get and
-    // would throw std::bad_variant_access; mirror MeasureTextWidth's
-    // guard and return zeroed metrics instead.
-    if (!font) {
-      return {};
-    }
-    const auto it = font.as<SkFont>();
-    SkFontMetrics pt {};
-    const auto lineSpacing = it.getMetrics(&pt);
-    return {
-      .mSize = it.getSize(),
-      .mLineSpacing = lineSpacing,
-      .mAscent = pt.fAscent,
-      .mDescent = pt.fDescent,
-    };
-  }
-};
 
 // Device extensions we *require*. VK_KHR_swapchain for presentation.
 // VK_EXT_external_memory_fd + VK_EXT_external_semaphore_fd are prerequisites

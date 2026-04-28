@@ -3,13 +3,14 @@
 #include "NavigationView.hpp"
 
 #include "FredEmmott/GUI/StaticTheme/NavigationView.hpp"
-#ifdef _WIN32
-#include "FredEmmott/GUI/Windows/Win32Window.hpp"
-#endif
 #include "Label.hpp"
 #include "NavigationViewBackButton.hpp"
 #include "NavigationViewTogglePaneButton.hpp"
 #include "TitleBar.hpp"
+
+#ifdef _WIN32
+#include "FredEmmott/GUI/Windows/Win32Window.hpp"
+#endif
 
 namespace FredEmmott::GUI::Widgets {
 namespace {

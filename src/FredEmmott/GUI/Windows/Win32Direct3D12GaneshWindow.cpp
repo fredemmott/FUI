@@ -19,7 +19,7 @@
 #include <thread>
 
 #include "FredEmmott/GUI/detail/renderer_detail.hpp"
-#include "FredEmmott/GUI/detail/skia_paragraph.hpp"
+#include "FredEmmott/GUI/detail/skia_font_metrics_provider.hpp"
 #include "FredEmmott/GUI/detail/win32_detail/CopySoftwareBitmap.hpp"
 
 #if __has_include(<skia/gpu/ganesh/GrDirectContext.h>)
@@ -39,37 +39,6 @@
 namespace FredEmmott::GUI {
 namespace {
 using namespace win32_detail;
-
-struct SkiaFontMetricsProvider final : renderer_detail::FontMetricsProvider {
-  ~SkiaFontMetricsProvider() override = default;
-
-  float MeasureTextWidth(const Font& font, const std::string_view text)
-    const override {
-    if (!font) {
-      return std::numeric_limits<float>::quiet_NaN();
-    }
-    // SkParagraph for per-codepoint typeface fallback so this
-    // matches what SkiaRenderer::DrawText actually paints when the typeface
-    // lacks glyphs.
-    auto paragraph = skia_paragraph_detail::BuildSingleStyleParagraph(
-      font.as<SkFont>(), text);
-    paragraph->layout(std::numeric_limits<float>::infinity());
-    return paragraph->getMaxIntrinsicWidth();
-  }
-
-  Font::Metrics GetFontMetrics(const Font& font) const override {
-    using namespace font_detail;
-    const auto it = font.as<SkFont>();
-    SkFontMetrics pt {};
-    const auto lineSpacingPt = it.getMetrics(&pt);
-    return {
-      .mSize = it.getSize(),
-      .mLineSpacing = lineSpacingPt,
-      .mAscent = pt.fAscent,
-      .mDescent = pt.fDescent,
-    };
-  }
-};
 
 void ConfigureD3DDebugLayer(
   [[maybe_unused]] const wil::com_ptr<ID3D12Device>& device) {

@@ -3,15 +3,16 @@
 
 #include "TextBlock.hpp"
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <Yoga.h>
 
 #include <FredEmmott/GUI/StaticTheme.hpp>
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/config.hpp>
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 #ifdef FUI_ENABLE_DIRECT2D
 #include "FredEmmott/GUI/Direct2DRenderer.hpp"

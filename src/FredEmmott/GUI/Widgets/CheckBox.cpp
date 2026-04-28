@@ -7,10 +7,11 @@
 #include <FredEmmott/GUI/Widgets/Label.hpp>
 
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
+#include "WidgetList.hpp"
+
 #ifdef _WIN32
 #include "FredEmmott/GUI/detail/win32_detail.hpp"
 #endif
-#include "WidgetList.hpp"
 
 #ifdef FUI_ENABLE_DIRECT2D
 #include "FredEmmott/GUI/Direct2DRenderer.hpp"

@@ -7,8 +7,6 @@
 
 #include <FredEmmott/GUI/Font.hpp>
 
-#include <utility>
-
 #include <FredEmmott/GUI/assert.hpp>
 #include <FredEmmott/GUI/detail/font_detail.hpp>
 #include <FredEmmott/GUI/detail/renderer_detail.hpp>
@@ -49,10 +47,10 @@ Font Font::WithSize(const float pixels) const noexcept {
     return Font(ret);
   }
 #endif
-  if (std::holds_alternative<std::monostate>(mFont)) {
-    return {};
-  }
-  std::unreachable();
+  // Default-constructed Font holds std::monostate (Font.hpp:96).
+  // WithSize on an empty Font returns another empty Font.
+  FUI_ASSERT(std::holds_alternative<std::monostate>(mFont));
+  return {};
 }
 
 Font Font::WithWeight(const FontWeight weight) const noexcept {
@@ -72,10 +70,8 @@ Font Font::WithWeight(const FontWeight weight) const noexcept {
     return {SkFont {newTypeface, it->getSize()}};
   }
 #endif
-  if (std::holds_alternative<std::monostate>(mFont)) {
-    return {};
-  }
-  std::unreachable();
+  FUI_ASSERT(std::holds_alternative<std::monostate>(mFont));
+  return {};
 }
 
 float Font::MeasureTextWidth(const std::string_view text) const noexcept {

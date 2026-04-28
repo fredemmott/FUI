@@ -8,11 +8,12 @@
 #include "FredEmmott/GUI/Widgets/ComboBoxItem.hpp"
 #include "FredEmmott/GUI/Widgets/Focusable.hpp"
 #include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
+#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
+#include "PopupWindow.hpp"
+
 #ifdef _WIN32
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #endif
-#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
-#include "PopupWindow.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 using namespace immediate_detail;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <skia/core/SkCanvas.h>
+#include <skia/gpu/ganesh/GrDirectContext.h>
 
 #include <FredEmmott/GUI/config.hpp>
 
@@ -12,8 +13,6 @@
 #include "Windows/Win32Direct3D12GaneshWindow.hpp"
 struct ID3D12Device;
 #endif
-
-#include <skia/gpu/ganesh/GrDirectContext.h>
 
 namespace FredEmmott::GUI {
 

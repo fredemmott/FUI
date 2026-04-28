@@ -9,11 +9,12 @@
 #include "Card.hpp"
 #include "FredEmmott/GUI/StaticTheme/ToolTip.hpp"
 #include "FredEmmott/GUI/Widgets/PopupWindow.hpp"
+#include "FredEmmott/GUI/detail/immediate_detail.hpp"
+#include "PopupWindow.hpp"
+
 #ifdef _WIN32
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #endif
-#include "FredEmmott/GUI/detail/immediate_detail.hpp"
-#include "PopupWindow.hpp"
 namespace FredEmmott::GUI::Immediate {
 namespace {
 

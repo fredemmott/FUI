@@ -6,6 +6,7 @@
 #include <FredEmmott/GUI/StaticTheme/Common.hpp>
 #include <FredEmmott/GUI/Widgets/PopupWindow.hpp>
 #include <FredEmmott/GUI/detail/immediate_detail.hpp>
+#include <FredEmmott/GUI/detail/immediate/Widget.hpp>
 
 #include "FredEmmott/GUI/detail/immediate/Widget.hpp"
 

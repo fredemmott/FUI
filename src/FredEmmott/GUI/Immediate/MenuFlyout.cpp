@@ -4,11 +4,12 @@
 
 #include "FredEmmott/GUI/StaticTheme/MenuFlyout.hpp"
 #include "FredEmmott/GUI/Widgets/MenuFlyoutItem.hpp"
+#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
+#include "PopupWindow.hpp"
+
 #ifdef _WIN32
 #include "FredEmmott/GUI/Windows/Win32Window.hpp"
 #endif
-#include "FredEmmott/GUI/detail/immediate/Widget.hpp"
-#include "PopupWindow.hpp"
 
 namespace FredEmmott::GUI::Immediate {
 

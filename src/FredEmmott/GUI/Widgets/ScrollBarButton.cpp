@@ -3,13 +3,13 @@
 
 #include "ScrollBarButton.hpp"
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
-
 #include "FredEmmott/GUI/StaticTheme/ScrollBar.hpp"
 #include "FredEmmott/GUI/SystemSettings.hpp"
 #include "Label.hpp"
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 namespace FredEmmott::GUI::Widgets {
 

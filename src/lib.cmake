@@ -172,6 +172,7 @@ add_library(
   FredEmmott/GUI/detail/immediate/widget_from_result.hpp
   FredEmmott/GUI/detail/immediate_detail.cpp FredEmmott/GUI/detail/immediate_detail.hpp
   FredEmmott/GUI/detail/renderer_detail.cpp FredEmmott/GUI/detail/renderer_detail.hpp
+  FredEmmott/GUI/detail/skia_font_metrics_provider.hpp
   FredEmmott/GUI/detail/skia_paragraph.cpp FredEmmott/GUI/detail/skia_paragraph.hpp
   FredEmmott/GUI/detail/style_detail.hpp
   FredEmmott/GUI/detail/system_font_detail.hpp
