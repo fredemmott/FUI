@@ -31,6 +31,7 @@
 #include <array>
 #include <cstdio>
 #include <format>
+#include <print>
 #include <stdexcept>
 #include <string_view>
 
@@ -83,7 +84,9 @@ constexpr std::array RequiredDeviceExtensions {
 constexpr bool EnableValidation = Config::Debug;
 
 inline void CheckVK(const VkResult r, const std::string_view what) {
-  if (r != VK_SUCCESS) {
+  // Vulkan has multiple success codes (VK_SUCCESS=0, plus positives like
+  // VK_INCOMPLETE, VK_SUBOPTIMAL_KHR). Only negative VkResults are errors.
+  if (r < 0) [[unlikely]] {
     throw std::runtime_error(std::format(
       "Vulkan {} failed: VkResult={}", what, static_cast<int>(r)));
   }
@@ -95,7 +98,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
   const VkDebugUtilsMessengerCallbackDataEXT* const data,
   void*) {
   if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-    std::fprintf(stderr, "[Vulkan] %s\n", data->pMessage);
+    std::println(stderr, "[Vulkan] {}", data->pMessage);
   }
   return VK_FALSE;
 }
@@ -302,9 +305,8 @@ void SdlSkiaVulkanWindow::CreateInstance() {
   uint32_t sdlExtCount = 0;
   const char* const* sdlExts = SDL_Vulkan_GetInstanceExtensions(&sdlExtCount);
   if (!sdlExts) {
-    throw std::runtime_error(
-      std::string {"SDL_Vulkan_GetInstanceExtensions failed: "}
-      + SDL_GetError());
+    throw std::runtime_error(std::format(
+      "SDL_Vulkan_GetInstanceExtensions failed: {}", SDL_GetError()));
   }
 
   std::vector<const char*> extensions(sdlExts, sdlExts + sdlExtCount);
@@ -333,9 +335,10 @@ void SdlSkiaVulkanWindow::CreateInstance() {
     }
   }
 
+  const std::string appName {renderer_detail::GetApplicationName()};
   const VkApplicationInfo app {
     .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-    .pApplicationName = "FUI",
+    .pApplicationName = appName.c_str(),
     .applicationVersion = 0,
     .pEngineName = "FredEmmott::GUI",
     .engineVersion = 0,
@@ -373,16 +376,14 @@ void SdlSkiaVulkanWindow::CreateInstance() {
 }
 
 void SdlSkiaVulkanWindow::CreateSurface() {
-  // Cast from Window::NativeHandle (void*) to SDL_Window* — see
-  // SdlWindow::GetNativeHandle.
-  auto* const sdl = static_cast<SDL_Window*>(this->GetNativeHandle().mValue);
+  auto* const sdl = this->GetNativeHandle().mSDLWindow;
   if (!sdl) {
     throw std::runtime_error(
       "CreateSurface called before SdlWindow::InitializeWindow");
   }
   if (!SDL_Vulkan_CreateSurface(sdl, mInstance, nullptr, &mSurface)) {
     throw std::runtime_error(
-      std::string {"SDL_Vulkan_CreateSurface failed: "} + SDL_GetError());
+      std::format("SDL_Vulkan_CreateSurface failed: {}", SDL_GetError()));
   }
 }
 
@@ -524,7 +525,7 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
   if (
     caps.currentExtent.width == UINT32_MAX
     || caps.currentExtent.height == UINT32_MAX) {
-    auto* const sdl = static_cast<SDL_Window*>(this->GetNativeHandle().mValue);
+    auto* const sdl = this->GetNativeHandle().mSDLWindow;
     int w = 0, h = 0;
     SDL_GetWindowSizeInPixels(sdl, &w, &h);
     mSwapchainExtent.width = std::clamp<uint32_t>(
@@ -743,7 +744,7 @@ void SdlSkiaVulkanWindow::ResizeBackend() {
   // Called by SdlWindow::ResizeIfNeeded after popup auto-fit (which
   // may have called SDL_SetWindowSize). Re-query SDL pixel size and
   // rebuild the swapchain in the same frame if it changed.
-  auto* const sdl = static_cast<SDL_Window*>(this->GetNativeHandle().mValue);
+  auto* const sdl = this->GetNativeHandle().mSDLWindow;
   if (!sdl || !mDevice) {
     return;
   }

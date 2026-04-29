@@ -210,7 +210,7 @@ void TextBox::Tick(const std::chrono::steady_clock::time_point& now) {
   // Focus-driven SDL text-input toggle. SDL3 only emits SDL_EVENT_TEXT_INPUT
   // between SDL_StartTextInput and SDL_StopTextInput.
   if (focusChanged) {
-    auto* const sdl = static_cast<SDL_Window*>(window->GetNativeHandle().mValue);
+    auto* const sdl = window->GetNativeHandle().mSDLWindow;
     if (sdl) {
       if (mIsFocused) {
         SDL_StartTextInput(sdl);

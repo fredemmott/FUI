@@ -684,7 +684,7 @@ void SdlWindow::SetParent(NativeHandle nh) {
   // Stash the parent SDL_Window* for InitializeWindow to consume. SDL
   // popups must be created with their parent at creation time —
   // SDL_CreatePopupWindow has no equivalent of "reparent later".
-  mPopupParent = static_cast<SDL_Window*>(nh.mValue);
+  mPopupParent = nh.mSDLWindow;
 }
 
 void SdlWindow::OffsetPositionToDescendant(Widgets::Widget*) {

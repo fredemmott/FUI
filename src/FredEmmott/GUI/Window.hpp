@@ -4,6 +4,10 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+// Forward declaration so this public header doesn't drag <SDL3/SDL.h>
+// (and its transitive Wayland/X11 surface) into every consumer of Window.
+struct SDL_Window;
 #endif
 
 #include <chrono>
@@ -36,16 +40,15 @@ class Window {
     constexpr operator HWND() const noexcept {
       return mValue;
     }
-#else
-    // Platform-opaque placeholder. Linux backends will stash their
-    // native surface pointer here (SDL_Window*, wl_surface*, Window
-    // xid bit-cast, etc.) depending on what SdlWindow picks.
-    void* mValue {};
-#endif
-
     constexpr operator bool() const noexcept {
       return mValue != nullptr;
     }
+#else
+    SDL_Window* mSDLWindow {};
+    constexpr operator bool() const noexcept {
+      return mSDLWindow != nullptr;
+    }
+#endif
   };
   enum class ResizeMode {
     Fixed = 0,

@@ -57,4 +57,16 @@ inline std::string_view GetBackendDescription() {
   return renderer_detail::GetRenderAPIDetails();
 }
 
+/** Process-wide application name surfaced to GPU APIs (Vulkan
+ * VkApplicationInfo, etc.) for tooling like RenderDoc and driver logs.
+ * Default "FUI". Call once at startup before constructing your first
+ * window if you want to override; safe to skip otherwise.
+ */
+inline void SetApplicationName(std::string_view name) {
+  renderer_detail::SetApplicationName(name);
+}
+[[nodiscard]] inline std::string_view GetApplicationName() noexcept {
+  return renderer_detail::GetApplicationName();
+}
+
 }// namespace FredEmmott::GUI

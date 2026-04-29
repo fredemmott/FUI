@@ -62,4 +62,23 @@ std::string_view GetRenderAPIDetails() {
   throw std::logic_error("GetRenderAPIDetails() called before SetRenderAPI()");
 }
 
+namespace {
+// Process-wide; default-initialized to "FUI" on first access. Reading
+// happens during VkInstance creation in the Skia/Vulkan window backend;
+// writes (consumer overrides) happen at startup. Untyped contention isn't
+// a concern in practice (single set, then read at window construction).
+std::string& MutableApplicationName() {
+  static std::string name = "FUI";
+  return name;
+}
+}// namespace
+
+void SetApplicationName(const std::string_view name) {
+  MutableApplicationName().assign(name);
+}
+
+std::string_view GetApplicationName() noexcept {
+  return MutableApplicationName();
+}
+
 }// namespace FredEmmott::GUI::renderer_detail

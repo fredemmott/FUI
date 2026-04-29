@@ -45,4 +45,11 @@ FontMetricsProvider* GetFontMetricsProvider();
 /// Human-readable detailed name
 std::string_view GetRenderAPIDetails();
 
+// Process-wide application name.
+// Default "FUI"; consumers override once at startup. 
+// Used by tooling (driver logs, RenderDoc) to identify
+// the calling app and is otherwise harmless.
+void SetApplicationName(std::string_view);
+[[nodiscard]] std::string_view GetApplicationName() noexcept;
+
 }// namespace FredEmmott::GUI::renderer_detail
