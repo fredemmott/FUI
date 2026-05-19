@@ -28,6 +28,11 @@
       "features": [ "vulkan" ]
     },
     {
+      "name": "dbus",
+      "default-features": false,
+      "platform": "linux"
+    },
+    {
       "name": "yoga",
       "version>=": "3.2.1"
     }

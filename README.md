@@ -60,3 +60,6 @@ I've used LLMS (primarily Gemini 3 Flash) for:
 - code review
 - bug investigation
 - semantic find/replace
+
+Linux port (David Meador):
+- Genmini 3 Pro & Claude Opus 4.5 - learning and understanding linux stack for vcpkg, skia, vulkan, sdl3; bug investigations.
