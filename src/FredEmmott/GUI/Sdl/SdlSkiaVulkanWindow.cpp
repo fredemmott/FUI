@@ -131,8 +131,6 @@ bool HasInstanceExtension(const std::string_view ext) {
 
 }// namespace
 
-// --- FramePainter ---------------------------------------------------------
-
 class SdlSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
  public:
   FramePainter() = delete;
@@ -209,8 +207,6 @@ class SdlSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
   sk_sp<SkSurface> mSurface;
   SkiaRenderer mRenderer;
 };
-
-// --- Lifecycle ------------------------------------------------------------
 
 SdlSkiaVulkanWindow::SdlSkiaVulkanWindow(Options options)
   : SdlWindow(std::move(options)) {
@@ -295,8 +291,6 @@ std::unique_ptr<Window> SdlSkiaVulkanWindow::CreatePopup() const {
       .mInitialSize = Size {240, 80},
     });
 }
-
-// --- CreateInstance -------------------------------------------------------
 
 void SdlSkiaVulkanWindow::CreateInstance() {
   // SDL tells us which instance extensions are needed to present on this
@@ -390,8 +384,6 @@ void SdlSkiaVulkanWindow::CreateSurface() {
   }
 }
 
-// --- PickPhysicalDevice ---------------------------------------------------
-
 void SdlSkiaVulkanWindow::PickPhysicalDevice() {
   uint32_t count = 0;
   vkEnumeratePhysicalDevices(mInstance.get(), &count, nullptr);
@@ -443,8 +435,6 @@ void SdlSkiaVulkanWindow::PickPhysicalDevice() {
   mGraphicsQueueFamily = fallbackQueue;
 }
 
-// --- CreateDevice ---------------------------------------------------------
-
 void SdlSkiaVulkanWindow::CreateDevice() {
   const float priority = 1.0f;
   const VkDeviceQueueCreateInfo queueCreate {
@@ -480,12 +470,10 @@ void SdlSkiaVulkanWindow::CreateDevice() {
   CheckVK(
     vkCreateDevice(mPhysicalDevice, &create, nullptr, &device),
     "vkCreateDevice");
-  // if an device exists, destroy it, own the new device. 
+  // if a device exists, destroy it, own the new device. 
   mDevice.reset(device);
   vkGetDeviceQueue(mDevice.get(), mGraphicsQueueFamily, 0, &mGraphicsQueue);
 }
-
-// --- CreateSwapchain ------------------------------------------------------
 
 void SdlSkiaVulkanWindow::CreateSwapchain() {
   VkSurfaceCapabilitiesKHR caps {};
@@ -605,8 +593,6 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
   }
 }
 
-// --- CreateSkiaContext ----------------------------------------------------
-
 void SdlSkiaVulkanWindow::CreateSkiaContext() {
   // Skia needs function pointers for the Vulkan entry points via its own
   // GrVkGetProc signature (a std::function that dispatches instance or
@@ -653,8 +639,6 @@ void SdlSkiaVulkanWindow::CreateSkiaContext() {
     throw std::runtime_error("GrDirectContexts::MakeVulkan returned null");
   }
 }
-
-// --- WrapSwapchainImagesAsSkSurfaces --------------------------------------
 
 void SdlSkiaVulkanWindow::WrapSwapchainImagesAsSkSurfaces() {
   // One-time self-test before we wrap anything. Logs Skia's preferred
@@ -744,8 +728,6 @@ void SdlSkiaVulkanWindow::WrapSwapchainImagesAsSkSurfaces() {
   }
 }
 
-// --- Resize ---------------------------------------------------------------
-
 void SdlSkiaVulkanWindow::ResizeBackend() {
   // Called by SdlWindow::ResizeIfNeeded after popup auto-fit (which
   // may have called SDL_SetWindowSize). Re-query SDL pixel size and
@@ -766,8 +748,6 @@ void SdlSkiaVulkanWindow::ResizeBackend() {
   this->CreateSwapchain();
   this->WrapSwapchainImagesAsSkSurfaces();
 }
-
-// --- GetFramePainter ------------------------------------------------------
 
 std::unique_ptr<Window::BasicFramePainter>
 SdlSkiaVulkanWindow::GetFramePainter(const uint8_t frameIndex) {
@@ -797,8 +777,6 @@ SdlSkiaVulkanWindow::GetFramePainter(const uint8_t frameIndex) {
   return std::unique_ptr<BasicFramePainter> {
     new FramePainter(this, imageIndex, acquireSem, mSwapchainSurfaces[imageIndex])};
 }
-
-// --- Teardown -------------------------------------------------------------
 
 void SdlSkiaVulkanWindow::DestroySwapchainResources() {
   if (!mDevice) {
