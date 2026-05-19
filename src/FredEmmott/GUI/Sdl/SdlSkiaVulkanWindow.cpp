@@ -195,7 +195,7 @@ class SdlSkiaVulkanWindow::FramePainter final : public BasicFramePainter {
     // MVP: brute-force wait-idle so semaphore reuse next frame is trivially
     // safe. Replace with per-frame-in-flight fences so the CPU can pipeline
     // ahead of the GPU (follow-up).
-    vkDeviceWaitIdle(mWindow->mDevice);
+    vkDeviceWaitIdle(mWindow->mDevice.get());
   }
 
   Renderer* GetRenderer() noexcept override {
@@ -256,8 +256,8 @@ int SdlSkiaVulkanWindow::Run(
 }
 
 SdlSkiaVulkanWindow::~SdlSkiaVulkanWindow() {
-  if (mDevice != VK_NULL_HANDLE) {
-    vkDeviceWaitIdle(mDevice);
+  if (mDevice) {
+    vkDeviceWaitIdle(mDevice.get());
   }
   this->DestroySwapchainResources();
   this->DestroyVulkan();
@@ -353,12 +353,15 @@ void SdlSkiaVulkanWindow::CreateInstance() {
     .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
     .ppEnabledExtensionNames = extensions.data(),
   };
-  CheckVK(vkCreateInstance(&create, nullptr, &mInstance), "vkCreateInstance");
+  VkInstance instance = VK_NULL_HANDLE;
+  CheckVK(vkCreateInstance(&create, nullptr, &instance), "vkCreateInstance");
+  // if an instance exists, destroy it, own the new instance. 
+  mInstance.reset(instance);
 
   if (validation) {
     const auto createMessenger =
       reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-        vkGetInstanceProcAddr(mInstance, "vkCreateDebugUtilsMessengerEXT"));
+        vkGetInstanceProcAddr(mInstance.get(), "vkCreateDebugUtilsMessengerEXT"));
     if (createMessenger) {
       VkDebugUtilsMessengerCreateInfoEXT info {
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -370,7 +373,7 @@ void SdlSkiaVulkanWindow::CreateInstance() {
           | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = DebugCallback,
       };
-      createMessenger(mInstance, &info, nullptr, &mDebugMessenger);
+      createMessenger(mInstance.get(), &info, nullptr, &mDebugMessenger);
     }
   }
 }
@@ -381,7 +384,7 @@ void SdlSkiaVulkanWindow::CreateSurface() {
     throw std::runtime_error(
       "CreateSurface called before SdlWindow::InitializeWindow");
   }
-  if (!SDL_Vulkan_CreateSurface(sdl, mInstance, nullptr, &mSurface)) {
+  if (!SDL_Vulkan_CreateSurface(sdl, mInstance.get(), nullptr, &mSurface)) {
     throw std::runtime_error(
       std::format("SDL_Vulkan_CreateSurface failed: {}", SDL_GetError()));
   }
@@ -391,12 +394,12 @@ void SdlSkiaVulkanWindow::CreateSurface() {
 
 void SdlSkiaVulkanWindow::PickPhysicalDevice() {
   uint32_t count = 0;
-  vkEnumeratePhysicalDevices(mInstance, &count, nullptr);
+  vkEnumeratePhysicalDevices(mInstance.get(), &count, nullptr);
   if (count == 0) {
     throw std::runtime_error("No Vulkan physical devices");
   }
   std::vector<VkPhysicalDevice> devices(count);
-  vkEnumeratePhysicalDevices(mInstance, &count, devices.data());
+  vkEnumeratePhysicalDevices(mInstance.get(), &count, devices.data());
 
   // Prefer a discrete GPU that has a graphics queue with present support
   // on our surface. Fall back to whichever integrated/software device comes
@@ -473,10 +476,13 @@ void SdlSkiaVulkanWindow::CreateDevice() {
     .ppEnabledExtensionNames = RequiredDeviceExtensions.data(),
     .pEnabledFeatures = nullptr,
   };
+  VkDevice device = VK_NULL_HANDLE;
   CheckVK(
-    vkCreateDevice(mPhysicalDevice, &create, nullptr, &mDevice),
+    vkCreateDevice(mPhysicalDevice, &create, nullptr, &device),
     "vkCreateDevice");
-  vkGetDeviceQueue(mDevice, mGraphicsQueueFamily, 0, &mGraphicsQueue);
+  // if an device exists, destroy it, own the new device. 
+  mDevice.reset(device);
+  vkGetDeviceQueue(mDevice.get(), mGraphicsQueueFamily, 0, &mGraphicsQueue);
 }
 
 // --- CreateSwapchain ------------------------------------------------------
@@ -576,14 +582,14 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
     .clipped = VK_TRUE,
   };
   CheckVK(
-    vkCreateSwapchainKHR(mDevice, &create, nullptr, &mSwapchain),
+    vkCreateSwapchainKHR(mDevice.get(), &create, nullptr, &mSwapchain),
     "vkCreateSwapchainKHR");
 
   uint32_t gotImages = 0;
-  vkGetSwapchainImagesKHR(mDevice, mSwapchain, &gotImages, nullptr);
+  vkGetSwapchainImagesKHR(mDevice.get(), mSwapchain, &gotImages, nullptr);
   mSwapchainImages.resize(gotImages);
   vkGetSwapchainImagesKHR(
-    mDevice, mSwapchain, &gotImages, mSwapchainImages.data());
+    mDevice.get(), mSwapchain, &gotImages, mSwapchainImages.data());
 
   mFrameSync.resize(gotImages);
   const VkSemaphoreCreateInfo semCI {
@@ -591,10 +597,10 @@ void SdlSkiaVulkanWindow::CreateSwapchain() {
   };
   for (auto& s : mFrameSync) {
     CheckVK(
-      vkCreateSemaphore(mDevice, &semCI, nullptr, &s.mImageAvailable),
+      vkCreateSemaphore(mDevice.get(), &semCI, nullptr, &s.mImageAvailable),
       "vkCreateSemaphore");
     CheckVK(
-      vkCreateSemaphore(mDevice, &semCI, nullptr, &s.mRenderFinished),
+      vkCreateSemaphore(mDevice.get(), &semCI, nullptr, &s.mRenderFinished),
       "vkCreateSemaphore");
   }
 }
@@ -619,7 +625,7 @@ void SdlSkiaVulkanWindow::CreateSkiaContext() {
   skgpu::VulkanExtensions vkExtensions;
   vkExtensions.init(
     getProc,
-    mInstance,
+    mInstance.get(),
     mPhysicalDevice,
     /*instanceExtCount=*/0,
     /*instanceExts=*/nullptr,
@@ -628,9 +634,9 @@ void SdlSkiaVulkanWindow::CreateSkiaContext() {
     /*deviceExts=*/RequiredDeviceExtensions.data());
 
   skgpu::VulkanBackendContext vkCtx {};
-  vkCtx.fInstance = mInstance;
+  vkCtx.fInstance = mInstance.get();
   vkCtx.fPhysicalDevice = mPhysicalDevice;
-  vkCtx.fDevice = mDevice;
+  vkCtx.fDevice = mDevice.get();
   vkCtx.fQueue = mGraphicsQueue;
   vkCtx.fGraphicsQueueIndex = mGraphicsQueueFamily;
   vkCtx.fMaxAPIVersion = VK_API_VERSION_1_2;
@@ -755,7 +761,7 @@ void SdlSkiaVulkanWindow::ResizeBackend() {
     && static_cast<uint32_t>(h) == mSwapchainExtent.height) {
     return;
   }
-  vkDeviceWaitIdle(mDevice);
+  vkDeviceWaitIdle(mDevice.get());
   this->DestroySwapchainResources();
   this->CreateSwapchain();
   this->WrapSwapchainImagesAsSkSurfaces();
@@ -775,7 +781,7 @@ SdlSkiaVulkanWindow::GetFramePainter(const uint8_t frameIndex) {
 
   uint32_t imageIndex = 0;
   const auto acq = vkAcquireNextImageKHR(
-    mDevice,
+    mDevice.get(),
     mSwapchain,
     UINT64_MAX,
     acquireSem,
@@ -795,48 +801,40 @@ SdlSkiaVulkanWindow::GetFramePainter(const uint8_t frameIndex) {
 // --- Teardown -------------------------------------------------------------
 
 void SdlSkiaVulkanWindow::DestroySwapchainResources() {
-  if (mDevice == VK_NULL_HANDLE) {
+  if (!mDevice) {
     return;
   }
   mSwapchainSurfaces.clear();
   for (auto& s : mFrameSync) {
-    if (s.mImageAvailable) vkDestroySemaphore(mDevice, s.mImageAvailable, nullptr);
-    if (s.mRenderFinished) vkDestroySemaphore(mDevice, s.mRenderFinished, nullptr);
+    if (s.mImageAvailable) vkDestroySemaphore(mDevice.get(), s.mImageAvailable, nullptr);
+    if (s.mRenderFinished) vkDestroySemaphore(mDevice.get(), s.mRenderFinished, nullptr);
   }
   mFrameSync.clear();
   for (auto iv : mSwapchainImageViews) {
-    vkDestroyImageView(mDevice, iv, nullptr);
+    vkDestroyImageView(mDevice.get(), iv, nullptr);
   }
   mSwapchainImageViews.clear();
   mSwapchainImages.clear();
   if (mSwapchain) {
-    vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
+    vkDestroySwapchainKHR(mDevice.get(), mSwapchain, nullptr);
     mSwapchain = VK_NULL_HANDLE;
   }
 }
 
 void SdlSkiaVulkanWindow::DestroyVulkan() {
   mSkContext.reset();
-  if (mDevice) {
-    vkDestroyDevice(mDevice, nullptr);
-    mDevice = VK_NULL_HANDLE;
-  }
   if (mSurface) {
-    vkDestroySurfaceKHR(mInstance, mSurface, nullptr);
+    vkDestroySurfaceKHR(mInstance.get(), mSurface, nullptr);
     mSurface = VK_NULL_HANDLE;
   }
   if (mDebugMessenger) {
     const auto destroyMessenger =
       reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
-        vkGetInstanceProcAddr(mInstance, "vkDestroyDebugUtilsMessengerEXT"));
+        vkGetInstanceProcAddr(mInstance.get(), "vkDestroyDebugUtilsMessengerEXT"));
     if (destroyMessenger) {
-      destroyMessenger(mInstance, mDebugMessenger, nullptr);
+      destroyMessenger(mInstance.get(), mDebugMessenger, nullptr);
     }
     mDebugMessenger = VK_NULL_HANDLE;
-  }
-  if (mInstance) {
-    vkDestroyInstance(mInstance, nullptr);
-    mInstance = VK_NULL_HANDLE;
   }
 }
 

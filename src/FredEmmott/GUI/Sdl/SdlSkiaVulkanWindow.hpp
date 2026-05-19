@@ -16,13 +16,27 @@
 #include <skia/core/SkSurface.h>
 #include <skia/gpu/ganesh/GrDirectContext.h>
 
+#include <felly/unique_any.hpp>
+
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "SdlWindow.hpp"
 
 namespace FredEmmott::GUI {
+
+namespace detail {
+// 1-arg adapters around Vulkan's 2-arg destroys so they fit felly::unique_any's
+// single-arg deleter signature.
+inline void DestroyVkInstance(const VkInstance i) noexcept {
+  vkDestroyInstance(i, nullptr);
+}
+inline void DestroyVkDevice(const VkDevice d) noexcept {
+  vkDestroyDevice(d, nullptr);
+}
+}// namespace detail
 
 class SdlSkiaVulkanWindow final : public SdlWindow {
  public:
@@ -53,10 +67,11 @@ class SdlSkiaVulkanWindow final : public SdlWindow {
   class FramePainter;
 
   // --- Vulkan instance / device ---
-  VkInstance mInstance {VK_NULL_HANDLE};
+  felly::unique_any<VkInstance, &detail::DestroyVkInstance> mInstance {std::nullopt};
+  felly::unique_any<VkDevice, &detail::DestroyVkDevice> mDevice {std::nullopt};
+
   VkDebugUtilsMessengerEXT mDebugMessenger {VK_NULL_HANDLE};
   VkPhysicalDevice mPhysicalDevice {VK_NULL_HANDLE};
-  VkDevice mDevice {VK_NULL_HANDLE};
   uint32_t mGraphicsQueueFamily {UINT32_MAX};
   VkQueue mGraphicsQueue {VK_NULL_HANDLE};
   // Enabled at vkCreateDevice and pointed at from skgpu::VulkanBackendContext
