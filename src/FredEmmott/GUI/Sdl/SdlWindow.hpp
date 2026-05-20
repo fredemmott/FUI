@@ -10,7 +10,9 @@
 
 #include <array>
 #include <atomic>
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <FredEmmott/GUI/StylePropertyTypes.hpp>
@@ -34,6 +36,14 @@ class SdlWindow : public Window {
     Size mInitialSize {960, 640};
     ResizeMode mHorizontalResizeMode {ResizeMode::Allow};
     ResizeMode mVerticalResizeMode {ResizeMode::Allow};
+    // Optional cross-platform GPU selector. Same 16 bytes that Vulkan,
+    // OpenGL (GL_EXT_external_objects), and CUDA all return for a given
+    // physical card on a given machine, so an app that already talked to
+    // one of those APIs can pin the FUI window to the same GPU. On Windows
+    // the first 8 bytes hold Vulkan's deviceLUID (== the DXGI LUID); on
+    // Linux all 16 hold Vulkan's deviceUUID. Empty = use the loader/system
+    // default GPU.
+    std::optional<std::array<uint8_t, 16>> mDeviceUUID;
   };
 
   explicit SdlWindow(Options options);
@@ -87,6 +97,8 @@ class SdlWindow : public Window {
   // the renderer recreate its swapchain / surfaces for the new SDL window
   // size. Pure virtual so every backend explicitly opts in.
   virtual void ResizeBackend() = 0;
+
+  [[nodiscard]] const Options& GetOptions() const noexcept { return mOptions; }
 
  private:
   // Delegating ctor owns root widgets like Win32Window does, so the Window

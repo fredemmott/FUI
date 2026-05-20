@@ -393,13 +393,35 @@ void SdlSkiaVulkanWindow::PickPhysicalDevice() {
   std::vector<VkPhysicalDevice> devices(count);
   vkEnumeratePhysicalDevices(mInstance.get(), &count, devices.data());
 
-  // Prefer a discrete GPU that has a graphics queue with present support
-  // on our surface. Fall back to whichever integrated/software device comes
-  // first with those capabilities.
-  VkPhysicalDevice fallback = VK_NULL_HANDLE;
-  uint32_t fallbackQueue = UINT32_MAX;
+  // If WindowOptions::mDeviceUUID is set, match it against each physical
+  // device's Vulkan deviceUUID (Linux) or deviceLUID (Windows — first 8
+  // bytes). Otherwise pick the first device the loader reports with a
+  // graphics queue + present support — that's the system default GPU.
+  const auto& wantUUID = this->GetOptions().mDeviceUUID;
 
   for (const auto dev : devices) {
+    if (wantUUID) {
+      VkPhysicalDeviceIDProperties idProps {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,
+      };
+      VkPhysicalDeviceProperties2 props2 {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        .pNext = &idProps,
+      };
+      vkGetPhysicalDeviceProperties2(dev, &props2);
+
+      const bool uuidMatch = std::equal(
+        wantUUID->begin(), wantUUID->end(), std::begin(idProps.deviceUUID));
+      const bool luidMatch = idProps.deviceLUIDValid
+        && std::equal(
+          wantUUID->begin(),
+          wantUUID->begin() + VK_LUID_SIZE,
+          std::begin(idProps.deviceLUID));
+      if (!uuidMatch && !luidMatch) {
+        continue;
+      }
+    }
+
     uint32_t qCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(dev, &qCount, nullptr);
     std::vector<VkQueueFamilyProperties> qProps(qCount);
@@ -414,25 +436,15 @@ void SdlSkiaVulkanWindow::PickPhysicalDevice() {
       if (!present) {
         continue;
       }
-
-      VkPhysicalDeviceProperties props {};
-      vkGetPhysicalDeviceProperties(dev, &props);
-      if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-        mPhysicalDevice = dev;
-        mGraphicsQueueFamily = i;
-        return;
-      }
-      if (fallback == VK_NULL_HANDLE) {
-        fallback = dev;
-        fallbackQueue = i;
-      }
+      mPhysicalDevice = dev;
+      mGraphicsQueueFamily = i;
+      return;
     }
   }
-  if (fallback == VK_NULL_HANDLE) {
-    throw std::runtime_error("No Vulkan device with graphics+present queue");
-  }
-  mPhysicalDevice = fallback;
-  mGraphicsQueueFamily = fallbackQueue;
+  throw std::runtime_error(
+    wantUUID
+      ? "Requested mDeviceUUID not found among Vulkan physical devices"
+      : "No Vulkan device with graphics+present queue");
 }
 
 void SdlSkiaVulkanWindow::CreateDevice() {
