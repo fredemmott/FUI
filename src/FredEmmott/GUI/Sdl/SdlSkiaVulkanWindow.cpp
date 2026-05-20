@@ -336,7 +336,7 @@ void SdlSkiaVulkanWindow::CreateInstance() {
     .applicationVersion = 0,
     .pEngineName = "FredEmmott::GUI",
     .engineVersion = 0,
-    .apiVersion = VK_API_VERSION_1_2,
+    .apiVersion = VK_API_VERSION_1_1,
   };
 
   const VkInstanceCreateInfo create {
@@ -637,7 +637,7 @@ void SdlSkiaVulkanWindow::CreateSkiaContext() {
   vkCtx.fDevice = mDevice.get();
   vkCtx.fQueue = mGraphicsQueue;
   vkCtx.fGraphicsQueueIndex = mGraphicsQueueFamily;
-  vkCtx.fMaxAPIVersion = VK_API_VERSION_1_2;
+  vkCtx.fMaxAPIVersion = VK_API_VERSION_1_1;
   vkCtx.fVkExtensions = &vkExtensions;
   vkCtx.fGetProc = getProc;
   // Skia: "If fDeviceFeatures2 is not null then we ignore fDeviceFeatures.
