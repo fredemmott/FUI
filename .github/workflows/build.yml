@@ -8,7 +8,7 @@ env:
   VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{github.repository_owner}}/index.json,readwrite"
 jobs:
   populate-vcpkg-cache:
-    runs-on: windows-latest
+    runs-on: windows-2022 # Build with oldest target Windows version, as newer compilers can use libraries build with older versions, but not the other way around
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -37,7 +37,6 @@ jobs:
           --x-feature direct2d `
           --x-feature icu `
           --x-feature skia 
-
   build:
     needs: populate-vcpkg-cache
     strategy:
@@ -48,8 +47,11 @@ jobs:
           - Release
           - Direct2D - Release
           - Skia - Release
-    name: "${{matrix.preset}}"
-    runs-on: windows-latest
+        os:
+          - windows-2022 # VS 2022
+          - windows-2025 # VS 2026
+    name: "${{matrix.os}} - ${{matrix.preset}}"
+    runs-on: "${{matrix.os}}"
     steps:
       - name: Set up visual studio environment
         shell: pwsh
