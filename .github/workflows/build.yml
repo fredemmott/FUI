@@ -8,7 +8,13 @@ env:
   VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{github.repository_owner}}/index.json,readwrite"
 jobs:
   populate-vcpkg-cache:
-    runs-on: windows-2022 # Build with oldest target Windows version, as newer compilers can use libraries build with older versions, but not the other way around
+    strategy:
+      matrix:
+        os:
+          - windows-2022 # VS 2022
+          - windows-2025 # VS 2026
+    runs-on: ${{ matrix.os }}
+    name: "Populate vcpkg cache (${{matrix.os }})"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
