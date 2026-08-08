@@ -65,7 +65,6 @@ class TitleBar final : public Widget {
 
   Label* mTitleLabel {};
   Label* mSubtitleLabel {};
-  bool mWindowIsActive {true};
 };
 
 }// namespace FredEmmott::GUI::Widgets
