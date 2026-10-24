@@ -310,6 +310,7 @@ class Win32Window : public Window {
   HWND mParentHwnd {nullptr};
   wil::unique_hwnd mHwnd;
   std::vector<HWND> mChildren;
+  bool mNeedInitialShow {true};
 
   bool mIsToolTip {false};
   bool mIsModal {false};

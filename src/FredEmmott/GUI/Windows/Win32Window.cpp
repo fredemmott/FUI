@@ -167,8 +167,6 @@ void Win32Window::InitializeWindow() {
     && mShowCommand == SW_SHOWDEFAULT) {
     mShowCommand = SW_SHOWNOACTIVATE;
   }
-
-  ShowWindow(mHwnd.get(), mShowCommand);
 }
 
 void Win32Window::HideWindow() {
@@ -673,6 +671,9 @@ void Win32Window::ResizeSwapchain() {
 }
 
 void Win32Window::ResizeIfNeeded() {
+  if (std::exchange(mNeedInitialShow, false)) {
+    ShowWindow(mHwnd.get(), mShowCommand);
+  }
   if (!std::exchange(mPendingResize, false)) {
     if (IsZoomed(mHwnd.get())) {
       return;
