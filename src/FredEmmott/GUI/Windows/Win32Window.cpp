@@ -610,6 +610,12 @@ void Win32Window::SetBackdrop(const WindowBackdrop& backdrop) {
         mCompositionControllers.mDirectCompositionController
           = std::make_unique<DirectCompositionController>(
             mHwnd.get(), mSwapChain.get());
+
+        // When creating the window, we set this to either DWMWCP_ROUND or
+        // ROUNDSMALL; undo this so we don't get an automatic border
+        constexpr auto pref = static_cast<DWORD>(DWMWCP_DEFAULT);
+        CheckHResult(DwmSetWindowAttribute(
+          mHwnd.get(), DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(pref)));
       },
       [this]<Win32::Mica::Kind T>(const Win32::Mica::WindowBackdrop<T>&) {
         auto& mc = mCompositionControllers.mMicaController;
