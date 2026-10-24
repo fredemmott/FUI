@@ -379,6 +379,10 @@ void Win32Direct3D12GaneshWindow::CreateRenderTargets() {
     1,
     1,
     0);
+  // Above we pass in a `gr_cp<>`; the doccomment says that 'no call to AddRef()
+  // or Release() will be made', and this is true as far as the *constructor* is
+  // called; however, the *destructor* will call `Release()`
+  backBufferInfo.fResource->AddRef();
   GrBackendRenderTarget backBufferRT(
     static_cast<int>(desc.Width),
     static_cast<int>(desc.Height),
