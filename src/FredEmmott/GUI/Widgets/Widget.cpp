@@ -29,15 +29,23 @@ struct MouseCapture {
 };
 std::optional<MouseCapture> gMouseCapture;
 
-void PaintBackground(Renderer* renderer, const Rect& rect, const Style& style) {
+void PaintBackground(
+  const Widget* const w,
+  Renderer* renderer,
+  const Rect& rect,
+  const Style& style) {
   if (!style.BackgroundColor()) {
     return;
   }
 
   const auto brush = *style.BackgroundColor();
   if (brush.IsAcrylicBrush()) {
-    // Painted by Window
-    return;
+    const auto immediateRoot = w->GetOwnerWindow()->GetRootWidget();
+    const auto topLevelWidgets = immediateRoot->GetStructuralChildren();
+    if (topLevelWidgets.size() == 1 && topLevelWidgets.front() == w) {
+      // Painted by Window
+      return;
+    }
   }
 
   const CornerRadius radii {
@@ -449,7 +457,7 @@ void Widget::Paint(Renderer* renderer) const {
     renderer->Translate(-dx, -dy);
   }
 
-  PaintBackground(renderer, rect, style);
+  PaintBackground(this, renderer, rect, style);
   this->PaintOwnContent(renderer, rect, style);
   this->PaintChildren(renderer);
   PaintBorder(yoga, renderer, rect, style);
